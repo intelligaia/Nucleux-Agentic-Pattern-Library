@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Logo studies — Intelligaia AI UX Pattern Library</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400;1,500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink-0:#fff; --ink-25:#fbfbfa; --ink-50:#f5f5f3; --ink-100:#ebebe8;
+      --ink-200:#d8d8d2; --ink-400:#88887d; --ink-500:#5d5d54; --ink-950:#050504;
+      --fg:#050504; --fg-mid:#5d5d54; --fg-muted:#88887d; --border:#ebebe8;
+      --grad: linear-gradient(120deg, #d97706 0%, #e11d48 38%, #7c3aed 72%, #1e40af 100%);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--ink-25);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      padding: 64px 32px;
+    }
+    .wrap { max-width: 1400px; margin: 0 auto; }
+    h1 {
+      font-size: 56px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      margin: 0 0 16px;
+      line-height: 1;
+    }
+    .lede {
+      font-size: 18px; line-height: 1.55;
+      color: var(--fg-mid);
+      max-width: 720px;
+      margin: 0 0 64px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--ink-0);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .card__head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 16px;
+    }
+    .card__id {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--fg-muted);
+      letter-spacing: 0.06em;
+    }
+    .card__name {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .card__desc {
+      padding: 10px 22px 18px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--fg-mid);
+      border-bottom: 1px solid var(--border);
+    }
+    .card__body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .stage {
+      padding: 36px 28px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 200px;
+      position: relative;
+    }
+    .stage--light { background: var(--ink-0); border-right: 1px solid var(--border); }
+    .stage--dark  { background: var(--ink-950); color: var(--ink-0); }
+    .stage::after {
+      content: attr(data-label);
+      position: absolute;
+      top: 12px; left: 14px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.45;
+    }
+    .lockup {
+      display: inline-flex; align-items: center; gap: 14px;
+    }
+    .lockup--stack {
+      flex-direction: column; align-items: flex-start; gap: 6px;
+    }
+    .mark { display: inline-block; }
+    .word {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1;
+    }
+    .word--script {
+      font-family: "Newsreader", "Georgia", serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 36px;
+      letter-spacing: -0.015em;
+    }
+    .word--airy {
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      text-transform: lowercase;
+      font-size: 22px;
+    }
+    .word__sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--fg-mid);
+      letter-spacing: 0.06em;
+      text-transform: lowercase;
+    }
+    .stage--dark .word__sub { color: rgba(255,255,255,0.6); }
+
+    .meta {
+      padding: 18px 22px;
+      display: flex; flex-wrap: wrap; gap: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--ink-50);
+      font-size: 11px;
+      color: var(--fg-mid);
+      letter-spacing: 0.01em;
+    }
+    .chip__swatch { width: 10px; height: 10px; border-radius: 2px; background: var(--ink-950); }
+
+    .note {
+      grid-column: 1 / -1;
+      background: var(--ink-0);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-top: 8px;
+    }
+    .note h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .note p { font-size: 14px; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Logo studies.</h1>
+    <p class="lede">Eight flat directions for the Intelligaia AI UX Pattern Library mark. Each one shown light + dark with the working name <em>tessera</em>. The wordmark is interchangeable — swap to any final name in a single edit.</p>
+
+    <nav style="display:inline-flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;">
+      <a href="logos.html" style="color:#fff;background:#050504;font-size:14px;text-decoration:none;padding:8px 14px;border-radius:999px;border:1px solid #050504">Flat studies</a>
+      <a href="logos-iso.html" style="color:#5d5d54;font-size:14px;text-decoration:none;padding:8px 14px;border-radius:999px;border:1px solid #ebebe8">Iso studies (cube)</a>
+      <a href="logos-names.html" style="color:#5d5d54;font-size:14px;text-decoration:none;padding:8px 14px;border-radius:999px;border:1px solid #ebebe8">Naming studies</a>
+    </nav>
+
+    <div class="grid">
+
+      <!-- ─────────────── 01 · Hex (solid) ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Hex · solid</span>
+          <span class="card__id">01 / 08</span>
+        </header>
+        <div class="card__desc">The atom of the system. One filled hexagon — the smallest unit of the mosaic. Reads as a tile, an icon, a chip. Direct visual rhyme with the particle lattice on the landing.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="#050504"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="#ffffff"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch"></span>Single mark</span>
+          <span class="chip">Solid</span>
+          <span class="chip">Inter SemiBold</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 02 · Hex (outline) ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Hex · outline</span>
+          <span class="card__id">02 / 08</span>
+        </header>
+        <div class="card__desc">Same atom, monoline. Lighter, more editorial. Sits well in dense headers and against the particle field without competing with it.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="none" stroke="#050504" stroke-width="2"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="none" stroke="#ffffff" stroke-width="2"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch"></span>Single mark</span>
+          <span class="chip">Outline</span>
+          <span class="chip">Editorial</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 03 · Hex + dot ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Hex · with dot</span>
+          <span class="card__id">03 / 08</span>
+        </header>
+        <div class="card__desc">Outline hex with a centred dot — the smallest particle inside the tile. Implies "patterns within patterns". Slightly anthropomorphic — reads almost like an attentive eye.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="none" stroke="#050504" stroke-width="1.7"/>
+                <circle cx="22" cy="22" r="3" fill="#050504"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="none" stroke="#ffffff" stroke-width="1.7"/>
+                <circle cx="22" cy="22" r="3" fill="#ffffff"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch"></span>Outline + dot</span>
+          <span class="chip">Layered meaning</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 04 · Gradient hex ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Hex · gradient</span>
+          <span class="card__id">04 / 08</span>
+        </header>
+        <div class="card__desc">The single hex tile filled with the brand gradient that already lives on the "agentic" word and the active sidebar shimmer. Premium, contemporary. Best on hero / favicon / OG image.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g4l" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#d97706"/>
+                    <stop offset="33%" stop-color="#e11d48"/>
+                    <stop offset="66%" stop-color="#7c3aed"/>
+                    <stop offset="100%" stop-color="#1e40af"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="url(#g4l)"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g4d" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#fbbf24"/>
+                    <stop offset="33%" stop-color="#fb7185"/>
+                    <stop offset="66%" stop-color="#a78bfa"/>
+                    <stop offset="100%" stop-color="#60a5fa"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="22,3 39,12.5 39,31.5 22,41 5,31.5 5,12.5" fill="url(#g4d)"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch" style="background:linear-gradient(120deg,#d97706,#e11d48,#7c3aed,#1e40af);"></span>Brand gradient</span>
+          <span class="chip">Premium</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 05 · Three-tile mosaic ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Three-tile mosaic</span>
+          <span class="card__id">05 / 08</span>
+        </header>
+        <div class="card__desc">Three hexes arranged as a fragment of the mosaic — literal expression of the name. Each tile carries a different gradient stop, so the mark holds the whole brand palette in one glance.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="64" height="44" viewBox="0 0 64 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="13,3 22,8 22,18 13,23 4,18 4,8" fill="#d97706"/>
+                <polygon points="31,3 40,8 40,18 31,23 22,18 22,8" fill="#7c3aed"/>
+                <polygon points="22,20 31,25 31,35 22,40 13,35 13,25" fill="#1e40af"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="64" height="44" viewBox="0 0 64 44" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="13,3 22,8 22,18 13,23 4,18 4,8" fill="#fbbf24"/>
+                <polygon points="31,3 40,8 40,18 31,23 22,18 22,8" fill="#a78bfa"/>
+                <polygon points="22,20 31,25 31,35 22,40 13,35 13,25" fill="#60a5fa"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch"></span>Mosaic fragment</span>
+          <span class="chip">Three-tile composition</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 06 · Network nodes ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Network · triad</span>
+          <span class="card__id">06 / 08</span>
+        </header>
+        <div class="card__desc">Three nodes connected by thin lines — a fragment of the network/lattice. Speaks to "patterns are connections, not just objects". More agentic than craft-y; feels closer to the AI side of the brand.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <line x1="10" y1="12" x2="34" y2="14" stroke="#050504" stroke-width="1.2"/>
+                <line x1="34" y1="14" x2="22" y2="36" stroke="#050504" stroke-width="1.2"/>
+                <line x1="22" y1="36" x2="10" y2="12" stroke="#050504" stroke-width="1.2"/>
+                <circle cx="10" cy="12" r="3.4" fill="#050504"/>
+                <circle cx="34" cy="14" r="3.4" fill="#050504"/>
+                <circle cx="22" cy="36" r="3.4" fill="#050504"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <line x1="10" y1="12" x2="34" y2="14" stroke="#ffffff" stroke-width="1.2"/>
+                <line x1="34" y1="14" x2="22" y2="36" stroke="#ffffff" stroke-width="1.2"/>
+                <line x1="22" y1="36" x2="10" y2="12" stroke="#ffffff" stroke-width="1.2"/>
+                <circle cx="10" cy="12" r="3.4" fill="#ffffff"/>
+                <circle cx="34" cy="14" r="3.4" fill="#ffffff"/>
+                <circle cx="22" cy="36" r="3.4" fill="#ffffff"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch"></span>Network</span>
+          <span class="chip">Agentic</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 07 · Aperture (lens petals) ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Aperture · six-fold</span>
+          <span class="card__id">07 / 08</span>
+        </header>
+        <div class="card__desc">Six interlocking petals around a centre point — an aperture / iris / Gestalt flower. Suggests the act of <em>seeing</em> patterns. More floral, less geometric; design-house lineage.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg class="mark" width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#050504" stroke-width="1.4">
+                  <circle cx="24" cy="14" r="7.5"/>
+                  <circle cx="32.66" cy="19" r="7.5"/>
+                  <circle cx="32.66" cy="29" r="7.5"/>
+                  <circle cx="24" cy="34" r="7.5"/>
+                  <circle cx="15.34" cy="29" r="7.5"/>
+                  <circle cx="15.34" cy="19" r="7.5"/>
+                </g>
+                <circle cx="24" cy="24" r="2.4" fill="#050504"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg class="mark" width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#ffffff" stroke-width="1.4">
+                  <circle cx="24" cy="14" r="7.5"/>
+                  <circle cx="32.66" cy="19" r="7.5"/>
+                  <circle cx="32.66" cy="29" r="7.5"/>
+                  <circle cx="24" cy="34" r="7.5"/>
+                  <circle cx="15.34" cy="29" r="7.5"/>
+                  <circle cx="15.34" cy="19" r="7.5"/>
+                </g>
+                <circle cx="24" cy="24" r="2.4" fill="#ffffff"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch"></span>Six-fold aperture</span>
+          <span class="chip">Floral</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 08 · Typographic only ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Typographic · no mark</span>
+          <span class="card__id">08 / 08</span>
+        </header>
+        <div class="card__desc">No glyph at all. Wordmark only, in airy lowercase letterforms with extra tracking. The simplest possible move; lets the rest of the site do the visual work. Easy to license, easy to print, easy to forget — pick this if restraint is the brand voice.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup lockup--stack">
+              <span class="word--airy">tessera</span>
+              <span class="word__sub">a pattern library by intelligaia</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup lockup--stack">
+              <span class="word--airy">tessera</span>
+              <span class="word__sub">a pattern library by intelligaia</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">No mark</span>
+          <span class="chip">Airy lowercase</span>
+          <span class="chip">Restrained</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── note ─────────────── -->
+      <div class="note">
+        <h3>My pick</h3>
+        <p>
+          <strong>04 · Hex gradient</strong> for the brand mark, with <strong>02 · Hex outline</strong> as the small-scale / favicon variant. The gradient hex carries the full brand palette in one glyph and visually echoes the particle field on the landing. The outline version remains legible at 16 px and below where the gradient would muddy. Same mark, two weights — clean system.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligaia — Typography & Heroes</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,900&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,700;6..96,900&family=Space+Grotesk:wght@400;500;700&family=Schibsted+Grotesk:wght@400;500;700;900&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,700;12..96,800&family=Anton&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+  *{margin:0;box-sizing:border-box}
+  :root{--bg:#07070b;--fg:#f4f4f7;--mut:#8a8a96;--y:#FFD83D;--v:#7a52e0;--c:#1ec8ef;--p:#d84a98;--red:#e8483f;--line:rgba(255,255,255,.08)}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--fg);overflow-x:hidden;cursor:none;font-family:'Schibsted Grotesk',sans-serif}
+  ::-webkit-scrollbar{width:0}
+  #cur{position:fixed;top:0;left:0;width:10px;height:10px;border-radius:50%;background:var(--y);z-index:9999;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:difference;will-change:transform}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  .lbl{font-family:'IBM Plex Mono';font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--c);opacity:.85}
+  .grad{background:linear-gradient(100deg,var(--c),var(--v) 55%,var(--p));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 6vw}
+  header.top{padding:15vh 6vw 9vh}
+  header.top h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(2.6rem,7vw,6rem);line-height:.98;letter-spacing:-.03em}
+  header.top p{margin-top:1.3rem;color:var(--mut);max-width:58ch;line-height:1.7}
+  h2.sec{font-family:'Space Grotesk';font-weight:700;font-size:clamp(1.4rem,2.6vw,2rem);margin:.5rem 0 1.4rem;letter-spacing:-.01em}
+  .secnote{color:var(--mut);max-width:60ch;line-height:1.6;margin-bottom:.4rem;font-size:.92rem}
+
+  /* ── type system ── */
+  .fonts{padding:7vh 0 4vh}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1rem;margin-top:1.6rem}
+  .fcard{border:1px solid var(--line);border-radius:14px;padding:1.6rem;background:rgba(255,255,255,.02)}
+  .fcard .cls{font-family:'IBM Plex Mono';font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  .fcard .nm{font-size:clamp(2rem,4vw,3rem);line-height:1;margin:.5rem 0 .2rem}
+  .fcard .wt{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap}
+  .fcard .wt b{font-weight:900;font-size:clamp(1.6rem,3vw,2.4rem)}
+  .fcard .wt i{font-style:normal;font-weight:300;font-size:clamp(1.4rem,2.6vw,2rem);color:var(--mut)}
+  .fcard p{margin-top:.7rem;color:var(--mut);font-size:.84rem;line-height:1.55}
+
+  /* ── type specimen (weights · sizes · pairing) ── */
+  .spec{padding:6vh 0}
+  .spec-block{border:1px solid var(--line);border-radius:14px;padding:1.8rem;background:rgba(255,255,255,.02);margin-top:1rem}
+  .spec-block .sh{font-family:'IBM Plex Mono';font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--y);margin-bottom:1rem}
+  .weights{display:flex;flex-direction:column;gap:.2rem}
+  .weights span{font-family:'Bricolage Grotesque';font-size:clamp(1.8rem,5.5vw,3.4rem);line-height:1.05;letter-spacing:-.02em}
+  .weights .w3{font-weight:300;color:var(--mut)}.weights .w4{font-weight:400}.weights .w7{font-weight:700}.weights .w8{font-weight:800}
+  .sizes{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.4rem}
+  .sizes span{font-family:'Schibsted Grotesk';font-weight:500;line-height:1}
+  .sizes .z1{font-size:1rem;color:var(--mut)}.sizes .z2{font-size:1.6rem}.sizes .z3{font-size:2.6rem}.sizes .z4{font-size:4rem}.sizes .z5{font-size:6rem;font-weight:900}
+  .pairing{display:grid;grid-template-columns:1fr;gap:1rem}
+  .pairing h3{font-family:'Fraunces';font-weight:600;font-size:clamp(2rem,5vw,3.4rem);line-height:1.02;letter-spacing:-.01em}
+  .pairing p{font-family:'Schibsted Grotesk';color:var(--mut);max-width:60ch;line-height:1.7}
+  .kline{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(2.4rem,8vw,6rem);line-height:.95;letter-spacing:-.03em;cursor:none;will-change:transform}
+  .kline .o{color:transparent;-webkit-text-stroke:1.5px rgba(244,244,247,.5)}
+
+  /* ── hero designs ── */
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:9vh 6vw;overflow:hidden;border-top:1px solid var(--line)}
+  .tag{position:absolute;top:24px;left:6vw;font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);z-index:8}
+  .tag b{color:var(--y);font-weight:400}
+  .sub{color:var(--mut);max-width:42ch;line-height:1.7;margin-top:1.7rem;font-size:clamp(.95rem,1.3vw,1.1rem)}
+  .cta{display:inline-flex;align-items:center;gap:.5rem;margin-top:2rem;align-self:flex-start;font-weight:500;font-size:.95rem;color:var(--bg);background:var(--y);border-radius:999px;padding:.85rem 1.6rem;text-decoration:none;will-change:transform}
+  .glow{position:absolute;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+
+  /* 01 — expressive display, kinetic */
+  .h1 .big{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(4rem,17vw,16rem);line-height:.82;letter-spacing:-.045em;will-change:transform}
+  .h1 .big .o{color:transparent;-webkit-text-stroke:2px rgba(244,244,247,.5)}
+
+  /* 02 — editorial serif, line reveal */
+  .h2 .ed{font-family:'Fraunces';line-height:.95}
+  .h2 .ed span{display:block;overflow:hidden}
+  .h2 .ed i{display:block;font-style:normal;transform:translateY(105%)}
+  .h2 .lt{font-weight:300;font-size:clamp(2.4rem,7vw,6rem);color:var(--mut)}
+  .h2 .bk{font-weight:900;font-size:clamp(3.4rem,11vw,11rem);margin:.02em 0}
+
+  /* 03 — stencil display */
+  .hsten{background:#000;justify-content:flex-start;text-align:center;align-items:center;padding-top:14vh}
+  .hsten .stop{font-family:'Anton';font-size:clamp(1.6rem,5.4vw,5rem);line-height:.98;letter-spacing:.01em;text-transform:uppercase;max-width:18ch;transform:scaleX(1.04)}
+  .hsten .scard{width:clamp(120px,12vw,170px);aspect-ratio:3/4.1;margin:5vh 0;border-radius:3px;overflow:hidden;position:relative;background:#e9e6dc;box-shadow:0 30px 70px rgba(0,0,0,.6)}
+  .hsten .scard .sc-bar{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;font-family:'IBM Plex Mono';font-size:.6rem;font-weight:700;color:#0a0a0f;z-index:2}
+  .hsten .scard .sc-map{position:absolute;inset:0;background:radial-gradient(120% 90% at 60% 40%,#f0c93a 0%,#e98f4c 38%,#d9603f 60%,#b5432f 100%);opacity:.9}
+  .hsten .scard .sc-blob{position:absolute;left:-10%;bottom:-6%;width:80%;height:38%;background:#e9e6dc;border-radius:50% 50% 0 0/70% 70% 0 0;transform:rotate(-8deg)}
+  .hsten .sbig{font-family:'Anton';font-size:clamp(5rem,26vw,24rem);line-height:.8;letter-spacing:.02em;transform:scaleX(1.18);
+    -webkit-mask-image:repeating-linear-gradient(0deg,#000 0 19%,transparent 19% 23%);mask-image:repeating-linear-gradient(0deg,#000 0 19%,transparent 19% 23%);will-change:transform}
+  .hsten .stick{position:absolute;bottom:6vh;font-family:'IBM Plex Mono';font-size:.7rem;letter-spacing:.2em;color:#444}
+  .hsten .langs{position:absolute;top:24px;right:6vw;font-family:'IBM Plex Mono';font-size:.72rem;letter-spacing:.2em;color:#666}
+  .hsten .langs b{color:#fff;font-weight:400}
+
+  /* 04 — ultra-bold collage + sticky tags */
+  .hre{background:#f4f3ef;color:#0a0a0f;justify-content:center}
+  .hre .tag{color:#9a9a92}.hre .tag b{color:#0a0a0f}
+  .hre .re-line1{display:flex;align-items:center;gap:clamp(.4rem,2vw,2rem);flex-wrap:nowrap}
+  .hre .re-w{font-family:'Anton';font-size:clamp(3.4rem,15vw,15rem);line-height:.84;letter-spacing:.005em;text-transform:uppercase}
+  .hre .re-collage{flex:1;min-width:0;height:clamp(80px,13vw,210px);border-radius:4px;overflow:hidden;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;background:#0a0a0f;padding:4px}
+  .hre .re-collage i{display:block;border-radius:2px;background:linear-gradient(140deg,#c8c8c8,#efefef)}
+  .hre .re-collage i:nth-child(3n){background:linear-gradient(140deg,#7a52e0,#1ec8ef)}
+  .hre .re-collage i:nth-child(4n){background:linear-gradient(140deg,#222,#555)}
+  .hre .re-line2{font-family:'Anton';font-size:clamp(3.4rem,15vw,15rem);line-height:.84;text-transform:uppercase;position:relative;will-change:transform}
+  .hre .re-tag{position:absolute;font-family:'Space Grotesk';font-weight:700;font-size:clamp(.6rem,1vw,.95rem);letter-spacing:.04em;padding:.3rem .75rem;color:#0a0a0f;box-shadow:0 8px 20px rgba(0,0,0,.18);z-index:5}
+  .hre .re-tag.strat{background:#c9b3f5;transform:rotate(-7deg);top:-1.2em;right:8%}
+  .hre .re-tag.tech{background:var(--y);transform:rotate(-6deg);bottom:.1em;right:2%}
+  .hre .re-foot{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1.5rem;margin-top:2.4rem}
+  .hre .re-sub{max-width:34ch;font-size:clamp(1rem,1.5vw,1.3rem);font-weight:500;line-height:1.35;color:#1a1a1a}
+  .hre .re-cta{display:inline-flex;align-items:center;gap:.8rem;background:#0a0a0f;color:#fff;font-family:'Space Grotesk';font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:clamp(.9rem,1.4vw,1.2rem);padding:1rem 1.6rem;text-decoration:none;will-change:transform}
+
+  /* 05 — giant serif counter (text inside the word) */
+  .hbond{background:#1b1b1d;justify-content:center;align-items:center}
+  .hbond .b-top{position:absolute;top:11vh;left:6vw;font-family:'Bodoni Moda';font-weight:400;font-size:clamp(1.4rem,3.4vw,2.8rem);color:#efe9e4}
+  .hbond .b-foot{position:absolute;bottom:9vh;right:6vw;font-family:'Bodoni Moda';font-weight:400;font-size:clamp(1.4rem,3.4vw,2.8rem);color:#efe9e4}
+  .hbond .b-word{font-family:'Bodoni Moda';font-weight:700;font-size:clamp(14rem,46vw,42rem);line-height:.7;color:var(--red);position:relative;will-change:transform}
+  .hbond .b-inner{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(78vw,900px);text-align:center;font-family:'Bodoni Moda';font-weight:400;color:#fff;font-size:clamp(1.3rem,3.6vw,3rem);line-height:1.18;z-index:3;pointer-events:none}
+
+  /* 06 — weight-stack parallax */
+  .h6 .st{line-height:.82}.h6 .st span{display:block;font-family:'Schibsted Grotesk';letter-spacing:-.03em;will-change:transform}
+  .h6 .s1{font-weight:400;font-size:clamp(2rem,6vw,5rem);color:var(--mut)}
+  .h6 .s2{font-weight:900;font-size:clamp(3.4rem,12vw,12rem);margin:.02em 0}
+  .h6 .s3{font-weight:500;font-size:clamp(2rem,6.5vw,6rem);margin-left:1.4em}
+
+  /* ── hero gallery — layout variations ── */
+  .hg{padding:8vh 0 4vh}
+  .hg-grid{display:grid;grid-template-columns:1fr;gap:1rem;margin-top:1.4rem}
+  .hg-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0b0b10;position:relative;min-height:340px;display:flex;padding:2.4rem}
+  .hg-card .hg-tag{position:absolute;top:16px;left:18px;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+  /* centered */
+  .hg-center{align-items:center;justify-content:center;text-align:center}
+  .hg-center h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(2.4rem,6vw,4.4rem);line-height:.95;letter-spacing:-.03em;max-width:16ch}
+  .hg-center p{color:var(--mut);margin-top:1rem;max-width:44ch;line-height:1.6}
+  /* split */
+  .hg-split{align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap}
+  .hg-split .l{flex:1 1 320px}
+  .hg-split h3{font-family:'Schibsted Grotesk';font-weight:900;font-size:clamp(2.2rem,5.5vw,4rem);line-height:1;letter-spacing:-.03em}
+  .hg-split .r{flex:0 1 260px;border-left:1px solid var(--line);padding-left:1.6rem}
+  .hg-split .r .k{font-family:'IBM Plex Mono';font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--y);display:block;margin-bottom:.4rem}
+  .hg-split .r p{color:var(--mut);line-height:1.6;font-size:.92rem}
+  /* editorial */
+  .hg-ed{align-items:flex-end}
+  .hg-ed h3{font-family:'Fraunces';font-weight:400;font-style:italic;font-size:clamp(2.4rem,6.5vw,5rem);line-height:.98;max-width:14ch}
+  .hg-ed h3 b{font-style:normal;font-weight:900}
+  .hg-ed .foot{position:absolute;top:2.4rem;right:2.4rem;text-align:right;color:var(--mut);font-size:.9rem;line-height:1.6;max-width:26ch}
+
+  footer{padding:8vh 6vw;color:var(--mut);font-size:.8rem;border-top:1px solid var(--line)}
+
+  @media(max-width:760px){
+    .hre .re-line1{flex-wrap:wrap}.hre .re-collage{order:3;flex-basis:100%;height:90px}
+    .hbond .b-inner{font-size:clamp(1rem,4.4vw,1.4rem)}
+  }
+</style>
+</head>
+<body>
+<div id="cur"></div>
+
+<header class="top">
+  <div class="lbl">Intelligaia · Typography & Heroes</div>
+  <h1>Big, bold type — <span class="grad">the families, the specimen, the heroes.</span></h1>
+  <p>The core type families, a working specimen of weights, sizes and pairings, then the full set of hero treatments — all built with our own copy. Scroll, and move your cursor on the kinetic ones.</p>
+</header>
+
+<!-- ============ TYPE SYSTEM ============ -->
+<section class="fonts wrap">
+  <div class="lbl">Type system</div>
+  <h2 class="sec">Six families</h2>
+  <div class="fgrid">
+    <div class="fcard" style="font-family:'Anton'"><div class="cls">Display · Ultra-condensed</div><div class="nm" style="letter-spacing:.01em">AA BB CC</div><div class="wt"><b>Aa</b><i style="font-weight:400;font-family:'Anton'">Aa</i></div><p>Heavy condensed caps. Wall-of-type heroes and oversized statements.</p></div>
+    <div class="fcard" style="font-family:'Bodoni Moda'"><div class="cls">Serif · Didone</div><div class="nm">Aa Bb Cc</div><div class="wt"><b>Aa</b><i>Aa</i></div><p>Fashion-magazine contrast — elegant, dramatic at scale.</p></div>
+    <div class="fcard" style="font-family:'Fraunces'"><div class="cls">Serif · Editorial</div><div class="nm">Aa Bb Cc</div><div class="wt"><b>Aa</b><i>Aa</i></div><p>High-contrast variable serif, hair-light to black. Magazine / editorial.</p></div>
+    <div class="fcard" style="font-family:'Space Grotesk'"><div class="cls">Sans · Grotesque</div><div class="nm">Aa Bb Cc</div><div class="wt"><b>Aa</b><i>Aa</i></div><p>Techy modern grotesque. Tags, labels, product UI.</p></div>
+    <div class="fcard" style="font-family:'Schibsted Grotesk'"><div class="cls">Sans · Neo-grotesque</div><div class="nm">Aa Bb Cc</div><div class="wt"><b>Aa</b><i>Aa</i></div><p>Clean, neutral, legible — the workhorse for body and headlines.</p></div>
+    <div class="fcard" style="font-family:'Bricolage Grotesque'"><div class="cls">Display · Expressive</div><div class="nm">Aa Bb Cc</div><div class="wt"><b>Aa</b><i>Aa</i></div><p>Characterful variable grotesque for big, bold statements.</p></div>
+  </div>
+</section>
+
+<!-- ============ TYPE SPECIMEN ============ -->
+<section class="spec wrap">
+  <div class="lbl">Type specimen</div>
+  <h2 class="sec">Weights, sizes &amp; pairings</h2>
+  <p class="secnote">A working bench for the type — the ramp of weights, a size scale, a headline / body pairing, and a kinetic line to hover.</p>
+
+  <div class="spec-block">
+    <div class="sh">Weight ramp</div>
+    <div class="weights">
+      <span class="w3">Intelligence, thin</span>
+      <span class="w4">Intelligence, regular</span>
+      <span class="w7">Intelligence, bold</span>
+      <span class="w8">Intelligence, black</span>
+    </div>
+  </div>
+
+  <div class="spec-block">
+    <div class="sh">Size scale</div>
+    <div class="sizes">
+      <span class="z1">Aa</span><span class="z2">Aa</span><span class="z3">Aa</span><span class="z4">Aa</span><span class="z5">Aa</span>
+    </div>
+  </div>
+
+  <div class="spec-block">
+    <div class="sh">Headline / body pairing</div>
+    <div class="pairing">
+      <h3>Intelligence that feels human.</h3>
+      <p>A high-contrast editorial serif set against a clean neo-grotesque body. The serif carries the headline moment; the grotesque keeps long-form reading effortless. Together they set the voice for an agentic product that reads as one confident thing.</p>
+    </div>
+  </div>
+
+  <div class="spec-block">
+    <div class="sh">Kinetic line · hover</div>
+    <div class="kline" id="kline" data-mag>THINK <span class="o">BEFORE</span> RENDER</div>
+  </div>
+</section>
+
+<!-- ============ HERO DESIGNS ============ -->
+<section class="hero h1" data-mag>
+  <div class="tag">Hero 01 · <b>Kinetic</b> · cursor-parallax display</div>
+  <span class="glow" style="width:560px;height:560px;left:55%;top:30%;background:rgba(122,82,224,.22)"></span>
+  <div class="big" id="h1word">AUTONOMOUS<br><span class="o">ENTERPRISE</span></div>
+  <p class="sub">We engineer products that think before they render. Move your cursor.</p>
+</section>
+
+<section class="hero h2">
+  <div class="tag">Hero 02 · <b>Editorial</b> · serif line reveal</div>
+  <div class="ed">
+    <span class="lt"><i>Intelligence</i></span>
+    <span class="bk grad"><i>that feels</i></span>
+    <span class="lt"><i>human.</i></span>
+  </div>
+  <p class="sub">We design and build premium AI-agent native software.</p>
+  <a class="cta" href="#" data-mag>Start a conversation ↗</a>
+</section>
+
+<section class="hero hsten">
+  <div class="tag" style="color:#666">Hero 03 · <b style="color:#fff">Stencil display</b> · technical brackets</div>
+  <div class="langs"><b>EN</b> / UA</div>
+  <div class="stop" id="stenTop">[A1] AGENTS, WORKFLOWS, DECISIONS, AND</div>
+  <div class="scard">
+    <div class="sc-bar"><span>[JOT]</span><span>14</span></div>
+    <div class="sc-map"></div><div class="sc-blob"></div>
+  </div>
+  <div class="sbig" id="stenBig">SYSTEMS</div>
+  <span class="stick" style="left:6vw">A1</span>
+  <span class="stick" style="left:50%;transform:translateX(-50%)">A1</span>
+  <span class="stick" style="right:6vw">A1</span>
+</section>
+
+<section class="hero hre">
+  <div class="tag">Hero 04 · <b>Ultra-bold</b> · collage + sticky tags</div>
+  <div class="re-line1">
+    <span class="re-w">RE</span>
+    <div class="re-collage"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <span class="re-w" style="position:relative">THINK<span class="re-tag strat">STRATEGY</span></span>
+  </div>
+  <div class="re-line2" id="reLine2">EVERYTHING<span class="re-tag tech">TECHNOLOGY</span></div>
+  <div class="re-foot">
+    <p class="re-sub">We use agentic AI to build undeniably brilliant software for enterprises with taste.</p>
+    <a class="re-cta" href="#" data-mag>Let's build &nbsp;→</a>
+  </div>
+</section>
+
+<section class="hero hbond">
+  <div class="tag" style="color:#8a857f">Hero 05 · <b style="color:#fff">Giant serif</b> · text in the counter</div>
+  <div class="b-top">Working as</div>
+  <div class="b-word" id="bWord">one
+    <div class="b-inner">Humanizing AI for the enterprise.<br>Agentic since day one.<br>Design, engineering, autonomy.</div>
+  </div>
+  <div class="b-foot">global team.</div>
+</section>
+
+<section class="hero h6">
+  <div class="tag">Hero 06 · <b>Weight-stack</b> · scroll parallax</div>
+  <div class="st">
+    <span class="s1">We don't look</span>
+    <span class="s2 grad">at users.</span>
+    <span class="s3">we see through them.</span>
+  </div>
+</section>
+
+<!-- ============ HERO GALLERY — layout variations ============ -->
+<section class="hg wrap">
+  <div class="lbl">Hero gallery</div>
+  <h2 class="sec">Layout variations</h2>
+  <p class="secnote">The same voice in three landing layouts — centered, split and editorial — for when a full-bleed hero is too much.</p>
+  <div class="hg-grid">
+
+    <div class="hg-card hg-center reveal">
+      <span class="hg-tag">Variation A · centered</span>
+      <div>
+        <h3>One pattern language for enterprise AI.</h3>
+        <p>A calm, centered statement — the safe default when the message should carry the page on its own.</p>
+      </div>
+    </div>
+
+    <div class="hg-card hg-split reveal">
+      <span class="hg-tag">Variation B · split</span>
+      <div class="l">
+        <h3>Ship agents that behave the same everywhere.</h3>
+      </div>
+      <div class="r">
+        <span class="k">Why it works</span>
+        <p>Headline on the left, a supporting note or metric on the right — good for product and marketing pages that need a second beat.</p>
+      </div>
+    </div>
+
+    <div class="hg-card hg-ed reveal">
+      <span class="hg-tag">Variation C · editorial</span>
+      <h3>Intelligence that feels <b>human.</b></h3>
+      <div class="foot">A serif-led, bottom-anchored editorial layout — for essays, case studies and points of view.</div>
+    </div>
+
+  </div>
+</section>
+
+<footer>Reference a hero or layout by its number to apply it to a concept — e.g. "Hero 05 for the about block." All examples use our own copy.</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+var cx=innerWidth/2,cy=innerHeight/2,dx=cx,dy=cy,cur=document.getElementById('cur');
+addEventListener('mousemove',function(e){cx=e.clientX;cy=e.clientY;});
+gsap.ticker.add(function(){dx+=(cx-dx)*.18;dy+=(cy-dy)*.18;gsap.set(cur,{x:dx,y:dy});});
+
+// 01 cursor parallax + skew
+var h1=document.querySelector('.h1'),h1w=document.getElementById('h1word');
+h1.addEventListener('mousemove',function(e){var r=h1.getBoundingClientRect();var nx=(e.clientX-r.left)/r.width-.5,ny=(e.clientY-r.top)/r.height-.5;
+  gsap.to(h1w,{x:nx*60,y:ny*28,skewX:nx*-6,rotate:nx*2,duration:.6,ease:'power3.out'});});
+h1.addEventListener('mouseleave',function(){gsap.to(h1w,{x:0,y:0,skewX:0,rotate:0,duration:.8,ease:'power3.out'});});
+
+// 02 line reveal
+gsap.to('.h2 .ed i',{yPercent:0,ease:'power3.out',duration:1,stagger:.12,scrollTrigger:{trigger:'.h2',start:'top 70%'}});
+
+// 03 stencil — top line clears in, big word rises + slow parallax
+gsap.from('#stenTop',{autoAlpha:0,y:24,duration:.9,ease:'power3.out',scrollTrigger:{trigger:'.hsten',start:'top 70%'}});
+gsap.from('#stenBig',{autoAlpha:0,yPercent:30,duration:1.1,ease:'power3.out',scrollTrigger:{trigger:'.hsten',start:'top 60%'}});
+gsap.to('#stenBig',{xPercent:-4,ease:'none',scrollTrigger:{trigger:'.hsten',start:'top bottom',end:'bottom top',scrub:true}});
+
+// 04 collage scale, line + tags pop
+gsap.from('.hre .re-collage',{scaleX:0,transformOrigin:'left',duration:1,ease:'power3.out',scrollTrigger:{trigger:'.hre',start:'top 68%'}});
+gsap.from('.hre .re-w, .hre .re-line2',{yPercent:18,autoAlpha:0,duration:.9,stagger:.08,ease:'power3.out',scrollTrigger:{trigger:'.hre',start:'top 68%'}});
+gsap.from('.hre .re-tag',{scale:0,rotate:0,duration:.6,ease:'back.out(2)',stagger:.12,delay:.4,scrollTrigger:{trigger:'.hre',start:'top 60%'}});
+gsap.to('#reLine2',{xPercent:-3,ease:'none',scrollTrigger:{trigger:'.hre',start:'top bottom',end:'bottom top',scrub:true}});
+
+// 05 giant serif — word swells, inner copy fades up
+gsap.from('#bWord',{scale:.82,autoAlpha:0,duration:1.1,ease:'power3.out',scrollTrigger:{trigger:'.hbond',start:'top 65%'}});
+gsap.from('.hbond .b-inner',{autoAlpha:0,y:24,duration:1,delay:.35,ease:'power2.out',scrollTrigger:{trigger:'.hbond',start:'top 65%'}});
+gsap.from('.hbond .b-top, .hbond .b-foot',{autoAlpha:0,duration:1,delay:.5,scrollTrigger:{trigger:'.hbond',start:'top 65%'}});
+
+// 06 weight-stack parallax
+gsap.to('.h6 .s1',{xPercent:10,ease:'none',scrollTrigger:{trigger:'.h6',start:'top bottom',end:'bottom top',scrub:true}});
+gsap.to('.h6 .s2',{xPercent:-8,ease:'none',scrollTrigger:{trigger:'.h6',start:'top bottom',end:'bottom top',scrub:true}});
+gsap.to('.h6 .s3',{xPercent:16,ease:'none',scrollTrigger:{trigger:'.h6',start:'top bottom',end:'bottom top',scrub:true}});
+
+// specimen kinetic line
+var kl=document.getElementById('kline');
+if(kl){
+  kl.addEventListener('mousemove',function(e){var r=kl.getBoundingClientRect();var nx=(e.clientX-r.left)/r.width-.5,ny=(e.clientY-r.top)/r.height-.5;
+    gsap.to(kl,{x:nx*40,y:ny*18,skewX:nx*-5,duration:.6,ease:'power3.out'});});
+  kl.addEventListener('mouseleave',function(){gsap.to(kl,{x:0,y:0,skewX:0,duration:.8,ease:'power3.out'});});
+}
+
+// hero-gallery reveal
+gsap.utils.toArray('.hg-card').forEach(function(el){
+  gsap.from(el,{autoAlpha:0,y:26,duration:.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 82%'}});
+});
+
+// magnetic
+document.querySelectorAll('[data-mag], .cta, .re-cta').forEach(function(el){
+  el.addEventListener('mousemove',function(e){var r=el.getBoundingClientRect();gsap.to(el,{x:(e.clientX-r.left-r.width/2)*.22,y:(e.clientY-r.top-r.height/2)*.35,duration:.4});});
+  el.addEventListener('mouseleave',function(){gsap.to(el,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'});});
+});
+</script>
+</body>
+</html>

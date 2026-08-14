@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Docs — Nucleux</title>
+  <meta name="description" content="Nucleux documentation — installation, design tokens, components, code examples, API reference." />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+      <nav class="gnav__center" aria-label="Primary">
+        <a class="gnav__link" href="library.html">Library</a>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="sandbox.html">Sandbox</a>
+        <a class="gnav__link is-current" href="docs.html">Docs</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="library.html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Download SDK
+        </a>
+        <a class="gnav__cta" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="docs-page">
+
+    <section class="docs-hero">
+      <div class="container">
+        <h1 class="docs-hero__title">Docs.</h1>
+        <p class="docs-hero__lede">The Nucleux engineering surface — installation, design tokens, components, code examples, API reference. Coming with the first SDK release.</p>
+        <div class="docs-hero__cta">
+          <a class="btn btn--ghost" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Ask to be on the waitlist</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-outline">
+      <div class="container">
+        <div class="docs-outline__grid">
+          <article class="docs-card" data-tint="amber">
+            <div class="docs-card__num">01</div>
+            <h3 class="docs-card__name">Get started</h3>
+            <p class="docs-card__desc">Install with npm or pnpm, scaffold a Nucleux project, render the first pattern in under a minute.</p>
+          </article>
+          <article class="docs-card" data-tint="violet">
+            <div class="docs-card__num">02</div>
+            <h3 class="docs-card__name">Design tokens</h3>
+            <p class="docs-card__desc">Colour, type, spacing, shadow, motion — every visual decision exposed as a CSS variable and a Figma variable, bound 1:1.</p>
+          </article>
+          <article class="docs-card" data-tint="indigo">
+            <div class="docs-card__num">03</div>
+            <h3 class="docs-card__name">Components</h3>
+            <p class="docs-card__desc">React + headless primitives for every pattern in the library — composable, accessible, themeable, framework-agnostic.</p>
+          </article>
+          <article class="docs-card" data-tint="emerald">
+            <div class="docs-card__num">04</div>
+            <h3 class="docs-card__name">Examples</h3>
+            <p class="docs-card__desc">Runnable snippets you can drop in. One per pattern, plus longer scenarios that compose several patterns at once.</p>
+          </article>
+          <article class="docs-card" data-tint="rose">
+            <div class="docs-card__num">05</div>
+            <h3 class="docs-card__name">API reference</h3>
+            <p class="docs-card__desc">Every prop, slot, event, hook — typed in TypeScript, documented inline, with default values and edge-case notes.</p>
+          </article>
+          <article class="docs-card" data-tint="sky">
+            <div class="docs-card__num">06</div>
+            <h3 class="docs-card__name">Guides</h3>
+            <p class="docs-card__desc">How to theme, how to extend a pattern, how to bring your own LLM provider, how to ship with confidence.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot foot--simple">
+    <div class="container">
+      <div class="foot__bottom">
+        <span class="foot__meta">© 2026 Intelligaia · Nucleux Pattern Library</span>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="library.html">Library</a>
+          <a href="practices.html">Scenarios</a>
+          <a href="docs.html">Docs</a>
+          <a href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Contact ↗</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="patterns.js"></script>
+  <script src="global.js"></script>
+</body>
+</html>

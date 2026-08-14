@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prism — Product Blueprint · Information Architecture, Epics & Day 0 → Execution Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Trirong:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface:#FAFAF6;
+    --ink:#1A1916;
+    --yellow:#FFD923;
+    --gold:#C49A00;
+    --card:#F5F4EF;
+    --hairline:#E6E4DB;
+    --muted:#6B6A63;
+    --ink-soft:#3A392F;
+    --maxw:1040px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--surface);color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;font-size:15.5px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
+  h1,h2,h3{font-family:'Trirong',serif;font-weight:500;letter-spacing:-.01em;}
+  h1{font-size:40px;line-height:1.12;margin:0;}
+  h2{font-size:29px;line-height:1.18;margin:0 0 6px;}
+  h3{font-size:19px;line-height:1.25;margin:0 0 6px;font-weight:600;}
+  p{margin:0 0 14px;}
+  a{color:var(--ink);}
+  strong{font-weight:600;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:500;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 14px;
+  }
+  .accbar{width:90px;height:3px;background:var(--yellow);border:0;margin:0 0 26px;}
+  section{padding:64px 0;border-top:1px solid var(--hairline);}
+  section:first-of-type{border-top:0;}
+  .lead{font-size:18px;line-height:1.6;color:var(--ink-soft);font-family:'Trirong',serif;font-weight:300;}
+  .sub{color:var(--muted);font-size:14.5px;}
+
+  /* cover */
+  .cover{padding:96px 0 72px;text-align:center;border-top:0;position:relative;}
+  .cover .mark{display:inline-flex;align-items:center;gap:11px;margin-bottom:46px;}
+  .cover h1{font-size:60px;font-weight:400;}
+  .cover .tag{font-family:'Trirong',serif;font-style:italic;font-size:21px;color:var(--gold);margin-top:14px;}
+  .cover .docrole{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:30px;}
+  .cover-meta{display:flex;justify-content:center;gap:0;flex-wrap:wrap;margin-top:44px;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);}
+  .cover-meta div{padding:18px 26px;border-left:1px solid var(--hairline);text-align:left;}
+  .cover-meta div:first-child{border-left:0;}
+  .cover-meta .k{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .cover-meta .v{font-size:14px;font-weight:600;margin-top:3px;}
+
+  /* layout helpers */
+  .grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:48px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+  .quote-side{font-family:'Trirong',serif;font-style:italic;font-size:17px;line-height:1.5;color:var(--ink-soft);border-left:3px solid var(--yellow);padding-left:20px;}
+
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--hairline);border-top:3px solid var(--yellow);padding:22px;border-radius:2px;}
+  .card .badge{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;color:var(--gold);}
+  .card h3{margin-top:8px;}
+  .card p{font-size:13.5px;color:var(--ink-soft);margin:0;}
+
+  /* metric strip */
+  .metricstrip{display:grid;grid-template-columns:repeat(4,1fr);background:var(--ink);border-radius:3px;overflow:hidden;}
+  .metricstrip div{padding:26px 22px;border-left:1px solid #2A2A24;}
+  .metricstrip div:first-child{border-left:0;}
+  .metricstrip .m{font-family:'Trirong',serif;font-style:italic;font-size:36px;line-height:1;color:var(--yellow);}
+  .metricstrip .l{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#A8A89E;margin-top:10px;}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;}
+  th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;padding:12px 12px;border-bottom:2px solid var(--ink);}
+  td{padding:13px 12px;border-bottom:1px solid var(--hairline);vertical-align:top;}
+  tr:hover td{background:var(--card);}
+  td .mod{font-weight:600;}
+  td .mn{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12px;}
+
+  /* status chips */
+  .chip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .c-poc{background:var(--yellow);color:#1A1916;}
+  .c-p2{background:#E9E7DC;color:#3A392F;border:1px solid #D8D6CA;}
+  .c-p3{background:#F0EEE6;color:#6B6A63;border:1px solid var(--hairline);}
+  .c-vis{background:#fff;color:#6B6A63;border:1px dashed #C9C7BC;}
+  .c-out{background:#fff;color:#B0AEA4;border:1px solid var(--hairline);text-decoration:line-through;}
+
+  /* agent rows */
+  .arow{display:grid;grid-template-columns:42px 1fr;gap:18px;padding:20px 0;border-bottom:1px solid var(--hairline);}
+  .arow .ltr{font-family:'Trirong',serif;font-style:italic;font-size:26px;color:var(--gold);line-height:1;}
+  .arow h3{margin:0 0 4px;}
+  .arow .role{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .arow p{font-size:13.5px;color:var(--ink-soft);margin:0 0 6px;}
+  .io{font-size:12.5px;color:var(--muted);}
+  .io b{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);}
+
+  /* phase / flow */
+  .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:8px;}
+  .flow .step{padding:18px 16px;border-left:1px solid var(--hairline);position:relative;}
+  .flow .step:first-child{border-left:0;}
+  .flow .step .n{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.1em;}
+  .flow .step h3{font-size:15px;margin:8px 0 4px;}
+  .flow .step p{font-size:12.5px;color:var(--ink-soft);margin:0;}
+
+  ul.clean{list-style:none;padding:0;margin:0;}
+  ul.clean li{padding:9px 0 9px 22px;border-bottom:1px solid var(--hairline);position:relative;font-size:14px;color:var(--ink-soft);}
+  ul.clean li:before{content:"";position:absolute;left:0;top:17px;width:8px;height:2px;background:var(--yellow);}
+  ul.clean li b{color:var(--ink);}
+
+  .pill-dark{background:var(--ink);color:var(--surface);border-radius:4px;padding:30px 32px;}
+  .pill-dark h3{color:var(--surface);}
+  .pill-dark .q{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--surface);padding:11px 0;border-bottom:1px solid #2A2A24;display:flex;gap:14px;}
+  .pill-dark .q:last-child{border-bottom:0;}
+  .pill-dark .q span{color:var(--yellow);}
+
+  .two-col{column-count:2;column-gap:40px;}
+  .two-col p{margin-top:0;}
+
+  /* footer */
+  footer{border-top:1px solid var(--hairline);padding:28px 0 40px;margin-top:0;}
+  footer .frow{display:flex;justify-content:space-between;align-items:center;}
+  footer .fmark{display:flex;align-items:center;gap:9px;}
+  footer .fmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-size:12px;color:var(--muted);align-items:center;}
+  .legend span{display:inline-flex;gap:7px;align-items:center;}
+
+  /* blueprint-specific extensions (built only from locked tokens) */
+  .pageblock{border-top:1px solid var(--hairline);padding-top:34px;margin-top:34px;}
+  .pageblock:first-of-type{border-top:0;padding-top:0;margin-top:24px;}
+  .pagehead{display:flex;align-items:baseline;gap:14px;margin-bottom:4px;}
+  .pagehead .pid{font-family:'Trirong',serif;font-style:italic;font-size:30px;color:var(--gold);line-height:1;}
+  .epicline{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:6px 0 16px;}
+  .story{border-left:3px solid var(--yellow);background:var(--card);padding:16px 18px;border-radius:2px;margin-bottom:12px;}
+  .story .s{font-family:'Trirong',serif;font-style:italic;font-size:16px;color:var(--ink);line-height:1.45;margin:0 0 10px;}
+  .story .ac{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 6px;}
+  .story ul.clean li{font-size:13px;padding:6px 0 6px 22px;}
+  .story ul.clean li:last-child{border-bottom:0;}
+  .iatree ul.clean li b{font-family:'Inter',sans-serif;}
+  .feat{font-size:13px;color:var(--ink-soft);}
+  .feat .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);display:block;margin:0 0 5px;}
+
+  @media(max-width:820px){
+    .grid2,.grid3,.metricstrip,.flow,.grid4{grid-template-columns:1fr;}
+    .two-col{column-count:1;}
+    .cover h1{font-size:42px;}
+    table{font-size:12.5px;}
+    .wrap{padding:0 22px;}
+    .pagehead{flex-direction:column;gap:4px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<header class="cover">
+  <div class="wrap">
+    <div class="mark">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="1" y="1" width="32" height="32" rx="7" fill="#1A1916"/>
+        <path d="M10 24V10l14 14V10" fill="none" stroke="#FFD923" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-family:'Trirong',serif;font-size:24px;font-weight:500;letter-spacing:.01em;">Prism</span>
+    </div>
+    <p class="eyebrow" style="color:var(--gold)">Product Blueprint · v0.3</p>
+    <h1>Prism<br>Product Blueprint</h1>
+    <p class="tag">Information Architecture · Epics · Page-wise User Stories · Day 0 → Execution Plan</p>
+    <p class="docrole">One app · many cooperating agents · Companion to the SSOT — Internal Eng &amp; Design</p>
+    <div class="cover-meta">
+      <div><div class="k">Owner</div><div class="v">Yogesh Singh</div></div>
+      <div><div class="k">Product</div><div class="v">Prism (working name)</div></div>
+      <div><div class="k">Audience</div><div class="v">Eng &amp; Design</div></div>
+      <div><div class="k">Last updated</div><div class="v">18 Jun 2026</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 00 · ABOUT ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">00 · About this blueprint</p>
+    <hr class="accbar">
+    <div class="grid2">
+      <div>
+        <h2>From "what" to "how it's shaped"</h2>
+        <p class="lead">The SSOT answers <em>what Prism is</em> and <em>what we build first</em>. This blueprint answers <em>how the one app is organized</em> — the pages, the features on each page, the epics that group the work, the user stories that drive it, and the day-by-day plan to carry a new team from signup all the way to execution.</p>
+        <p>Where the SSOT is the binding record of scope and architecture, this is the working map for design and engineering. The two are a set: the SSOT's phase chips (<span class="chip c-poc">POC</span> / <span class="chip c-p2">Phase&nbsp;2</span> / <span class="chip c-p3">Phase&nbsp;3</span> / <span class="chip c-vis">Vision</span>), the nine-agent roster, and the consent model are carried forward here verbatim and never contradicted. If a scope decision changes, it changes in the SSOT first; this document then realigns.</p>
+        <p><strong>How to read it.</strong> Section 01 sets the growth thesis. Section 02 is the IA map — every Prism page with its feature list (one app, not a library). Section 03 is the epic table. Section 04 is the core: a per-page breakdown with purpose, epics, features, and user stories spanning Day 0 to execution analytics. Sections 05–06 detail onboarding and the Day 0 → Execution timeline (the dashboard "time machine"). Sections 07–09 cover insights &amp; execution analytics, roadmap alignment, and open questions.</p>
+        <p class="sub"><strong>v0.3 change.</strong> Reframed from "Nucleux — an agent-library platform" to <strong>Prism — one app: an intelligent meeting summarizer &amp; insight generator with multiple cooperating agents</strong>. Removed the platform Library Home / app-switcher / sibling-product framing. Refreshed the IA to a single-app page set with a broad capture surface (audio / screen-video / upload / link / calendar import) and a new <strong>Feature Tracking</strong> page. Added epics for Insight Generation, Feature Evolution &amp; Drift Tracking, Jira/Git Execution Sync, and Execution Analytics. Extended the Day 0→30 model to a <strong>Day 60+ / Execution</strong> horizon and added an execution-analytics section. Bumped to v0.3.</p>
+      </div>
+      <div class="quote-side">
+        “The product isn't the summary. It's the moment a feature you first heard about in a call ships in Jira — drift caught, decision tracked, the loop closed.”
+      </div>
+    </div>
+
+    <div class="pill-dark" style="margin-top:30px">
+      <h3>Framing — Prism is one app with many cooperating agents</h3>
+      <p style="color:var(--surface);font-size:13.5px;margin:8px 0 14px;max-width:840px"><strong>Prism</strong> is a whole package of <em>one app</em> — an intelligent meeting summarizer and insight generator — built from <strong>nine specialized agents working in combination</strong> (Orchestrator, Capture, Transcription, Summarizer, Insight, Action-item, Retrieval/Chat, Tracking/Drift, Integration). It is <strong>not</strong> a library of separate products. Prism captures meetings (record audio, capture screen/video, upload, paste a Drive/Zoom/Meet link, or import from Google Calendar), produces summaries, decisions, and action items, <strong>generates insights</strong>, and <strong>tracks how meeting insights and features evolve</strong> — detecting drift and exporting finalized user stories to Jira and Git with two-way status sync. This blueprint covers every page of that one app. <strong>“Prism” is a working name, subject to change.</strong></p>
+      <p style="color:var(--surface);font-size:13.5px;margin:0;max-width:840px"><strong>Product direction.</strong> Prism blends <strong>Otter</strong> (live transcript, speaker ID, AI summary, keywords, action items, powerful search, calendar, ask-your-meetings) <strong>and Loom</strong> (recording library of video cards, async shareable playback, view tracking, timestamped comments/reactions) — then goes further with insight generation, feature/drift tracking, and execution sync to Jira/Git.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 01 · PLG STRATEGY ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">01 · Product-led growth strategy</p>
+    <hr class="accbar">
+    <h2>The Prism PLG loop</h2>
+    <p class="lead" style="max-width:800px">Prism grows through the product, not through a sales motion. Anyone can sign up, upload or connect a meeting, and reach value in minutes. Value pulls in teammates; shared recordings (Loom-style) carry the app to new colleagues; more meetings make the intelligence — search, chat, insights, feature tracking — sharply better. The loop compounds, and once features start shipping to Jira/Git the app becomes part of the delivery workflow, not a side tool.</p>
+
+    <div class="flow" style="margin-top:22px;border:1px solid var(--hairline);border-radius:3px;overflow:hidden">
+      <div class="step"><div class="n">ACQUIRE</div><h3>Self-serve sign-up</h3><p>Public landing → workspace in under a minute. No demo gate, no sales call.</p></div>
+      <div class="step"><div class="n">ACTIVATE</div><h3>First summary fast</h3><p>Upload or connect → a structured, actionable summary in minutes. The aha-moment.</p></div>
+      <div class="step"><div class="n">RETAIN</div><h3>Habit forms</h3><p>Meetings flow in automatically; search &amp; chat make the past instantly useful.</p></div>
+      <div class="step"><div class="n">EXPAND</div><h3>Team &amp; execution</h3><p>Invites, shared projects, insights, and Jira/Git sync; usage-based plan grows.</p></div>
+      <div class="step"><div class="n">REFER</div><h3>Built-in virality</h3><p>Shared summaries and meeting links carry Prism to new colleagues.</p></div>
+    </div>
+
+    <div class="grid2" style="margin-top:36px">
+      <div>
+        <h3>The aha-moment</h3>
+        <p>Activation is not "watched a transcript scroll by." It is the <strong>first actionable summary</strong> — a user reads a clean summary card and sees correctly-extracted decisions and action items with owners, recognizes them as real, and does something with them (edits, exports, assigns, or shares). That is the instant the Meeting Summarizer earns the right to keep their meetings.</p>
+        <p>Everything in onboarding is engineered to reach this moment with the least possible friction: upload path first (no integration wait), a sample meeting available for instant gratification, and an activation checklist on the Day-0 dashboard that makes the next best action obvious.</p>
+        <h3 style="margin-top:24px">Activation metric</h3>
+        <ul class="clean">
+          <li><b>Primary (individual)</b> — first actionable summary reviewed within the first session.</li>
+          <li><b>Primary (team)</b> — ≥3 members active and ≥1 shared project within 14 days.</li>
+          <li><b>Leading signals</b> — time-to-first-summary, action-items accepted/edited, second meeting ingested, first search or chat query.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Expansion paths</h3>
+        <ul class="clean">
+          <li><b>Team adoption</b> — invites and shared projects move a single user to a workspace; seats and meeting volume drive the plan.</li>
+          <li><b>Agents platform</b> — enabling more agents (Insight, Retrieval/Chat, Integration) deepens value per seat and is the natural up-sell surface.</li>
+          <li><b>Live capture</b> — once a team connects calendars and the bot starts joining automatically, ingestion volume — and stickiness — steps up.</li>
+          <li><b>Integrations</b> — pushing action items to Jira makes Nucleux part of the delivery workflow, not a side tool.</li>
+        </ul>
+        <div class="pill-dark" style="margin-top:18px">
+          <h3>PLG nudges baked into the UI</h3>
+          <div class="q"><span>›</span> Day-0 activation checklist on the dashboard home.</div>
+          <div class="q"><span>›</span> "Invite the people who were in this meeting" after a summary.</div>
+          <div class="q"><span>›</span> Empty-state prompts that demo search &amp; chat with the user's own data.</div>
+          <div class="q"><span>›</span> Weekly insight digest that pulls users back in.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metricstrip" style="margin-top:34px">
+      <div><div class="m">&lt;1 min</div><div class="l">Sign-up → workspace</div></div>
+      <div><div class="m">Minutes</div><div class="l">Upload → first summary</div></div>
+      <div><div class="m">Day 1–7</div><div class="l">Connect · invite · first project</div></div>
+      <div><div class="m">Day 30</div><div class="l">Habit · search/chat · expand</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 · IA ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">02 · High-level information architecture</p>
+    <hr class="accbar">
+    <h2>The canonical page map — platform + agent</h2>
+    <p style="max-width:840px">The IA has two layers. The <strong>Nucleux platform</strong> layer (N-prefixed) is the library shell every agent shares — a Library Home that lists the agents and an app switcher to move between them. The <strong>Meeting Summarizer</strong> layer (P-prefixed) is this agent's own pages, plus its public PLG surfaces. The page names below match the prototype exactly.</p>
+
+    <h3 style="margin-top:30px">Nucleux platform (the library)</h3>
+    <div class="iatree" style="margin-top:12px">
+      <table>
+        <thead><tr><th style="width:26%">Surface</th><th>Features on the surface</th><th style="width:16%">Phase</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mod">N0 · Library Home <span class="mn">platform</span></td>
+            <td class="feat">Lists every agent as a card — <b>Meeting Summarizer</b> <span class="chip c-poc">Active</span>; <b>Research Synthesizer</b>, <b>Competitive Analyst</b>, <b>Design Brief Agent</b>, <b>Handoff Spec Writer</b>, <b>Insight Generator</b> <span class="chip c-vis">Preview</span> · "what this agent does" detail · open / request-access · workspace &amp; plan context.</td>
+            <td><span class="chip c-p2">Phase 2</span></td>
+          </tr>
+          <tr>
+            <td class="mod">N1 · App switcher <span class="mn">global</span></td>
+            <td class="feat">Persistent switcher in the top bar to jump between Nucleux agents · shows active &amp; preview agents · returns to Library Home · carries the shared identity/consent shell.</td>
+            <td><span class="chip c-p2">Phase 2</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:30px">Nucleux Meeting Summarizer (the agent app)</h3>
+    <div class="iatree" style="margin-top:12px">
+      <table>
+        <thead><tr><th style="width:26%">Page</th><th>Features on the page</th><th style="width:16%">Phase</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mod">P0 · PLG Landing &amp; Sign-up <span class="mn">entry</span></td>
+            <td class="feat">Value proposition &amp; product preview · self-serve sign-up (email / Google SSO) · "try a sample meeting" instant demo · pricing/plan teaser · social proof · footer &amp; legal.</td>
+            <td><span class="chip c-poc">POC</span></td>
+          </tr>
+          <tr>
+            <td class="mod">P1 · Onboarding</td>
+            <td class="feat">Create workspace → connect platforms (Meet/Zoom/Teams/WebEx + calendar, OAuth) → one-time consent → first capture (upload or schedule) · progress rail · skip-for-now paths.</td>
+            <td><span class="chip c-poc">POC</span></td>
+          </tr>
+          <tr>
+            <td class="mod">P2 · Dashboard <span class="mn">"time machine"</span></td>
+            <td class="feat">Day-evolution home (Day 0 / 1 / 5 / 10 / 30 views that fill with data over time) · setup checklist · KPI tiles (meetings, hours saved, action items) · recent &amp; upcoming meetings · quick-capture · nav shell + Search &amp; Ask entry · proactive briefings (later).</td>
+            <td><span class="chip c-poc">POC</span> Day 0–1 · <span class="chip c-p2">P2</span> full</td>
+          </tr>
+          <tr>
+            <td class="mod">P3 · Library <span class="mn">Loom-style</span></td>
+            <td class="feat">Recordings as video cards (thumbnail, duration, date, view count) + list view · filters by project / date / source (Meet·Zoom·Teams·WebEx·upload) / people · share &amp; bulk actions · new-capture button.</td>
+            <td><span class="chip c-poc">POC</span> cards · <span class="chip c-p2">P2</span> filters/share</td>
+          </tr>
+          <tr>
+            <td class="mod">P4 · Recording Detail</td>
+            <td class="feat">Video/audio <b>player</b> · tabs: <b>Summary</b> · <b>Transcript</b> (speakers, timestamps) · <b>Action items</b> (owners, due, decisions) · <b>Comments</b> (timestamped + reactions) · <b>Ask</b> (chat scoped to this recording) · right rail: outline/chapters, keywords, participants, <b>share link + view count</b> · export (PDF/DOCX/TXT).</td>
+            <td><span class="chip c-poc">POC</span> core · <span class="chip c-p2">P2</span> comments/ask/share</td>
+          </tr>
+          <tr>
+            <td class="mod">P5 · Search &amp; Ask</td>
+            <td class="feat">Agentic retrieval across all meetings · ⌘K command palette · natural-language ask with <b>cited</b>, deep-linked answers · jump-to-anything (decision, action item, person, moment) · scope filters · recent &amp; suggested queries.</td>
+            <td><span class="chip c-p2">Phase 2</span></td>
+          </tr>
+          <tr>
+            <td class="mod">P6 · Analytics &amp; Insights</td>
+            <td class="feat">Recurring-topic trend · decision-change diff timeline · meeting-health score · hours-saved · team-adoption funnel · insight cards · export. Richest at Day 30.</td>
+            <td><span class="chip c-p3">Phase 3</span></td>
+          </tr>
+          <tr>
+            <td class="mod">P7 · Settings</td>
+            <td class="feat">Integrations — Meet/Zoom/Teams/WebEx + Calendar, and Jira/Slack · consent/privacy (view/revoke, history) · team &amp; roles (invite, permissions) · plan/billing &amp; usage · data control (retention, export, delete) · profile.</td>
+            <td><span class="chip c-poc">POC</span> consent · <span class="chip c-p2">P2</span>+ rest</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2" style="margin-top:34px">
+      <div>
+        <h3>Navigation shape</h3>
+        <ul class="clean">
+          <li><b>Platform</b> — N0 Library Home lists agents; the N1 app switcher (top bar) hops between them and carries the shared consent/identity shell.</li>
+          <li><b>Unauthenticated</b> — P0 only; sign-up routes into P1 Onboarding.</li>
+          <li><b>Agent shell</b> — persistent left nav: Dashboard (P2), Library (P3), Search &amp; Ask (P5), Analytics (P6), Settings (P7); app switcher + Search in the top bar on every page.</li>
+          <li><b>Drill-down</b> — Library (P3) → a recording → Recording Detail (P4). Search &amp; Ask (P5) and the Ask tab deep-link straight to a transcript moment in P4.</li>
+          <li><b>Onboarding</b> — P1 is a focused, full-screen flow outside the shell; completing it lands the user on the Day-0 Dashboard (P2).</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Where the agents live</h3>
+        <p>Every page is backed by one or more internal agents from the SSOT roster. Their work surfaces across the agent app:</p>
+        <ul class="clean">
+          <li><b>P4 Recording Detail</b> — Transcription, Summarizer, Action-item, Retrieval/Chat.</li>
+          <li><b>P5 Search &amp; Ask</b> — Retrieval/Chat (RAG) + Orchestrator routing.</li>
+          <li><b>P6 Analytics</b> — Insight agent.</li>
+          <li><b>P1/P2</b> — Scheduler/Calendar &amp; Capture (on connect).</li>
+          <li><b>P7</b> — Integration agent (Jira, Slack, downstream).</li>
+          <li><b>N0/N1</b> — the platform shell that hosts this agent and its siblings.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 · EPICS OVERVIEW ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">03 · Epics overview</p>
+    <hr class="accbar">
+    <h2>Eleven epics, mapped to phase and pages</h2>
+    <p class="sub" style="max-width:740px">Epics group the work; pages are where it ships. Phase chips match the SSOT exactly. <strong>E8 (Recording Library &amp; Async Sharing)</strong> is new in v0.2, carrying the Loom-style direction.</p>
+    <table style="margin-top:22px">
+      <thead><tr><th style="width:8%">Epic</th><th style="width:24%">Name &amp; goal</th><th>What it delivers</th><th style="width:11%">Phase</th><th style="width:16%">Key pages</th></tr></thead>
+      <tbody>
+        <tr><td class="mn">E1</td><td class="mod">Onboarding &amp; Activation (PLG)</td><td>Self-serve sign-up to first actionable summary with minimum friction; setup checklist, the dashboard "time machine," and nudges.</td><td><span class="chip c-poc">POC</span></td><td class="mn">P0 · P1 · P2</td></tr>
+        <tr><td class="mn">E2</td><td class="mod">Consent &amp; Integrations</td><td>One-time consent, OAuth-scoped platform/calendar access, consent management &amp; revocation.</td><td><span class="chip c-poc">POC</span>/<span class="chip c-p2">P2</span></td><td class="mn">P1 · P7</td></tr>
+        <tr><td class="mn">E3</td><td class="mod">Ingestion (upload + live)</td><td>Upload path (desktop/Drive/link) then live bot capture across Meet/Zoom/Teams/WebEx, with a live transcript.</td><td><span class="chip c-poc">POC</span>/<span class="chip c-p2">P2</span></td><td class="mn">P1 · P2 · P4</td></tr>
+        <tr><td class="mn">E4</td><td class="mod">Transcription &amp; Summarization</td><td>Live + post-hoc speaker-attributed transcript, the structured summary card, and keywords/topics (Otter-style).</td><td><span class="chip c-poc">POC</span></td><td class="mn">P4</td></tr>
+        <tr><td class="mn">E5</td><td class="mod">Action Items, Decisions &amp; Export</td><td>Extract decisions/tasks with owners; edit; export to PDF/DOCX/TXT.</td><td><span class="chip c-poc">POC</span></td><td class="mn">P4</td></tr>
+        <tr><td class="mn">E6</td><td class="mod">Projects &amp; Organization</td><td>Projects, meeting assignment, chronological ordering, all-recordings views.</td><td><span class="chip c-p2">Phase 2</span></td><td class="mn">P3 · P4</td></tr>
+        <tr><td class="mn">E7</td><td class="mod">Search &amp; Ask (agentic RAG)</td><td>Global agentic retrieval and cited chat across the meeting corpus.</td><td><span class="chip c-p2">Phase 2</span></td><td class="mn">P5 · P4</td></tr>
+        <tr><td class="mn">E8</td><td class="mod">Recording Library &amp; Async Sharing <span class="mn">(Loom-style)</span></td><td>Library of video cards, share links, view tracking, and timestamped comments/reactions — the async loop.</td><td><span class="chip c-poc">POC</span>/<span class="chip c-p2">P2</span></td><td class="mn">P3 · P4</td></tr>
+        <tr><td class="mn">E9</td><td class="mod">Insights &amp; Analytics</td><td>Recurring topics, decision-change flags, meeting health, hours saved, adoption — richest at Day 30.</td><td><span class="chip c-p3">Phase 3</span></td><td class="mn">P6</td></tr>
+        <tr><td class="mn">E10</td><td class="mod">Agents Platform (Nucleux)</td><td>The library shell &amp; app switcher hosting this agent and its siblings; enable/request agents per workspace.</td><td><span class="chip c-p2">Phase 2</span></td><td class="mn">N0 · N1</td></tr>
+        <tr><td class="mn">E11</td><td class="mod">Admin, Settings &amp; Team</td><td>Team &amp; roles, plan/billing, integrations management (incl. Slack), data control.</td><td><span class="chip c-p2">Phase 2</span></td><td class="mn">P7</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 04 · PAGE-WISE BREAKDOWN ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">04 · Page-wise breakdown</p>
+    <hr class="accbar">
+    <h2>Every page — purpose, epics, features, and user stories</h2>
+    <p class="sub" style="max-width:760px">The core of the blueprint, aligned to the canonical page set. Roles used: <b>Visitor</b>, <b>New user</b>, <b>Workspace owner/admin</b>, <b>Team member</b>, <b>Project lead</b>. Each story carries acceptance criteria.</p>
+
+    <!-- N0 / N1 -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">N0</span><h2>Nucleux Library Home &amp; App Switcher</h2></div>
+      <p class="epicline">Epics: E10 Agents Platform · Phase: Phase 2</p>
+      <p><strong>Purpose.</strong> The platform front door inside the workspace. Nucleux is an agentic AI library; Library Home lists every agent and the app switcher (N1) hops between them. The Meeting Summarizer is one card here — the first that is <span class="chip c-poc" style="vertical-align:middle">Active</span> — alongside preview siblings.</p>
+      <p class="feat"><span class="lbl">Features</span>Agent cards: Meeting Summarizer (Active), Research Synthesizer, Competitive Analyst, Design Brief Agent, Handoff Spec Writer, Insight Generator (Preview) · "what this agent does" detail · open / request-access · persistent app switcher in the top bar · shared identity/consent shell.</p>
+
+      <div class="story">
+        <p class="s">As a workspace owner, I want to see all Nucleux agents and which are live, so that I understand the platform and can open the one I need.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Library Home lists each agent with a one-line description and an Active/Preview status.</li>
+          <li>The Meeting Summarizer is Active and opens its Dashboard; preview agents offer "request access," consistent with the SSOT roster.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a team member, I want an app switcher available everywhere, so that I can move between agents without losing my place.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>The switcher is in the top bar on every authenticated page and returns to Library Home.</li>
+          <li>Switching agents preserves the active workspace and consent context.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P0 -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P0</span><h2>PLG Landing &amp; Sign-up</h2></div>
+      <p class="epicline">Epics: E1 Onboarding &amp; Activation · Phase: POC</p>
+      <p><strong>Purpose.</strong> The PLG front door. Communicate the value of the Meeting Summarizer in seconds and convert a visitor into a workspace with zero gatekeeping — no demo request, no sales call.</p>
+      <p class="feat"><span class="lbl">Features</span>Hero value prop with product preview · "try a sample meeting" instant demo (no account) · self-serve sign-up via email or Google SSO · pricing/plan teaser · social proof &amp; security notes · footer + legal/privacy links.</p>
+
+      <div class="story">
+        <p class="s">As a visitor, I want to understand what the Meeting Summarizer does and see a real example in under 30 seconds, so that I can decide to try it without booking a demo.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Above-the-fold states the core value (capture → actionable summary) and shows a real summary preview.</li>
+          <li>A "try a sample meeting" action renders a finished summary with decisions/action items, no account required.</li>
+          <li>Primary CTA (Sign up) is visible without scrolling on desktop and mobile.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a visitor, I want to sign up with Google or email in one step, so that I reach the agent immediately.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Google SSO and email sign-up both available; SSO completes without a separate password step.</li>
+          <li>On success the user is routed straight into the onboarding wizard (P1), not a marketing page.</li>
+          <li>Errors (existing account, blocked popup) are handled with clear recovery.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a visitor evaluating for my team, I want to see how data is handled, so that I trust uploading a real meeting.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A concise "how your data is handled" section links to the consent and retention model.</li>
+          <li>States that recordings are owned by the user/org and are deletable.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P1 -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P1</span><h2>Onboarding</h2></div>
+      <p class="epicline">Epics: E1 Onboarding &amp; Activation · E2 Consent &amp; Integrations · E3 Ingestion · Phase: POC</p>
+      <p><strong>Purpose.</strong> Carry a new user from account to first value in four steps — workspace → connect platforms → one-time consent → first capture — minimizing friction at every gate. The upload path is offered first so value never waits on integration.</p>
+      <p class="feat"><span class="lbl">Features</span>Step 1 create workspace (name, optional team domain) · Step 2 connect meeting platforms via OAuth (Meet/Zoom/Teams/WebEx, calendar) · Step 3 one-time consent screen · Step 4 first capture (upload a file or schedule the bot) · progress rail · "skip for now" on connect/schedule.</p>
+
+      <div class="story">
+        <p class="s">As a new user, I want to create a workspace in one screen, so that I can start without configuring anything.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Workspace requires only a name; a sensible default is pre-filled from the user's email domain.</li>
+          <li>Team/domain capture is optional and clearly skippable.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a new user, I want to skip connecting a platform and just upload a recording, so that I get a summary today.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>The connect step has a prominent "skip for now — I'll upload" path.</li>
+          <li>Skipping connect still completes onboarding and lands the user on the Day-0 dashboard.</li>
+          <li>The upload step accepts desktop file, Google Drive, and a shared link.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a new user, I want to grant one clear consent rather than repeated prompts, so that I understand and trust what the Meeting Summarizer processes.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A single consent screen explains what is processed, why, and how to revoke; consent is recorded with timestamp and version.</li>
+          <li>Consent is required before any ingest; it is captured once, not per meeting.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a workspace owner, I want to connect my calendar and a meeting platform during onboarding, so that future meetings are captured automatically.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>OAuth flows for calendar and each platform are scoped to the minimum required permissions.</li>
+          <li>Connected state is reflected immediately and the Scheduler agent begins watching the calendar.</li>
+          <li>A failed/declined OAuth returns the user to the step with a retry, not a dead end.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P2</span><h2>Dashboard — the "time machine"</h2></div>
+      <p class="epicline">Epics: E1 Onboarding &amp; Activation · E3 Ingestion · E9 Insights · Phase: POC (Day 0–1), Phase 2 full</p>
+      <p><strong>Purpose.</strong> The landing surface after onboarding and the daily home. It is a <strong>day-evolution "time machine"</strong>: the same dashboard fills with data over time, presenting distinct Day 0 / 1 / 5 / 10 / 30 states. On Day 0 it is a guided welcome that drives activation; by Day 30 it is an insight engine with proactive briefings. (See Section 06 for the concrete day-by-day model.)</p>
+      <p class="feat"><span class="lbl">Features</span>Day-evolution states (Day 0 setup → Day 30 insights) · setup checklist (workspace, first capture, connect calendar, invite a teammate, expand) · KPI tiles (meetings, hours saved, action items open/done) · recent recordings · upcoming meetings (when calendar connected) · quick-capture button · proactive briefings (later) · app nav shell + Search &amp; Ask entry.</p>
+
+      <div class="story">
+        <p class="s">As a new user on Day 0, I want a guided welcome with a setup checklist showing my next best action, so that I reach value without exploring blindly.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>On an empty account the dashboard shows a welcome state, a setup checklist (e.g., 1/5 done — workspace created), and zeroed KPI tiles.</li>
+          <li>The checklist links each step to its destination and the primary nudge is "record or upload your first meeting."</li>
+          <li>Completing the first summary checks off automatically and the Day-1 state appears.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a returning user, I want the dashboard to reflect how far along I am, so that it stays relevant as my usage grows.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>KPI tiles (meetings captured, hours saved, action items open/done) update from real data as recordings accumulate.</li>
+          <li>The dashboard advances through Day 1 / 5 / 10 / 30 states — recent recordings, then upcoming meetings, then emerging topics, then rich insights — without the user reconfiguring anything.</li>
+          <li>Each recent recording deep-links to Recording Detail (P4).</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a user, I want to start a new capture from the dashboard, so that recording a meeting is never more than one click away.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A persistent quick-capture action opens upload or schedule.</li>
+          <li>Capture progress is visible on the dashboard until the summary is ready.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a user who reached my first summary, I want a contextual nudge for my next best action, so that I keep progressing toward team adoption.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Nudges are stage-aware: connect calendar (Day 1), invite a teammate (Day 5), weekly digest (Day 10), upgrade to Pro (Day 30).</li>
+          <li>Nudges are dismissible and never block other actions.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P3 Library -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P3</span><h2>Library — recordings</h2></div>
+      <p class="epicline">Epics: E8 Recording Library &amp; Async Sharing · E6 Projects &amp; Organization · Phase: POC (cards), Phase 2 (filters/share)</p>
+      <p><strong>Purpose.</strong> The Loom-style home for every recording. A gallery of video cards (and a list view) that makes a team's meetings browsable, filterable, organized into projects, and shareable — the durable record the agent builds over time.</p>
+      <p class="feat"><span class="lbl">Features</span>Recording cards (thumbnail, title, duration, date, source, view count) + list toggle · filters by project / date / source (Meet·Zoom·Teams·WebEx·upload) / people · projects (create/edit/archive, color tags) · chronological ordering within a project (Meeting #1, #2…) · meeting→project assignment (manual + auto-suggest) · share &amp; bulk actions · new-capture button.</p>
+
+      <div class="story">
+        <p class="s">As a team member, I want to browse my meetings as video cards and filter them, so that I can find a recording fast even weeks later.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Recordings display as cards (thumbnail, duration, date, source, view count) with a list-view toggle.</li>
+          <li>Filters by project, date, source, and people can be combined; results update live.</li>
+          <li>Each card deep-links to Recording Detail (P4).</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a project lead, I want to organize recordings into projects in chronological order, so that a project's progress over time is legible at a glance.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Create/edit/archive a project with a name and color tag; a recording can be assigned on capture or later, with auto-suggest from calendar/context.</li>
+          <li>Recordings show a per-project sequence (Meeting #1, #2…) and a clear timeline.</li>
+          <li>Archived projects are excluded by default but recoverable.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a user, I want to share a recording from the library, so that colleagues can watch async without my walking them through it.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A share action on a card produces a link with the appropriate access scope.</li>
+          <li>Shared recordings begin tracking views; the card reflects the view count.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P4 Recording Detail -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P4</span><h2>Recording Detail</h2></div>
+      <p class="epicline">Epics: E4 Transcription &amp; Summarization · E5 Action Items, Decisions &amp; Export · E7 Search &amp; Ask · E8 Async Sharing · Phase: POC core, Phase 2 comments/ask/share</p>
+      <p><strong>Purpose.</strong> The heart of the product. Everything the Meeting Summarizer produced for one meeting, in one place — a player with tabbed Summary / Transcript / Action items / Comments / Ask, and a right rail for outline, keywords, participants, and sharing — blending Otter-style intelligence with Loom-style async playback and discussion.</p>
+      <p class="feat"><span class="lbl">Features</span><b>Player</b> (video/audio) · tabs: <b>Summary</b> (context, key points, topics) · <b>Transcript</b> (speakers, timestamps) · <b>Action items</b> (owners, due hints, decisions, source spans, editable) · <b>Comments</b> (timestamped threads + emoji reactions) · <b>Ask</b> (chat scoped to this recording, cited) · right rail: <b>outline/chapters</b>, <b>keywords</b>, <b>participants</b>, <b>share link + view count</b> · export (PDF/DOCX/TXT).</p>
+
+      <div class="story">
+        <p class="s">As a user, I want a structured summary with keywords I can scan in under a minute, so that I grasp a meeting I missed.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>The Summary tab shows context, key points, and topics; the right rail lists auto-extracted keywords and chapters/outline.</li>
+          <li>Each summary point can expand to its source transcript span.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a project lead, I want decisions and action items with owners, editable before export, so that I can act without rewatching and the output is accurate.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>The Action items tab lists decisions and action items separately, each with owner and due hint where inferable, and links to the source transcript span.</li>
+          <li>Items and summary text are editable inline; edits persist and flow into export (PDF/DOCX/TXT).</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a team member, I want to leave timestamped comments and reactions on the recording, so that we can discuss it async without a meeting.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Comments are pinned to a moment in the player/transcript and support threaded replies and emoji reactions.</li>
+          <li>Clicking a comment seeks the player to that timestamp.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a team member, I want to ask the recording questions in the Ask tab, so that I can dig deeper without scrolling the transcript.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>The Ask tab answers from this recording's transcript with citations to timestamps; answers stream.</li>
+          <li>Clicking a citation seeks the player/transcript to that moment.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a user, I want to share the recording and see who viewed it, so that I know the message landed.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A share control in the right rail generates a scoped link; the rail shows a live view count and viewer list.</li>
+          <li>Shared viewers see the player with summary and transcript, gated by the link's access scope.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P5 Search & Ask -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P5</span><h2>Search &amp; Ask</h2></div>
+      <p class="epicline">Epics: E7 Search &amp; Ask (agentic RAG) · Phase: Phase 2</p>
+      <p><strong>Purpose.</strong> Agentic retrieval across every meeting — a command palette and natural-language ask that returns cited answers and jumps to anything: a decision, an action item, a person, a transcript moment.</p>
+      <p class="feat"><span class="lbl">Features</span>⌘K command palette · natural-language ask across meetings/decisions/action items/people · cited results with deep-links · recent &amp; suggested queries · scope filters (project, date, speaker) · "open in Ask" handoff to a recording's chat.</p>
+
+      <div class="story">
+        <p class="s">As a team member, I want to ask "what did we decide about pricing?" and get a cited answer, so that I don't reread three meetings.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Natural-language queries return an answer with citations to source meeting + timestamp span.</li>
+          <li>Clicking a citation opens Recording Detail (P4) at that transcript moment.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a user, I want a keyboard-first palette available everywhere, so that search is instant from any page.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>⌘K (Ctrl+K) opens the palette over any authenticated page.</li>
+          <li>Results group by type (recordings, decisions, action items, people) and are keyboard-navigable.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a project lead, I want to scope a search to one project and date range, so that results stay relevant.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Scope filters (project, date, speaker) can be applied without leaving the palette.</li>
+          <li>Active scope is visible and easily cleared.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P6 Analytics -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P6</span><h2>Analytics &amp; Insights</h2></div>
+      <p class="epicline">Epics: E9 Insights &amp; Analytics · Phase: Phase 3</p>
+      <p><strong>Purpose.</strong> Turn the accumulated meeting corpus into intelligence — richest at Day 30: what keeps coming up, what changed, whether the team is progressing or repeating, how much time was saved, and how adoption is growing.</p>
+      <p class="feat"><span class="lbl">Features</span>Recurring-topic trend · decision-change diff timeline · meeting-health score · hours-saved metric · team adoption funnel · insight cards · export to PDF.</p>
+
+      <div class="story">
+        <p class="s">As a project lead, I want to see recurring topics over time, so that I can spot what the team keeps circling back to.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A topic-frequency trend shows how often topics appear across a project's meetings.</li>
+          <li>Drilling a topic lists the meetings where it occurred.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a project lead, I want to be flagged when a decision changes, so that I'm never blindsided by a reversal.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A decision-change timeline shows when a prior decision was changed/reversed, with a side-by-side diff.</li>
+          <li>Each entry links to both source meetings.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a delivery lead, I want a progress-vs-repetition signal and a meeting-health score, so that I can tell whether meetings are moving things forward.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>A gauge contrasts new-ground vs repeated discussion; a health score summarizes a project's meeting hygiene.</li>
+          <li>Low scores surface an explanation (e.g., stale topics, no decisions).</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a workspace owner, I want a team adoption funnel, so that I can see who's activated and where to nudge.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>An adoption funnel shows invited → signed-up → first-summary → habitual.</li>
+          <li>Owner can act (re-invite, prompt) from the funnel.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P7 Settings -->
+    <div class="pageblock">
+      <div class="pagehead"><span class="pid">P7</span><h2>Settings</h2></div>
+      <p class="epicline">Epics: E2 Consent &amp; Integrations · E11 Admin, Settings &amp; Team · Phase: POC (consent), Phase 2+ (rest)</p>
+      <p><strong>Purpose.</strong> The control surface — integrations, consent/privacy, team and roles, plan, and data control. Where trust is maintained and the account grows.</p>
+      <p class="feat"><span class="lbl">Features</span>Integrations: Meet/Zoom/Teams/WebEx + Calendar, plus Jira &amp; Slack · consent/privacy (view/revoke, history) · team &amp; roles (invite, permissions) · plan/billing &amp; usage · data control (retention, export, delete) · profile &amp; security.</p>
+
+      <div class="story">
+        <p class="s">As a workspace owner, I want to view and revoke consent and connections, so that I stay in control of what the Meeting Summarizer can access.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Consent history is viewable with timestamps; consent and each OAuth connection can be revoked.</li>
+          <li>Revoking a connection stops the relevant agent (e.g., Scheduler/Capture) cleanly.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As an admin, I want to invite teammates and set roles, so that the right people have the right access.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Invite by email; assign roles (owner, admin, member) with documented permissions.</li>
+          <li>Pending invites and seat usage are visible.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As a workspace owner, I want to manage my plan and see usage, so that expansion is transparent and self-serve.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Current plan, seat count, and meeting/agent usage are shown; upgrades are self-serve.</li>
+          <li>Usage approaching a limit triggers an in-product notice, not a surprise.</li>
+        </ul>
+      </div>
+      <div class="story">
+        <p class="s">As an owner, I want to control retention and delete data, so that we meet our own compliance needs.</p>
+        <p class="ac">Acceptance criteria</p>
+        <ul class="clean">
+          <li>Retention period is configurable; recordings/transcripts can be exported and deleted.</li>
+          <li>Deletion is confirmed and removes derived artifacts (embeddings, summaries) too.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 05 · ONBOARDING & CONSENT FLOW ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">05 · Onboarding &amp; consent flow</p>
+    <hr class="accbar">
+    <h2>P1, step by step</h2>
+    <p style="max-width:780px">The wizard is engineered for the shortest credible path to the aha-moment. The upload path is always available so a user can reach a first summary even if they connect nothing.</p>
+
+    <div class="flow" style="margin-top:18px;border:1px solid var(--hairline);border-radius:3px;overflow:hidden">
+      <div class="step"><div class="n">STEP 1</div><h3>Create workspace</h3><p>Name only (pre-filled from email domain). Optional team domain. One screen.</p></div>
+      <div class="step"><div class="n">STEP 2</div><h3>Connect platforms</h3><p>OAuth to calendar + Meet/Zoom/Teams/WebEx. Scoped permissions. Skippable.</p></div>
+      <div class="step"><div class="n">STEP 3</div><h3>One-time consent</h3><p>Single, explicit consent to process meeting data. Recorded with version + timestamp.</p></div>
+      <div class="step"><div class="n">STEP 4</div><h3>First ingest</h3><p>Upload a file/Drive/link, or schedule the bot for an upcoming meeting.</p></div>
+      <div class="step"><div class="n">DONE</div><h3>Land on Day-0</h3><p>Dashboard with the activation checklist; first summary processing.</p></div>
+    </div>
+
+    <div class="grid2" style="margin-top:36px">
+      <div>
+        <h3>The one-time consent screen — requirements</h3>
+        <ul class="clean">
+          <li><b>Plain-language scope</b> — states that Nucleux processes meeting audio/video and transcripts to generate summaries, decisions, and action items.</li>
+          <li><b>Why &amp; who</b> — names the processing purpose and that recordings are owned by the user/org.</li>
+          <li><b>Live-capture transparency</b> — explains the bot joins as a visible attendee with join/leave states and permission prompts.</li>
+          <li><b>Control</b> — links to retention, export, and deletion controls and how to revoke (P7 Settings).</li>
+          <li><b>Record of consent</b> — captured once, stored with user, timestamp, and consent version; required before any ingest.</li>
+        </ul>
+        <p class="sub" style="margin-top:12px">Suggested copy: “Nucleux will process the meetings you upload or connect — including audio, video, and transcripts — to generate summaries, decisions, and action items. Your recordings belong to you and your organization. You can review, export, or delete them, and revoke access, anytime in Settings.”</p>
+      </div>
+      <div>
+        <h3>OAuth connection — requirements</h3>
+        <ul class="clean">
+          <li><b>Least privilege</b> — request only the calendar/platform scopes each agent needs (read events; join meetings the user owns/attends).</li>
+          <li><b>Per-platform</b> — Meet, Zoom, Teams, WebEx, and calendar are independent connections; any subset can be granted.</li>
+          <li><b>Graceful skip</b> — declining or skipping returns to the wizard with the upload path intact; never a dead end.</li>
+          <li><b>Immediate effect</b> — a successful connection starts the Scheduler agent watching that calendar.</li>
+        </ul>
+        <div class="pill-dark" style="margin-top:18px">
+          <h3>Agents engaged during onboarding</h3>
+          <div class="q"><span>›</span> Scheduler/Calendar — on calendar connect (Step 2).</div>
+          <div class="q"><span>›</span> Capture — when a live meeting is scheduled (Step 4).</div>
+          <div class="q"><span>›</span> Orchestrator → Transcription → Summarizer → Action-item — on first ingest.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 · DAY 0-30 ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">06 · Day 0 → Day 30 — the dashboard "time machine"</p>
+    <hr class="accbar">
+    <h2>From signup to insight engine in thirty days</h2>
+    <p style="max-width:840px">The Day 0→30 model is concrete and date-anchored to a signup of <strong>Monday 1 June 2026</strong>. It is the script the Dashboard (P2) "time machine" plays out: the same screen <em>fills with data over time</em>, moving through five milestone states — Day 0, 1, 5, 10, and 30 — each with a date, what the user does, what the dashboard shows, the agents involved, the activation signal, and the PLG nudge. This replaces the earlier coarse three-window plan.</p>
+
+    <table style="margin-top:22px">
+      <thead><tr><th style="width:11%">Milestone</th><th style="width:20%">What the user does</th><th>What the dashboard shows</th><th style="width:15%">Agents</th><th style="width:15%">Activation signal</th><th style="width:13%">PLG nudge</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mod">Day 0<br><span class="mn">Mon 1 Jun</span><br><span class="mn">Basic setup</span></td>
+          <td>Sign up, create workspace. Library empty.</td>
+          <td>Guided welcome + setup checklist <b>1/5</b> (workspace created). KPIs all zero. Empty library.</td>
+          <td class="mn">Orchestrator (idle)</td>
+          <td class="mn">Workspace created.</td>
+          <td class="mn">Record or upload your first meeting.</td>
+        </tr>
+        <tr>
+          <td class="mod">Day 1<br><span class="mn">Tue 2 Jun</span><br><span class="mn">Aha-moment</span></td>
+          <td>Upload/capture first meeting; first AI summary ready.</td>
+          <td>Setup <b>3/5</b>. KPIs: <b>1 meeting · ~0.8h saved · 3 open / 1 done</b> action items. First summary card front and centre.</td>
+          <td class="mn">Orchestrator, Transcription, Summarizer, Action-item</td>
+          <td class="mn">First actionable summary reviewed; ≥1 action item accepted/edited.</td>
+          <td class="mn">Connect your calendar so the bot auto-joins.</td>
+        </tr>
+        <tr>
+          <td class="mod">Day 5<br><span class="mn">Sat 6 Jun</span><br><span class="mn">Habit forming</span></td>
+          <td>Up to 5 recordings; calendar connected.</td>
+          <td>Setup <b>4/5</b>. KPIs: <b>5 meetings · ~4h saved · 9 open / 5 done</b>. Topics start to emerge; upcoming meetings shown.</td>
+          <td class="mn">+ Scheduler/Calendar, Capture</td>
+          <td class="mn">Calendar connected; 5th recording; recurring use.</td>
+          <td class="mn">Invite a teammate.</td>
+        </tr>
+        <tr>
+          <td class="mod">Day 10<br><span class="mn">Wed 11 Jun</span><br><span class="mn">Team forming</span></td>
+          <td>14 recordings; invites accepted; shared library.</td>
+          <td>Setup <b>complete 5/5</b>. <b>4 active members</b>, shared library, Loom-style view counts/shares appear. Insights begin — top recurring topics.</td>
+          <td class="mn">+ Retrieval/Chat, Insight (warming)</td>
+          <td class="mn">≥3 active members; ≥1 shared recording; first search/Ask query.</td>
+          <td class="mn">Weekly digest on; expand usage.</td>
+        </tr>
+        <tr>
+          <td class="mod">Day 30<br><span class="mn">Tue 1 Jul</span><br><span class="mn">Insight engine</span></td>
+          <td>42 recordings across projects; team using it daily.</td>
+          <td>Rich analytics: recurring-topic trend, decision-change flags, meeting-health score, <b>~63h saved</b>, adoption funnel. Proactive briefings on the dashboard.</td>
+          <td class="mn">Full roster + Integration (Jira/Slack)</td>
+          <td class="mn">Habitual weekly return; insights consumed; expansion intent.</td>
+          <td class="mn">Upgrade to Pro.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid3" style="margin-top:34px">
+      <div class="card">
+        <div class="badge">DAY 0 → 1</div>
+        <h3>Reach the aha</h3>
+        <p>Day 0 is a guided welcome over an empty library (checklist 1/5, KPIs at zero). Day 1 lands the first trustworthy summary and the dashboard wakes up — 1 meeting, ~0.8h saved, action items appear. Nudge: connect the calendar.</p>
+      </div>
+      <div class="card">
+        <div class="badge">DAY 5 → 10</div>
+        <h3>Make it a team thing</h3>
+        <p>By Day 5 the calendar is connected and the habit is forming (5 recordings, ~4h saved). By Day 10 setup is complete, four members share the library, and Loom-style view counts and the first recurring-topic insights surface. Nudges: invite a teammate; weekly digest.</p>
+      </div>
+      <div class="card">
+        <div class="badge">DAY 30</div>
+        <h3>Become the insight engine</h3>
+        <p>42 recordings across projects turn the dashboard into an analytics surface — topic trends, decision-change flags, a meeting-health score, ~63h saved, an adoption funnel, and proactive briefings. Nudge: upgrade to Pro.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:30px;max-width:840px"><strong>Why the "time machine" works.</strong> Because the Dashboard is the same page across all five states, the user never re-learns the product — it simply earns more surface as their corpus grows. We deliberately front-load individual value (Day 0–1 upload) before asking for integration (Day 5 calendar) or team commitment (Day 10 invites), because friction kills activation. By Day 30 the account has crossed both the individual bar (first actionable summary) and the team bar (≥3 active members, a shared library) — the thresholds that predict retention and expansion — and the hours-saved and insight surfaces make the Pro upgrade self-evident.</p>
+  </div>
+</section>
+
+<!-- ============ 07 · ANALYTICS LATER ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">07 · Analytics we unlock later</p>
+    <hr class="accbar">
+    <h2>What the corpus makes possible</h2>
+    <p style="max-width:800px">Once a team adopts and meetings accumulate, two analytics surfaces open up: <strong>team product analytics</strong> (for owners and leads, on P6 Analytics &amp; Insights, richest at Day 30) and the <strong>user-facing Insight agent outputs</strong> (woven into the Library, recordings, and the weekly digest). Both are powered by the Insight agent over the project corpus.</p>
+
+    <div class="grid2" style="margin-top:26px">
+      <div>
+        <h3>Charts &amp; signals</h3>
+        <ul class="clean">
+          <li><b>Topic-frequency trend</b> — a line/area chart of how often each topic appears across a project's meetings over time; reveals what the team keeps circling.</li>
+          <li><b>Decision-change diff timeline</b> — a timeline marking where a prior decision was changed or reversed, each node opening a side-by-side before/after diff with links to both meetings.</li>
+          <li><b>Progress-vs-repetition gauge</b> — a gauge contrasting new ground covered against repeated discussion, so a lead can see if meetings are advancing or stalling.</li>
+          <li><b>Meeting-health score</b> — a composite score per project (decisions made, action follow-through, repetition, attendance) with an explanation of what's dragging it down.</li>
+          <li><b>Adoption funnel</b> — invited → signed-up → first-summary → habitual, the product-analytics view of how a team is taking up Nucleux.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Team product analytics (for the org)</h3>
+        <ul class="clean">
+          <li><b>Meeting load</b> — volume and time spent in meetings per team/project.</li>
+          <li><b>Decision velocity</b> — decisions made per period, and how many later changed.</li>
+          <li><b>Recurring-topic trends</b> — which themes dominate and whether they're resolving.</li>
+          <li><b>Meeting health</b> — aggregate hygiene across projects.</li>
+          <li><b>Adoption funnel</b> — activation and habit across members.</li>
+        </ul>
+        <div class="pill-dark" style="margin-top:18px">
+          <h3>User-facing Insight outputs</h3>
+          <div class="q"><span>›</span> "Here's what changed since your last meeting on X."</div>
+          <div class="q"><span>›</span> "This topic has come up 5 times with no decision."</div>
+          <div class="q"><span>›</span> Weekly digest: decisions made, items still open, stale threads.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 · ROADMAP ALIGNMENT ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">08 · Roadmap alignment</p>
+    <hr class="accbar">
+    <h2>Epics &amp; pages mapped to the phases</h2>
+    <p class="sub" style="max-width:740px">The same phase system as the SSOT. This is the sequencing contract between this blueprint and the SSOT roadmap.</p>
+
+    <table style="margin-top:22px">
+      <thead><tr><th style="width:14%">Phase</th><th style="width:36%">Pages delivered</th><th>Epics</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="chip c-poc">Phase 1 · POC</span></td>
+          <td class="feat">P0 Landing/Sign-up · P1 Onboarding (upload path) · P2 Dashboard (Day 0–1 time machine) · P3 Library (cards) · P4 Recording Detail (summary, transcript, action items, keywords, export) · P7 (consent only).</td>
+          <td class="mn">E1, E2 (consent), E3 (upload), E4, E5, E8 (cards)</td>
+        </tr>
+        <tr>
+          <td><span class="chip c-p2">Phase 2 · Product</span></td>
+          <td class="feat">N0/N1 Library Home &amp; switcher · P1 (live connect) · P2 (full time machine) · P3 (filters/share/views) · P4 (comments, Ask, share) · P5 Search &amp; Ask · P7 (team, plan, integrations incl. Slack).</td>
+          <td class="mn">E2 (integrations), E3 (live capture), E6, E7, E8, E10, E11</td>
+        </tr>
+        <tr>
+          <td><span class="chip c-p3">Phase 3 · Intelligence</span></td>
+          <td class="feat">P6 Analytics &amp; Insights (Day 30) · P7 (Jira/Slack push) · Insight outputs woven into P2/P3/P4 and the weekly digest.</td>
+          <td class="mn">E9, E2/E11 (Jira)</td>
+        </tr>
+        <tr>
+          <td><span class="chip c-vis">Vision</span></td>
+          <td class="feat">Org knowledge graph across projects · more agents in the Nucleux library (extends N0) · user-story &amp; approval generation · proactive briefings.</td>
+          <td class="mn">extends E9, E10</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="metricstrip" style="margin-top:28px">
+      <div><div class="m">Phase 1</div><div class="l">P0 · P1 · P2 · P3 · P4 · consent</div></div>
+      <div><div class="m">Phase 2</div><div class="l">N0 · P5 · live · share · Ask</div></div>
+      <div><div class="m">Phase 3</div><div class="l">P6 insights · Jira/Slack</div></div>
+      <div><div class="m">Vision</div><div class="l">Graph · more agents</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 · OPEN QUESTIONS ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">09 · Open questions &amp; dependencies</p>
+    <hr class="accbar">
+    <h2>What blocks the next version of this blueprint</h2>
+    <p class="sub" style="max-width:740px">These gaps must close before page-level design and the Phase 1 build spec can finalize. Several mirror the SSOT's open decisions and are tracked there as the binding record.</p>
+    <table style="margin-top:20px">
+      <thead><tr><th style="width:8%">#</th><th>Open question / dependency</th><th style="width:18%">Area</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Naming &amp; brand — confirm the final agent name ("Meeting Summarizer" is the working name) vs. the Nucleux platform mark; placeholder mark used here and on the SSOT.</td><td><span class="mn">Brand</span></td></tr>
+        <tr><td>2</td><td>Obra design tokens to be pulled from Figma — colors, type, spacing, components — before page design starts.</td><td><span class="mn">Design</span></td></tr>
+        <tr><td>3</td><td>STT engine choice (Whisper, Deepgram, AssemblyAI, Google) and language scope — drives transcription quality on P4 Recording Detail.</td><td><span class="mn">Tech</span></td></tr>
+        <tr><td>4</td><td>LLM provider for summary/extraction/chat, plus any no-training / data-residency requirement.</td><td><span class="mn">Tech</span></td></tr>
+        <tr><td>5</td><td>Vector store &amp; search stack for P5 Search &amp; Ask and P6 Analytics (pgvector, dedicated vector DB, Typesense/Elasticsearch).</td><td><span class="mn">Tech</span></td></tr>
+        <tr><td>6</td><td>Jira instance/project for E2/E10 integration, and whether story generation is in scope for v1.</td><td><span class="mn">Integration</span></td></tr>
+        <tr><td>7</td><td>Pricing &amp; plan model — drives P0 teaser, P7 billing, and the usage-based expansion mechanics.</td><td><span class="mn">Product</span></td></tr>
+        <tr><td>8</td><td>Definition of "good summary" — format, length, must-have sections — to lock the Summarizer output schema.</td><td><span class="mn">Product</span></td></tr>
+        <tr><td>9</td><td>Activation metric thresholds — confirm the exact bars (time-to-first-summary, team size, return cadence).</td><td><span class="mn">Growth</span></td></tr>
+        <tr><td>10</td><td>Single- vs multi-tenant and hosting region — affects consent copy, data control on P7, and infra.</td><td><span class="mn">Infra</span></td></tr>
+        <tr><td>11</td><td>Whether agentic Search &amp; Ask / RAG chat (P5 and the P4 Ask tab) is pulled earlier — flagged in the SSOT as the core differentiator.</td><td><span class="mn">Scope</span></td></tr>
+        <tr><td>12</td><td>POC audience — internal Intelligaia only, or a named client — shapes the PLG onboarding emphasis.</td><td><span class="mn">Scope</span></td></tr>
+      </tbody>
+    </table>
+    <p class="sub" style="margin-top:16px">Resolved answers fold back into this blueprint and the SSOT together; the version on both covers bumps in step so the set stays consistent.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap frow">
+    <div class="fmark">
+      <svg width="22" height="22" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="1" y="1" width="32" height="32" rx="7" fill="#1A1916"/>
+        <path d="M10 24V10l14 14V10" fill="none" stroke="#FFD923" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-family:'Trirong',serif;font-size:15px">Nucleux</span>
+      <span class="fmeta" style="margin-left:8px">· an Intelligaia platform</span>
+    </div>
+    <div class="fmeta">Meeting Summarizer Blueprint v0.2 · 18 Jun 2026 · Confidential</div>
+  </div>
+</footer>
+
+</body>
+</html>

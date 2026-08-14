@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Nucleux — Big &amp; Bold</title>
+  <meta name="description" content="A bold, full-canvas concept for the Nucleux pattern language. By Intelligaia." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+  /* ============================================================
+     NUCLEUX — BIG & BOLD concept
+     Light paper · Apple-Intelligence glowing corners + rim
+     Simple centered hero (zoom-in) · text moments then cards.
+     Self-contained .bb-* namespace.
+     ============================================================ */
+  :root{
+    --bb-bg:#f6f5f2; --bb-ink:#0b0b0a; --bb-mid:#5d5d54; --bb-muted:#9a9a90;
+    --bb-line:rgba(11,11,10,.09);
+    --bb-a:#d97706; --bb-b:#e11d48; --bb-c:#7c3aed; --bb-d:#1e40af; --bb-e:#0891b2;
+  }
+  html{scroll-behavior:smooth}
+  body.bb-body{background:var(--bb-bg);color:var(--bb-ink);overflow-x:hidden}
+  .bb-body ::selection{background:var(--bb-ink);color:#fff}
+
+  /* ── Apple-Intelligence glow: pulsing corner blooms + edge rim ── */
+  .bb-glow{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bb-glow i{position:absolute;border-radius:50%;filter:blur(80px);will-change:transform,opacity}
+  .bb-glow .g1{top:-16vmin;left:-14vmin;width:60vmin;height:60vmin;background:radial-gradient(closest-side,rgba(217,119,6,.7),transparent 70%);animation:bbPulse 6.5s ease-in-out infinite}
+  .bb-glow .g2{top:-14vmin;right:-14vmin;width:58vmin;height:58vmin;background:radial-gradient(closest-side,rgba(124,58,237,.62),transparent 70%);animation:bbPulse 8s ease-in-out infinite .5s}
+  .bb-glow .g3{bottom:-18vmin;left:-12vmin;width:64vmin;height:64vmin;background:radial-gradient(closest-side,rgba(30,64,175,.55),transparent 70%);animation:bbPulse 9s ease-in-out infinite 1.1s}
+  .bb-glow .g4{bottom:-16vmin;right:-16vmin;width:60vmin;height:60vmin;background:radial-gradient(closest-side,rgba(225,29,72,.55),transparent 70%);animation:bbPulse 7.5s ease-in-out infinite .3s}
+  @keyframes bbPulse{0%,100%{transform:scale(1);opacity:.45}50%{transform:scale(1.4);opacity:.9}}
+  /* pulsing rim glow hugging the viewport edges */
+  .bb-rim{position:fixed;inset:0;z-index:1;pointer-events:none;animation:bbRim 7s ease-in-out infinite}
+  @keyframes bbRim{
+    0%,100%{box-shadow:inset 0 0 120px 10px rgba(217,119,6,.10),inset 0 0 240px 40px rgba(124,58,237,.06)}
+    50%{box-shadow:inset 0 0 190px 22px rgba(225,29,72,.14),inset 0 0 300px 60px rgba(30,64,175,.10)}
+  }
+  @media(prefers-reduced-motion:reduce){.bb-glow i,.bb-rim{animation:none}}
+
+  .bb-main{position:relative;z-index:2}
+  .bb-wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(20px,5vw,56px)}
+  .bb-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--bb-muted);display:inline-flex;align-items:center;gap:10px;justify-content:center}
+  .bb-eyebrow::before,.bb-eyebrow::after{content:"";width:26px;height:1px;background:var(--bb-muted)}
+
+  /* ============ HERO — simple, centered, nudged up, zoom-in ============ */
+  .bb-hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-block:6vh 14vh;position:relative}
+  .bb-zoom{opacity:0}
+  .bb-zoom.in{animation:bbZoom 1.05s cubic-bezier(.16,1,.3,1) both}
+  @keyframes bbZoom{from{opacity:0;transform:scale(.84)}to{opacity:1;transform:scale(1)}}
+  .bb-hero h1{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:clamp(46px,8.8vw,138px);line-height:.96;letter-spacing:-.04em;
+    margin:0 auto;max-width:16ch;
+  }
+  .bb-hero p{margin:clamp(24px,3vw,34px) auto 0;max-width:50ch;font-size:clamp(17px,1.5vw,22px);line-height:1.5;color:var(--bb-mid)}
+  .bb-cta-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:clamp(30px,3.6vw,42px)}
+  .bb-btn{display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 26px;border-radius:999px;font-size:15.5px;font-weight:600;border:1px solid transparent;transition:transform .2s cubic-bezier(.16,1,.3,1),background .2s,border-color .2s}
+  .bb-btn svg{width:16px;height:16px}
+  .bb-btn--solid{background:var(--bb-ink);color:#fff}
+  .bb-btn--solid:hover{transform:translateY(-2px)}
+  .bb-btn--ghost{background:transparent;color:var(--bb-ink);border-color:var(--bb-line)}
+  .bb-btn--ghost:hover{border-color:var(--bb-ink)}
+  .bb-btn:hover svg{transform:translateX(3px);transition:transform .2s}
+
+  .bb-scroll{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--bb-muted);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+  .bb-scroll svg{width:18px;height:18px;animation:bbBob 1.8s ease-in-out infinite}
+  @keyframes bbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+  /* ============ SECTION = centered text moment, then cards ============ */
+  .bb-sec{padding-block:clamp(70px,11vh,150px)}
+  .bb-head{text-align:center;max-width:1040px;margin:0 auto;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .bb-head h2{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:clamp(34px,5.6vw,88px);line-height:.98;letter-spacing:-.036em;
+    margin:18px auto 0;max-width:18ch;
+  }
+  .bb-head p{max-width:60ch;margin:22px auto 0;color:var(--bb-mid);font-size:clamp(16px,1.4vw,20px);line-height:1.55}
+
+  /* Cards grid */
+  .bb-cards{display:grid;gap:26px;margin-top:clamp(30px,5vh,66px);grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  .bb-cards--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bb-cards--4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  @media(max-width:1080px){.bb-cards--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:620px){.bb-cards,.bb-cards--2,.bb-cards--4{grid-template-columns:1fr}}
+
+  /* Card — cleaner: colored top accent, floating icon tile, soft colored hover glow */
+  .bbc{--accent:var(--bb-c);--glow:rgba(124,58,237,.3);
+    position:relative;background:#fff;border:1px solid var(--bb-line);border-radius:22px;padding:30px 28px;
+    box-shadow:0 16px 38px -24px rgba(11,11,10,.2);
+    display:flex;flex-direction:column;gap:14px;overflow:hidden;
+    transition:transform .45s cubic-bezier(.16,1,.3,1),box-shadow .45s}
+  .bbc::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent)}
+  .bbc:hover{transform:translateY(-12px);box-shadow:0 44px 76px -30px var(--glow)}
+  .bbc__ic{width:56px;height:56px;border-radius:16px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 14px 26px -10px var(--glow)}
+  .bbc__ic svg{width:26px;height:26px}
+  .bbc__title{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(21px,1.9vw,28px);line-height:1.06;letter-spacing:-.02em;margin-top:4px}
+  .bbc__desc{color:var(--bb-mid);font-size:14.5px;line-height:1.55}
+  .bbc__meta{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.02em;color:var(--bb-ink);border-top:1px solid var(--bb-line);padding-top:14px}
+  .bbc__subs{display:flex;flex-wrap:wrap;gap:7px}
+  .bbc__chip{font-size:12px;font-weight:600;color:var(--bb-mid);background:rgba(11,11,10,.04);border:1px solid var(--bb-line);border-radius:999px;padding:5px 11px}
+  .bbc__cta{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;color:var(--bb-ink);margin-top:2px}
+  .bbc__cta svg{width:14px;height:14px;transition:transform .2s}
+  .bbc:hover .bbc__cta svg{transform:translateX(3px)}
+
+  /* Playful staggered heights (desktop) */
+  @media(min-width:1081px){
+    .bb-cards--stagger .bbc:nth-child(2){margin-top:34px}
+    .bb-cards--stagger .bbc:nth-child(3){margin-top:14px}
+    .bb-cards--stagger .bbc:nth-child(4){margin-top:46px}
+  }
+
+  /* Reveal — rise + zoom for cards */
+  .bb-rev{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+  .bb-rev.in{opacity:1;transform:none}
+  .bbc.bb-rev{transform:translateY(38px) scale(.965)}
+  .bbc.bb-rev.in{transform:none}
+
+  /* ============ MAKERS ============ */
+  .bb-makers{text-align:center}
+  .bb-makers__photos{display:flex;justify-content:center;gap:18px;margin-top:clamp(28px,5vh,54px);flex-wrap:wrap}
+  .bb-makers__photo{width:190px;background:#fff;padding:8px 8px 0;border-radius:14px;box-shadow:0 24px 50px -24px rgba(11,11,10,.3);transform:rotate(var(--r,0))}
+  .bb-makers__photo img{width:100%;height:210px;object-fit:cover;object-position:50% 22%;border-radius:8px;display:block;background:var(--bb-line)}
+  .bb-makers__photo figcaption{font-family:'Bricolage Grotesque',sans-serif;font-style:italic;font-size:13px;color:var(--bb-mid);padding:9px 0 11px}
+  .bb-foot{border-top:1px solid var(--bb-line);margin-top:clamp(48px,8vh,90px);padding:26px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .bb-foot span,.bb-foot a{font-size:13px;color:var(--bb-mid)}
+  .bb-foot nav{display:flex;gap:20px;flex-wrap:wrap}
+  .bb-foot a:hover{color:var(--bb-ink)}
+
+  /* ============ TIMELINE SPINE ============ */
+  .bb-spine{position:fixed;top:50%;left:clamp(12px,1.8vw,26px);transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;align-items:flex-start}
+  .bb-spine__node{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--bb-muted);padding:5px 0}
+  .bb-spine__dot{position:relative;width:11px;height:11px;flex:none;display:grid;place-items:center}
+  .bb-spine__dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--bb-muted);opacity:.5;transition:all .3s cubic-bezier(.16,1,.3,1)}
+  .bb-spine__label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:0;transform:translateX(-4px);transition:opacity .25s,transform .25s;white-space:nowrap}
+  .bb-spine__node:hover .bb-spine__label{opacity:1;transform:none}
+  .bb-spine__arrow{width:11px;display:flex;justify-content:center;height:20px}
+  .bb-spine__arrow::before{content:"";width:1px;height:100%;background:var(--bb-line)}
+  .bb-spine__node.active{color:var(--bb-ink)}
+  .bb-spine__node.active .bb-spine__dot::before{opacity:1;background:var(--bb-c);width:11px;height:11px;box-shadow:0 0 0 4px rgba(124,58,237,.16)}
+  .bb-spine__node.active .bb-spine__label{opacity:1;transform:none;color:var(--bb-ink)}
+  .bb-spine__node.done .bb-spine__dot::before{opacity:.9;background:var(--bb-ink)}
+
+  .bb-prog{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--bb-a),var(--bb-b),var(--bb-c),var(--bb-d));z-index:70;transition:width .1s linear}
+
+  @media(max-width:960px){ .bb-spine{display:none} .bb-head{min-height:34vh} }
+  </style>
+</head>
+<body class="bb-body">
+
+  <div class="bb-glow" aria-hidden="true"><i class="g1"></i><i class="g2"></i><i class="g3"></i><i class="g4"></i></div>
+  <div class="bb-rim" aria-hidden="true"></div>
+  <div class="bb-prog" id="bbProg" aria-hidden="true"></div>
+
+  <!-- GLOBAL NAV -->
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+      <nav class="gnav__center" aria-label="Primary">
+        <a class="gnav__link" href="library.html">Library</a>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="sandbox.html">Sandbox</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="library.html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download SDK
+        </a>
+        <a class="gnav__cta" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- timeline spine -->
+  <nav class="bb-spine" id="bbSpine" aria-label="Section timeline">
+    <a class="bb-spine__node active" href="#s-hero"><span class="bb-spine__dot"></span><span class="bb-spine__label">Start</span></a>
+    <span class="bb-spine__arrow" aria-hidden="true"></span>
+    <a class="bb-spine__node" href="#s-framework"><span class="bb-spine__dot"></span><span class="bb-spine__label">Four moments</span></a>
+    <span class="bb-spine__arrow" aria-hidden="true"></span>
+    <a class="bb-spine__node" href="#s-cats"><span class="bb-spine__dot"></span><span class="bb-spine__label">Categories</span></a>
+    <span class="bb-spine__arrow" aria-hidden="true"></span>
+    <a class="bb-spine__node" href="#s-scenarios"><span class="bb-spine__dot"></span><span class="bb-spine__label">Scenarios</span></a>
+    <span class="bb-spine__arrow" aria-hidden="true"></span>
+    <a class="bb-spine__node" href="#s-labs"><span class="bb-spine__dot"></span><span class="bb-spine__label">Labs</span></a>
+    <span class="bb-spine__arrow" aria-hidden="true"></span>
+    <a class="bb-spine__node" href="#s-makers"><span class="bb-spine__dot"></span><span class="bb-spine__label">Makers</span></a>
+  </nav>
+
+  <main class="bb-main">
+
+    <!-- ===================== HERO ===================== -->
+    <section class="bb-hero bb-wrap" id="s-hero">
+      <div class="bb-zoom" id="bbHero">
+        <h1>One pattern language<br>for agentic AI.</h1>
+        <p>The shared library, discovery agent and sandbox, so your agent looks, behaves and scales consistently across every product you ship.</p>
+        <div class="bb-cta-row">
+          <a class="bb-btn bb-btn--solid" href="library.html">Open the library
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="bb-btn bb-btn--ghost" href="#s-framework">What's inside</a>
+        </div>
+      </div>
+      <div class="bb-scroll" aria-hidden="true">Scroll
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </section>
+
+    <!-- ===================== FRAMEWORK ===================== -->
+    <section class="bb-sec bb-wrap" id="s-framework">
+      <header class="bb-head bb-rev">
+        <div class="bb-eyebrow">The framework</div>
+        <h2>A pattern lives inside one of four moments in an AI experience.</h2>
+        <p>Each stage opens a different design conversation. The library is organised against this map, so the right pattern is always one click away.</p>
+      </header>
+
+      <div class="bb-cards bb-cards--4 bb-cards--stagger">
+        <article class="bbc bb-rev" style="--accent:var(--bb-a);--glow:rgba(217,119,6,.34)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="12.5"/><circle cx="11.5" cy="14" r="1.1" fill="currentColor" stroke="none"/><circle cx="20.5" cy="14" r="1.1" fill="currentColor" stroke="none"/><path d="M11 20c2.2 1.6 7.8 1.6 10 0"/></svg></span>
+          <h3 class="bbc__title">Onboarding</h3>
+          <p class="bbc__desc">Orientation before real use. Disclosure, identity, and what the system can actually do.</p>
+          <div class="bbc__meta">3 categories · 12 patterns</div>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-c);--glow:rgba(124,58,237,.34)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="2" fill="currentColor" stroke="none"/><path d="M9 16h17"/><path d="M20 10l6 6-6 6"/></svg></span>
+          <h3 class="bbc__title">Initially</h3>
+          <p class="bbc__desc">First touch, first prompt. The moment the user actually engages, before they trust it.</p>
+          <div class="bbc__meta">4 categories · 24 patterns</div>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-d);--glow:rgba(30,64,175,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="6"/><circle cx="21" cy="19" r="6"/><path d="M14.5 16.5l3-2"/></svg></span>
+          <h3 class="bbc__title">During interaction</h3>
+          <p class="bbc__desc">Active use and recovery. Output, processing, refinement, and what happens when it slips.</p>
+          <div class="bbc__meta">6 categories · 37 patterns</div>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-b);--glow:rgba(225,29,72,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="12"/><path d="M16 9v7l4.5 3"/><path d="M26 13a11 11 0 0 0-3-4"/></svg></span>
+          <h3 class="bbc__title">Over time</h3>
+          <p class="bbc__desc">The long-term relationship. What the system remembers, what changes, what stays.</p>
+          <div class="bbc__meta">4 categories · 11 patterns</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== CATEGORIES ===================== -->
+    <section class="bb-sec bb-wrap" id="s-cats">
+      <header class="bb-head bb-rev">
+        <div class="bb-eyebrow">Categories</div>
+        <h2>Every stage opens onto a tighter set of design problems.</h2>
+        <p>Inside each stage, patterns cluster around a handful of recurring conversations the team should have together. What the AI is, how the user enters, how the system responds, what changes over time.</p>
+      </header>
+
+      <div class="bb-cards bb-cards--2">
+        <article class="bbc bb-rev" style="--accent:var(--bb-a);--glow:rgba(217,119,6,.34)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="12.5"/><circle cx="11.5" cy="14" r="1.1" fill="currentColor" stroke="none"/><circle cx="20.5" cy="14" r="1.1" fill="currentColor" stroke="none"/><path d="M11 20c2.2 1.6 7.8 1.6 10 0"/></svg></span>
+          <h3 class="bbc__title">What the AI is, and what it can do.</h3>
+          <p class="bbc__desc">Orientation before real use. Get this right and trust compounds across every later phase.</p>
+          <div class="bbc__subs"><span class="bbc__chip">Trust &amp; disclosure</span><span class="bbc__chip">Identity</span><span class="bbc__chip">Capability discovery</span></div>
+          <a class="bbc__cta" href="library.html#stage-onboarding">Browse 12 patterns <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-c);--glow:rgba(124,58,237,.34)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="2" fill="currentColor" stroke="none"/><path d="M9 16h17"/><path d="M20 10l6 6-6 6"/></svg></span>
+          <h3 class="bbc__title">Making the first attempt succeed.</h3>
+          <p class="bbc__desc">First touch, first prompt. Pick an entry point, give context, land the first ask.</p>
+          <div class="bbc__subs"><span class="bbc__chip">Entry points</span><span class="bbc__chip">Expressive input</span><span class="bbc__chip">Prompt scaffolds</span><span class="bbc__chip">Context expansion</span></div>
+          <a class="bbc__cta" href="library.html#stage-initially">Browse 24 patterns <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-d);--glow:rgba(30,64,175,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="6"/><circle cx="21" cy="19" r="6"/><path d="M14.5 16.5l3-2"/></svg></span>
+          <h3 class="bbc__title">Where adoption is won or lost.</h3>
+          <p class="bbc__desc">Output, collaboration, refinement, error recovery, power controls. Most patterns live here.</p>
+          <div class="bbc__subs"><span class="bbc__chip">Output &amp; processing</span><span class="bbc__chip">Collaboration canvas</span><span class="bbc__chip">Refinement</span><span class="bbc__chip">Explainability</span><span class="bbc__chip">Recovery</span><span class="bbc__chip">Power controls</span></div>
+          <a class="bbc__cta" href="library.html#stage-during">Browse 37 patterns <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-b);--glow:rgba(225,29,72,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="12"/><path d="M16 9v7l4.5 3"/><path d="M26 13a11 11 0 0 0-3-4"/></svg></span>
+          <h3 class="bbc__title">Whether trust survives month two.</h3>
+          <p class="bbc__desc">The long-term relationship. What the system remembers, what changes, what stays.</p>
+          <div class="bbc__subs"><span class="bbc__chip">Memory &amp; continuity</span><span class="bbc__chip">Privacy &amp; control</span><span class="bbc__chip">Adaptation</span><span class="bbc__chip">Change management</span></div>
+          <a class="bbc__cta" href="library.html#stage-overtime">Browse 11 patterns <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== SCENARIOS ===================== -->
+    <section class="bb-sec bb-wrap" id="s-scenarios">
+      <header class="bb-head bb-rev">
+        <div class="bb-eyebrow">Scenarios</div>
+        <h2>Adapted to every agentic product.</h2>
+        <p>Real product moments. Each one composes a different mix of patterns from the four stages.</p>
+      </header>
+
+      <div class="bb-cards bb-cards--4">
+        <article class="bbc bb-rev" style="--accent:var(--bb-e);--glow:rgba(8,145,178,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M17 15l2 2 4-4"/></svg></span>
+          <h3 class="bbc__title">Meeting summariser</h3>
+          <p class="bbc__desc">Hour-long meeting into a verified five-bullet recap with action items.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-a);--glow:rgba(217,119,6,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l5-5 3 3 7-9"/><path d="M14 8h5v5"/></svg></span>
+          <h3 class="bbc__title">Sales discovery copilot</h3>
+          <p class="bbc__desc">Live-call sidecar that drafts a structured account brief inside the CRM.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-e);--glow:rgba(8,145,178,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4z"/><circle cx="9" cy="11" r="0.9" fill="currentColor"/><circle cx="12" cy="11" r="0.9" fill="currentColor"/><circle cx="15" cy="11" r="0.9" fill="currentColor"/></svg></span>
+          <h3 class="bbc__title">Customer support triage</h3>
+          <p class="bbc__desc">Agent-assist sidecar that drafts replies and flags hand-off moments.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-d);--glow:rgba(30,64,175,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17l-5-5 5-5M16 7l5 5-5 5M14 4l-4 16"/></svg></span>
+          <h3 class="bbc__title">Code review copilot</h3>
+          <p class="bbc__desc">A reviewer that explains why each suggestion, line by line.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-e);--glow:rgba(8,145,178,.32)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <h3 class="bbc__title">Compliance reviewer</h3>
+          <p class="bbc__desc">Second pair of eyes for policy docs. Every claim traced to its rule.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-c);--glow:rgba(124,58,237,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M17 6h4M19 4v4"/></svg></span>
+          <h3 class="bbc__title">Onboarding companion</h3>
+          <p class="bbc__desc">A first-30-days assistant for new hires. Patient and citation-led.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-b);--glow:rgba(225,29,72,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-5 3 10 2-7 2 4 1-2h5"/></svg></span>
+          <h3 class="bbc__title">Clinical note assistant</h3>
+          <p class="bbc__desc">Encounter into a verified structured note, traceable to a chart line.</p>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-d);--glow:rgba(30,64,175,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M5 5l2 2M19 5l-2 2"/></svg></span>
+          <h3 class="bbc__title">Threat narrative</h3>
+          <p class="bbc__desc">SOC copilot that turns noisy alert clusters into a single story.</p>
+        </article>
+      </div>
+      <div class="bb-cta-row" style="margin-top:clamp(28px,5vh,48px)">
+        <a class="bb-btn bb-btn--ghost" href="practices.html">See all scenarios
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </section>
+
+    <!-- ===================== LABS ===================== -->
+    <section class="bb-sec bb-wrap" id="s-labs">
+      <header class="bb-head bb-rev">
+        <div class="bb-eyebrow">Labs</div>
+        <h2>The motion and type behind the patterns.</h2>
+        <p>Nucleux is more than components. It's the interaction feel, the type system and the landing moves that make an agentic product read as one thing.</p>
+      </header>
+
+      <div class="bb-cards bb-cards--stagger">
+        <article class="bbc bb-rev" style="--accent:var(--bb-a);--glow:rgba(217,119,6,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.5 18 2.3-7.2L20 11.5 3 3z"/></svg></span>
+          <h3 class="bbc__title">Interaction Lab · BOLD</h3>
+          <p class="bbc__desc">Bold, scroll-driven landing interactions. Magnetic actions, reveals and motion.</p>
+          <a class="bbc__cta" href="labs.html#01">Open lab <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-c);--glow:rgba(124,58,237,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6V4h14v2M12 4v16M8 20h8"/></svg></span>
+          <h3 class="bbc__title">Typography &amp; Heroes</h3>
+          <p class="bbc__desc">Type families, a working specimen, hero treatments and layout variations.</p>
+          <a class="bbc__cta" href="labs.html#02">Open lab <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="bbc bb-rev" style="--accent:var(--bb-d);--glow:rgba(30,64,175,.3)">
+          <span class="bbc__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></span>
+          <h3 class="bbc__title">Day Cycle</h3>
+          <p class="bbc__desc">Ambient time-of-day theming that follows the user's clock.</p>
+          <a class="bbc__cta" href="labs.html#03">Open lab <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+      </div>
+      <div class="bb-cta-row" style="margin-top:clamp(28px,5vh,48px)">
+        <a class="bb-btn bb-btn--solid" href="labs.html">Open the Labs
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </section>
+
+    <!-- ===================== MAKERS ===================== -->
+    <section class="bb-sec bb-wrap bb-makers" id="s-makers">
+      <header class="bb-head bb-rev">
+        <div class="bb-eyebrow">The makers</div>
+        <h2>Built by people who design agentic products.</h2>
+        <p>Intelligaia is a research-driven product design studio working with enterprise teams on AI-native software. Nucleux is a public artefact of that practice, open to use and free to adapt.</p>
+      </header>
+      <div class="bb-makers__photos bb-rev">
+        <figure class="bb-makers__photo" style="--r:-4deg"><img src="team-1.jpg" alt="" loading="lazy" width="480" height="563" /><figcaption>designer</figcaption></figure>
+        <figure class="bb-makers__photo" style="--r:2deg"><img src="team-2.jpg" alt="" loading="lazy" width="480" height="563" /><figcaption>engineer</figcaption></figure>
+        <figure class="bb-makers__photo" style="--r:-2deg"><img src="team-3.jpg" alt="" loading="lazy" width="480" height="563" /><figcaption>researcher</figcaption></figure>
+      </div>
+      <div class="bb-cta-row" style="margin-top:clamp(28px,5vh,48px)">
+        <a class="bb-btn bb-btn--solid" href="library.html">Open the library
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="bb-btn bb-btn--ghost" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Talk to Intelligaia</a>
+      </div>
+      <div class="bb-foot">
+        <span>© 2026 Intelligaia · AI UX Pattern Library</span>
+        <nav>
+          <a href="library.html">Library</a>
+          <a href="https://www.intelligaia.com/" target="_blank" rel="noopener">intelligaia.com ↗</a>
+          <a href="https://www.intelligaia.com/blog" target="_blank" rel="noopener">Insights ↗</a>
+          <a href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Contact ↗</a>
+        </nav>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="global.js"></script>
+  <script>
+  (function(){
+    // Reveal cards/headings (stagger within a grid), once
+    var revs = [].slice.call(document.querySelectorAll(".bb-rev"));
+    if("IntersectionObserver" in window){
+      var ro = new IntersectionObserver(function(es){
+        es.forEach(function(e){ if(e.isIntersecting){
+          var sibs = [].slice.call(e.target.parentNode.children).filter(function(c){return c.classList.contains("bb-rev");});
+          e.target.style.transitionDelay = (Math.max(0,sibs.indexOf(e.target))*70) + "ms";
+          e.target.classList.add("in"); ro.unobserve(e.target);
+        }});
+      }, { rootMargin:"-8% 0px -10% 0px", threshold:.08 });
+      revs.forEach(function(el){ ro.observe(el); });
+    } else { revs.forEach(function(el){ el.classList.add("in"); }); }
+
+    // Hero zoom — replays every time it scrolls back into view
+    var hero = document.getElementById("bbHero");
+    if(hero){
+      if("IntersectionObserver" in window){
+        var ho = new IntersectionObserver(function(es){
+          es.forEach(function(e){
+            if(e.isIntersecting){ hero.classList.remove("in"); void hero.offsetWidth; hero.classList.add("in"); }
+            else { hero.classList.remove("in"); }
+          });
+        }, { threshold:.35 });
+        ho.observe(hero);
+      } else { hero.classList.add("in"); }
+    }
+
+    // Spine active-state
+    var nodes = [].slice.call(document.querySelectorAll(".bb-spine__node"));
+    var targets = nodes.map(function(n){ return document.getElementById(n.getAttribute("href").slice(1)); });
+    if("IntersectionObserver" in window){
+      var so = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(e.isIntersecting){
+            var idx = targets.indexOf(e.target); if(idx<0) return;
+            nodes.forEach(function(n,i){ n.classList.toggle("active", i===idx); n.classList.toggle("done", i<idx); });
+          }
+        });
+      }, { rootMargin:"-45% 0px -45% 0px", threshold:0 });
+      targets.forEach(function(t){ if(t) so.observe(t); });
+    }
+
+    // Progress bar
+    var prog = document.getElementById("bbProg");
+    function onScroll(){
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      prog.style.width = ((max>0 ? (h.scrollTop||document.body.scrollTop)/max : 0)*100).toFixed(2) + "%";
+    }
+    addEventListener("scroll", onScroll, { passive:true }); onScroll();
+  })();
+  </script>
+</body>
+</html>

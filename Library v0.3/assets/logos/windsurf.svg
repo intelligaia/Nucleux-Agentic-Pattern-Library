@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <!-- Windsurf (Codeium) logo: three arc/wave strokes in teal-blue -->
+  <path d="M3 7.5 Q8 4 13 7.5 Q18 11 22 8" stroke="#0EA5E9" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <path d="M3 12 Q8 8.5 13 12 Q18 15.5 22 12.5" stroke="#0EA5E9" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.75"/>
+  <path d="M3 16.5 Q8 13 13 16.5 Q18 20 22 17" stroke="#0EA5E9" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>

@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Scenarios — Nucleux</title>
+  <meta name="description" content="Real product moments that compose Nucleux patterns — meeting summarisers, sales discovery copilots, compliance reviewers, code-review agents, and more." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Noto+Sans+Devanagari:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item gnav__item--has-flyout">
+          <a class="gnav__link" href="#components">Components</a>
+          <div class="gnav__flyout" role="menu" aria-label="Components">
+            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Basic Components</span>
+              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
+            </a>
+            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Agentic Components</span>
+              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
+            </a>
+          </div>
+        </div>
+        <a class="gnav__link is-current" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-page">
+
+    <!-- Shape your product idea — featured product carousel -->
+    <section class="shape" data-shape>
+      <div class="container">
+        <div class="shape__head">
+          <span class="shape__eyebrow">Built with Nucleux</span>
+          <h1 class="shape__title">Shape your <em>product idea</em> into something people trust.</h1>
+          <p class="shape__lede">The same patterns in this library, shipped in real products — an enterprise AI gateway and a private AI workspace.</p>
+        </div>
+
+        <div class="shape__carousel">
+          <button class="shape__arrow shape__arrow--prev" data-shape-prev aria-label="Previous product">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="shape__arrow shape__arrow--next" data-shape-next aria-label="Next product">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+
+          <div class="shape__viewport">
+            <div class="shape__track" data-shape-track>
+
+              <!-- Yantra -->
+              <article class="shape__slide" data-shape-slide>
+                <div class="shape__copy">
+                  <div class="shape__brand shape__brand--yantra">
+                    <img class="shape__brand-logo" src="Yantra logo.svg" alt="Yantra" width="120" height="58" />
+                    <span class="shape__brand-by">by <em>intelligaia</em></span>
+                  </div>
+                  <h2 class="shape__product">The enterprise AI gateway</h2>
+                  <p class="shape__desc">One controlled door to every model your teams use — with tokens, budgets, and usage visible to the people accountable for them.</p>
+                  <ul class="shape__bullets">
+                    <li>Token requests and approvals with a human in the loop</li>
+                    <li>Per-team usage and spend, legible at a glance</li>
+                    <li>Model access governed centrally, not per app</li>
+                  </ul>
+                  <div class="shape__ctas">
+                    <a class="shape__cta shape__cta--primary" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Request a walkthrough</a>
+                    <a class="shape__cta shape__cta--ghost" href="library.html">See the pattern</a>
+                  </div>
+                </div>
+                <div class="shape__visual">
+                  <div class="shape__frame">
+                    <div class="shape__chrome"><span></span><span></span><span></span></div>
+                    <div class="shape__mock-wrap" style="background:url('./Yantra Thumbnail.svg') center/cover no-repeat;"></div>
+                    <div class="shape__gloss"></div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Medha -->
+              <article class="shape__slide" data-shape-slide>
+                <div class="shape__copy">
+                  <div class="shape__brand shape__brand--medha">
+                    <img class="shape__brand-logo" src="Medha logo.svg" alt="Medha" width="120" height="49" />
+                    <span class="shape__brand-by">by <em>intelligaia</em></span>
+                  </div>
+                  <h2 class="shape__product">The private AI workspace</h2>
+                  <p class="shape__desc">A chat workspace that stays inside your walls — your documents, your models, your retention rules.</p>
+                  <ul class="shape__bullets">
+                    <li>Grounded answers with the sources kept in view</li>
+                    <li>Projects and memory that carry across sessions</li>
+                    <li>Runs on your own infrastructure</li>
+                  </ul>
+                  <div class="shape__ctas">
+                    <a class="shape__cta shape__cta--primary" href="scenario.html?id=medha">Open the scenario</a>
+                    <a class="shape__cta shape__cta--ghost" href="library.html">See the pattern</a>
+                  </div>
+                </div>
+                <div class="shape__visual">
+                  <div class="shape__frame">
+                    <div class="shape__chrome"><span></span><span></span><span></span></div>
+                    <div class="shape__mock-wrap" style="background:url('./Medha Thumbnail.svg') center/cover no-repeat;"></div>
+                    <div class="shape__gloss"></div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Resource Planner -->
+              <article class="shape__slide" data-shape-slide>
+                <div class="shape__copy">
+                  <div class="shape__brand shape__brand--resource">
+                    <img class="shape__brand-logo" src="Resource Planner logo.svg" alt="Resource Planner" width="180" height="25" />
+                    <span class="shape__brand-by">by <em>intelligaia</em></span>
+                  </div>
+                  <h2 class="shape__product">Resource planning that stays a week ahead</h2>
+                  <p class="shape__desc">Plan capacity with confidence using AI-powered forecasting, live utilization insights, and smart staffing recommendations that keep every project on track.</p>
+                  <ul class="shape__bullets">
+                    <li>AI recommends the right people based on skills, availability, and workload</li>
+                    <li>Live capacity and utilization across teams, departments, and projects</li>
+                    <li>Forecast hiring needs and resource gaps before delivery is at risk</li>
+                  </ul>
+                  <div class="shape__ctas">
+                    <a class="shape__cta shape__cta--primary" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Request a walkthrough</a>
+                    <a class="shape__cta shape__cta--ghost" href="library.html">See the pattern</a>
+                  </div>
+                </div>
+                <div class="shape__visual">
+                  <div class="shape__frame">
+                    <div class="shape__chrome"><span></span><span></span><span></span></div>
+                    <div class="shape__mock-wrap" style="background:url('./Resource Planner Thumbnail.svg') center/cover no-repeat;"></div>
+                    <div class="shape__gloss"></div>
+                  </div>
+                </div>
+              </article>
+
+            </div>
+          </div>
+
+          <div class="shape__dots">
+            <button class="shape__dot is-active" data-shape-go="0" aria-label="Show Yantra"></button>
+            <button class="shape__dot" data-shape-go="1" aria-label="Show Medha"></button>
+            <button class="shape__dot" data-shape-go="2" aria-label="Show Resource Planner"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scenario grid -->
+    <section class="px-grid">
+      <div class="container">
+        <div class="scn-grid">
+
+          <article class="scn" id="agent-transcription">
+            <div class="scn__media" data-tint="sky" style="background-image:url('assets/showcase/transcription.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat;">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Transcription</h3>
+              <p class="scn__desc">Record or upload audio — Whisper turns it into a transcript. A pasted transcript skips ahead.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Whisper</span>
+                <span class="chip-px">Streaming</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-summary">
+            <div class="scn__media" data-tint="emerald" style="background-image:url('assets/showcase/summary.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Summary</h3>
+              <p class="scn__desc">A title, a one-line TL;DR, the key points, and a short paragraph — the meeting at a glance.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Summary</span>
+                <span class="chip-px">Key points</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-project">
+            <div class="scn__media" data-tint="violet" style="background-image:url('assets/showcase/project.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Project</h3>
+              <p class="scn__desc">Detects an existing project or a new one, asks you to confirm, then aligns with the project's history.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Human-in-loop</span>
+                <span class="chip-px">Memory</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-todos">
+            <div class="scn__media" data-tint="amber" style="background-image:url('assets/showcase/todos.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">To-dos</h3>
+              <p class="scn__desc">A checkable list with owner, priority, and due date — pulled straight from the conversation.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Action items</span>
+                <span class="chip-px">Checklist</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-qna">
+            <div class="scn__media" data-tint="indigo" style="background-image:url('assets/showcase/qna.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Q&amp;A</h3>
+              <p class="scn__desc">Follow-up questions answered from the transcript, grounded in what was actually said.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Grounded</span>
+                <span class="chip-px">Citations</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-draft">
+            <div class="scn__media" data-tint="rose" style="background-image:url('assets/showcase/draft.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Follow-up email</h3>
+              <p class="scn__desc">A recap email in the tone you pick — editable, copyable, drafted from the meeting.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Follow-up</span>
+                <span class="chip-px">Tone</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-tts">
+            <div class="scn__media" data-tint="sky" style="background-image:url('assets/showcase/tts.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Text to speech</h3>
+              <p class="scn__desc">Turns the summary into natural speech with an inline player and a choice of voice.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Kokoro</span>
+                <span class="chip-px">Audio</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="agent-tasksync">
+            <div class="scn__media" data-tint="emerald" style="background-image:url('assets/showcase/tasksync.png');background-size:calc(100% - 32px);background-position:16px 16px;background-repeat:no-repeat">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+            </div>
+            <div class="scn__body">
+              
+              <h3 class="scn__name">Task sync</h3>
+              <p class="scn__desc">Pushes action items to your PM tool as assigned tickets — a write you confirm first.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Tickets</span>
+                <span class="chip-px">Confirm</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot foot--simple">
+    <div class="container">
+      <div class="foot__bottom">
+        <span class="foot__meta">© 2026 Intelligaia · Nucleux Pattern Library</span>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="library.html">Pattern Library</a>
+          <a href="practices.html">Scenarios</a>
+          <a href="docs.html">Docs</a>
+          <a href="https://www.intelligaia.com" target="_blank" rel="noopener">intelligaia.com ↗</a>
+          <a href="contact.html">Contact ↗</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="patterns.js"></script>
+  <script src="global.js"></script>
+  <script src="medha-mock.js"></script>
+  <script src="yantra-mock.js"></script>
+  <script>
+    // Inject the Medha + Yantra mocks into the showcase carousel slots,
+    // then wire prev/next + dot navigation with auto-rotate.
+    (function () {
+      const medhaSlot = document.getElementById("shape-mock-medha");
+      const yantraSlot = document.getElementById("shape-mock-yantra");
+      if (medhaSlot && window.NUCLEUX_MEDHA_MOCK) {
+        medhaSlot.innerHTML = window.NUCLEUX_MEDHA_MOCK.replace('class="medha-mock"', 'class="medha-mock medha-mock--hero"');
+      }
+      if (yantraSlot && window.NUCLEUX_YANTRA_MOCK) {
+        yantraSlot.innerHTML = window.NUCLEUX_YANTRA_MOCK.replace('class="yantra-mock"', 'class="yantra-mock yantra-mock--hero"');
+      }
+
+      const root = document.querySelector("[data-shape]");
+      if (!root) return;
+      const track = root.querySelector("[data-shape-track]");
+      const slides = root.querySelectorAll("[data-shape-slide]");
+      const dots = root.querySelectorAll("[data-shape-go]");
+      let idx = 0;
+      let timer = null;
+
+      function go(n) {
+        idx = (n + slides.length) % slides.length;
+        track.style.transform = `translateX(-${idx * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle("is-active", i === idx));
+      }
+      function next() { go(idx + 1); }
+      function prev() { go(idx - 1); }
+      function startAuto() { stopAuto(); timer = setInterval(next, 7000); }
+      function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+
+      root.querySelector("[data-shape-next]").addEventListener("click", () => { next(); stopAuto(); setTimeout(startAuto, 12000); });
+      root.querySelector("[data-shape-prev]").addEventListener("click", () => { prev(); stopAuto(); setTimeout(startAuto, 12000); });
+      dots.forEach(d => d.addEventListener("click", () => {
+        go(parseInt(d.getAttribute("data-shape-go"), 10) || 0);
+        stopAuto(); setTimeout(startAuto, 12000);
+      }));
+      root.addEventListener("mouseenter", stopAuto);
+      root.addEventListener("mouseleave", startAuto);
+      startAuto();
+    })();
+  </script>
+  <script>
+    // Enhance each scenario card with View / Sandbox CTAs, a recorded-video
+    // feel (REC + duration), and a mini product-UI preview as the thumbnail.
+    (function () {
+      const SBX_MAP = {
+        "medha":                   "medha",
+        "meeting-summariser":      "research-agent",
+        "sales-discovery-copilot": "sales-copilot",
+        "customer-support-triage": "support-agent",
+        "code-review-copilot":     "code-agent",
+        "proposal-drafter":        "research-agent",
+        "knowledge-librarian":     "research-agent",
+        "compliance-reviewer":     "support-agent",
+        "onboarding-companion":    "research-agent",
+        "clinical-note-assistant": "research-agent",
+        "tutoring-agent":          "research-agent",
+        "threat-narrative":        "research-agent",
+        "citizen-eligibility-guide": "research-agent"
+      };
+      // Each scenario maps to a tool archetype — used to pick the right preview UI.
+      const ARCH_BY_SCN = {
+        "medha":                   "chat",
+        "meeting-summariser":      "rightrail",
+        "sales-discovery-copilot": "rightrail",
+        "customer-support-triage": "email",
+        "code-review-copilot":     "code",
+        "compliance-reviewer":     "code",
+        "onboarding-companion":    "chat",
+        "clinical-note-assistant": "rightrail",
+        "tutoring-agent":          "chat",
+        "threat-narrative":        "rightrail",
+        "citizen-eligibility-guide": "chat",
+        "proposal-drafter":        "rightrail",
+        "knowledge-librarian":     "rightrail"
+      };
+      // Mini product-UI mocks per archetype. Each one is a self-contained
+      // visual that looks like a real AI-product screenshot.
+      const PV = {
+        chat: `
+          <div class="scn-pv scn-pv--chat">
+            <div class="scn-pv__sidebar">
+              <div class="scn-pv__sb-row scn-pv__sb-row--active"></div>
+              <div class="scn-pv__sb-row"></div>
+              <div class="scn-pv__sb-row"></div>
+            </div>
+            <div class="scn-pv__main">
+              <div class="scn-pv__msg scn-pv__msg--user">
+                <span class="scn-pv__bubble scn-pv__bubble--user"></span>
+              </div>
+              <div class="scn-pv__msg scn-pv__msg--ai">
+                <span class="scn-pv__avatar"></span>
+                <div class="scn-pv__bubble scn-pv__bubble--ai">
+                  <span class="scn-pv__line"></span>
+                  <span class="scn-pv__line" style="width:70%"></span>
+                  <span class="scn-pv__ai-tag">AI</span>
+                </div>
+              </div>
+              <div class="scn-pv__input"><span class="scn-pv__send"></span></div>
+            </div>
+          </div>`,
+        rightrail: `
+          <div class="scn-pv scn-pv--rightrail">
+            <div class="scn-pv__doc">
+              <span class="scn-pv__line" style="width:50%;height:6px"></span>
+              <span class="scn-pv__line"></span>
+              <span class="scn-pv__line" style="width:78%"></span>
+              <span class="scn-pv__line"></span>
+              <span class="scn-pv__line" style="width:62%"></span>
+            </div>
+            <div class="scn-pv__panel">
+              <div class="scn-pv__panel-head">
+                <span class="scn-pv__avatar"></span>
+                <span class="scn-pv__panel-name">Aria <span class="scn-pv__ai-tag">AI</span></span>
+              </div>
+              <div class="scn-pv__bubble scn-pv__bubble--ai">
+                <span class="scn-pv__line"></span>
+                <span class="scn-pv__line" style="width:70%"></span>
+              </div>
+              <div class="scn-pv__panel-input"></div>
+            </div>
+          </div>`,
+        code: `
+          <div class="scn-pv scn-pv--code">
+            <div class="scn-pv__filetree">
+              <span class="scn-pv__file"></span>
+              <span class="scn-pv__file scn-pv__file--active"></span>
+              <span class="scn-pv__file"></span>
+            </div>
+            <div class="scn-pv__editor">
+              <div class="scn-pv__codeline"><span class="scn-pv__gutter">1</span><span class="scn-pv__tok scn-pv__tok--kw">function</span><span class="scn-pv__tok scn-pv__tok--fn">render</span></div>
+              <div class="scn-pv__codeline"><span class="scn-pv__gutter">2</span><span class="scn-pv__tok scn-pv__tok--str">"…"</span></div>
+              <div class="scn-pv__codeline scn-pv__codeline--ai">
+                <span class="scn-pv__gutter">3</span>
+                <span class="scn-pv__ai-tag">AI</span>
+                <span class="scn-pv__line" style="width:50%;background:rgba(217,119,6,0.55)"></span>
+              </div>
+            </div>
+          </div>`,
+        email: `
+          <div class="scn-pv scn-pv--email">
+            <div class="scn-pv__inbox">
+              <span class="scn-pv__inbox-row scn-pv__inbox-row--active"></span>
+              <span class="scn-pv__inbox-row"></span>
+              <span class="scn-pv__inbox-row"></span>
+            </div>
+            <div class="scn-pv__mail">
+              <div class="scn-pv__mail-head">
+                <span class="scn-pv__line" style="width:60%;height:6px"></span>
+                <span class="scn-pv__line" style="width:30%"></span>
+              </div>
+              <div class="scn-pv__draft">
+                <span class="scn-pv__ai-tag">AI draft</span>
+                <span class="scn-pv__line"></span>
+                <span class="scn-pv__line" style="width:80%"></span>
+                <span class="scn-pv__line" style="width:55%"></span>
+              </div>
+              <div class="scn-pv__mail-actions">
+                <span class="scn-pv__send-pill">Send</span>
+              </div>
+            </div>
+          </div>`,
+        creative: `
+          <div class="scn-pv scn-pv--creative">
+            <div class="scn-pv__tools">
+              <span class="scn-pv__tool"></span>
+              <span class="scn-pv__tool scn-pv__tool--active"></span>
+              <span class="scn-pv__tool"></span>
+            </div>
+            <div class="scn-pv__canvas">
+              <div class="scn-pv__asset">
+                <span class="scn-pv__ai-tag scn-pv__ai-tag--corner">AI</span>
+              </div>
+            </div>
+            <div class="scn-pv__props">
+              <span class="scn-pv__line"></span>
+              <span class="scn-pv__line" style="width:60%"></span>
+            </div>
+          </div>`
+      };
+
+      const DURATIONS = ["1:24", "0:58", "1:12", "0:48", "1:36", "1:02"];
+
+      document.querySelectorAll(".scn").forEach((card, i) => {
+        const id = card.id;
+        const body = card.querySelector(".scn__body");
+        const media = card.querySelector(".scn__media");
+        if (!body || !media || body.querySelector(".scn__actions")) return;
+
+        // Inject the mini product-UI preview into the media area, BEFORE the chrome.
+        // Medha gets its own faithful UI mock; everything else uses the generic
+        // archetype preview.
+        const arch = ARCH_BY_SCN[id] || "chat";
+        if (!media.style.backgroundImage && !media.querySelector(".scn-pv, .medha-mock")) {
+          const wrap = document.createElement("div");
+          wrap.className = "scn-pv-wrap";
+          if (id === "medha" && window.NUCLEUX_MEDHA_MOCK) {
+            wrap.innerHTML = window.NUCLEUX_MEDHA_MOCK;
+          } else {
+            wrap.innerHTML = PV[arch] || PV.chat;
+          }
+          media.insertBefore(wrap, media.firstChild);
+        }
+
+        // Add the View / Try-in-sandbox actions
+        const sbxId = SBX_MAP[id];
+        const actions = document.createElement("div");
+        actions.className = "scn__actions";
+        actions.innerHTML = `
+          <a class="scn__action scn__action--primary" href="scenario.html?id=${encodeURIComponent(id)}">
+            <span>View agent</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        `;
+        body.appendChild(actions);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligaia — Hours (a day in one scroll)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;box-sizing:border-box}
+  body{font-family:'Fraunces',serif;color:#fff;background:#05060f;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  /* ── sky stage ── */
+  #sky{position:fixed;inset:0;z-index:0;overflow:hidden;transition:filter .6s ease}
+  #base{position:absolute;inset:0;will-change:background}
+  #sunglow{position:absolute;width:200vmax;height:200vmax;border-radius:50%;transform:translate(-50%,-50%);
+    mix-blend-mode:screen;will-change:left,top,background,opacity;pointer-events:none}
+  #atmo{position:absolute;left:-20%;right:-20%;bottom:-10%;height:70%;mix-blend-mode:screen;will-change:background,opacity;pointer-events:none}
+  #lum{position:absolute;width:18vmin;height:18vmin;border-radius:50%;transform:translate(-50%,-50%);will-change:left,top,opacity,background,box-shadow}
+  #stars{position:absolute;inset:0;opacity:0;will-change:opacity}
+  .star{position:absolute;border-radius:50%;background:#fff;animation:tw 4s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.18}50%{opacity:1}}
+  .cloud{position:absolute;border-radius:50%;filter:blur(22px);will-change:transform,opacity,background}
+  #ground{position:absolute;left:0;right:0;bottom:0;height:34%;z-index:1;will-change:background,opacity;pointer-events:none}
+  /* ── content ── */
+  #scroller{position:relative;z-index:3}
+  .rail{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;padding:1.4rem 2rem;
+    font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.7);mix-blend-mode:difference}
+  .panel{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 8vw;max-width:1100px}
+  .panel.r{align-items:flex-end;text-align:right;margin-left:auto}
+  .clock{font-family:'IBM Plex Mono';font-size:.8rem;letter-spacing:.3em;opacity:.8;margin-bottom:1.4rem}
+  .panel h2{font-weight:300;font-size:clamp(2.6rem,8vw,7.5rem);line-height:.98;letter-spacing:-.02em;
+    text-shadow:0 6px 60px rgba(0,0,0,.35)}
+  .panel h2 b{font-weight:900}
+  .panel h2 .lt{font-weight:300}
+  .panel p{margin-top:1.6rem;max-width:42ch;font-weight:400;font-size:clamp(1rem,1.5vw,1.25rem);line-height:1.7;opacity:.9;
+    text-shadow:0 2px 24px rgba(0,0,0,.5)}
+  .panel.r p{margin-left:auto}
+  /* ── HUD + variants ── */
+  #hud{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:12px;
+    font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;background:rgba(0,0,0,.26);
+    backdrop-filter:blur(10px);padding:8px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.16)}
+  #hudDot{width:9px;height:9px;border-radius:50%}
+  #variants{position:fixed;bottom:22px;right:22px;z-index:6;display:flex;gap:6px}
+  #variants button{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#fff;
+    background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 11px;cursor:pointer;backdrop-filter:blur(6px);transition:.2s}
+  #variants button.on{background:#fff;color:#000;border-color:#fff}
+  @media(max-width:640px){#variants{left:22px;right:auto;bottom:64px}}
+</style>
+</head>
+<body>
+
+<div id="sky">
+  <div id="base"></div>
+  <div id="stars"></div>
+  <div id="sunglow"></div>
+  <div id="atmo"></div>
+  <div id="lum"></div>
+  <div class="cloud" id="c1" style="width:50vw;height:15vw;top:20%"></div>
+  <div class="cloud" id="c2" style="width:34vw;height:10vw;top:36%"></div>
+  <div class="cloud" id="c3" style="width:60vw;height:18vw;top:10%"></div>
+  <div class="cloud" id="c4" style="width:26vw;height:8vw;top:50%"></div>
+  <div id="ground"></div>
+</div>
+
+<div class="rail"><span>Intelligaia</span><span>Hours — 06:00 → 00:00</span></div>
+
+<div id="variants">
+  <button data-v="clear" class="on">Clear</button>
+  <button data-v="warm">Warm</button>
+  <button data-v="cool">Cool</button>
+  <button data-v="vivid">Vivid</button>
+</div>
+
+<div id="scroller">
+  <section class="panel"><div class="clock">05:12 · Pre-dawn</div><h2><span class="lt">The day begins</span><br><b>before the light.</b></h2><p>One continuous scroll moves the sky through every hour — colour, light and air, in motion.</p></section>
+  <section class="panel r"><div class="clock">06:48 · Sunrise</div><h2><b>First</b> <span class="lt">light.</span></h2><p>Warmth lifts over the horizon and the glow rises with the sun.</p></section>
+  <section class="panel"><div class="clock">12:30 · Midday</div><h2><span class="lt">Clarity at</span><br><b>its peak.</b></h2><p>A deep zenith, bright air near the ground, clouds drifting through.</p></section>
+  <section class="panel r"><div class="clock">17:40 · Golden hour</div><h2><b>The amber</b><br><span class="lt">moment.</span></h2><p>The sun lowers and the whole sky turns to gold.</p></section>
+  <section class="panel"><div class="clock">19:25 · Dusk</div><h2><span class="lt">The slow</span> <b>fade.</b></h2><p>Pinks and violets settle along the edge of the world.</p></section>
+  <section class="panel r"><div class="clock">23:50 · Night</div><h2><b>Quiet</b><br><span class="lt">brilliance.</span></h2><p>Stars emerge, the moon takes the sky, and the cycle rests.</p></section>
+</div>
+
+<div id="hud"><span id="hudDot"></span><span id="hudText">Pre-dawn</span></div>
+
+<script>
+// phase: zenith z, mid m, horizon h, light g
+var SETS={
+ clear:[
+  {at:0,  z:[9,13,36],   m:[28,30,70],   h:[64,46,86],   g:[120,110,180]},
+  {at:.14,z:[40,58,112],  m:[110,108,150], h:[240,152,118],g:[255,172,110]},
+  {at:.30,z:[46,120,205], m:[120,182,236], h:[206,232,250],g:[255,238,205]},
+  {at:.48,z:[36,108,206], m:[108,176,236], h:[198,226,250],g:[255,255,250]},
+  {at:.66,z:[58,104,180], m:[150,156,196], h:[255,206,150],g:[255,206,140]},
+  {at:.82,z:[50,40,90],   m:[152,82,112],  h:[255,140,100],g:[255,128,88]},
+  {at:1,  z:[4,5,14],     m:[10,12,34],    h:[26,20,60],   g:[150,160,210]}
+ ],
+ warm:[
+  {at:0,  z:[24,12,30],  m:[58,28,46],   h:[110,52,60],  g:[180,110,120]},
+  {at:.16,z:[80,52,80],  m:[200,110,90], h:[255,150,90], g:[255,170,90]},
+  {at:.40,z:[120,120,170],m:[210,180,150],h:[255,220,170],g:[255,235,190]},
+  {at:.64,z:[150,110,120],m:[235,160,110],h:[255,190,120],g:[255,190,110]},
+  {at:.82,z:[80,40,60],  m:[200,90,80],  h:[255,120,80],  g:[255,110,70]},
+  {at:1,  z:[12,7,12],   m:[34,16,24],   h:[60,26,34],    g:[200,170,150]}
+ ],
+ cool:[
+  {at:0,  z:[8,16,34],   m:[20,40,66],   h:[40,70,90],   g:[90,140,180]},
+  {at:.16,z:[30,70,110],  m:[80,150,170], h:[150,210,210],g:[180,230,220]},
+  {at:.42,z:[26,120,170], m:[100,190,210],h:[190,235,240],g:[230,250,250]},
+  {at:.66,z:[40,110,150], m:[120,170,190],h:[200,220,225],g:[210,235,240]},
+  {at:.82,z:[40,50,90],   m:[90,90,150],  h:[150,120,200],g:[170,130,220]},
+  {at:1,  z:[4,7,18],     m:[10,16,44],   h:[24,28,70],   g:[150,180,230]}
+ ],
+ vivid:[
+  {at:0,  z:[20,8,46],   m:[60,20,90],   h:[140,40,110], g:[200,80,180]},
+  {at:.16,z:[60,40,140],  m:[200,80,140], h:[255,120,120],g:[255,150,90]},
+  {at:.40,z:[20,140,230], m:[90,200,255], h:[170,240,255],g:[255,250,210]},
+  {at:.64,z:[120,80,200], m:[240,140,120],h:[255,180,90], g:[255,190,100]},
+  {at:.82,z:[70,30,120],  m:[210,60,140], h:[255,100,120],g:[255,90,150]},
+  {at:1,  z:[6,4,24],     m:[16,10,60],   h:[40,16,90],   g:[170,150,240]}
+ ]
+};
+var PH=SETS.clear;
+function lerp(a,b,t){return a+(b-a)*t}
+function lc(a,b,t){return [Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))]}
+function rgb(c){return 'rgb('+c[0]+','+c[1]+','+c[2]+')'}
+function rgba(c,a){return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'}
+function sample(t){for(var i=0;i<PH.length-1;i++){if(t<=PH[i+1].at){var u=(t-PH[i].at)/(PH[i+1].at-PH[i].at);
+  return {z:lc(PH[i].z,PH[i+1].z,u),m:lc(PH[i].m,PH[i+1].m,u),h:lc(PH[i].h,PH[i+1].h,u),g:lc(PH[i].g,PH[i+1].g,u)};}}
+  var L=PH[PH.length-1];return {z:L.z,m:L.m,h:L.h,g:L.g};}
+var NAMES=['Pre-dawn','Sunrise','Midday','Golden hour','Dusk','Night'];
+function phaseName(t){return NAMES[Math.min(NAMES.length-1,Math.floor(t*NAMES.length+1e-4))];}
+
+var base=document.getElementById('base'),lum=document.getElementById('lum'),sunglow=document.getElementById('sunglow'),
+    atmo=document.getElementById('atmo'),stars=document.getElementById('stars'),ground=document.getElementById('ground'),
+    hudText=document.getElementById('hudText'),hudDot=document.getElementById('hudDot');
+var clouds=[c1,c2,c3,c4];
+(function(){var h='';for(var i=0;i<120;i++){var s=Math.random()<.14?2.4:1.4;h+='<span class="star" style="left:'+(Math.random()*100)+'%;top:'+(Math.random()*74)+'%;width:'+s+'px;height:'+s+'px;animation-delay:'+(Math.random()*4)+'s"></span>';}stars.innerHTML=h;})();
+
+var target=0,cur=0;
+function maxScroll(){return Math.max(1,document.body.scrollHeight-window.innerHeight);}
+addEventListener('scroll',function(){target=Math.min(1,Math.max(0,scrollY/maxScroll()));},{passive:true});
+
+function render(t){
+  var s=sample(t);
+  base.style.background='linear-gradient(180deg,'+rgb(s.z)+' 0%, '+rgb(s.m)+' 50%, '+rgb(s.h)+' 100%)';
+  // single luminary: sun by day -> crossfade to moon at night, same arc
+  var sx=8+t*84, sy=82 - Math.sin(Math.min(t,.9)/.9*Math.PI)*64;
+  var night=Math.max(0,Math.min(1,(t-0.8)/0.16));      // 0 day -> 1 night
+  lum.style.left=sx+'%'; lum.style.top=sy+'%';
+  if(night<1){
+    lum.style.background='radial-gradient(circle, rgba(255,255,255,'+(0.95*(1-night))+') 0%, '+rgba(s.g,.6*(1-night))+' 34%, '+rgba(s.g,0)+' 70%)';
+    lum.style.boxShadow='none'; lum.style.width='18vmin'; lum.style.height='18vmin';
+  }
+  if(night>0){ // moon
+    lum.style.background='radial-gradient(circle at 38% 36%, rgba(253,253,255,'+night+'), rgba(207,212,230,'+(0.9*night)+') 58%, rgba(150,156,180,'+(0.7*night)+'))';
+    lum.style.width='9vmin'; lum.style.height='9vmin'; lum.style.boxShadow='0 0 50px rgba(200,210,255,'+(0.5*night)+')';
+  }
+  lum.style.opacity = (t<0.04 ? t/0.04 : 1);            // gentle fade-in at very start
+  // moving light glow (screen) follows the luminary
+  sunglow.style.left=sx+'%'; sunglow.style.top=(sy+8)+'%';
+  var gl = (1-night);
+  sunglow.style.background='radial-gradient(circle, '+rgba(s.g,.45*gl)+' 0%, '+rgba(s.g,.14*gl)+' 26%, '+rgba(s.g,0)+' 55%)';
+  sunglow.style.opacity=1;
+  // horizon atmosphere
+  atmo.style.background='radial-gradient(130% 100% at '+sx+'% 112%, '+rgba(s.g,.5)+', '+rgba(s.h,0)+' 72%)';
+  stars.style.opacity=night;
+  // SMOOTH ground: just a soft deepening of the horizon colour, fully faded (no hard line)
+  ground.style.background='linear-gradient(180deg, '+rgba(s.h,0)+' 0%, '+rgba(lc(s.h,s.z,.5),.0)+' 30%, '+rgba(lc(s.h,[0,0,0],.35),.45)+' 100%)';
+  // clouds: lit by the sun's colour, dim at night, gentle drift
+  var cf=Math.max(.1,1-night*1.05);
+  clouds.forEach(function(cl,i){var sp=(i%2?-1:1);var b=[-8,18,32,58][i];
+    cl.style.left=(b+Math.sin(cur*2.4+i)*3+t*sp*13)+'%';
+    cl.style.background='radial-gradient(circle, '+rgba(lc([255,255,255],s.g,.45),.55)+', rgba(255,255,255,0) 70%)';
+    cl.style.opacity=cf*(0.4+0.12*i);});
+  hudText.textContent=phaseName(t); hudDot.style.background=rgb(s.g); hudDot.style.boxShadow='0 0 12px '+rgb(s.g);
+}
+(function loop(){cur+=(target-cur)*0.06; render(cur); requestAnimationFrame(loop);})(); render(0);
+
+document.querySelectorAll('#variants button').forEach(function(b){b.onclick=function(){
+  document.querySelectorAll('#variants button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');PH=SETS[b.dataset.v];};});
+</script>
+</body>
+</html>

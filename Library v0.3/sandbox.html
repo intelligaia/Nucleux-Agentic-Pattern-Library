@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Sandbox — Nucleux</title>
+  <meta name="description" content="Interactive sandbox — pick an agent and try Nucleux patterns live. Realistic AI-product surfaces with scripted, demonstrable behaviour." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item gnav__item--has-flyout">
+          <a class="gnav__link" href="#components">Components</a>
+          <div class="gnav__flyout" role="menu" aria-label="Components">
+            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Basic Components</span>
+              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
+            </a>
+            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Agentic Components</span>
+              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
+            </a>
+          </div>
+        </div>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sandbox sub-toolbar — agent selector (ChatGPT model-picker style) + actions -->
+  <div class="sbx-toolbar">
+    <div class="container sbx-toolbar__inner">
+      <div class="sbx-selector" data-selector>
+        <button class="sbx-selector__trigger" type="button" data-selector-toggle aria-haspopup="listbox" aria-expanded="false">
+          <span class="sbx-selector__icon" data-selector-icon>{ }</span>
+          <span class="sbx-selector__body">
+            <span class="sbx-selector__label" data-selector-label>Code agent</span>
+            <span class="sbx-selector__tag" data-selector-tag>A pair programmer</span>
+          </span>
+          <svg class="sbx-selector__caret" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="sbx-selector__menu" hidden role="listbox" data-selector-menu></div>
+      </div>
+
+      <div class="sbx-toolbar__actions">
+        <span class="sbx-toolbar__count" data-stage-count>—</span>
+        <button class="sbx-toolbar__btn" type="button" data-stage-restart aria-label="Reset conversation">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset
+        </button>
+        <button class="sbx-toolbar__btn sbx-toolbar__btn--accent" type="button" data-asst-open>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4a8 8 0 1 1 18-7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Ask Lumen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main stage — big tool shell + slim active patterns rail -->
+  <section class="sbx-stage" id="sbx-stage">
+    <div class="container sbx-stage__main">
+      <div class="sbx-stage__grid">
+        <main class="sbx-stage__surface">
+          <div class="sbx-stage__shell" id="sbx-shell"></div>
+          <div class="sbx-stage__prompts" id="sbx-prompts" aria-label="Suggested prompts"></div>
+        </main>
+
+        <aside class="sbx-stage__rail">
+          <header class="sbx-rail__head">
+            <span class="sbx-rail__eyebrow">Active patterns</span>
+            <span class="sbx-rail__hint">Patterns this agent is using right now. Click any to open the full doc.</span>
+          </header>
+          <div class="sbx-rail__patterns" id="sbx-active-patterns"></div>
+
+          <footer class="sbx-rail__foot">
+            <a class="sbx-rail__foot-link" href="library.html">
+              <span>Browse all 84 patterns</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a class="sbx-rail__foot-link" href="contact.html">
+              <span>Schedule a working session</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </footer>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <script src="patterns.js"></script>
+  <script src="sandbox.js"></script>
+  <script src="global.js"></script>
+</body>
+</html>

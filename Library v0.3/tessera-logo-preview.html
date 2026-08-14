@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tessera animated mark — preview</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 64px 32px;
+      font-family: "Inter", system-ui, sans-serif;
+      background: #fbfbfa; color: #050504;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1400px; margin: 0 auto; }
+    h1 { font-size: 56px; font-weight: 600; letter-spacing: -0.035em; margin: 0 0 12px; line-height: 1; }
+    .lede { font-size: 18px; color: #5d5d54; max-width: 760px; margin: 0 0 56px; }
+    .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+    .card { border: 1px solid #ebebe8; border-radius: 14px; overflow: hidden; background: #fff; }
+    .card__h { padding: 18px 22px; border-bottom: 1px solid #ebebe8; display: flex; align-items: baseline; justify-content: space-between; }
+    .card__h h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.015em; }
+    .card__h small { font-family: "JetBrains Mono", monospace; font-size: 12px; color: #88887d; letter-spacing: 0.06em; }
+    .stage {
+      padding: 56px 36px; display: flex; align-items: center; justify-content: center;
+      gap: 18px; min-height: 240px;
+    }
+    .stage--dark { background: radial-gradient(ellipse at 30% 30%, #14141a 0%, #050504 80%); color: #fff; }
+    .word { font-family: "Fraunces", serif; font-style: italic; font-weight: 500; font-size: 44px; letter-spacing: -0.022em; line-height: 1; font-variation-settings: "opsz" 96, "SOFT" 30; }
+    .meta { padding: 16px 22px; border-top: 1px solid #ebebe8; font-family: "JetBrains Mono", monospace; font-size: 11px; color: #88887d; letter-spacing: 0.04em; display: flex; justify-content: space-between; }
+    .chip { display: inline-flex; padding: 3px 9px; border-radius: 999px; background: #f5f5f3; color: #5d5d54; font-size: 11px; }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    .usage {
+      grid-column: 1 / -1;
+      background: #fff; border: 1px solid #ebebe8; border-radius: 14px;
+      padding: 28px 32px;
+    }
+    .usage h3 { font-size: 16px; font-weight: 600; margin: 0 0 12px; }
+    .usage p { font-size: 14px; line-height: 1.6; color: #5d5d54; margin: 0 0 10px; }
+    .usage code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12.5px;
+      background: #f5f5f3; padding: 2px 6px;
+      border-radius: 3px; color: #050504;
+    }
+    .usage pre {
+      background: #050504; color: #f5f5f3;
+      padding: 14px 18px; border-radius: 8px;
+      font-size: 12px; line-height: 1.6;
+      overflow: auto; margin: 8px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Tessera · animated mark.</h1>
+    <p class="lede">Three iso cubes whose face colours cycle through amber → violet → indigo on a 1/3-phase offset, so the trio always holds the full brand palette. ~9-second loop. Both formats below.</p>
+
+    <div class="row">
+      <!-- Animated SVG -->
+      <div class="card">
+        <header class="card__h">
+          <h2>Animated SVG</h2>
+          <small>tessera-logo.svg</small>
+        </header>
+        <div class="stage">
+          <img src="tessera-logo.svg" alt="Tessera" width="78" height="70" />
+          <span class="word">tessera</span>
+        </div>
+        <div class="meta">
+          <span>Recommended for web · scales to any size</span>
+          <span class="chip">~2 KB</span>
+        </div>
+      </div>
+
+      <!-- Animated SVG on dark -->
+      <div class="card">
+        <header class="card__h">
+          <h2>Animated SVG · dark</h2>
+          <small>same file</small>
+        </header>
+        <div class="stage stage--dark">
+          <img src="tessera-logo.svg" alt="Tessera" width="78" height="70" />
+          <span class="word">tessera</span>
+        </div>
+        <div class="meta">
+          <span>One file, theme-agnostic background</span>
+          <span class="chip">SMIL animate</span>
+        </div>
+      </div>
+
+      <!-- Animated GIF light -->
+      <div class="card">
+        <header class="card__h">
+          <h2>Animated GIF</h2>
+          <small>tessera-logo.gif</small>
+        </header>
+        <div class="stage">
+          <img src="tessera-logo.gif" alt="Tessera" width="120" height="108" />
+          <span class="word">tessera</span>
+        </div>
+        <div class="meta">
+          <span>For Slack, email, decks, anywhere SVG isn't supported</span>
+          <span class="chip">~49 KB</span>
+        </div>
+      </div>
+
+      <!-- Animated GIF dark -->
+      <div class="card">
+        <header class="card__h">
+          <h2>Animated GIF · dark</h2>
+          <small>tessera-logo-dark.gif</small>
+        </header>
+        <div class="stage stage--dark">
+          <img src="tessera-logo-dark.gif" alt="Tessera" width="120" height="108" />
+          <span class="word">tessera</span>
+        </div>
+        <div class="meta">
+          <span>Pre-rendered for dark backgrounds</span>
+          <span class="chip">~49 KB</span>
+        </div>
+      </div>
+
+      <div class="usage">
+        <h3>How to use it</h3>
+        <p><strong>On the live site (recommended):</strong> drop the SVG inline so the colours theme cleanly. The mark is just under 2 KB.</p>
+        <pre>&lt;img src="tessera-logo.svg" alt="Tessera" width="42" height="38" /&gt;</pre>
+        <p><strong>For email signatures, Slack avatars, decks, anywhere SVG isn't accepted:</strong> use the GIF.</p>
+        <pre>&lt;img src="tessera-logo.gif" alt="Tessera" width="64" height="58" /&gt;</pre>
+        <p>The animation loops indefinitely. Pauses automatically when the user has <code>prefers-reduced-motion: reduce</code> if you wrap with <code>&lt;picture&gt;</code> + a static fallback.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

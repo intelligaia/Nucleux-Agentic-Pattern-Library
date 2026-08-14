@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Isometric logo studies — Intelligaia AI UX Pattern Library</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink-0:#fff; --ink-25:#fbfbfa; --ink-50:#f5f5f3; --ink-100:#ebebe8;
+      --ink-200:#d8d8d2; --ink-400:#88887d; --ink-500:#5d5d54; --ink-950:#050504;
+      --fg:#050504; --fg-mid:#5d5d54; --fg-muted:#88887d; --border:#ebebe8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--ink-25);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      padding: 64px 32px;
+    }
+    .wrap { max-width: 1400px; margin: 0 auto; }
+    h1 {
+      font-size: 56px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      margin: 0 0 16px;
+      line-height: 1;
+    }
+    .lede {
+      font-size: 18px; line-height: 1.55;
+      color: var(--fg-mid);
+      max-width: 760px;
+      margin: 0 0 64px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--ink-0);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .card__head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 16px;
+    }
+    .card__id {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--fg-muted);
+      letter-spacing: 0.06em;
+    }
+    .card__name {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .card__desc {
+      padding: 10px 22px 18px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--fg-mid);
+      border-bottom: 1px solid var(--border);
+    }
+    .card__body { display: grid; grid-template-columns: 1fr 1fr; }
+    .stage {
+      padding: 40px 28px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 220px;
+      position: relative;
+    }
+    .stage--light { background: var(--ink-0); border-right: 1px solid var(--border); }
+    .stage--dark  {
+      background: radial-gradient(ellipse at 30% 30%, #14141a 0%, #050504 80%);
+      color: var(--ink-0);
+    }
+    .stage::after {
+      content: attr(data-label);
+      position: absolute;
+      top: 12px; left: 14px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.45;
+    }
+    .lockup { display: inline-flex; align-items: center; gap: 14px; }
+    .word {
+      font-family: "Fraunces", "Newsreader", "Times New Roman", serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 36px;
+      letter-spacing: -0.022em;
+      line-height: 1;
+      font-variation-settings: "opsz" 96, "SOFT" 30, "WONK" 0;
+    }
+    .stage svg { flex: 0 0 auto; }
+    .meta {
+      padding: 16px 22px;
+      display: flex; flex-wrap: wrap; gap: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--ink-50);
+      font-size: 11px;
+      color: var(--fg-mid);
+    }
+    .chip__swatch { width: 10px; height: 10px; border-radius: 2px; }
+    .note {
+      grid-column: 1 / -1;
+      background: var(--ink-0);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+    }
+    .note h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .note p { font-size: 14px; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+    .switcher { display: inline-flex; gap: 14px; margin-bottom: 32px; }
+    .switcher a {
+      color: var(--fg-mid); font-size: 14px; text-decoration: none;
+      padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border);
+    }
+    .switcher a.is-current { background: var(--ink-950); color: var(--ink-0); border-color: var(--ink-950); }
+    .switcher a:hover:not(.is-current) { color: var(--fg); border-color: var(--ink-200); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Isometric studies.</h1>
+    <p class="lede">Eight isometric directions for the mark — exploring depth, translucency, and gradient. Wordmark set in Fraunces italic for a more design-house feel against the geometric cube forms. Options 06–08 are the latest refinements: tighter overlap, softened corners, sized proportionate to the wordmark.</p>
+
+    <nav class="switcher">
+      <a href="logos.html">Flat studies</a>
+      <a href="logos-iso.html" class="is-current">Iso studies (cube)</a>
+      <a href="logos-names.html">Naming studies</a>
+    </nav>
+
+    <div class="grid">
+
+      <!-- ─────────────── 01 · Iso cube · monochrome ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso cube · monochrome</span>
+          <span class="card__id">01 / 08</span>
+        </header>
+        <div class="card__desc">The atomic form. Three faces in three values of ink — top is brightest, right is mid, left is darkest. Reads as a solid 3D tile. Foundational; the version you put on shipping crates and case studies.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="56" height="56" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="24,2 43,13 24,24 5,13" fill="#d8d8d2"/>
+                <polygon points="43,13 43,35 24,46 24,24" fill="#5d5d54"/>
+                <polygon points="5,13 24,24 24,46 5,35" fill="#0c0c0a"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="56" height="56" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="24,2 43,13 24,24 5,13" fill="#f5f5f3"/>
+                <polygon points="43,13 43,35 24,46 24,24" fill="#88887d"/>
+                <polygon points="5,13 24,24 24,46 5,35" fill="#2a2a25"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch" style="background:#0c0c0a"></span>3-value ink</span>
+          <span class="chip">Volumetric</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 02 · Iso cube · solid brand faces ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso cube · brand faces</span>
+          <span class="card__id">02 / 08</span>
+        </header>
+        <div class="card__desc">Each face takes one stop from the brand gradient — amber on top, violet on the right, indigo on the left. The cube holds the full palette in three flat planes. Strong personality at any scale.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="56" height="56" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="24,2 43,13 24,24 5,13" fill="#fbbf24"/>
+                <polygon points="43,13 43,35 24,46 24,24" fill="#7c3aed"/>
+                <polygon points="5,13 24,24 24,46 5,35" fill="#1e40af"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="56" height="56" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="24,2 43,13 24,24 5,13" fill="#fbbf24"/>
+                <polygon points="43,13 43,35 24,46 24,24" fill="#a78bfa"/>
+                <polygon points="5,13 24,24 24,46 5,35" fill="#60a5fa"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip"><span class="chip__swatch" style="background:#fbbf24"></span>Amber top</span>
+          <span class="chip"><span class="chip__swatch" style="background:#7c3aed"></span>Violet right</span>
+          <span class="chip"><span class="chip__swatch" style="background:#1e40af"></span>Indigo left</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 03 · Iso cube · gradient on each face ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso cube · gradient faces</span>
+          <span class="card__id">03 / 08</span>
+        </header>
+        <div class="card__desc">Each face carries its own linear gradient — amber→rose on top, violet→rose on the right, indigo→violet on the left. Adds depth without losing the volumetric read. The most "live" of the iso variants.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="60" height="60" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g3t" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#fde047"/>
+                    <stop offset="100%" stop-color="#d97706"/>
+                  </linearGradient>
+                  <linearGradient id="g3r" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#a78bfa"/>
+                    <stop offset="100%" stop-color="#7c3aed"/>
+                  </linearGradient>
+                  <linearGradient id="g3l" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#4f46e5"/>
+                    <stop offset="100%" stop-color="#1e3a8a"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="24,2 43,13 24,24 5,13" fill="url(#g3t)"/>
+                <polygon points="43,13 43,35 24,46 24,24" fill="url(#g3r)"/>
+                <polygon points="5,13 24,24 24,46 5,35" fill="url(#g3l)"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="60" height="60" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g3t-d" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#fef08a"/>
+                    <stop offset="100%" stop-color="#fbbf24"/>
+                  </linearGradient>
+                  <linearGradient id="g3r-d" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c4b5fd"/>
+                    <stop offset="100%" stop-color="#8b5cf6"/>
+                  </linearGradient>
+                  <linearGradient id="g3l-d" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#818cf8"/>
+                    <stop offset="100%" stop-color="#3b82f6"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="24,2 43,13 24,24 5,13" fill="url(#g3t-d)"/>
+                <polygon points="43,13 43,35 24,46 24,24" fill="url(#g3r-d)"/>
+                <polygon points="5,13 24,24 24,46 5,35" fill="url(#g3l-d)"/>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Per-face gradients</span>
+          <span class="chip">Premium</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 04 · Iso cube · translucent glass ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso cube · translucent glass</span>
+          <span class="card__id">04 / 08</span>
+        </header>
+        <div class="card__desc">Each face is a translucent gradient, edges traced in a hairline outline. Reads as a glass crystal — you can almost see through it. The most contemporary direction, sits naturally on the glass surfaces already in the site.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="64" height="64" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g4t" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.55"/>
+                    <stop offset="100%" stop-color="#d97706" stop-opacity="0.4"/>
+                  </linearGradient>
+                  <linearGradient id="g4r" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.5"/>
+                    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.42"/>
+                  </linearGradient>
+                  <linearGradient id="g4l" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.55"/>
+                    <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0.5"/>
+                  </linearGradient>
+                </defs>
+                <g transform="translate(2,2)">
+                  <polygon points="24,2 43,13 24,24 5,13" fill="url(#g4t)" stroke="#1a1a16" stroke-width="0.7"/>
+                  <polygon points="43,13 43,35 24,46 24,24" fill="url(#g4r)" stroke="#1a1a16" stroke-width="0.7"/>
+                  <polygon points="5,13 24,24 24,46 5,35" fill="url(#g4l)" stroke="#1a1a16" stroke-width="0.7"/>
+                  <!-- inner highlight on top -->
+                  <polygon points="24,5 40,14 24,22 8,14" fill="none" stroke="#fff" stroke-width="0.4" opacity="0.6"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="64" height="64" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g4t-d" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#fef08a" stop-opacity="0.7"/>
+                    <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.55"/>
+                  </linearGradient>
+                  <linearGradient id="g4r-d" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.65"/>
+                    <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.55"/>
+                  </linearGradient>
+                  <linearGradient id="g4l-d" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#818cf8" stop-opacity="0.65"/>
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.55"/>
+                  </linearGradient>
+                </defs>
+                <g transform="translate(2,2)">
+                  <polygon points="24,2 43,13 24,24 5,13" fill="url(#g4t-d)" stroke="#f5f5f3" stroke-width="0.7"/>
+                  <polygon points="43,13 43,35 24,46 24,24" fill="url(#g4r-d)" stroke="#f5f5f3" stroke-width="0.7"/>
+                  <polygon points="5,13 24,24 24,46 5,35" fill="url(#g4l-d)" stroke="#f5f5f3" stroke-width="0.7"/>
+                  <polygon points="24,5 40,14 24,22 8,14" fill="none" stroke="#fff" stroke-width="0.4" opacity="0.55"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Translucent</span>
+          <span class="chip">Hairline edge</span>
+          <span class="chip">Glass crystal</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 05 · Iso stack · translucent layers ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso stack · translucent layers</span>
+          <span class="card__id">05 / 08</span>
+        </header>
+        <div class="card__desc">Three flat hexes layered with translucency and a slight iso offset between each — reads as plates of glass stacked at the same axis. Suggests <em>strata</em>: every pattern is a layer in a deeper system.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="64" height="64" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                <!-- Three flat-top hexes, each offset up-and-right, blended -->
+                <g style="mix-blend-mode: multiply;">
+                  <polygon points="30,42 47,32 47,12 30,2 13,12 13,32"
+                           fill="#1e40af" opacity="0.42"/>
+                </g>
+                <g style="mix-blend-mode: multiply;">
+                  <polygon points="30,36 47,26 47,6 30,-4 13,6 13,26"
+                           transform="translate(0,6)"
+                           fill="#7c3aed" opacity="0.42"/>
+                </g>
+                <g style="mix-blend-mode: multiply;">
+                  <polygon points="30,30 47,20 47,0 30,-10 13,0 13,20"
+                           transform="translate(0,12)"
+                           fill="#d97706" opacity="0.42"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="64" height="64" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                <g style="mix-blend-mode: screen;">
+                  <polygon points="30,42 47,32 47,12 30,2 13,12 13,32" fill="#60a5fa" opacity="0.6"/>
+                </g>
+                <g style="mix-blend-mode: screen;">
+                  <polygon points="30,36 47,26 47,6 30,-4 13,6 13,26" transform="translate(0,6)" fill="#a78bfa" opacity="0.6"/>
+                </g>
+                <g style="mix-blend-mode: screen;">
+                  <polygon points="30,30 47,20 47,0 30,-10 13,0 13,20" transform="translate(0,12)" fill="#fbbf24" opacity="0.6"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Translucent</span>
+          <span class="chip">Layered</span>
+          <span class="chip">Blend mode</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 06 · Iso mosaic · translucent overlap (refined) ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso mosaic · translucent overlap</span>
+          <span class="card__id">06 / 08</span>
+        </header>
+        <div class="card__desc">Three iso cubes — softened corners, low-opacity fills, pushed in so they intersect. Where they meet, the brand palette mixes through the glass. Right-sized to the wordmark and rendered in Fraunces italic to give the lockup a craft / design-house tone.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="48" height="46" viewBox="0 0 32 30" xmlns="http://www.w3.org/2000/svg">
+                <!-- Back-left · amber -->
+                <g opacity="0.7" transform="translate(0, 1)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fbbf24" stroke="#fbbf24" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#d97706" stroke="#d97706" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#92400e" stroke="#92400e" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+                <!-- Back-right · violet -->
+                <g opacity="0.7" transform="translate(10, 1)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#c4b5fd" stroke="#c4b5fd" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#7c3aed" stroke="#7c3aed" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#4c1d95" stroke="#4c1d95" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+                <!-- Front-center · indigo -->
+                <g opacity="0.7" transform="translate(5, 8)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#93c5fd" stroke="#93c5fd" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#3b82f6" stroke="#3b82f6" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="48" height="46" viewBox="0 0 32 30" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.75" transform="translate(0, 1)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fef08a" stroke="#fef08a" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#fbbf24" stroke="#fbbf24" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#b45309" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+                <g opacity="0.75" transform="translate(10, 1)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#ddd6fe" stroke="#ddd6fe" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#a78bfa" stroke="#a78bfa" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#6d28d9" stroke="#6d28d9" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+                <g opacity="0.75" transform="translate(5, 8)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#bfdbfe" stroke="#bfdbfe" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#60a5fa" stroke="#60a5fa" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#2563eb" stroke="#2563eb" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Translucent</span>
+          <span class="chip">Rounded</span>
+          <span class="chip">Tight overlap</span>
+          <span class="chip">Fraunces italic</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 07 · Iso pair · two cubes ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso pair · two cubes</span>
+          <span class="card__id">07 / 08</span>
+        </header>
+        <div class="card__desc">Just two cubes, sliding into each other. Warm amber against cool indigo — the two endpoints of the brand gradient. Quieter than the three-cube mosaic, reads cleaner at very small sizes (favicon, app icon).</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="46" height="36" viewBox="0 0 30 24" xmlns="http://www.w3.org/2000/svg">
+                <!-- Back · amber -->
+                <g opacity="0.72" transform="translate(0, 0)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fbbf24" stroke="#fbbf24" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#d97706" stroke="#d97706" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#92400e" stroke="#92400e" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+                <!-- Front · indigo -->
+                <g opacity="0.72" transform="translate(8, 2)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#93c5fd" stroke="#93c5fd" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#3b82f6" stroke="#3b82f6" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="46" height="36" viewBox="0 0 30 24" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.78" transform="translate(0, 0)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fef08a" stroke="#fef08a" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#fbbf24" stroke="#fbbf24" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#b45309" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+                <g opacity="0.78" transform="translate(8, 2)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#bfdbfe" stroke="#bfdbfe" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#60a5fa" stroke="#60a5fa" stroke-width="1.4" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#2563eb" stroke="#2563eb" stroke-width="1.4" stroke-linejoin="round"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Two cubes</span>
+          <span class="chip">Warm + cool</span>
+          <span class="chip">Favicon-friendly</span>
+        </div>
+      </div>
+
+      <!-- ─────────────── 08 · Iso quartet · four cubes ─────────────── -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Iso quartet · four cubes</span>
+          <span class="card__id">08 / 08</span>
+        </header>
+        <div class="card__desc">Four iso cubes arranged in a honeycomb-shifted 2×2 — a real fragment of mosaic flooring. Holds the full brand gradient (amber → rose → violet → indigo) in a compact diamond. Most pattern-library-of-them-all, slightly denser than 06.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="58" height="42" viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">
+                <!-- Back-left · amber -->
+                <g opacity="0.72" transform="translate(0, 0)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fbbf24" stroke="#fbbf24" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#d97706" stroke="#d97706" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#92400e" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+                <!-- Back-right · rose -->
+                <g opacity="0.72" transform="translate(11, 0)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fda4af" stroke="#fda4af" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#e11d48" stroke="#e11d48" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#9f1239" stroke="#9f1239" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+                <!-- Front-left · violet -->
+                <g opacity="0.72" transform="translate(5, 8)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#c4b5fd" stroke="#c4b5fd" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#7c3aed" stroke="#7c3aed" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#4c1d95" stroke="#4c1d95" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+                <!-- Front-right · indigo -->
+                <g opacity="0.72" transform="translate(16, 8)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#93c5fd" stroke="#93c5fd" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#3b82f6" stroke="#3b82f6" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="58" height="42" viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.78" transform="translate(0, 0)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fef08a" stroke="#fef08a" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#fbbf24" stroke="#fbbf24" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#b45309" stroke="#b45309" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+                <g opacity="0.78" transform="translate(11, 0)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#fecdd3" stroke="#fecdd3" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#fb7185" stroke="#fb7185" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#be123c" stroke="#be123c" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+                <g opacity="0.78" transform="translate(5, 8)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#ddd6fe" stroke="#ddd6fe" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#a78bfa" stroke="#a78bfa" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#6d28d9" stroke="#6d28d9" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+                <g opacity="0.78" transform="translate(16, 8)">
+                  <polygon points="11,1 20,6 11,11 2,6"   fill="#bfdbfe" stroke="#bfdbfe" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="20,6 20,16 11,21 11,11" fill="#60a5fa" stroke="#60a5fa" stroke-width="1.2" stroke-linejoin="round"/>
+                  <polygon points="2,6 11,11 11,21 2,16"   fill="#2563eb" stroke="#2563eb" stroke-width="1.2" stroke-linejoin="round"/>
+                </g>
+              </svg>
+              <span class="word">tessera</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Four cubes</span>
+          <span class="chip">Full brand gradient</span>
+          <span class="chip">Honeycomb shift</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <h3>My pick</h3>
+        <p>
+          <strong>06 · Iso mosaic · translucent overlap</strong> as the primary mark — three softened cubes mixing through glass, sized to sit comfortably next to the wordmark, with Fraunces italic giving the lockup an editorial / craft tone. <strong>07 · Iso pair</strong> at smaller scales (favicon, app icon, social avatar) where three cubes would collapse into mud — two cubes hold up at 16 px. Same atomic form, two scale treatments. Option 08 (quartet) is the version for marketing surfaces that need the full brand gradient in the mark.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

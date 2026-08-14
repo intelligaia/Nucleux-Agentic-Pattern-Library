@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Intelligaia — AI UX Pattern Library</title>
+  <meta name="description" content="A pattern language for agentic products. By Intelligaia." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Archivo:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Heavy grotesque closest to Leonardo's proprietary leoSans/Ufficio display faces -->
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="landing-dark">
+
+  <!-- ────────────────────────────────────────────────────
+       GLOBAL NAV — minimal: logo + Download SDK + Contact Us
+       ──────────────────────────────────────────────────── -->
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+        <a class="gnav__link" href="library.html">Library</a>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="sandbox.html">Sandbox</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="library.html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Download SDK
+        </a>
+        <a class="gnav__cta" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ────────────────────────────────────────────────────
+       SCENE — wraps hero + framework so the particle cluster
+       persists and morphs through both sections via a sticky
+       canvas behind the content.
+       ──────────────────────────────────────────────────── -->
+  <div class="scene">
+    <div class="scene__bg"><canvas id="hero-canvas" aria-hidden="true"></canvas></div>
+
+  <!-- Tall track that pins the hero so the storm plays across the scroll -->
+  <div class="hero-scroll">
+  <section class="hero hero--tunnel">
+
+    <!-- Stylized perspective word room -->
+    <div class="hero__room" aria-hidden="true">
+      <span class="tword tword--top">ONBOARDING</span>
+      <span class="tword tword--left">INITIALLY</span>
+      <span class="tword tword--right">OVER&nbsp;TIME</span>
+      <span class="tword tword--bottom">DURING&nbsp;INTERACTION</span>
+      <span class="tword tword--bottom-reflect" aria-hidden="true">DURING&nbsp;INTERACTION</span>
+    </div>
+
+    <!-- Component patterns that fade in from the back on scroll -->
+    <div class="hero__storm" aria-hidden="true">
+      <div class="hero__fleet">
+        <div class="warp-card hero-card" style="--x:-478;--y:-238;--d:0.00">
+          <div class="hero-card__name">Onboarding</div>
+          <p class="hero-card__desc">Orientation before real use — disclosure, identity, and what the system can actually do.</p>
+          <div class="hero-card__meta">3 categories · 12 patterns</div>
+        </div>
+        <div class="warp-card hero-card" style="--x:436;--y:-176;--d:0.14">
+          <div class="hero-card__name">Initially</div>
+          <p class="hero-card__desc">First touch, first prompt — the moment the user actually engages, before they trust it.</p>
+          <div class="hero-card__meta">4 categories · 24 patterns</div>
+        </div>
+        <div class="warp-card hero-card" style="--x:-402;--y:196;--d:0.30">
+          <div class="hero-card__name">During interaction</div>
+          <p class="hero-card__desc">Active use and recovery — output, processing, refinement, and what happens when it slips.</p>
+          <div class="hero-card__meta">6 categories · 37 patterns</div>
+        </div>
+        <div class="warp-card hero-card" style="--x:498;--y:242;--d:0.46">
+          <div class="hero-card__name">Over time</div>
+          <p class="hero-card__desc">The long-term relationship — what the system remembers, what changes, what stays.</p>
+          <div class="hero-card__meta">4 categories · 11 patterns</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__vignette" aria-hidden="true"></div>
+
+    <div class="container hero__content">
+      <div class="hero__panel">
+        <div class="hero__headings">
+          <h1 class="hero__title">
+            One pattern language<br/>
+            for teams shipping<br/>
+            enterprise AI<span class="hero__caret" aria-hidden="true"></span>
+          </h1>
+          <div class="hero__swap" aria-hidden="true">
+            <h2 class="hero__swap-title">A pattern lives inside one of four moments in an AI experience.</h2>
+            <p class="hero__swap-sub">Each stage opens a different design conversation. The library is organised against this map so the right pattern is always one click away.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div><!-- /hero-scroll -->
+
+  <!-- ────────────────────────────────────────────────────
+       CATEGORY PREVIEWS — third block (cluster fades out here)
+       ──────────────────────────────────────────────────── -->
+  <section class="cats">
+    <div class="container">
+      <div class="cats__intro reveal">
+        <h2>Every stage opens onto a tighter set of design problems.</h2>
+        <p>Inside each stage, patterns cluster around a handful of recurring conversations the team should have together — what the AI is, how the user enters, how the system responds, what changes over time.</p>
+      </div>
+
+      <!-- Onboarding -->
+      <article class="cat reveal" data-parallax-y="-0.025">
+        <div class="cat__left">
+          <span class="cat__icon" data-stage="onboarding" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="16" cy="16" r="12.5"/>
+              <circle cx="11.5" cy="14" r="1.1" fill="currentColor" stroke="none"/>
+              <circle cx="20.5" cy="14" r="1.1" fill="currentColor" stroke="none"/>
+              <path d="M11 20c2.2 1.6 7.8 1.6 10 0"/>
+            </svg>
+          </span>
+          <h3 class="cat__name">Onboarding</h3>
+          <p class="cat__lede">Orientation before real use — what the AI is, who it is, what it can do, what we ask of users in return. Get this right and trust compounds across every later phase.</p>
+          <a class="cat__cta" href="library.html#stage-onboarding">
+            Browse 12 patterns
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="cat__subs">
+          <a class="cat__sub" href="library.html#stage-onboarding">
+            <div>
+              <div class="cat__sub-name">Trust &amp; disclosure</div>
+              <div class="cat__sub-desc">What is this, what are the rules, what data does it use.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-onboarding">
+            <div>
+              <div class="cat__sub-name">Identity</div>
+              <div class="cat__sub-desc">Who the AI is — visually, verbally, behaviourally.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-onboarding">
+            <div>
+              <div class="cat__sub-name">Capability discovery</div>
+              <div class="cat__sub-desc">Showing — not telling — what the system can actually do.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+        </div>
+      </article>
+
+      <!-- Initially -->
+      <article class="cat reveal" data-parallax-y="-0.025">
+        <div class="cat__left">
+          <span class="cat__icon" data-stage="initially" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="6" cy="16" r="2" fill="currentColor" stroke="none"/>
+              <path d="M9 16h17"/>
+              <path d="M20 10l6 6-6 6"/>
+            </svg>
+          </span>
+          <h3 class="cat__name">Initially</h3>
+          <p class="cat__lede">First touch, first prompt. The moment the user actually engages — picks an entry point, gives the AI context, attempts their first ask. The job here is to make their first attempt succeed, not just exist.</p>
+          <a class="cat__cta" href="library.html#stage-initially">
+            Browse 24 patterns
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="cat__subs">
+          <a class="cat__sub" href="library.html#stage-initially">
+            <div>
+              <div class="cat__sub-name">Entry points</div>
+              <div class="cat__sub-desc">The doors users walk through to reach the AI.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-initially">
+            <div>
+              <div class="cat__sub-name">Expressive input</div>
+              <div class="cat__sub-desc">Voice, visual, gesture, structured.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-initially">
+            <div>
+              <div class="cat__sub-name">Prompt scaffolds</div>
+              <div class="cat__sub-desc">Helping users write a prompt that returns what they wanted.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-initially">
+            <div>
+              <div class="cat__sub-name">Context expansion</div>
+              <div class="cat__sub-desc">Bringing the user's world into the AI's working memory.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+        </div>
+      </article>
+
+      <!-- During -->
+      <article class="cat reveal" data-parallax-y="-0.025">
+        <div class="cat__left">
+          <span class="cat__icon" data-stage="during" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="13" r="6"/>
+              <circle cx="21" cy="19" r="6"/>
+              <path d="M14.5 16.5l3-2"/>
+            </svg>
+          </span>
+          <h3 class="cat__name">During interaction</h3>
+          <p class="cat__lede">The bulk of the journey — output, processing, collaboration, refinement, error recovery, power controls. Most patterns live here, and most adoption is won or lost on the details.</p>
+          <a class="cat__cta" href="library.html#stage-during">
+            Browse 37 patterns
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="cat__subs">
+          <a class="cat__sub" href="library.html#stage-during">
+            <div>
+              <div class="cat__sub-name">Output &amp; processing</div>
+              <div class="cat__sub-desc">How the AI responds, streams, paces, and shows its work.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-during">
+            <div>
+              <div class="cat__sub-name">Collaboration canvas</div>
+              <div class="cat__sub-desc">Shared work surfaces where user and AI co-edit.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-during">
+            <div>
+              <div class="cat__sub-name">Refinement</div>
+              <div class="cat__sub-desc">Iterating on output without starting over.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-during">
+            <div>
+              <div class="cat__sub-name">Explainability</div>
+              <div class="cat__sub-desc">Helping the user understand and trust the answer.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-during">
+            <div>
+              <div class="cat__sub-name">Recovery</div>
+              <div class="cat__sub-desc">When wrong — handling uncertainty, errors, and misalignment.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-during">
+            <div>
+              <div class="cat__sub-name">Power controls</div>
+              <div class="cat__sub-desc">Operators for users who push the system hard.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+        </div>
+      </article>
+
+      <!-- Over time -->
+      <article class="cat reveal" data-parallax-y="-0.025">
+        <div class="cat__left">
+          <span class="cat__icon" data-stage="overtime" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="16" cy="16" r="12"/>
+              <path d="M16 9v7l4.5 3"/>
+              <path d="M26 13a11 11 0 0 0-3-4"/>
+            </svg>
+          </span>
+          <h3 class="cat__name">Over time</h3>
+          <p class="cat__lede">The long-term relationship. What the AI remembers, what it forgets, what changes, what stays the same. These patterns decide whether users come back — and whether trust survives the second month.</p>
+          <a class="cat__cta" href="library.html#stage-overtime">
+            Browse 11 patterns
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="cat__subs">
+          <a class="cat__sub" href="library.html#stage-overtime">
+            <div>
+              <div class="cat__sub-name">Memory &amp; continuity</div>
+              <div class="cat__sub-desc">What persists across sessions.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-overtime">
+            <div>
+              <div class="cat__sub-name">Privacy &amp; control</div>
+              <div class="cat__sub-desc">Surfaces that let users own their footprint.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-overtime">
+            <div>
+              <div class="cat__sub-name">Adaptation</div>
+              <div class="cat__sub-desc">How the system improves with use.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a class="cat__sub" href="library.html#stage-overtime">
+            <div>
+              <div class="cat__sub-name">Change management</div>
+              <div class="cat__sub-desc">Telling the user when the system itself has changed.</div>
+            </div>
+            <span class="cat__sub-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+  </div><!-- /scene -->
+
+  <!-- ────────────────────────────────────────────────────
+       PRACTICES — where this library applies
+       ──────────────────────────────────────────────────── -->
+  <section class="practices" id="practices">
+    <div class="container">
+      <header class="practices__head reveal" data-parallax-y="-0.03">
+        <span class="t-eyebrow">Scenarios</span>
+        <h2 class="practices__title">Adapted to every use case,<br/>every component,<br/>every <em>agentic</em> product.</h2>
+        <p class="practices__sub">Real product moments — each one composes a different mix of patterns from the four stages. Open the scenarios page to see the full set, the practice tags they cover, and the patterns inside.</p>
+      </header>
+
+      <div class="practices__grid">
+
+        <a class="practice reveal" href="practices.html#meeting-summariser" data-tint="emerald">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h10M4 18h7"/>
+            <path d="M17 15l2 2 4-4"/>
+          </svg>
+          <h3 class="practice__name">Meeting summariser</h3>
+          <p class="practice__desc">Hour-long meeting → verified five-bullet recap with action items.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#sales-discovery-copilot" data-tint="amber">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19l5-5 3 3 7-9"/>
+            <path d="M14 8h5v5"/>
+          </svg>
+          <h3 class="practice__name">Sales discovery copilot</h3>
+          <p class="practice__desc">Live-call sidecar that drafts a structured account brief inside the CRM.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#customer-support-triage" data-tint="emerald">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 17V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4z"/>
+            <circle cx="9" cy="11" r="0.9" fill="currentColor"/>
+            <circle cx="12" cy="11" r="0.9" fill="currentColor"/>
+            <circle cx="15" cy="11" r="0.9" fill="currentColor"/>
+          </svg>
+          <h3 class="practice__name">Customer support triage</h3>
+          <p class="practice__desc">Agent-assist sidecar that drafts replies and flags hand-off moments.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#code-review-copilot" data-tint="indigo">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 17l-5-5 5-5M16 7l5 5-5 5M14 4l-4 16"/>
+          </svg>
+          <h3 class="practice__name">Code review copilot</h3>
+          <p class="practice__desc">A reviewer that explains <em>why</em> each suggestion, line by line.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#compliance-reviewer" data-tint="sky">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          <h3 class="practice__name">Compliance reviewer</h3>
+          <p class="practice__desc">Second-pair-of-eyes for policy docs — every claim traced to its rule.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#onboarding-companion" data-tint="violet">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3.2"/>
+            <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+            <path d="M17 6h4M19 4v4"/>
+          </svg>
+          <h3 class="practice__name">Onboarding companion</h3>
+          <p class="practice__desc">A first-30-days assistant for new hires — patient, citation-led.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#clinical-note-assistant" data-tint="rose">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12h3l2-5 3 10 2-7 2 4 1-2h5"/>
+          </svg>
+          <h3 class="practice__name">Clinical note assistant</h3>
+          <p class="practice__desc">Encounter → verified structured note, traceable to a chart line.</p>
+        </a>
+
+        <a class="practice reveal" href="practices.html#threat-narrative" data-tint="sky">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 2"/>
+            <path d="M5 5l2 2M19 5l-2 2"/>
+          </svg>
+          <h3 class="practice__name">Threat narrative</h3>
+          <p class="practice__desc">SOC copilot that turns noisy alert clusters into a single story.</p>
+        </a>
+
+      </div>
+
+      <div class="practices__more reveal">
+        <a class="btn btn--ghost" href="practices.html">
+          See all scenarios
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────
+       LABS — interaction & typography playground.
+       Lives on the home page; opens the standalone Labs
+       page (does not launch inside the Library).
+       ──────────────────────────────────────────────────── -->
+  <section class="practices" id="labs">
+    <div class="container">
+      <header class="practices__head reveal" data-parallax-y="-0.03">
+        <span class="t-eyebrow">Labs</span>
+        <h2 class="practices__title">The <em>motion</em> and type behind the patterns.</h2>
+        <p class="practices__sub">Nucleux is more than components — it's the interaction feel, the type system and the landing-page moves that make an agentic product read as one thing. The Labs are the live playground for those behaviours, restyled in this design language.</p>
+      </header>
+
+      <div class="practices__grid">
+        <a class="practice reveal" href="labs.html#01" data-tint="amber">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3l7.5 18 2.3-7.2L20 11.5 3 3z"/>
+          </svg>
+          <h3 class="practice__name">Interaction Lab · BOLD</h3>
+          <p class="practice__desc">Bold, scroll-driven landing interactions — magnetic actions, reveals and motion.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#02" data-tint="violet">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 6V4h14v2M12 4v16M8 20h8"/>
+          </svg>
+          <h3 class="practice__name">Typography &amp; Heroes</h3>
+          <p class="practice__desc">The full type catalog and hero lockups built on the Nucleux scale.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#03" data-tint="rose">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7V5h16v2M9 5v14M7 19h4"/><path d="M14 12h6M14 16h4"/>
+          </svg>
+          <h3 class="practice__name">Typography Lab</h3>
+          <p class="practice__desc">A working bench for type — weights, sizes, pairings and kinetic treatments.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#04" data-tint="indigo">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h8"/>
+          </svg>
+          <h3 class="practice__name">Hero Gallery</h3>
+          <p class="practice__desc">Landing hero layouts — centered, split and editorial variations.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#05" data-tint="sky">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>
+          </svg>
+          <h3 class="practice__name">Day Cycle</h3>
+          <p class="practice__desc">Ambient time-of-day theming that follows the user's clock.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#06" data-tint="emerald">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 13V6a1.5 1.5 0 0 1 3 0v5m0-.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v4a5 5 0 0 1-5 5h-1.5a4 4 0 0 1-3-1.4L5 16"/>
+          </svg>
+          <h3 class="practice__name">Hand Animation</h3>
+          <p class="practice__desc">A hand-wave greeting loop for onboarding and empty states.</p>
+        </a>
+      </div>
+
+      <div class="practices__more reveal">
+        <a class="btn btn--solid" href="labs.html">
+          Open the Labs
+          <svg class="btn__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────
+       FOOTER — with ambient gradient backdrop
+       ──────────────────────────────────────────────────── -->
+  <footer class="foot">
+    <div class="container">
+      <!-- ─── Makers · big-word + integrated photo collage ─── -->
+      <div class="makers reveal" aria-label="The makers">
+        <h2 class="makers__bigword" data-parallax-y="-0.02">
+          Built by people who design <em>agentic</em>&nbsp;products.
+        </h2>
+
+        <div class="makers__row">
+          <!-- Decorative photo collage (placeholders) -->
+          <div class="makers__gallery" aria-hidden="true">
+            <figure class="makers__photo" style="--rot:-5deg;--x:0%;--y:6%;--tint:rgba(217,119,6,0.22)">
+              <img src="team-1.jpg" alt="" loading="lazy" width="480" height="563" />
+              <figcaption>designer</figcaption>
+            </figure>
+            <figure class="makers__photo" style="--rot:3deg;--x:32%;--y:30%;--tint:rgba(124,58,237,0.22);--z:3">
+              <img src="team-2.jpg" alt="" loading="lazy" width="480" height="563" />
+              <figcaption>engineer</figcaption>
+            </figure>
+            <figure class="makers__photo" style="--rot:-2deg;--x:64%;--y:0%;--tint:rgba(30,64,175,0.22)">
+              <img src="team-3.jpg" alt="" loading="lazy" width="480" height="563" />
+              <figcaption>researcher</figcaption>
+            </figure>
+          </div>
+
+          <!-- Pitch column sits beside the gallery -->
+          <p class="makers__pitch">
+            Intelligaia is a research-driven product design studio working with enterprise teams on AI-native software. <em>Nucleux</em> is a public artefact of that practice — open to use, free to adapt, and updated as the practice evolves.
+          </p>
+        </div>
+      </div>
+
+      <div class="foot__bottom">
+        <span class="foot__meta">© 2026 Intelligaia · AI UX Pattern Library</span>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="library.html">Library</a>
+          <a href="https://www.intelligaia.com/" target="_blank" rel="noopener">intelligaia.com ↗</a>
+          <a href="https://www.intelligaia.com/blog" target="_blank" rel="noopener">Insights ↗</a>
+          <a href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Contact ↗</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="landing.js"></script>
+  <script src="patterns.js"></script>
+  <script src="global.js"></script>
+</body>
+</html>

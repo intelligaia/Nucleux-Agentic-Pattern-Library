@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Scenario — Nucleux</title>
+  <meta name="description" content="Agent detail: video walkthrough, version, components, patterns covered. Launch the live sandbox for hands-on exploration." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Noto+Sans+Devanagari:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item gnav__item--has-flyout">
+          <a class="gnav__link" href="#components">Components</a>
+          <div class="gnav__flyout" role="menu" aria-label="Components">
+            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Basic Components</span>
+              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
+            </a>
+            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Agentic Components</span>
+              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
+            </a>
+          </div>
+        </div>
+        <a class="gnav__link is-current" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="scn-detail" id="scn-detail">
+    <div class="container">
+      <nav class="scn-detail__bread" aria-label="Breadcrumb">
+        <a href="practices.html">Scenarios</a>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span data-scn-tag>—</span>
+      </nav>
+
+      <header class="scn-detail__head">
+        <span class="scn-detail__eyebrow" data-scn-eyebrow>Agent demo</span>
+        <h1 class="scn-detail__title" data-scn-title>—</h1>
+        <p class="scn-detail__desc" data-scn-desc>—</p>
+      </header>
+
+      <!-- Big video / POC preview -->
+      <section class="scn-detail__media">
+        <div class="scn-detail__player" id="scn-player">
+          <div class="scn-detail__shell" id="scn-shell"></div>
+          <div class="scn-detail__overlay" id="scn-overlay">
+            <span class="scn-detail__rec">● REC</span>
+            <button class="scn-detail__play" type="button" data-scn-play aria-label="Play walkthrough">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <span class="scn-detail__duration" data-scn-duration>1:24</span>
+          </div>
+          <div class="scn-detail__progress" id="scn-progress" hidden>
+            <div class="scn-detail__progress-bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats row -->
+      <section class="scn-detail__stats">
+        <div class="scn-stat">
+          <div class="scn-stat__label">Agent version</div>
+          <div class="scn-stat__value" data-scn-version>v1.2</div>
+        </div>
+        <div class="scn-stat">
+          <div class="scn-stat__label">Components used</div>
+          <div class="scn-stat__value" data-scn-components>—</div>
+        </div>
+        <div class="scn-stat">
+          <div class="scn-stat__label">Patterns covered</div>
+          <div class="scn-stat__value" data-scn-patterns-count>—</div>
+        </div>
+        <div class="scn-stat">
+          <div class="scn-stat__label">Tool archetype</div>
+          <div class="scn-stat__value" data-scn-archetype>—</div>
+        </div>
+      </section>
+
+      <!-- Featured patterns -->
+      <section class="scn-detail__patterns">
+        <header class="scn-detail__section-head">
+          <h2 class="scn-detail__section-title">Patterns this agent uses</h2>
+          <p class="scn-detail__section-lede">Each one is documented in the library with variants, in-context placements, and copy-pasteable code.</p>
+        </header>
+        <div class="scn-detail__patterns-grid" id="scn-patterns-grid"></div>
+      </section>
+
+      <!-- Launch sandbox -->
+      <section class="scn-detail__launch">
+        <div class="scn-detail__launch-card">
+          <div class="scn-detail__launch-head">
+            <span class="scn-detail__launch-eyebrow">Try it live</span>
+            <h2 class="scn-detail__launch-title" data-scn-launch-title>Open this agent in the sandbox</h2>
+            <p class="scn-detail__launch-desc">A realistic, scripted version of this agent loads in the tool archetype it ships in. Type prompts, watch patterns render inline, swap variants on the fly.</p>
+          </div>
+          <div class="scn-detail__launch-actions">
+            <a class="scn-detail__cta scn-detail__cta--primary" id="scn-launch-cta" href="sandbox.html" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M14 3h7v7M10 21H3v-7M21 3l-7 7M3 21l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Launch in sandbox
+            </a>
+            <button class="scn-detail__cta scn-detail__cta--ghost" type="button" data-asst-open>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-4a8 8 0 1 1 18-7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Ask Lumen about this
+            </button>
+            <a class="scn-detail__cta scn-detail__cta--ghost" href="contact.html">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 5l9 7 9-7M3 5v14h18V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Schedule a working session
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="patterns.js"></script>
+  <script src="medha-mock.js"></script>
+  <script src="scenario.js"></script>
+  <script src="global.js"></script>
+</body>
+</html>

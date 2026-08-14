@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Docs — Nucleux</title>
+  <meta name="description" content="Nucleux documentation — installation, design tokens, components, code examples, API reference." />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+
+    /* ── Docs page sections ── */
+    .dc-hero {
+      padding-block: var(--s-20) var(--s-10);
+      border-bottom: 1px solid var(--border);
+    }
+    .dc-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--fg-muted);
+      letter-spacing: 0.02em;
+      margin: 0 0 var(--s-4);
+    }
+    .dc-hero__title {
+      font-size: clamp(48px, 6vw, 80px);
+      line-height: 1.0;
+      letter-spacing: -0.045em;
+      font-weight: 600;
+      margin: 0 0 var(--s-5);
+      color: var(--fg);
+    }
+    .dc-hero__lede {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--fg-mid);
+      max-width: var(--docs-w);
+      margin: 0 0 var(--s-7);
+    }
+    .dc-hero__install {
+      display: flex;
+      align-items: center;
+      gap: var(--s-5);
+      flex-wrap: wrap;
+    }
+    .dc-install-bar {
+      display: flex;
+      align-items: stretch;
+      background: var(--ink-950);
+      border: 1px solid var(--ink-800);
+      border-radius: var(--r-3);
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+    }
+    .dc-install-bar__cmd {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 20px;
+      color: var(--ink-100);
+    }
+    .dc-install-bar__cmd .p   { color: var(--ink-500); user-select: none; }
+    .dc-install-bar__cmd .pkg { color: #93c5fd; }
+    .dc-install-bar__copy {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 14px;
+      font-size: 11px;
+      color: var(--ink-400);
+      background: var(--ink-900);
+      border-left: 1px solid var(--ink-800);
+      cursor: pointer;
+      transition: background var(--dur-1), color var(--dur-1);
+    }
+    .dc-install-bar__copy:hover { background: var(--ink-800); color: var(--ink-100); }
+    .dc-npmjs-link {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--fg-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dc-npmjs-link:hover { color: var(--fg); }
+
+    /* Content sections */
+    :root { --docs-w: 980px; }
+
+    .dc-section {
+      padding-block: var(--s-10);
+      border-bottom: 1px solid var(--border);
+      max-width: var(--docs-w);
+    }
+    .dc-section:last-of-type { border-bottom: none; }
+    .dc-h2 {
+      font-size: clamp(24px, 2.8vw, 32px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--fg);
+      margin: 0 0 var(--s-4);
+    }
+    .dc-body {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--fg-mid);
+      margin: 0 0 var(--s-5);
+    }
+    .dc-body code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: rgba(12,12,10,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--fg);
+    }
+    .dc-note {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--fg-muted);
+      padding-left: var(--s-4);
+      border-left: 2px solid var(--border);
+      margin-top: var(--s-4);
+    }
+    .dc-note code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: rgba(12,12,10,0.05);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* ── Shared: all code/command containers inherit .dc-code padding ── */
+
+    /* Install command rows — reset white-space so newline text nodes between divs collapse */
+    .dc-code--install-rows {
+      white-space: normal;
+    }
+    /* Each command line */
+    .dc-irow {
+      display: block;
+      line-height: 1.5;
+      white-space: pre;
+      margin: 0;
+    }
+    /* Small visual gap between command groups (replaces dc-irow--gap height) */
+    .dc-irow--gap {
+      display: block;
+      height: 8px;
+      line-height: 0;
+      font-size: 0;
+    }
+    /* Command line with inline copy button */
+    .dc-irow--cmd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      white-space: normal;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .dc-irow--cmd > span { white-space: pre; }
+
+    /* Theming code block — inherits .dc-code padding; inner wrapper is zero-padded */
+    .dc-code--install {
+      white-space: normal;
+    }
+    .dc-install-row--block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-2);
+      padding: 0;
+    }
+    .dc-install-block-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--s-4);
+    }
+    .dc-install-block-body {
+      display: block;
+      white-space: pre;
+    }
+    /* Copy button — matches .dc-code__copy style */
+    .dc-inline-copy {
+      flex-shrink: 0;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      border-radius: var(--r-2);
+      background: var(--ink-800);
+      color: var(--ink-400);
+      border: 1px solid var(--ink-700);
+      cursor: pointer;
+      line-height: 1.6;
+    }
+    .dc-inline-copy:hover { background: var(--ink-700); color: #fff; }
+
+    /* Code blocks */
+    .dc-code {
+      background: var(--ink-950);
+      border: 1px solid var(--ink-800);
+      border-radius: var(--r-3);
+      padding: var(--s-3) var(--s-5);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--ink-200);
+      overflow-x: auto;
+      position: relative;
+      margin: 0 0 var(--s-4);
+      white-space: pre;
+    }
+    .dc-code:last-child { margin-bottom: 0; }
+    .dc-code .c  { color: var(--ink-500); }
+    .dc-code .k  { color: #93c5fd; }
+    .dc-code .v  { color: #86efac; }
+    .dc-code .s  { color: #fcd34d; }
+    .dc-code .fn { color: #c4b5fd; }
+    .dc-code .p  { color: var(--ink-400); }
+    .dc-code__filename {
+      display: block;
+      font-size: 11px;
+      color: var(--ink-500);
+      letter-spacing: 0.04em;
+      margin-bottom: var(--s-3);
+    }
+    .dc-code__copy {
+      position: absolute;
+      top: 12px; right: 12px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      border-radius: var(--r-2);
+      background: var(--ink-800);
+      color: var(--ink-300);
+      border: 1px solid var(--ink-700);
+      cursor: pointer;
+    }
+    .dc-code__copy:hover { background: var(--ink-700); color: #fff; }
+
+    /* Packages tile section */
+    .dc-pkg-intro {
+      font-size: 15px;
+      color: var(--fg-mid);
+      line-height: 1.65;
+      margin: 0 0 var(--s-8);
+    }
+    .dc-pkg-intro code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: rgba(12,12,10,0.06);
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: var(--fg);
+    }
+
+    /* chips inside tiles */
+    .dc-pkg-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: var(--s-3);
+    }
+    .dc-pkg-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: var(--r-2);
+      background: rgba(12,12,10,0.05);
+      border: 1px solid rgba(12,12,10,0.08);
+      color: var(--fg-mid);
+    }
+
+    /* Compact tile overrides for packages grid */
+    .docs-outline__grid--pkg .docs-card {
+      min-height: 0;
+      padding: var(--s-4) var(--s-5);
+      gap: var(--s-1);
+    }
+    .docs-outline__grid--pkg .docs-card__name {
+      font-size: 17px;
+      margin-top: var(--s-1);
+    }
+    .docs-outline__grid--pkg .docs-card__desc {
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item gnav__item--has-flyout">
+          <a class="gnav__link" href="#components">Components</a>
+          <div class="gnav__flyout" role="menu" aria-label="Components">
+            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Basic Components</span>
+              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
+            </a>
+            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Agentic Components</span>
+              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
+            </a>
+          </div>
+        </div>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link is-current" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="docs-page">
+
+    <!-- ── Hero ── -->
+    <section class="dc-hero">
+      <div class="container">
+        <h1 class="dc-hero__title">The agentic <span style="white-space:nowrap">UI library</span> for React.</h1>
+        <p class="dc-hero__lede">Nucleux ships every pattern in this library as a real, installable React component. One umbrella package, ~50 focused sub-packages, Tailwind-native theming, TypeScript throughout — the same components the Meeting Summariser is built from.</p>
+      </div>
+    </section>
+
+    <!-- ── Install ── -->
+    <section>
+      <div class="container">
+        <div class="dc-section">
+          <h2 class="dc-h2">Install</h2>
+          <p class="dc-body">The umbrella package re-exports every component; you can also install any sub-package on its own.</p>
+          <div class="dc-code dc-code--install-rows">
+<div class="dc-irow"><span class="c"># everything (recommended)</span></div>
+<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">@nucleux/react</span></span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText('npm install @nucleux/react');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+<div class="dc-irow dc-irow--gap"> </div>
+<div class="dc-irow"><span class="c"># or just what you need</span></div>
+<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">@nucleux/message</span> <span class="v">@nucleux/agent-composer</span> <span class="v">@nucleux/button</span></span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText('npm install @nucleux/message @nucleux/agent-composer @nucleux/button');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+<div class="dc-irow dc-irow--gap"> </div>
+<div class="dc-irow"><span class="c"># peer deps</span></div>
+<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">react</span> <span class="v">react-dom</span></span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText('npm install react react-dom');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Set up theming ── -->
+    <section>
+      <div class="container">
+        <div class="dc-section">
+          <h2 class="dc-h2">Set up theming</h2>
+          <p class="dc-body">Components are styled with Tailwind utilities bound to design tokens in <code>@nucleux/tokens</code>. Add the preset, scan the compiled components, and import the token stylesheet.</p>
+          <div class="dc-code dc-code--install">
+<div class="dc-install-row dc-install-row--block">
+  <div class="dc-install-block-head"><span class="c">// tailwind.config.js</span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText(`import nucleux from '@nucleux/tokens/preset'\n\nexport default {\n  presets: [nucleux],\n  content: [\n    './src/**/*.{js,jsx,ts,tsx}',\n    './node_modules/@nucleux/**/dist/*.js',\n  ],\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+  <div class="dc-install-block-body"><span class="k">import</span> nucleux <span class="k">from</span> <span class="s">'@nucleux/tokens/preset'</span>
+<span class="k">export default</span> {
+  <span class="p">presets</span>: [nucleux],
+  <span class="p">content</span>: [
+    <span class="s">'./src/**/*.{js,jsx,ts,tsx}'</span>,
+    <span class="s">'./node_modules/@nucleux/**/dist/*.js'</span>, <span class="c">// generate component classes</span>
+  ],
+}</div>
+</div>
+          </div>
+          <div class="dc-code dc-code--install" style="margin-top:var(--s-4)">
+<div class="dc-install-row dc-install-row--block">
+  <div class="dc-install-block-head"><span class="c">/* index.css */</span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText(`@import '@nucleux/tokens/styles.css';\n@tailwind components;\n@tailwind utilities;`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+  <div class="dc-install-block-body"><span class="k">@import</span> <span class="s">'@nucleux/tokens/styles.css'</span>; <span class="c">/* --nx-* tokens, light + .dark */</span>
+<span class="k">@tailwind</span> components;
+<span class="k">@tailwind</span> utilities;</div>
+</div>
+          </div>
+          <p class="dc-note">Toggle dark mode with a <code>.dark</code> class on a parent element. Tokens cover colour, radius, and the <code>nx-*</code> keyframes (caret blink, typing dots, fade-in).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Quick start ── -->
+    <section>
+      <div class="container">
+        <div class="dc-section">
+          <h2 class="dc-h2">Quick start — an agent chat</h2>
+          <p class="dc-body">A scrolling transcript with auto-pin, streamed assistant messages, and a composer that submits on Enter.</p>
+          <div class="dc-code"><button class="dc-code__copy" style="top:12px;right:12px" onclick="navigator.clipboard.writeText(`import { Thread, Message, AgentComposer, Badge } from '@nucleux/react'\n\nfunction Chat({ messages, input, setInput, onSend, busy }) {\n  return (\n    <Thread autoScrollKey={messages.length}>\n      {messages.map((m) => (\n        <Message key={m.id} role={m.role} content={m.text} streaming={m.streaming} />\n      ))}\n      <AgentComposer\n        value={input}\n        onValueChange={setInput}\n        onSubmit={onSend}\n        loading={busy}\n        placeholder='Ask anything…'\n      />\n    </Thread>\n  )\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button><span class="k">import</span> { <span class="v">Thread</span>, <span class="v">Message</span>, <span class="v">AgentComposer</span>, <span class="v">Badge</span> } <span class="k">from</span> <span class="s">'@nucleux/react'</span>
+<span class="fn">function</span> <span class="v">Chat</span>({ messages, input, setInput, onSend, busy }) {
+  <span class="k">return</span> (
+    &lt;<span class="v">Thread</span> autoScrollKey={messages.length}&gt;
+      {messages.<span class="fn">map</span>((m) =&gt; (
+        &lt;<span class="v">Message</span> key={m.id} role={m.role} content={m.text} streaming={m.streaming} /&gt;
+      ))}
+      &lt;<span class="v">AgentComposer</span>
+        value={input}
+        onValueChange={setInput}
+        onSubmit={onSend}
+        loading={busy}
+        placeholder=<span class="s">"Ask anything…"</span>
+      /&gt;
+    &lt;/<span class="v">Thread</span>&gt;
+  )
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Packages ── -->
+    <section class="docs-outline" style="padding-top:var(--s-10)">
+      <div class="container">
+        <div style="max-width:var(--docs-w)">
+        <h2 class="dc-h2" style="margin-bottom:var(--s-3)">Packages</h2>
+        <p class="dc-pkg-intro">~50 sub-packages under the <code>@nucleux/*</code> scope. Import from the umbrella (<code>@nucleux/react</code>) or per-package. Every export is typed.</p>
+        <div class="docs-outline__grid docs-outline__grid--pkg">
+
+          <article class="docs-card">
+            <h3 class="docs-card__name">Agentic &amp; chat</h3>
+            <p class="docs-card__desc">The building blocks for assistant UIs.</p>
+            <div class="dc-pkg-chips">
+              <span class="dc-pkg-chip">agent-composer</span>
+              <span class="dc-pkg-chip">input-bar</span>
+              <span class="dc-pkg-chip">message</span>
+              <span class="dc-pkg-chip">thread</span>
+              <span class="dc-pkg-chip">reasoning</span>
+              <span class="dc-pkg-chip">streaming-text</span>
+              <span class="dc-pkg-chip">typing-indicator</span>
+              <span class="dc-pkg-chip">tool-call</span>
+              <span class="dc-pkg-chip">suggestions</span>
+              <span class="dc-pkg-chip">follow-up</span>
+            </div>
+          </article>
+
+          <article class="docs-card">
+            <h3 class="docs-card__name">Actions &amp; inputs</h3>
+            <p class="docs-card__desc">Buttons and form controls.</p>
+            <div class="dc-pkg-chips">
+              <span class="dc-pkg-chip">button</span>
+              <span class="dc-pkg-chip">icon-button</span>
+              <span class="dc-pkg-chip">link-button</span>
+              <span class="dc-pkg-chip">checkbox</span>
+              <span class="dc-pkg-chip">checklist</span>
+              <span class="dc-pkg-chip">radio-group</span>
+              <span class="dc-pkg-chip">rich-checkbox-group</span>
+              <span class="dc-pkg-chip">switch</span>
+              <span class="dc-pkg-chip">select</span>
+              <span class="dc-pkg-chip">search-input</span>
+            </div>
+          </article>
+
+          <article class="docs-card">
+            <h3 class="docs-card__name">Layout &amp; navigation</h3>
+            <p class="docs-card__desc">Shells, surfaces, and overlays.</p>
+            <div class="dc-pkg-chips">
+              <span class="dc-pkg-chip">sidebar</span>
+              <span class="dc-pkg-chip">nav-panel</span>
+              <span class="dc-pkg-chip">global-nav</span>
+              <span class="dc-pkg-chip">right-sidebar</span>
+              <span class="dc-pkg-chip">page-header</span>
+              <span class="dc-pkg-chip">breadcrumb</span>
+              <span class="dc-pkg-chip">tabs</span>
+              <span class="dc-pkg-chip">separator</span>
+              <span class="dc-pkg-chip">card</span>
+              <span class="dc-pkg-chip">media-card</span>
+              <span class="dc-pkg-chip">sheet</span>
+              <span class="dc-pkg-chip">dialog</span>
+              <span class="dc-pkg-chip">popover</span>
+              <span class="dc-pkg-chip">menu</span>
+            </div>
+          </article>
+
+          <article class="docs-card">
+            <h3 class="docs-card__name">Feedback &amp; status</h3>
+            <p class="docs-card__desc">Signals, badges, and progress.</p>
+            <div class="dc-pkg-chips">
+              <span class="dc-pkg-chip">alert</span>
+              <span class="dc-pkg-chip">toast</span>
+              <span class="dc-pkg-chip">badge</span>
+              <span class="dc-pkg-chip">chip</span>
+              <span class="dc-pkg-chip">progress</span>
+              <span class="dc-pkg-chip">avatar</span>
+              <span class="dc-pkg-chip">tooltip</span>
+            </div>
+          </article>
+
+          <article class="docs-card">
+            <h3 class="docs-card__name">Content &amp; data</h3>
+            <p class="docs-card__desc">Rich content and structured display.</p>
+            <div class="dc-pkg-chips">
+              <span class="dc-pkg-chip">code-block</span>
+              <span class="dc-pkg-chip">table</span>
+              <span class="dc-pkg-chip">accordion</span>
+              <span class="dc-pkg-chip">action-tile</span>
+              <span class="dc-pkg-chip">getting-started-pill</span>
+              <span class="dc-pkg-chip">modular-consent</span>
+              <span class="dc-pkg-chip">related-patterns-grid</span>
+            </div>
+          </article>
+
+          <article class="docs-card">
+            <h3 class="docs-card__name">Foundations</h3>
+            <p class="docs-card__desc">Tokens, hooks, and utilities.</p>
+            <div class="dc-pkg-chips">
+              <span class="dc-pkg-chip">tokens</span>
+              <span class="dc-pkg-chip">tokens/preset</span>
+              <span class="dc-pkg-chip">tokens/styles.css</span>
+              <span class="dc-pkg-chip">hooks</span>
+              <span class="dc-pkg-chip">utils</span>
+            </div>
+          </article>
+
+        </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot foot--simple">
+    <div class="container">
+      <div class="foot__bottom">
+        <span class="foot__meta">© 2026 Intelligaia · Nucleux Pattern Library</span>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="library.html">Pattern Library</a>
+          <a href="practices.html">Scenarios</a>
+          <a href="docs.html">Docs</a>
+          <a href="mcp.html">MCP</a>
+          <a href="contact.html">Contact ↗</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="patterns.js"></script>
+  <script src="global.js"></script>
+</body>
+</html>

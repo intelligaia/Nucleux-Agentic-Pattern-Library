@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Intelligaia — AI UX Pattern Library</title>
+  <meta name="description" content="A pattern language for agentic products. By Intelligaia." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .npm-link { color: inherit; text-decoration: none; }
+    .npm-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* ── nav: Components dropdown ── */
+    .gnav__item {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .gnav__item .gnav__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    /* Components tab opens the dropdown on hover/focus only — it is not a link. */
+    span.gnav__link {
+      cursor: default;
+      user-select: none;
+    }
+    .gnav__caret {
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .gnav__item:hover .gnav__caret {
+      transform: rotate(180deg);
+    }
+    .gnav__dropdown {
+      /* Note: this wrapper spans from the link's bottom edge down to the
+         card (via padding-top, not margin/gap) so the mouse never crosses
+         a dead zone between the link and the flyout — that dead zone was
+         what caused the flyout to close before users could reach it. */
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding-top: 10px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.14s ease;
+      z-index: 50;
+    }
+    .gnav__item:hover .gnav__dropdown,
+    .gnav__item:focus-within .gnav__dropdown,
+    .gnav__dropdown:hover {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .gnav__dropdown-inner {
+      min-width: 240px;
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #eee);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 10px 34px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .gnav__dropdown-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.12s ease;
+    }
+    .gnav__dropdown-link:hover,
+    .gnav__dropdown-link:focus {
+      background: var(--ink-25, rgba(0,0,0,0.04));
+    }
+    .gnav__dropdown-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--ink-25, rgba(0,0,0,0.04));
+      flex-shrink: 0;
+    }
+    .gnav__dropdown-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--fg, #0a0a0a);
+      line-height: 1.3;
+    }
+    .gnav__dropdown-desc {
+      font-size: 11.5px;
+      color: var(--fg-muted, #888);
+      line-height: 1.4;
+      margin-top: 1px;
+    }
+    @media (max-width: 900px) {
+      .gnav__dropdown { display: none; }
+    }
+
+    /* ── Madlibs Prompt Scaffold demo section ── */
+    .ml-section { border-top: 1px solid var(--border); overflow: visible !important; }
+    .ml-section__head { max-width: 580px; margin: 0 auto var(--s-3, 48px); text-align: center; }
+    .ml-section__body { display: flex; justify-content: center; overflow: visible; }
+    .ml-root {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; width: 100%; max-width: 504px; display: flex; flex-direction: column;
+      gap: 16px; box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    }
+    .ml-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-muted); }
+    .ml-sentence { font-size: 15px; line-height: 2; color: var(--fg); }
+    .ml-slot-wrap { position: relative; display: inline-block; }
+    .ml-slot {
+      display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px;
+      border-radius: 6px; background: var(--accent-ghost); border: 1px solid var(--accent);
+      color: var(--accent); font-size: 13px; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: background 0.12s; line-height: 1.5; white-space: nowrap;
+    }
+    .ml-slot:hover, .ml-slot.is-open { background: rgba(217,119,6,0.15); }
+    .ml-slot-caret { transition: transform 0.15s; flex-shrink: 0; }
+    .ml-slot-caret.is-open { transform: rotate(180deg); }
+    .ml-dropdown {
+      position: fixed; z-index: 9999;
+      min-width: 170px; background: var(--surface); border: 1px solid var(--border-strong);
+      border-radius: 10px; padding: 4px; list-style: none; margin: 0;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+      animation: ml-drop 0.1s ease;
+    }
+    @keyframes ml-drop { from { opacity:0; transform:translateY(-4px) } to { opacity:1; transform:translateY(0) } }
+    .ml-dropdown-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 10px; border-radius: 7px; font-size: 12.5px; color: var(--fg);
+      cursor: pointer; transition: background 0.1s; outline: none;
+    }
+    .ml-dropdown-item:hover, .ml-dropdown-item:focus { background: var(--ink-25); }
+    .ml-dropdown-item.is-selected { color: var(--accent); font-weight: 500; }
+    .ml-check { font-size: 11px; color: var(--accent); }
+    .ml-preview-row {
+      padding: 10px 13px; background: var(--ink-25); border: 1px solid var(--border);
+      border-radius: 8px; font-size: 12px; line-height: 1.6; display: flex;
+      align-items: baseline; gap: 6px; flex-wrap: wrap;
+    }
+    .ml-preview-label { font-weight: 700; color: var(--fg); flex-shrink: 0; }
+    .ml-preview-label::after { content: ':'; }
+    .ml-preview-text { color: var(--fg-mid); font-style: italic; }
+    .ml-actions { display: flex; justify-content: flex-end; }
+    .ml-btn-generate {
+      display: inline-flex; align-items: center; gap: 7px; padding: 8px 20px;
+      border-radius: 9px; background: var(--ink-950); color: var(--ink-0);
+      font-size: 12.5px; font-weight: 500; font-family: inherit; border: none;
+      cursor: pointer; transition: opacity 0.15s, transform 0.12s;
+    }
+    .ml-btn-generate:hover:not(:disabled) { opacity: 0.83; transform: translateY(-1px); }
+    .ml-btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .ml-spinner {
+      width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: ml-spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes ml-spin { to { transform: rotate(360deg); } }
+    .ml-result {
+      background: var(--ink-25); border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; animation: ml-drop 0.18s ease;
+    }
+    .ml-result-label {
+      padding: 7px 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--fg-muted); border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .ml-result-body { padding: 12px 14px; font-size: 12.5px; color: var(--fg); line-height: 1.75; }
+
+    /* ── scenario image + overlay tiles ── */
+    .scenario-wrap {
+      position: relative;
+      margin-bottom: 48px;
+      border-radius: 12px;
+      overflow: visible;
+    }
+    .scenario-wrap img {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+    }
+    .scenario-tile {
+      position: absolute;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.09);
+      border-radius: 14px;
+      padding: 16px 18px;
+      width: 220px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: box-shadow 0.22s ease, transform 0.22s ease;
+      z-index: 10;
+    }
+    .scenario-tile:hover {
+      box-shadow: 0 10px 40px rgba(0,0,0,0.22);
+      transform: translateY(-2px);
+    }
+    .scenario-tile__breadcrumb {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .scenario-tile__breadcrumb--blue  { background: #dbeafe; color: #1d4ed8; }
+    .scenario-tile__breadcrumb--green { background: #d1fae5; color: #065f46; }
+    .scenario-tile__breadcrumb--amber { background: #fef3c7; color: #92400e; }
+    .scenario-tile__breadcrumb--violet{ background: #ede9fe; color: #5b21b6; }
+    .scenario-tile__name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0a0a0a;
+      margin-bottom: 5px;
+      line-height: 1.3;
+    }
+    .scenario-tile__desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .scenario-tile__btn {
+      display: inline-block;
+      background: transparent;
+      color: #0a0a0a;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(10,10,10,0.25);
+      text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .scenario-tile:hover .scenario-tile__btn {
+      border-color: rgba(10,10,10,0.6);
+      background: rgba(10,10,10,0.05);
+      background: rgba(10,10,10,0.04);
+    }
+    .scenario-connector {
+      position: absolute;
+      height: 0;
+      border-top: 1px dashed #D8E3EC;
+      z-index: 9;
+      pointer-events: none;
+    }
+    .practices__scenario-img {
+      padding: 0 40px 16px;
+      margin: 0 -40px;
+    }
+    @media (max-width: 768px) {
+      .scenario-tile, .scenario-connector { display: none; }
+      .practices__scenario-img { padding: 0 0 24px; margin: 0; }
+    }
+
+    /* ── contact section ── */
+    .contact-section {
+      background: #f9f8f6;
+      padding: 100px 0;
+    }
+    .contact-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 40px;
+      gap: 80px;
+      align-items: center;
+    }
+
+    /* left */
+    .contact-copy__eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #888;
+      margin: 0 0 20px;
+    }
+    .contact-copy__h1 {
+      font-size: clamp(28px, 3vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -.025em;
+      margin: 0 0 16px;
+      color: #0a0a0a;
+    }
+    .contact-copy__stats {
+      display: flex;
+      gap: 12px;
+      margin: 0 0 32px;
+      flex-wrap: wrap;
+    }
+    .contact-copy__stat-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      color: #fff;
+      border-radius: 14px;
+      padding: 16px 24px;
+      min-width: 90px;
+      gap: 2px;
+    }
+    .stat-chip__num {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+      line-height: 1;
+    }
+    .stat-chip__label {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,.55);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      text-align: center;
+    }
+    .contact-copy__note {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.65;
+      margin: 0 0 28px;
+      max-width: 420px;
+    }
+    .contact-clients {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .contact-client {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    /* form card */
+    .contact-card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 2px 24px rgba(0,0,0,.06);
+    }
+    .contact-card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 28px;
+      color: #0a0a0a;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 7px;
+      color: #111;
+    }
+    .form-group label span { color: #888; font-weight: 400; }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #0a0a0a;
+      background: #fff;
+      outline: none;
+      transition: border-color .15s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: #0a0a0a; }
+    .form-group textarea { resize: vertical; min-height: 88px; }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #aaa; }
+    .check-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      display: block;
+      color: #111;
+    }
+    .checks {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 20px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .check-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 4px;
+      accent-color: #0a0a0a;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin: 0;
+    }
+    .check-item span { font-size: 14px; color: #333; }
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #0a0a0a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background .15s;
+    }
+    .btn-submit:hover { background: #222; }
+
+    @media (max-width: 768px) {
+      .contact-wrap {
+        grid-template-columns: 1fr;
+        padding: 0 20px;
+        gap: 40px;
+      }
+      .contact-section { padding: 60px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ────────────────────────────────────────────────────
+       GLOBAL NAV — minimal: logo + Download SDK + Contact Us
+       ──────────────────────────────────────────────────── -->
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+        <div class="gnav__item">
+          <span class="gnav__link" role="button" tabindex="0" aria-haspopup="true">
+            Components
+          </span>
+          <div class="gnav__dropdown" role="menu">
+            <div class="gnav__dropdown-inner">
+              <a class="gnav__dropdown-link" role="menuitem" href="basic-components.html">
+                <span class="gnav__dropdown-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                  </svg>
+                </span>
+                <span>
+                  <span class="gnav__dropdown-title" style="display:block;">Basic Components</span>
+                  <span class="gnav__dropdown-desc" style="display:block;">Buttons, inputs, cards and the other foundational building blocks.</span>
+                </span>
+              </a>
+              <a class="gnav__dropdown-link" role="menuitem" href="library.html">
+                <span class="gnav__dropdown-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9.5 12l1.8 1.8L15 10"/>
+                  </svg>
+                </span>
+                <span>
+                  <span class="gnav__dropdown-title" style="display:block;">Agentic Components</span>
+                  <span class="gnav__dropdown-desc" style="display:block;">Task, reasoning and agent-state components built for AI-native flows.</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/>
+          </svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ────────────────────────────────────────────────────
+       SCENE — wraps hero + framework so the particle cluster
+       persists and morphs through both sections via a sticky
+       canvas behind the content.
+       ──────────────────────────────────────────────────── -->
+  <div class="scene">
+    <div class="scene__bg"><canvas id="hero-canvas" aria-hidden="true"></canvas></div>
+
+  <section class="hero">
+    <div class="container hero__content">
+      <h1 class="hero__title" data-parallax-y="-0.08">
+        One pattern library for the<br/>
+        <em>teams</em> shipping enterprise AI.
+      </h1>
+
+      <p class="hero__sub" data-parallax-y="-0.04">
+        Nucleux is the pattern library for the product manager, UX/UI designers and tech lead — so the agents look, behave and scale consistently across every product.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--solid" href="library.html">
+          Open pattern library
+          <svg class="btn__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────────────
+       FRAMEWORK — sentence-case names, richer cards
+       ──────────────────────────────────────────────────── -->
+  <section class="framework" id="framework">
+    <div class="container framework__inner">
+      <header class="framework__head reveal">
+        <h2 class="framework__title" data-parallax-y="-0.06">A pattern library lives inside one of four moments in an AI experience.</h2>
+        <p class="framework__sub">Each stage opens a different design conversation. The library is organised against this map so the right pattern is always one click away.</p>
+      </header>
+
+      <div class="framework__grid">
+        <a class="fw-stage reveal" href="library.html#stage-onboarding">          <div class="fw-stage__name">Onboarding</div>
+          <div class="fw-stage__desc">Orientation before real use — disclosure, identity, and what the system can actually do.</div>
+          <div class="fw-stage__meta">3 categories · 12 patterns</div>
+          <span class="fw-stage__arrow" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </a>
+        <a class="fw-stage reveal" href="library.html#stage-initially">          <div class="fw-stage__name">Initially</div>
+          <div class="fw-stage__desc">First touch, first prompt — the moment the user actually engages, before they trust it.</div>
+          <div class="fw-stage__meta">4 categories · 24 patterns</div>
+          <span class="fw-stage__arrow" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </a>
+        <a class="fw-stage reveal" href="library.html#stage-during">          <div class="fw-stage__name">During interaction</div>
+          <div class="fw-stage__desc">Active use and recovery — output, processing, refinement, and what happens when it slips.</div>
+          <div class="fw-stage__meta">6 categories · 37 patterns</div>
+          <span class="fw-stage__arrow" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </a>
+        <a class="fw-stage reveal" href="library.html#stage-overtime">          <div class="fw-stage__name">Over time</div>
+          <div class="fw-stage__desc">The long-term relationship — what the system remembers, what changes, what stays.</div>
+          <div class="fw-stage__meta">4 categories · 11 patterns</div>
+          <span class="fw-stage__arrow" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────
+       PRACTICES — where this library applies
+       ──────────────────────────────────────────────────── -->
+  <section class="practices" id="practices">
+    <div class="container">
+      <header class="practices__head reveal" data-parallax-y="-0.03">
+        <span class="t-eyebrow">Scenario</span>
+        <h2 class="practices__title"><span style="white-space:nowrap">AI Powered meeting summariser,</span><br/><span style="white-space:nowrap">built as <em>real agents</em>.</span></h2>
+        <p class="practices__sub">Every UX/UI of meeting summariser agents, built with the <a href="https://www.npmjs.com/package/@nucleux/react/v/0.1.4?activeTab=readme" target="_blank" rel="noopener" class="npm-link"><code>@nucleux/react</code></a> component library. <a href="https://www.npmjs.com/package/@nucleux/react/v/0.1.4?activeTab=readme" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;vertical-align:middle;margin-left:6px;opacity:0.85;" aria-label="View on npm"><svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill="#CB3837" d="M0 0h18v18H0z"/><path fill="#FFF" d="M3 3h12v12H9V6H6v9H3z"/></svg></a></p>
+      </header>
+
+      <div class="practices__scenario-img reveal">
+        <div class="scenario-wrap">
+          <img src="Meeting summariser-landing page.png" alt="Meeting summariser scenario" />
+
+          <!-- Bottom-left: Open Input -->
+          <a class="scenario-tile" href="pattern.html?id=open-input" style="bottom:-10px;left:-24px;">
+            <span class="scenario-tile__breadcrumb scenario-tile__breadcrumb--blue">Initially · Entry Points</span>
+            <div class="scenario-tile__name">Open Input</div>
+            <div class="scenario-tile__desc">Free-form text box for any natural-language ask.</div>
+            <span class="scenario-tile__btn">View Pattern</span>
+          </a>
+          <div class="scenario-connector" style="bottom:130px;left:170px;width:46px;"></div>
+
+          <!-- Left-center: Task Creation -->
+          <a class="scenario-tile" href="pattern.html?id=task-creation" style="top:37%;left:-24px;">
+            <span class="scenario-tile__breadcrumb scenario-tile__breadcrumb--green">During Interaction · Task & Agent Management</span>
+            <div class="scenario-tile__name">Task Creation</div>
+            <div class="scenario-tile__desc">The AI converts a prompt or conversation into discrete, actionable task items.</div>
+            <span class="scenario-tile__btn">View Pattern</span>
+          </a>
+          <div class="scenario-connector" style="top:calc(37% + 88px);left:196px;width:46px;"></div>
+
+          <!-- Top-right: Summary -->
+          <a class="scenario-tile" href="pattern.html?id=summary" style="top:18%;right:-24px;">
+            <span class="scenario-tile__breadcrumb scenario-tile__breadcrumb--amber">During Interaction · Output & Processing</span>
+            <div class="scenario-tile__name">Summary</div>
+            <div class="scenario-tile__desc">Condense long content into executive-readable takeaways.</div>
+            <span class="scenario-tile__btn">View Pattern</span>
+          </a>
+          <div class="scenario-connector" style="top:calc(18% + 72px);left:62%;right:196px;"></div>
+
+          <!-- Bottom-right: Suggestions -->
+          <a class="scenario-tile" href="pattern.html?id=suggestions" style="bottom:8%;right:-24px;">
+            <span class="scenario-tile__breadcrumb scenario-tile__breadcrumb--violet">Initially · Prompt Scaffolds</span>
+            <div class="scenario-tile__name">Suggestions</div>
+            <div class="scenario-tile__desc">Quick-action chips that reduce friction at the input.</div>
+            <span class="scenario-tile__btn">View Pattern</span>
+          </a>
+          <div class="scenario-connector" style="bottom:175px;left:756px;right:196px;"></div>
+        </div>
+      </div>
+
+      <div class="practices__more reveal" style="display:flex;gap:12px;margin-top:var(--s-3);">
+        <a class="btn btn--ghost" href="practices.html">
+          See all scenarios
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a class="btn btn--live btn--gradient" href="https://saransh.intelligaia.com/" target="_blank" rel="noopener">
+          <span class="btn-live__dot"></span>
+          See it in action
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /scene -->
+
+  <!-- ────────────────────────────────────────────────────
+       LABS — interaction & typography playground.
+       Lives on the home page; opens the standalone Labs
+       page (does not launch inside the Library).
+       ──────────────────────────────────────────────────── -->
+  <section class="practices" id="labs" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <header class="practices__head reveal" data-parallax-y="-0.03">
+        <span class="t-eyebrow">Labs</span>
+        <h2 class="practices__title">The <em>motion</em> and type behind the patterns.</h2>
+        <p class="practices__sub">Nucleux is more than components — it's the interaction feel, the type system and the landing-page moves that make an agentic product read as one thing. The Labs are the live playground for those behaviours, restyled in this design language.</p>
+      </header>
+
+      <div class="practices__grid">
+        <a class="practice reveal" href="labs.html#01" data-tint="amber">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3l7.5 18 2.3-7.2L20 11.5 3 3z"/>
+          </svg>
+          <h3 class="practice__name">Interaction Lab · BOLD</h3>
+          <p class="practice__desc">Bold, scroll-driven landing interactions — magnetic actions, reveals and motion.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#02" data-tint="violet">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 6V4h14v2M12 4v16M8 20h8"/>
+          </svg>
+          <h3 class="practice__name">Typography &amp; Heroes</h3>
+          <p class="practice__desc">The full type catalog and hero lockups built on the Nucleux scale.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#03" data-tint="rose">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7V5h16v2M9 5v14M7 19h4"/><path d="M14 12h6M14 16h4"/>
+          </svg>
+          <h3 class="practice__name">Typography Lab</h3>
+          <p class="practice__desc">A working bench for type — weights, sizes, pairings and kinetic treatments.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#04" data-tint="indigo">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h8"/>
+          </svg>
+          <h3 class="practice__name">Hero Gallery</h3>
+          <p class="practice__desc">Landing hero layouts — centered, split and editorial variations.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#05" data-tint="sky">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>
+          </svg>
+          <h3 class="practice__name">Day Cycle</h3>
+          <p class="practice__desc">Ambient time-of-day theming that follows the user's clock.</p>
+        </a>
+
+        <a class="practice reveal" href="labs.html#06" data-tint="emerald">
+          <svg class="practice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 13V6a1.5 1.5 0 0 1 3 0v5m0-.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v4a5 5 0 0 1-5 5h-1.5a4 4 0 0 1-3-1.4L5 16"/>
+          </svg>
+          <h3 class="practice__name">Hand Animation</h3>
+          <p class="practice__desc">A hand-wave greeting loop for onboarding and empty states.</p>
+        </a>
+      </div>
+
+      <div class="practices__more reveal">
+        <a class="btn btn--solid" href="labs.html">
+          Open the Labs
+          <svg class="btn__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────
+       FOOTER — with ambient gradient backdrop
+       ──────────────────────────────────────────────────── -->
+  <footer class="foot">
+    <div class="container">
+      <!-- ─── Makers · magazine-overlay layout: full-bleed team photo,
+           gradient scrim, headline + pitch overlaid top-left ─── -->
+      <div class="makers reveal" aria-label="The makers">
+        <img class="makers__bg-img" src="Team image.svg" alt="" aria-hidden="true" />
+        <div class="makers__scrim" aria-hidden="true"></div>
+
+        <h2 class="makers__bigword" data-parallax-y="-0.02">
+          Built by people who design<br/> <em>agentic</em>&nbsp;products.
+        </h2>
+
+        <p class="makers__pitch">
+          Intelligaia is a research-driven product design studio working with enterprise teams on AI-native software. <em>Nucleux</em> is a public artifact of that practice — open to use, free to adapt, and updated as the practice evolves.
+        </p>
+      </div>
+
+      <div class="foot__bottom">
+        <span class="foot__meta">© 2026 Nucleux · AI UX Pattern Library</span>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="library.html">Pattern Library</a>
+          <a href="https://www.intelligaia.com/" target="_blank" rel="noopener">intelligaia.com ↗</a>
+          <a href="contact.html">Contact ↗</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="landing.js"></script>
+  <script src="patterns.js"></script>
+  <script src="global.js"></script>
+
+  <!-- Madlibs demo — vanilla JS, no dependencies -->
+  <script>
+  (function () {
+    var container = document.getElementById('madlibs-root');
+    if (!container) return;
+
+    var TONES      = ['friendly','formal','concise','enthusiastic','diplomatic'];
+    var RECIPIENTS = ['Sam','Alex','the team','the client','my manager'];
+    var TOPICS     = ['the proposal','the project update','the deadline extension','the meeting notes'];
+    var GENERATED  = {
+      friendly:     function(r,t){ return "Hi "+r+", hope you're having a good week! Following up on "+t+" — happy to jump on a quick call to walk through the details. Let me know what works!"; },
+      formal:       function(r,t){ return "Dear "+r+", I am writing to follow up regarding "+t+". I would appreciate the opportunity to discuss this further at your earliest convenience."; },
+      concise:      function(r,t){ return "Hi "+r+" — quick note on "+t+". Available for a 15-min call this week?"; },
+      enthusiastic: function(r,t){ return "Hey "+r+"! So excited to connect about "+t+"! I genuinely think we can do something amazing here and can't wait to hear your thoughts! \u{1F389}"; },
+      diplomatic:   function(r,t){ return "Hi "+r+", reaching out thoughtfully about "+t+". I'm confident we can find an approach that works for everyone involved."; }
+    };
+
+    var state = { tone:'friendly', recipient:'Sam', topic:'the proposal', genStatus:'idle' };
+    var portal = null;
+
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function preview() { return 'Write a '+state.tone+' reply to '+state.recipient+' about '+state.topic+'.'; }
+
+    function slotBtn(id, val) {
+      return '<button class="ml-slot" data-slot="'+id+'" aria-haspopup="listbox" aria-expanded="false">'
+        + esc(val)
+        + '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="ml-slot-caret">'
+        + '<path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
+        + '</button>';
+    }
+
+    function render() {
+      var genBtn = state.genStatus === 'generating'
+        ? '<span class="ml-spinner" aria-hidden="true"></span>Generating\u2026'
+        : 'Generate \u2192';
+      var result = state.genStatus === 'done'
+        ? '<div class="ml-result"><div class="ml-result-label">Generated reply</div>'
+          + '<div class="ml-result-body">'+esc(GENERATED[state.tone](state.recipient, state.topic))+'</div></div>'
+        : '';
+      container.innerHTML =
+        '<div class="ml-root">'
+        + '<div class="ml-eyebrow">Build your prompt</div>'
+        + '<div class="ml-sentence">'
+          + 'Write\u00a0a\u00a0' + slotBtn('tone', state.tone)
+          + '\u00a0reply\u00a0to\u00a0' + slotBtn('recipient', state.recipient)
+          + '\u00a0about\u00a0' + slotBtn('topic', state.topic) + '.'
+        + '</div>'
+        + '<div class="ml-preview-row">'
+          + '<span class="ml-preview-label">Preview</span>'
+          + '<span class="ml-preview-text">\"'+esc(preview())+'\"</span>'
+        + '</div>'
+        + '<div class="ml-actions">'
+          + '<button class="ml-btn-generate" id="ml-gen-btn" '+(state.genStatus==='generating'?'disabled':'')+'>'+genBtn+'</button>'
+        + '</div>'
+        + result
+        + '</div>';
+      attach();
+    }
+
+    function closeDropdown() {
+      if (portal) { portal.remove(); portal = null; }
+      container.querySelectorAll('.ml-slot').forEach(function(b) {
+        b.setAttribute('aria-expanded','false');
+        b.classList.remove('is-open');
+        var c = b.querySelector('.ml-slot-caret');
+        if (c) c.classList.remove('is-open');
+      });
+    }
+
+    function openDropdown(slotId, opts, btnEl) {
+      closeDropdown();
+      var rect = btnEl.getBoundingClientRect();
+      portal = document.createElement('ul');
+      portal.className = 'ml-dropdown';
+      portal.setAttribute('role','listbox');
+      portal.style.top  = (rect.bottom + window.scrollY + 5) + 'px';
+      portal.style.left = (rect.left  + window.scrollX) + 'px';
+      opts.forEach(function(opt) {
+        var li = document.createElement('li');
+        li.setAttribute('role','option');
+        li.setAttribute('tabindex','0');
+        li.setAttribute('aria-selected', String(opt === state[slotId]));
+        li.className = 'ml-dropdown-item' + (opt === state[slotId] ? ' is-selected' : '');
+        li.innerHTML = esc(opt) + (opt === state[slotId] ? '<span class="ml-check" aria-hidden="true">\u2713</span>' : '');
+        li.addEventListener('click', function(e) {
+          e.stopPropagation();
+          state[slotId] = opt;
+          state.genStatus = 'idle';
+          closeDropdown();
+          render();
+        });
+        li.addEventListener('keydown', function(e) {
+          var items = Array.from(portal.querySelectorAll('[role="option"]'));
+          var idx = items.indexOf(li);
+          if (e.key==='Enter'||e.key===' ') { e.preventDefault(); li.click(); }
+          else if (e.key==='Escape') { closeDropdown(); btnEl.focus(); }
+          else if (e.key==='ArrowDown') { e.preventDefault(); if (items[idx+1]) items[idx+1].focus(); }
+          else if (e.key==='ArrowUp')   { e.preventDefault(); if (items[idx-1]) items[idx-1].focus(); }
+        });
+        portal.appendChild(li);
+      });
+      document.body.appendChild(portal);
+      btnEl.setAttribute('aria-expanded','true');
+      btnEl.classList.add('is-open');
+      var caret = btnEl.querySelector('.ml-slot-caret');
+      if (caret) caret.classList.add('is-open');
+    }
+
+    function attach() {
+      container.querySelectorAll('.ml-slot').forEach(function(btn) {
+        var slotId = btn.getAttribute('data-slot');
+        var opts   = slotId==='tone' ? TONES : slotId==='recipient' ? RECIPIENTS : TOPICS;
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var wasOpen = portal && portal.parentNode && btn.getAttribute('aria-expanded')==='true';
+          closeDropdown();
+          if (!wasOpen) openDropdown(slotId, opts, btn);
+        });
+        btn.addEventListener('keydown', function(e) {
+          if (e.key==='ArrowDown') {
+            e.preventDefault();
+            openDropdown(slotId, opts, btn);
+            setTimeout(function() { var f=portal&&portal.querySelector('[role="option"]'); if(f)f.focus(); }, 40);
+          } else if (e.key==='Escape') { closeDropdown(); }
+        });
+      });
+      var genBtn = document.getElementById('ml-gen-btn');
+      if (genBtn) {
+        genBtn.addEventListener('click', function() {
+          if (state.genStatus==='generating') return;
+          state.genStatus = 'generating';
+          render();
+          setTimeout(function() { state.genStatus='done'; render(); }, 1400);
+        });
+      }
+    }
+
+    document.addEventListener('mousedown', function(e) {
+      if (!portal) return;
+      if (portal.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('.ml-slot')) return;
+      closeDropdown();
+    });
+
+    render();
+  })();
+  </script>
+</body>

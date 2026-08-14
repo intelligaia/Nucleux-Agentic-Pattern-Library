@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Labs — Nucleux</title>
+  <meta name="description" content="Interaction & Typography Labs — the interaction, type and landing-page patterns behind Nucleux, in the Nucleux design language." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* ───────────────────────────────────────────────
+       LABS — the original Interaction & Typography Labs
+       catalog, faithfully ported: same tab shell, same
+       tabs, same iframe stage. Only the design language
+       is converted to Nucleux (paper, Inter / Newsreader /
+       JetBrains Mono, amber accent).
+       ─────────────────────────────────────────────── */
+    html, body { height: 100%; }
+    body.labs-body { overflow: hidden; }
+
+    .labs-app {
+      display: flex; flex-direction: column;
+      height: 100dvh; min-height: 0;
+      background: var(--bg); color: var(--fg);
+    }
+    .labs-app .gnav { flex: 0 0 auto; }
+
+    /* ── Labs header: brand line + tab bar (mirrors the
+         original catalog header, restyled). Full-width bar,
+         but its contents are centered inside .container to
+         match the global nav width. Frozen at the top. ── */
+    .labs-head {
+      flex: 0 0 auto;
+      position: sticky; top: 0; z-index: 30;
+      padding: 0;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in oklab, var(--bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+    }
+    .labs-head .container { padding-top: 12px; }
+    .labs-head__top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .labs-brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+
+    /* Fullscreen launcher */
+    .labs-fs {
+      appearance: none; cursor: pointer; flex: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--fg-mid);
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 8px 12px; border-radius: 8px;
+      transition: color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+    }
+    .labs-fs:hover { color: var(--fg); border-color: var(--fg); }
+    .labs-fs svg { width: 14px; height: 14px; }
+    .labs-brand b {
+      font-family: var(--font-serif); font-style: italic; font-weight: 400;
+      font-size: 20px; letter-spacing: -0.01em; color: var(--fg);
+    }
+    .labs-brand span {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--fg-muted);
+    }
+
+    .labs-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+    .labs-tab {
+      appearance: none; cursor: pointer;
+      display: inline-flex; align-items: baseline; gap: 8px;
+      border: 1px solid var(--border); border-bottom: 0;
+      background: var(--surface); color: var(--fg-mid);
+      font-family: var(--font-body); font-weight: 500; font-size: 13px;
+      letter-spacing: -0.01em; padding: 10px 16px;
+      border-radius: 10px 10px 0 0; white-space: nowrap;
+      position: relative; top: 1px;
+      transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+    }
+    .labs-tab .n { font-family: var(--font-mono); font-weight: 600; font-size: 12px; color: var(--accent); }
+    .labs-tab:hover { color: var(--fg); border-color: var(--border-strong); }
+    .labs-tab.on {
+      color: var(--ink-0); background: var(--ink-950); border-color: var(--ink-950);
+    }
+    .labs-tab.on .n { color: var(--accent-soft); }
+
+    /* ── Stage: lazy iframes, exactly like the original ── */
+    .labs-stage { flex: 1 1 auto; position: relative; min-height: 0; background: var(--bg); }
+    .labs-frame {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      border: 0; background: var(--bg);
+      opacity: 0; pointer-events: none; transition: opacity var(--dur-2) var(--ease);
+    }
+    .labs-frame.on { opacity: 1; pointer-events: auto; }
+
+    .labs-hint {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      text-align: center; color: var(--fg-mid); max-width: 460px; padding: 0 24px;
+    }
+    .labs-hint__dot {
+      width: 8px; height: 8px; margin: 0 auto 16px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 0 0 var(--accent-ghost);
+      animation: labsPulse 1.6s var(--ease) infinite;
+    }
+    @keyframes labsPulse {
+      0% { box-shadow: 0 0 0 0 rgba(217,119,6,0.35); }
+      100% { box-shadow: 0 0 0 16px rgba(217,119,6,0); }
+    }
+    .labs-hint__title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-muted); }
+    .labs-hint__name { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-top: 8px; }
+    .labs-hint__name em { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--accent); }
+    .labs-hint__desc { margin-top: 10px; font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
+    .labs-hint__src { display: inline-block; margin-top: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; }
+  </style>
+</head>
+<body class="labs-body">
+  <div class="labs-app">
+
+    <!-- GLOBAL NAV -->
+    <header class="gnav">
+      <div class="container gnav__inner">
+        <a class="brand" href="index-v2.html" aria-label="Nucleux">
+          <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+        </a>
+        <nav class="gnav__center" aria-label="Primary">
+                      <div class="gnav__item gnav__item--has-flyout">
+            <a class="gnav__link" href="#components">Components</a>
+            <div class="gnav__flyout" role="menu" aria-label="Components">
+              <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
+                <span class="gnav__flyout-cat-name">Basic Components</span>
+                <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
+              </a>
+              <a class="gnav__flyout-cat" href="library.html" role="menuitem">
+                <span class="gnav__flyout-cat-name">Agentic Components</span>
+                <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
+              </a>
+            </div>
+          </div>
+          <a class="gnav__link" href="practices.html">Scenarios</a>
+          <a class="gnav__link" href="docs.html">Docs</a>
+          <a class="gnav__link" href="mcp.html">MCP</a>
+          <a class="gnav__link is-current" href="labs.html">Labs</a>
+        </nav>
+        <div class="gnav__actions">
+          <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+          <a class="gnav__cta" href="contact.html">
+            Contact Us
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- LABS HEADER + TABS (mirrors the original catalog) -->
+    <div class="labs-head">
+      <div class="container">
+        <div class="labs-head__top">
+          <div class="labs-brand">
+            <b>Interaction &amp; Typography Labs</b>
+            <span>Nucleux · Playground</span>
+          </div>
+          <button class="labs-fs" id="labsFs" type="button" aria-label="Open the current lab in fullscreen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>
+            </svg>
+            Fullscreen
+          </button>
+        </div>
+      <div class="labs-tabs" id="labsTabs" role="tablist" aria-label="Labs">
+        <button class="labs-tab on" role="tab" aria-selected="true"
+          data-src="Lab/landing-interaction-lab-bold.html"
+          data-name="Interaction Lab · BOLD"
+          data-desc="Bold, scroll-driven landing interactions — magnetic actions, reveals and motion.">
+          <span class="n">01</span>Interaction Lab · BOLD
+        </button>
+        <button class="labs-tab" role="tab" aria-selected="false"
+          data-src="Lab/intelligaia-typography-catalog.html"
+          data-name="Typography &amp; Heroes"
+          data-desc="Type families, a working specimen, six hero treatments and layout variations — all in one place.">
+          <span class="n">02</span>Typography &amp; Heroes
+        </button>
+        <button class="labs-tab" role="tab" aria-selected="false"
+          data-src="Lab/intelligaia-daycycle.html"
+          data-name="Day Cycle"
+          data-desc="Ambient time-of-day theming that follows the user's clock.">
+          <span class="n">03</span>Day Cycle
+        </button>
+      </div><!-- /.labs-tabs -->
+      </div><!-- /.container -->
+    </div><!-- /.labs-head -->
+
+    <!-- STAGE -->
+    <div class="labs-stage" id="labsStage">
+      <div class="labs-hint" id="labsHint">
+        <div class="labs-hint__dot"></div>
+        <div class="labs-hint__title">Loading…</div>
+        <div class="labs-hint__name"></div>
+        <div class="labs-hint__desc"></div>
+        <span class="labs-hint__src"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var tabs  = [].slice.call(document.querySelectorAll('.labs-tab'));
+    var stage = document.getElementById('labsStage');
+    var hint  = document.getElementById('labsHint');
+    var hName = hint.querySelector('.labs-hint__name');
+    var hDesc = hint.querySelector('.labs-hint__desc');
+    var hSrc  = hint.querySelector('.labs-hint__src');
+    var hTitle= hint.querySelector('.labs-hint__title');
+    var frames = {};              // src -> iframe (lazy-created + cached)
+    var loaded = {};              // src -> did it load successfully
+
+    function setHint(tab){
+      hName.innerHTML = tab.getAttribute('data-name');
+      hDesc.textContent = tab.getAttribute('data-desc') || '';
+      hSrc.textContent  = tab.getAttribute('data-src');
+      hTitle.textContent = 'Loading…';
+      hint.style.display = 'block';
+    }
+
+    function show(tab){
+      var src = tab.getAttribute('data-src');
+      if(!frames[src]){
+        var f = document.createElement('iframe');
+        f.className = 'labs-frame';
+        f.setAttribute('loading','eager');
+        f.setAttribute('title', tab.getAttribute('data-name'));
+        f.setAttribute('allowfullscreen','');
+        f.setAttribute('allow','fullscreen');
+        f.src = src;
+        stage.appendChild(f);
+        frames[src] = f;
+        f.addEventListener('load', function(){
+          loaded[src] = true;
+          if(currentSrc === src) hint.style.display = 'none';
+        });
+      }
+      Object.keys(frames).forEach(function(k){ frames[k].classList.toggle('on', k === src); });
+      currentSrc = src;
+      if(loaded[src]) { hint.style.display = 'none'; }
+      else { setHint(tab); }
+    }
+
+    var currentSrc = null;
+
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
+        t.classList.add('on'); t.setAttribute('aria-selected','true');
+        show(t);
+      });
+    });
+
+    // Allow deep-linking a tab via #01..#06 or #src
+    var hash = location.hash.slice(1);
+    var start = tabs[0];
+    if(hash){
+      var byNum = tabs[parseInt(hash,10)-1];
+      var bySrc = tabs.filter(function(t){ return t.getAttribute('data-src').indexOf(hash) !== -1; })[0];
+      start = byNum || bySrc || tabs[0];
+    }
+    tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
+    start.classList.add('on'); start.setAttribute('aria-selected','true');
+    show(start);
+
+    /* ── Fullscreen: launch the active lab into the full screen ── */
+    var fsBtn = document.getElementById('labsFs');
+    if(fsBtn){
+      fsBtn.addEventListener('click', function(){
+        var f = frames[currentSrc];
+        if(!f) return;
+        var req = f.requestFullscreen || f.webkitRequestFullscreen || f.msRequestFullscreen;
+        if(req){ req.call(f); }
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

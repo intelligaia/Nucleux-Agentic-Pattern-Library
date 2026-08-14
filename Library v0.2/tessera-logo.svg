@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 44" role="img" aria-label="Tessera">
+  <title>Tessera</title>
+  <desc>Three iso cubes rotate through three positions in a 7-second loop. Each cycle: pause → swap → pause → swap → pause → swap-and-return. Faces cycle through the brand palette in sync with motion.</desc>
+
+  <!--
+    Three positions:
+      P1 = (0, 0)    upper-left
+      P2 = (20, 0)   upper-right
+      P3 = (10, 12)  lower-centre
+
+    keyTimes plan (7s total):
+      0.00 → 0.20  pause          (1.4s)
+      0.20 → 0.35  swap forward   (1.05s)
+      0.35 → 0.50  pause          (1.05s)
+      0.50 → 0.65  swap forward   (1.05s)
+      0.65 → 0.80  pause          (1.05s)
+      0.80 → 1.00  swap home      (1.4s)
+
+    All three cubes pause and move in sync, just from different
+    starting positions, so the trio always holds the three points.
+  -->
+
+  <!-- ░░░ Cube A · starts at P1 ░░░ -->
+  <g opacity="0.74">
+    <animateTransform attributeName="transform" type="translate"
+                      values="0,0; 0,0; 20,0; 20,0; 10,12; 10,12; 0,0"
+                      keyTimes="0; 0.20; 0.35; 0.50; 0.65; 0.80; 1"
+                      calcMode="spline"
+                      keySplines="0 0 1 1; 0.55 0 0.45 1; 0 0 1 1; 0.55 0 0.45 1; 0 0 1 1; 0.55 0 0.45 1"
+                      dur="7s" repeatCount="indefinite"/>
+
+    <polygon points="16,1 29,9 16,16 3,9" fill="#fbbf24" stroke="#fbbf24" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#fbbf24;#fbbf24;#c4b5fd;#c4b5fd;#93c5fd;#93c5fd;#fbbf24"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#fbbf24;#fbbf24;#c4b5fd;#c4b5fd;#93c5fd;#93c5fd;#fbbf24"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="29,9 29,23 16,31 16,16" fill="#d97706" stroke="#d97706" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#d97706;#d97706;#7c3aed;#7c3aed;#3b82f6;#3b82f6;#d97706"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#d97706;#d97706;#7c3aed;#7c3aed;#3b82f6;#3b82f6;#d97706"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="3,9 16,16 16,31 3,23" fill="#92400e" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#92400e;#92400e;#4c1d95;#4c1d95;#1e3a8a;#1e3a8a;#92400e"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#92400e;#92400e;#4c1d95;#4c1d95;#1e3a8a;#1e3a8a;#92400e"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+
+  <!-- ░░░ Cube B · starts at P2 ░░░ -->
+  <g opacity="0.74">
+    <animateTransform attributeName="transform" type="translate"
+                      values="20,0; 20,0; 10,12; 10,12; 0,0; 0,0; 20,0"
+                      keyTimes="0; 0.20; 0.35; 0.50; 0.65; 0.80; 1"
+                      calcMode="spline"
+                      keySplines="0 0 1 1; 0.55 0 0.45 1; 0 0 1 1; 0.55 0 0.45 1; 0 0 1 1; 0.55 0 0.45 1"
+                      dur="7s" repeatCount="indefinite"/>
+
+    <polygon points="16,1 29,9 16,16 3,9" fill="#c4b5fd" stroke="#c4b5fd" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#c4b5fd;#c4b5fd;#93c5fd;#93c5fd;#fbbf24;#fbbf24;#c4b5fd"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#c4b5fd;#c4b5fd;#93c5fd;#93c5fd;#fbbf24;#fbbf24;#c4b5fd"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="29,9 29,23 16,31 16,16" fill="#7c3aed" stroke="#7c3aed" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#7c3aed;#7c3aed;#3b82f6;#3b82f6;#d97706;#d97706;#7c3aed"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#7c3aed;#7c3aed;#3b82f6;#3b82f6;#d97706;#d97706;#7c3aed"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="3,9 16,16 16,31 3,23" fill="#4c1d95" stroke="#4c1d95" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#4c1d95;#4c1d95;#1e3a8a;#1e3a8a;#92400e;#92400e;#4c1d95"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#4c1d95;#4c1d95;#1e3a8a;#1e3a8a;#92400e;#92400e;#4c1d95"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+
+  <!-- ░░░ Cube C · starts at P3 ░░░ -->
+  <g opacity="0.74">
+    <animateTransform attributeName="transform" type="translate"
+                      values="10,12; 10,12; 0,0; 0,0; 20,0; 20,0; 10,12"
+                      keyTimes="0; 0.20; 0.35; 0.50; 0.65; 0.80; 1"
+                      calcMode="spline"
+                      keySplines="0 0 1 1; 0.55 0 0.45 1; 0 0 1 1; 0.55 0 0.45 1; 0 0 1 1; 0.55 0 0.45 1"
+                      dur="7s" repeatCount="indefinite"/>
+
+    <polygon points="16,1 29,9 16,16 3,9" fill="#93c5fd" stroke="#93c5fd" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#93c5fd;#93c5fd;#fbbf24;#fbbf24;#c4b5fd;#c4b5fd;#93c5fd"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#93c5fd;#93c5fd;#fbbf24;#fbbf24;#c4b5fd;#c4b5fd;#93c5fd"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="29,9 29,23 16,31 16,16" fill="#3b82f6" stroke="#3b82f6" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#3b82f6;#3b82f6;#d97706;#d97706;#7c3aed;#7c3aed;#3b82f6"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#3b82f6;#3b82f6;#d97706;#d97706;#7c3aed;#7c3aed;#3b82f6"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="3,9 16,16 16,31 3,23" fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1.2" stroke-linejoin="round">
+      <animate attributeName="fill"
+               values="#1e3a8a;#1e3a8a;#92400e;#92400e;#4c1d95;#4c1d95;#1e3a8a"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke"
+               values="#1e3a8a;#1e3a8a;#92400e;#92400e;#4c1d95;#4c1d95;#1e3a8a"
+               keyTimes="0;0.20;0.35;0.50;0.65;0.80;1"
+               dur="7s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+</svg>

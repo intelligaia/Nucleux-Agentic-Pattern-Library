@@ -1,0 +1,1159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nucleux — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   NUCLEUX PROTOTYPE — Obra / shadcn-ui design language
+   Neutral zinc base · violet agentic accent · radius tokens
+   ============================================================ */
+:root{
+  --background:#ffffff;
+  --app-bg:#fafafa;
+  --foreground:#09090b;
+  --card:#ffffff;
+  --muted:#f4f4f5;
+  --muted-2:#fafafa;
+  --muted-foreground:#71717a;
+  --subtle-foreground:#a1a1aa;
+  --border:#e4e4e7;
+  --border-strong:#d4d4d8;
+  --input:#e4e4e7;
+  --primary:#18181b;
+  --primary-foreground:#fafafa;
+  --brand:#6d5dfb;
+  --brand-deep:#5b48e0;
+  --brand-foreground:#ffffff;
+  --brand-soft:#efecff;
+  --brand-soft-2:#f6f4ff;
+  --ring:#6d5dfb;
+  --green:#16a34a; --green-soft:#dcfce7;
+  --amber:#d97706; --amber-soft:#fef3c7;
+  --red:#dc2626; --red-soft:#fee2e2;
+  --blue:#2563eb; --blue-soft:#dbeafe;
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(9,9,11,.05);
+  --shadow:0 4px 12px -4px rgba(9,9,11,.10);
+  --shadow-lg:0 24px 48px -16px rgba(9,9,11,.20);
+  --av-violet:#7c6cff; --av-pink:#ec4899; --av-blue:#3b82f6; --av-green:#10b981; --av-amber:#f59e0b; --av-ink:#3f3f46;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--app-bg);color:var(--foreground);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+::selection{background:var(--brand-soft);color:var(--brand-deep)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:550;border:1px solid transparent;transition:all .14s;white-space:nowrap}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--primary);color:var(--primary-foreground)}
+.btn-primary:hover{background:#27272a}
+.btn-brand{background:var(--brand);color:var(--brand-foreground);box-shadow:0 1px 2px rgba(109,93,251,.35)}
+.btn-brand:hover{background:var(--brand-deep)}
+.btn-outline{background:var(--background);color:var(--foreground);border-color:var(--border)}
+.btn-outline:hover{background:var(--muted);border-color:var(--border-strong)}
+.btn-ghost{background:transparent;color:var(--foreground)}
+.btn-ghost:hover{background:var(--muted)}
+.btn-lg{height:44px;padding:0 22px;font-size:15px}
+.btn-sm{height:32px;padding:0 12px;font-size:12.5px}
+.btn-block{width:100%}
+
+/* ---------- badges / chips ---------- */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid var(--border);background:var(--muted);color:var(--muted-foreground);letter-spacing:.01em}
+.badge svg{width:12px;height:12px}
+.badge-brand{background:var(--brand-soft);color:var(--brand-deep);border-color:#ddd6fe}
+.badge-green{background:var(--green-soft);color:#15803d;border-color:#bbf7d0}
+.badge-amber{background:var(--amber-soft);color:#b45309;border-color:#fde68a}
+.badge-blue{background:var(--blue-soft);color:#1d4ed8;border-color:#bfdbfe}
+.badge-red{background:var(--red-soft);color:#b91c1c;border-color:#fecaca}
+.badge-outline{background:transparent}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--subtle-foreground)}
+.dot.g{background:var(--green)} .dot.a{background:var(--amber)} .dot.b{background:var(--brand)} .dot.r{background:var(--red)}
+
+/* ---------- card ---------- */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.card-pad{padding:20px}
+.card-h{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-h h3{margin:0;font-size:15px;font-weight:650;letter-spacing:-.01em}
+.card-h .sub{font-size:12.5px;color:var(--muted-foreground);font-weight:400;margin-top:2px}
+
+/* ---------- inputs ---------- */
+.field{display:block;margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:550;margin-bottom:7px}
+.input{width:100%;height:40px;padding:0 13px;border:1px solid var(--input);border-radius:var(--radius-sm);font-size:14px;background:var(--background);color:var(--foreground);outline:none;transition:all .14s;font-family:inherit}
+.input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--brand-soft)}
+.input::placeholder{color:var(--subtle-foreground)}
+textarea.input{height:auto;padding:11px 13px;resize:vertical;line-height:1.5}
+
+/* ---------- avatar ---------- */
+.av{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em}
+.av[data-c=v]{background:var(--av-violet)} .av[data-c=p]{background:var(--av-pink)} .av[data-c=b]{background:var(--av-blue)}
+.av[data-c=g]{background:var(--av-green)} .av[data-c=a]{background:var(--av-amber);color:#3a2a00} .av[data-c=i]{background:var(--av-ink)}
+.avstack{display:flex;align-items:center}
+.avstack .av{border:2px solid var(--background);margin-left:-8px;width:26px;height:26px;font-size:9.5px}
+.avstack .av:first-child{margin-left:0}
+.avstack .more{margin-left:-8px;width:26px;height:26px;border-radius:50%;border:2px solid var(--background);background:var(--muted);color:var(--muted-foreground);font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+
+/* ===================== APP SHELL ===================== */
+#fullscreen{display:none}
+#fullscreen.show{display:block}
+#app{display:none}
+#app.show{display:grid;grid-template-rows:56px 1fr;height:100vh}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;background:var(--background);border-bottom:1px solid var(--border);z-index:20}
+.tb-left{display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:18px;height:18px}
+.logo-name{font-weight:700;font-size:17px;letter-spacing:-.02em}
+.tb-search{display:flex;align-items:center;gap:9px;background:var(--muted);border:1px solid transparent;border-radius:8px;padding:0 11px;height:36px;width:340px;color:var(--muted-foreground);font-size:13px;cursor:pointer;transition:all .14s}
+.tb-search:hover{background:var(--muted-2);border-color:var(--border)}
+.tb-search svg{width:15px;height:15px}
+.tb-search .kbd{margin-left:auto;font-size:11px;border:1px solid var(--border);border-radius:5px;padding:1px 6px;background:var(--background);color:var(--muted-foreground)}
+.tb-right{display:flex;align-items:center;gap:6px}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:0;background:transparent;color:var(--muted-foreground);display:inline-flex;align-items:center;justify-content:center;position:relative;transition:all .14s}
+.icon-btn:hover{background:var(--muted);color:var(--foreground)}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn .pip{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--brand);border:1.5px solid var(--background)}
+.tb-me{display:flex;align-items:center;gap:8px;padding:3px 8px 3px 3px;border-radius:999px;transition:background .14s}
+.tb-me:hover{background:var(--muted)}
+.tb-me .name{font-size:13px;font-weight:600}
+
+/* body grid */
+.app-body{display:grid;grid-template-columns:248px 1fr;min-height:0}
+@media(max-width:900px){.app-body{grid-template-columns:1fr}.sidebar{display:none}}
+
+/* sidebar */
+.sidebar{background:var(--background);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.side-top{padding:14px 12px 6px}
+.side-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:40px;border-radius:9px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;border:0;box-shadow:0 1px 2px rgba(109,93,251,.4)}
+.side-new:hover{background:var(--brand-deep)}
+.side-new svg{width:16px;height:16px}
+.side-nav{padding:6px 10px;display:flex;flex-direction:column;gap:2px}
+.nav-link{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--foreground);border:0;background:transparent;width:100%;text-align:left;transition:all .12s}
+.nav-link svg{width:17px;height:17px;color:var(--muted-foreground);flex-shrink:0}
+.nav-link:hover{background:var(--muted)}
+.nav-link.active{background:var(--brand-soft);color:var(--brand-deep);font-weight:600}
+.nav-link.active svg{color:var(--brand-deep)}
+.nav-link .tail{margin-left:auto;font-size:11px;color:var(--subtle-foreground);font-weight:600}
+.side-label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--subtle-foreground);font-weight:700;padding:14px 21px 6px}
+.side-foot{margin-top:auto;padding:10px;border-top:1px solid var(--border)}
+.plan-card{background:var(--muted);border-radius:10px;padding:13px}
+.plan-card .pc-h{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:650;margin-bottom:8px}
+.bar{height:6px;border-radius:99px;background:var(--border);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--brand);border-radius:99px}
+
+/* main scroll */
+.main{overflow-y:auto;min-height:0;background:var(--app-bg)}
+.screen{display:none}
+.screen.active{display:block}
+.page{max-width:1080px;margin:0 auto;padding:28px 32px 80px}
+@media(max-width:720px){.page{padding:20px 18px 60px}}
+.page-head{margin-bottom:22px}
+.page-head h1{margin:0 0 4px;font-size:24px;font-weight:700;letter-spacing:-.025em}
+.page-head p{margin:0;color:var(--muted-foreground);font-size:14px}
+.crumb{font-size:12.5px;color:var(--muted-foreground);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.crumb a:hover{color:var(--foreground)}
+.crumb .sep{color:var(--border-strong)}
+.row{display:flex;align-items:center;gap:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.span-2{grid-column:span 2}
+@media(max-width:860px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.span-2{grid-column:auto}}
+.sectiontitle{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--muted-foreground);text-transform:uppercase;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+
+/* KPI */
+.kpi{padding:18px 20px}
+.kpi .k-top{display:flex;align-items:center;justify-content:space-between}
+.kpi .k-lab{font-size:12.5px;color:var(--muted-foreground);font-weight:550}
+.kpi .k-ico{width:32px;height:32px;border-radius:8px;background:var(--brand-soft);color:var(--brand-deep);display:flex;align-items:center;justify-content:center}
+.kpi .k-ico svg{width:16px;height:16px}
+.kpi .k-val{font-size:28px;font-weight:730;letter-spacing:-.02em;margin-top:12px}
+.kpi .k-delta{font-size:12px;font-weight:600;margin-top:3px;display:flex;align-items:center;gap:4px}
+.k-delta.up{color:var(--green)} .k-delta.down{color:var(--red)} .k-delta.flat{color:var(--muted-foreground)}
+
+/* list rows */
+.lrow{display:flex;align-items:center;gap:14px;padding:13px 20px;border-top:1px solid var(--border);transition:background .12s}
+.lrow:first-child{border-top:0}
+.lrow:hover{background:var(--muted-2)}
+.lrow .l-ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:14px;color:#fff}
+.lrow .l-main{flex:1;min-width:0}
+.lrow .l-title{font-size:14px;font-weight:600;letter-spacing:-.005em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .l-sub{font-size:12.5px;color:var(--muted-foreground);margin-top:1px}
+.lrow .l-meta{font-size:12px;color:var(--muted-foreground);text-align:right;white-space:nowrap}
+
+/* checklist (activation) */
+.check{display:flex;gap:13px;padding:14px 18px;border-top:1px solid var(--border);align-items:flex-start}
+.check:first-child{border-top:0}
+.check .cbox{width:22px;height:22px;border-radius:50%;border:2px solid var(--border-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.check.done .cbox{background:var(--green);border-color:var(--green)}
+.check.done .cbox svg{width:12px;height:12px;color:#fff}
+.check.now .cbox{border-color:var(--brand);color:var(--brand)}
+.check .c-main{flex:1}
+.check .c-t{font-size:13.5px;font-weight:600}
+.check.done .c-t{color:var(--muted-foreground);text-decoration:line-through}
+.check .c-d{font-size:12.5px;color:var(--muted-foreground);margin-top:2px}
+
+/* ===================== FULLSCREEN: LANDING ===================== */
+.lp-nav{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(255,255,255,.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:30}
+.lp-links{display:flex;align-items:center;gap:26px;font-size:13.5px;font-weight:500;color:var(--muted-foreground)}
+.lp-links a:hover{color:var(--foreground)}
+.lp-hero{max-width:920px;margin:0 auto;padding:86px 32px 56px;text-align:center}
+.lp-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--brand-deep);background:var(--brand-soft);border:1px solid #ddd6fe;padding:5px 13px;border-radius:999px;margin-bottom:22px}
+.lp-hero h1{font-size:56px;line-height:1.05;letter-spacing:-.04em;font-weight:760;margin:0 0 20px}
+.lp-hero h1 .hl{background:linear-gradient(110deg,var(--brand),#9b8cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lp-hero p.sub{font-size:18.5px;color:var(--muted-foreground);max-width:640px;margin:0 auto 30px;line-height:1.55}
+.lp-cta{display:flex;gap:12px;justify-content:center;align-items:center}
+.lp-note{font-size:12.5px;color:var(--subtle-foreground);margin-top:16px}
+.lp-logos{display:flex;gap:30px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:46px;opacity:.7;font-weight:650;color:var(--muted-foreground);font-size:14px;letter-spacing:.02em}
+.lp-shot{max-width:1040px;margin:18px auto 0;padding:0 32px}
+.lp-shot .frame{border:1px solid var(--border);border-radius:16px;background:var(--background);box-shadow:var(--shadow-lg);overflow:hidden}
+.lp-shot .frame-bar{height:38px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;padding:0 14px;background:var(--muted-2)}
+.lp-shot .tl{width:11px;height:11px;border-radius:50%;background:var(--border-strong)}
+.lp-feat{max-width:1040px;margin:0 auto;padding:70px 32px}
+.lp-feat .lp-h2{text-align:center;font-size:34px;font-weight:730;letter-spacing:-.03em;margin:0 0 10px}
+.lp-feat .lp-p{text-align:center;color:var(--muted-foreground);font-size:16px;max-width:560px;margin:0 auto 40px}
+.feat-ic{width:42px;height:42px;border-radius:11px;background:var(--brand-soft);color:var(--brand-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.feat-ic svg{width:20px;height:20px}
+.lp-final{background:var(--primary);color:#fff;border-radius:20px;max-width:1040px;margin:0 auto 70px;padding:54px 40px;text-align:center}
+.lp-final h2{font-size:34px;font-weight:740;letter-spacing:-.03em;margin:0 0 12px}
+.lp-final p{color:#d4d4d8;font-size:16px;margin:0 auto 26px;max-width:480px}
+.lp-foot{border-top:1px solid var(--border);padding:30px 40px;display:flex;align-items:center;justify-content:space-between;color:var(--muted-foreground);font-size:12.5px}
+
+/* ===================== FULLSCREEN: AUTH / ONBOARDING ===================== */
+.auth-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:860px){.auth-wrap{grid-template-columns:1fr}.auth-aside{display:none}}
+.auth-aside{background:linear-gradient(160deg,#1c1830,#0f0d1a);color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.auth-aside .glow{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(109,93,251,.45),transparent 65%);top:-80px;right:-90px}
+.auth-aside .glow2{position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(124,108,255,.3),transparent 65%);bottom:-60px;left:-60px}
+.auth-aside .q{position:relative;z-index:2;font-size:25px;font-weight:600;letter-spacing:-.02em;line-height:1.4;max-width:430px}
+.auth-aside .who{position:relative;z-index:2;margin-top:20px;color:#a5a3b8;font-size:13.5px}
+.auth-aside .alogo{position:relative;z-index:2;display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.auth-main{display:flex;align-items:center;justify-content:center;padding:40px}
+.auth-card{width:100%;max-width:400px}
+.auth-card h2{font-size:26px;font-weight:730;letter-spacing:-.025em;margin:0 0 6px}
+.auth-card .lead{color:var(--muted-foreground);margin:0 0 26px;font-size:14.5px}
+.oauth{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.oauth-btn{display:flex;align-items:center;justify-content:center;gap:10px;height:44px;border:1px solid var(--border);border-radius:9px;background:var(--background);font-weight:550;font-size:14px}
+.oauth-btn:hover{background:var(--muted)}
+.divider{display:flex;align-items:center;gap:12px;color:var(--subtle-foreground);font-size:12px;margin:18px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* onboarding stepper */
+.ob{min-height:100vh;display:flex;flex-direction:column;background:var(--app-bg)}
+.ob-top{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--background)}
+.ob-steps{display:flex;align-items:center;gap:6px}
+.ob-step{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--subtle-foreground)}
+.ob-step .n{width:22px;height:22px;border-radius:50%;border:2px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:11px}
+.ob-step.active{color:var(--brand-deep)}
+.ob-step.active .n{border-color:var(--brand);background:var(--brand);color:#fff}
+.ob-step.done .n{border-color:var(--green);background:var(--green);color:#fff}
+.ob-step .barx{width:26px;height:2px;background:var(--border)}
+.ob-body{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px}
+.ob-panel{width:100%;max-width:560px;display:none}
+.ob-panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ob-panel h2{font-size:27px;font-weight:730;letter-spacing:-.03em;margin:0 0 7px}
+.ob-panel .lead{color:var(--muted-foreground);font-size:15px;margin:0 0 26px}
+.connect-row{display:flex;align-items:center;gap:13px;padding:15px 16px;border:1px solid var(--border);border-radius:11px;margin-bottom:11px;background:var(--card)}
+.connect-row .cl-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;font-size:15px}
+.connect-row .cl-main{flex:1}
+.connect-row .cl-t{font-size:14px;font-weight:600}
+.connect-row .cl-d{font-size:12.5px;color:var(--muted-foreground)}
+.consent-item{display:flex;gap:13px;padding:16px;border:1px solid var(--border);border-radius:11px;margin-bottom:11px;background:var(--card)}
+.consent-item .ci-main{flex:1}
+.consent-item .ci-t{font-size:14px;font-weight:600;margin-bottom:3px}
+.consent-item .ci-d{font-size:12.5px;color:var(--muted-foreground);line-height:1.5}
+/* switch */
+.switch{position:relative;width:42px;height:24px;border-radius:99px;background:var(--border-strong);flex-shrink:0;transition:background .16s;border:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .16s;box-shadow:var(--shadow-sm)}
+.switch.on{background:var(--brand)}
+.switch.on::after{left:20px}
+.ob-foot{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-top:1px solid var(--border);background:var(--background)}
+.ingest-opt{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid var(--border);border-radius:12px;margin-bottom:12px;background:var(--card);transition:all .14s;width:100%;text-align:left}
+.ingest-opt:hover{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.ingest-opt .io-ic{width:44px;height:44px;border-radius:11px;background:var(--brand-soft);color:var(--brand-deep);display:flex;align-items:center;justify-content:center}
+.ingest-opt .io-ic svg{width:20px;height:20px}
+.ingest-opt .io-t{font-size:14.5px;font-weight:650}
+.ingest-opt .io-d{font-size:12.5px;color:var(--muted-foreground);margin-top:2px}
+
+/* ===================== COMMAND PALETTE ===================== */
+.cmdk-ov{position:fixed;inset:0;background:rgba(9,9,11,.4);backdrop-filter:blur(3px);z-index:90;display:none;align-items:flex-start;justify-content:center;padding-top:12vh}
+.cmdk-ov.open{display:flex}
+.cmdk{width:min(640px,calc(100vw - 32px));background:var(--background);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden;animation:fade .16s ease}
+.cmdk-in{display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--border)}
+.cmdk-in svg{width:18px;height:18px;color:var(--brand)}
+.cmdk-in input{flex:1;border:0;outline:none;font-size:16px;font-family:inherit;background:transparent;color:var(--foreground)}
+.cmdk-body{max-height:48vh;overflow-y:auto;padding:8px}
+.cmdk-grp{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--subtle-foreground);font-weight:700;padding:10px 12px 6px}
+.cmdk-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;font-size:14px}
+.cmdk-item:hover,.cmdk-item.sel{background:var(--brand-soft)}
+.cmdk-item .ck-ic{width:30px;height:30px;border-radius:8px;background:var(--muted);display:flex;align-items:center;justify-content:center;color:var(--muted-foreground)}
+.cmdk-item.sel .ck-ic,.cmdk-item:hover .ck-ic{background:var(--background);color:var(--brand-deep)}
+.cmdk-item .ck-ic svg{width:15px;height:15px}
+.cmdk-item .ck-sub{font-size:12px;color:var(--muted-foreground)}
+.cmdk-item .ck-tail{margin-left:auto;font-size:11px;color:var(--subtle-foreground)}
+.ai-ans{margin:8px;padding:14px 16px;border:1px solid #ddd6fe;background:var(--brand-soft-2);border-radius:11px}
+.ai-ans .aih{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--brand-deep);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.ai-ans p{margin:0;font-size:13.5px;line-height:1.55}
+.ai-ans .cite{margin-top:9px;font-size:12px;color:var(--brand-deep);font-weight:600}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{padding:9px 14px;font-size:13.5px;font-weight:550;color:var(--muted-foreground);border:0;background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--foreground)}
+.tab.active{color:var(--brand-deep);border-bottom-color:var(--brand);font-weight:650}
+
+/* agent cards */
+.agent-card{padding:20px;display:flex;flex-direction:column;gap:12px;transition:all .15s}
+.agent-card:hover{border-color:var(--brand);box-shadow:0 8px 22px -12px rgba(109,93,251,.4);transform:translateY(-2px)}
+.agent-card .ag-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff}
+.agent-card .ag-ic svg{width:22px;height:22px}
+.agent-card h3{margin:0;font-size:15.5px;font-weight:650;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.agent-card p{margin:0;font-size:13px;color:var(--muted-foreground);line-height:1.5;flex:1}
+.agent-card .ag-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+
+/* meeting detail */
+.summary-block{padding:20px}
+.summary-block .sb-lead{font-size:15px;line-height:1.65;color:var(--foreground)}
+.kp{display:flex;gap:11px;padding:11px 0;border-top:1px solid var(--border)}
+.kp:first-child{border-top:0}
+.kp .kp-b{width:6px;height:6px;border-radius:50%;background:var(--brand);margin-top:7px;flex-shrink:0}
+.action-item{display:flex;gap:12px;padding:13px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:9px;align-items:flex-start;background:var(--card)}
+.action-item .ai-cb{width:20px;height:20px;border-radius:6px;border:2px solid var(--border-strong);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.action-item.done .ai-cb{background:var(--green);border-color:var(--green)}
+.action-item.done .ai-cb svg{width:11px;height:11px;color:#fff}
+.action-item .ai-t{font-size:13.5px;font-weight:550}
+.action-item.done .ai-t{text-decoration:line-through;color:var(--muted-foreground)}
+.action-item .ai-m{font-size:12px;color:var(--muted-foreground);margin-top:3px;display:flex;gap:10px;align-items:center}
+.transcript-line{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--border)}
+.transcript-line:first-child{border-top:0}
+.transcript-line .tl-spk{font-size:12.5px;font-weight:650}
+.transcript-line .tl-time{font-size:11px;color:var(--subtle-foreground);margin-top:2px}
+.transcript-line .tl-txt{font-size:13.5px;line-height:1.55;color:var(--foreground)}
+.chatpanel{display:flex;flex-direction:column;height:520px}
+.chat-scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.bubble{max-width:85%;padding:11px 14px;border-radius:13px;font-size:13.5px;line-height:1.5}
+.bubble.user{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px}
+.bubble.bot{align-self:flex-start;background:var(--muted);border-bottom-left-radius:4px}
+.bubble.bot .cite{display:block;margin-top:8px;font-size:11.5px;color:var(--brand-deep);font-weight:600}
+.chat-in{border-top:1px solid var(--border);padding:12px;display:flex;gap:9px}
+.suggest{display:flex;gap:7px;flex-wrap:wrap;padding:0 12px 12px}
+.suggest button{font-size:12px;padding:6px 11px;border:1px solid var(--border);border-radius:999px;background:var(--background);color:var(--muted-foreground)}
+.suggest button:hover{border-color:var(--brand);color:var(--brand-deep)}
+
+/* upload/processing */
+.dropzone{border:2px dashed var(--border-strong);border-radius:14px;padding:42px;text-align:center;background:var(--muted-2)}
+.dropzone .dz-ic{width:54px;height:54px;border-radius:14px;background:var(--brand-soft);color:var(--brand-deep);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.dropzone .dz-ic svg{width:26px;height:26px}
+.proc-step{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:13.5px}
+.proc-step:first-child{border-top:0}
+.proc-step .ps-ic{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.proc-step.done .ps-ic{background:var(--green);color:#fff}
+.proc-step.run .ps-ic{background:var(--brand);color:#fff}
+.proc-step.wait .ps-ic{background:var(--muted);color:var(--subtle-foreground)}
+.proc-step .ps-ic svg{width:14px;height:14px}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* charts */
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted-foreground);margin-top:10px}
+.chart-legend span{display:inline-flex;align-items:center;gap:6px}
+.lk{width:11px;height:11px;border-radius:3px}
+.gauge-wrap{display:flex;align-items:center;gap:20px}
+.health-num{font-size:40px;font-weight:760;letter-spacing:-.03em}
+
+/* empty / toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--primary);color:#fff;padding:12px 18px;border-radius:10px;font-size:13.5px;font-weight:550;box-shadow:var(--shadow-lg);z-index:120;opacity:0;pointer-events:none;transition:all .25s;display:flex;align-items:center;gap:9px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:16px;height:16px;color:#86efac}
+.demo-pill{position:fixed;bottom:18px;right:18px;z-index:60;background:var(--background);border:1px solid var(--border);border-radius:999px;box-shadow:var(--shadow);padding:7px 8px 7px 14px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted-foreground)}
+.demo-pill b{color:var(--foreground)}
+.demo-pill select{border:1px solid var(--border);border-radius:7px;padding:5px 8px;font-family:inherit;font-size:12.5px;background:var(--muted);outline:none}
+</style>
+</head>
+<body>
+
+<!-- ============================= FULLSCREEN ROUTES ============================= -->
+<div id="fullscreen" class="show">
+
+  <!-- ---------- LANDING ---------- -->
+  <div class="fs-screen" data-fs="landing">
+    <nav class="lp-nav">
+      <div class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6l12 12V6" stroke="#FFD923" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="logo-name">Nucleux</span>
+      </div>
+      <div class="lp-links">
+        <a onclick="go('agents')">Agents</a>
+        <a onclick="go('analytics')">Analytics</a>
+        <a href="#">Pricing</a>
+        <a href="#">Docs</a>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" onclick="go('signup')">Sign in</button>
+        <button class="btn btn-brand btn-sm" onclick="go('signup')">Start free</button>
+      </div>
+    </nav>
+
+    <div class="lp-hero">
+      <span class="lp-eyebrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/></svg> Agentic meeting intelligence</span>
+      <h1>Your meetings, turned into <span class="hl">decisions and done.</span></h1>
+      <p class="sub">Nucleux joins or ingests any meeting — Meet, Zoom, Teams, WebEx, or a file — transcribes it, and hands back a summary, the decisions, and the action items. A team of agents does the work in the background.</p>
+      <div class="lp-cta">
+        <button class="btn btn-brand btn-lg" onclick="go('signup')">Start free — no card needed
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+        </button>
+        <button class="btn btn-outline btn-lg" onclick="go('home')">See a live demo</button>
+      </div>
+      <p class="lp-note">Free for your first 5 meetings · Upgrade when your team is hooked</p>
+      <div class="lp-logos"><span>ZUORA</span><span>CISCO</span><span>SALESFORCE</span><span>INTELLIGAIA</span></div>
+    </div>
+
+    <div class="lp-shot">
+      <div class="frame">
+        <div class="frame-bar"><span class="tl"></span><span class="tl"></span><span class="tl"></span></div>
+        <img alt="Nucleux dashboard preview" style="display:block;width:100%" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1040' height='520'><rect width='1040' height='520' fill='%23fafafa'/><rect x='0' y='0' width='240' height='520' fill='%23ffffff'/><rect x='0' y='0' width='240' height='520' fill='none' stroke='%23e4e4e7'/><rect x='16' y='16' width='208' height='38' rx='9' fill='%236d5dfb'/><rect x='16' y='70' width='160' height='14' rx='4' fill='%23e4e4e7'/><rect x='16' y='98' width='190' height='14' rx='4' fill='%23eeebff'/><rect x='16' y='126' width='150' height='14' rx='4' fill='%23f4f4f5'/><rect x='16' y='154' width='175' height='14' rx='4' fill='%23f4f4f5'/><rect x='280' y='28' width='300' height='26' rx='6' fill='%2318181b'/><rect x='280' y='84' width='220' height='320' rx='12' fill='%23ffffff' stroke='%23e4e4e7'/><rect x='520' y='84' width='480' height='150' rx='12' fill='%23ffffff' stroke='%23e4e4e7'/><rect x='540' y='110' width='180' height='16' rx='4' fill='%23efecff'/><rect x='540' y='140' width='430' height='10' rx='3' fill='%23f4f4f5'/><rect x='540' y='160' width='400' height='10' rx='3' fill='%23f4f4f5'/><rect x='540' y='180' width='300' height='10' rx='3' fill='%23f4f4f5'/><rect x='520' y='254' width='235' height='150' rx='12' fill='%23ffffff' stroke='%23e4e4e7'/><rect x='765' y='254' width='235' height='150' rx='12' fill='%23ffffff' stroke='%23e4e4e7'/><circle cx='575' cy='300' r='16' fill='%23dcfce7'/><rect x='300' y='110' width='120' height='14' rx='4' fill='%23e4e4e7'/><rect x='300' y='150' width='180' height='30' rx='7' fill='%23f6f4ff'/><rect x='300' y='190' width='180' height='30' rx='7' fill='%23f4f4f5'/><rect x='300' y='230' width='180' height='30' rx='7' fill='%23f4f4f5'/></svg>"/>
+      </div>
+    </div>
+
+    <div class="lp-feat">
+      <h2 class="lp-h2">A team of agents, not a transcript dump</h2>
+      <p class="lp-p">Every part of the meeting workflow is owned by a specialised agent. You see results, not raw text.</p>
+      <div class="grid-3">
+        <div class="card card-pad"><div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v14m0 0-4-4m4 4 4-4M5 21h14"/></svg></div><h3 style="margin:0 0 6px;font-size:16px;font-weight:650">Capture anywhere</h3><p style="margin:0;color:var(--muted-foreground);font-size:13.5px;line-height:1.55">Live bot for Meet, Zoom, Teams &amp; WebEx, or upload a file, a Drive link, or a URL. The source never limits the output.</p></div>
+        <div class="card card-pad"><div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div><h3 style="margin:0 0 6px;font-size:16px;font-weight:650">Summary &amp; decisions</h3><p style="margin:0;color:var(--muted-foreground);font-size:13.5px;line-height:1.55">Context, key points, decisions, and action items with owners — structured and editable, ready to share in seconds.</p></div>
+        <div class="card card-pad"><div class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg></div><h3 style="margin:0 0 6px;font-size:16px;font-weight:650">Ask your meetings</h3><p style="margin:0;color:var(--muted-foreground);font-size:13.5px;line-height:1.55">"What did we decide about pricing?" Search and chat across every meeting, with citations back to the moment it was said.</p></div>
+      </div>
+    </div>
+
+    <div class="lp-final">
+      <h2>Stop taking notes. Start shipping decisions.</h2>
+      <p>Set up in two minutes. Your first summary lands before your coffee's cold.</p>
+      <button class="btn btn-brand btn-lg" onclick="go('signup')">Start free</button>
+    </div>
+    <div class="lp-foot"><span>© 2026 Nucleux — an Intelligaia product</span><span>Privacy · Terms · Security</span></div>
+  </div>
+
+  <!-- ---------- SIGN UP ---------- -->
+  <div class="fs-screen" data-fs="signup" style="display:none">
+    <div class="auth-wrap">
+      <div class="auth-aside">
+        <div class="glow"></div><div class="glow2"></div>
+        <div class="alogo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6l12 12V6" stroke="#FFD923" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Nucleux</div>
+        <div>
+          <div class="q">"It went from a 45-minute call to three decisions and four tasks — before anyone left the room."</div>
+          <div class="who">Yogesh S. · Intelligaia Studio</div>
+        </div>
+        <div class="who">Trusted on engagements with Zuora, Cisco &amp; Salesforce</div>
+      </div>
+      <div class="auth-main">
+        <div class="auth-card">
+          <h2>Create your workspace</h2>
+          <p class="lead">Start free. Your first 5 meetings are on us.</p>
+          <div class="oauth">
+            <button class="oauth-btn" onclick="startOnboarding()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.8h3.6c2.1-2 3.2-4.9 3.2-7.9z"/><path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.6-2.8c-1 .7-2.3 1.1-3.6 1.1-2.8 0-5.1-1.9-6-4.4H2.3v2.9A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M6 14.3a6.6 6.6 0 0 1 0-4.2V7.2H2.3a11 11 0 0 0 0 9.9z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .5 4.1 1.6l3.1-3.1A11 11 0 0 0 2.3 7.2L6 10.1c.9-2.6 3.2-4.7 6-4.7z"/></svg> Continue with Google</button>
+            <button class="oauth-btn" onclick="startOnboarding()"><svg width="17" height="17" viewBox="0 0 24 24" fill="#00A4EF"><path d="M11.4 11.4H2V2h9.4zM22 11.4h-9.4V2H22zM11.4 22H2v-9.4h9.4zM22 22h-9.4v-9.4H22z"/></svg> Continue with Microsoft</button>
+          </div>
+          <div class="divider">or</div>
+          <div class="field"><label>Work email</label><input class="input" placeholder="you@company.com" value="yogesh.singh@intelligaia.com"/></div>
+          <div class="field"><label>Workspace name</label><input class="input" placeholder="Acme Studio" value="Intelligaia Studio"/></div>
+          <button class="btn btn-brand btn-block btn-lg" onclick="startOnboarding()">Continue</button>
+          <p style="font-size:12px;color:var(--subtle-foreground);text-align:center;margin-top:16px">By continuing you agree to our Terms &amp; Privacy Policy.</p>
+          <p style="font-size:13px;color:var(--muted-foreground);text-align:center;margin-top:8px">Already have an account? <a onclick="go('home')" style="color:var(--brand-deep);font-weight:600">Sign in</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- ONBOARDING ---------- -->
+  <div class="fs-screen" data-fs="onboarding" style="display:none">
+    <div class="ob">
+      <div class="ob-top">
+        <div class="logo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6l12 12V6" stroke="#FFD923" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="logo-name">Nucleux</span></div>
+        <div class="ob-steps" id="ob-steps">
+          <div class="ob-step active" data-s="0"><span class="n">1</span> Workspace</div><span class="barx"></span>
+          <div class="ob-step" data-s="1"><span class="n">2</span> Connect</div><span class="barx"></span>
+          <div class="ob-step" data-s="2"><span class="n">3</span> Consent</div><span class="barx"></span>
+          <div class="ob-step" data-s="3"><span class="n">4</span> First meeting</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="go('home')">Skip for now</button>
+      </div>
+
+      <div class="ob-body">
+        <!-- step 1 -->
+        <div class="ob-panel active" data-p="0">
+          <h2>Set up your workspace</h2>
+          <p class="lead">This is where your team's projects, meetings, and decisions live.</p>
+          <div class="card card-pad">
+            <div class="field"><label>Workspace name</label><input class="input" value="Intelligaia Studio"/></div>
+            <div class="field"><label>What will you use Nucleux for?</label>
+              <div class="row" style="flex-wrap:wrap;gap:8px">
+                <span class="badge badge-brand">Client engagements</span>
+                <span class="badge badge-outline">Internal syncs</span>
+                <span class="badge badge-outline">Discovery &amp; research</span>
+                <span class="badge badge-outline">Standups</span>
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0"><label>Invite your team <span style="color:var(--subtle-foreground);font-weight:400">(optional — teams activate 3× faster)</span></label><input class="input" placeholder="teammate@company.com, ..."/></div>
+          </div>
+        </div>
+
+        <!-- step 2 -->
+        <div class="ob-panel" data-p="1">
+          <h2>Connect where you meet</h2>
+          <p class="lead">Nucleux's capture agent joins these to record &amp; transcribe. Connect at least one — or skip and upload files instead.</p>
+          <div class="connect-row"><span class="cl-ic" style="background:#00897B">M</span><div class="cl-main"><div class="cl-t">Google Meet</div><div class="cl-d">Auto-join scheduled Meet calls</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this)">Connect</button></div>
+          <div class="connect-row"><span class="cl-ic" style="background:#2D8CFF">Z</span><div class="cl-main"><div class="cl-t">Zoom</div><div class="cl-d">Record &amp; transcribe Zoom meetings</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this)">Connect</button></div>
+          <div class="connect-row"><span class="cl-ic" style="background:#5059C9">T</span><div class="cl-main"><div class="cl-t">Microsoft Teams</div><div class="cl-d">Join &amp; capture Teams calls</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this)">Connect</button></div>
+          <div class="connect-row"><span class="cl-ic" style="background:#00BCEB;color:#063">W</span><div class="cl-main"><div class="cl-t">WebEx</div><div class="cl-d">Capture Cisco WebEx meetings</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this)">Connect</button></div>
+          <div class="connect-row"><span class="cl-ic" style="background:#EA4335">G</span><div class="cl-main"><div class="cl-t">Google Calendar</div><div class="cl-d">Let the scheduler agent see upcoming meetings</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this)">Connect</button></div>
+        </div>
+
+        <!-- step 3 -->
+        <div class="ob-panel" data-p="2">
+          <h2>One-time consent</h2>
+          <p class="lead">Nucleux only processes your meeting data with your explicit permission. You're in control — change this anytime in Settings.</p>
+          <div class="consent-item"><div class="ci-main"><div class="ci-t">Record &amp; transcribe my meetings</div><div class="ci-d">Allow the capture and transcription agents to record audio/video and produce transcripts of meetings I connect.</div></div><button class="switch" onclick="toggleSwitch(this)"></button></div>
+          <div class="consent-item"><div class="ci-main"><div class="ci-t">Generate summaries &amp; action items</div><div class="ci-d">Allow AI agents to process transcripts to produce summaries, decisions, and tasks.</div></div><button class="switch" onclick="toggleSwitch(this)"></button></div>
+          <div class="consent-item"><div class="ci-main"><div class="ci-t">Notify participants the bot is present</div><div class="ci-d">Show a visible recording indicator so everyone knows the meeting is being captured. <b>Recommended.</b></div></div><button class="switch on" onclick="toggleSwitch(this)"></button></div>
+          <div class="consent-item" style="background:var(--muted-2)"><div class="ci-main"><div class="ci-t">Use my data to train models</div><div class="ci-d">Off by default. Your meeting content is never used to train models unless you opt in.</div></div><button class="switch" onclick="toggleSwitch(this)"></button></div>
+          <p style="font-size:12px;color:var(--subtle-foreground)">You own your recordings and transcripts. Set retention and delete anytime under Settings → Privacy.</p>
+        </div>
+
+        <!-- step 4 -->
+        <div class="ob-panel" data-p="3">
+          <h2>Let's get your first summary</h2>
+          <p class="lead">Pick the fastest path to value. Most people upload a past recording to see Nucleux work in under a minute.</p>
+          <button class="ingest-opt" onclick="go('meeting'); markActivation('first-summary')"><span class="io-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v14m0 0-4-4m4 4 4-4M5 21h14"/></svg></span><div style="flex:1"><div class="io-t">Upload a past recording</div><div class="io-d">From your desktop, Google Drive, or a link · ~45s to a summary</div></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--subtle-foreground)" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <button class="ingest-opt" onclick="go('home')"><span class="io-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><div style="flex:1"><div class="io-t">Schedule a live meeting</div><div class="io-d">Nucleux's bot joins and captures it for you</div></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--subtle-foreground)" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <button class="ingest-opt" onclick="go('home')"><span class="io-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/></svg></span><div style="flex:1"><div class="io-t">Explore the dashboard first</div><div class="io-d">We've loaded sample meetings so you can look around</div></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--subtle-foreground)" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+        </div>
+      </div>
+
+      <div class="ob-foot">
+        <button class="btn btn-ghost" id="ob-back" onclick="obStep(-1)" style="visibility:hidden">Back</button>
+        <div class="row"><span style="font-size:12.5px;color:var(--muted-foreground)" id="ob-count">Step 1 of 4</span><button class="btn btn-brand" id="ob-next" onclick="obStep(1)">Continue</button></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /fullscreen -->
+
+<!-- ============================= APP ROUTES ============================= -->
+<div id="app">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-left">
+      <div class="logo"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6l12 12V6" stroke="#FFD923" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="logo-name">Nucleux</span></div>
+    </div>
+    <div class="tb-search" onclick="openCmdk()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      <span>Ask anything or search…</span><span class="kbd mono">⌘K</span>
+    </div>
+    <div class="tb-right">
+      <button class="icon-btn" onclick="openCmdk()" title="Agent search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/></svg></button>
+      <button class="icon-btn" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span class="pip"></span></button>
+      <button class="tb-me"><span class="av" data-c="a">YS</span><span class="name">Yogesh</span></button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="side-top"><button class="side-new" onclick="openCreate()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> Create</button></div>
+      <nav class="side-nav">
+        <button class="nav-link" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg> Home</button>
+        <button class="nav-link" data-nav="search" onclick="go('search')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg> Agent search</button>
+        <button class="nav-link" data-nav="agents" onclick="go('agents')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg> Agents</button>
+        <button class="nav-link" data-nav="projects" onclick="go('projects')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Projects</button>
+        <button class="nav-link" data-nav="analytics" onclick="go('analytics')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10m6 10V4m6 16v-7"/></svg> Analytics</button>
+      </nav>
+      <div class="side-label">Workspaces</div>
+      <nav class="side-nav" style="padding-top:0">
+        <button class="nav-link" onclick="go('projects')"><span class="av" data-c="b" style="width:20px;height:20px;border-radius:6px;font-size:10px">I</span> Intelligaia Studio <span class="tail">6</span></button>
+        <button class="nav-link" onclick="go('projects')"><span class="av" data-c="v" style="width:20px;height:20px;border-radius:6px;font-size:10px">P</span> Personal <span class="tail">1</span></button>
+      </nav>
+      <div class="side-foot">
+        <button class="nav-link" data-nav="settings" onclick="go('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1l-.3-2.5h-4l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L4 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/></svg> Settings</button>
+        <div class="plan-card" style="margin-top:8px">
+          <div class="pc-h"><span>Free plan</span><span class="badge badge-brand">2 / 5 used</span></div>
+          <div class="bar"><i style="width:40%"></i></div>
+          <button class="btn btn-brand btn-sm btn-block" style="margin-top:11px" onclick="toast('Upgrade flow — Pro plan')">Upgrade to Pro</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- ===================== HOME / DAY-0 DASHBOARD ===================== -->
+      <section class="screen" id="screen-home">
+        <div class="page">
+          <div class="page-head">
+            <h1>Good morning, Yogesh 👋</h1>
+            <p>You're on day 0. Here's how to get the most out of Nucleux — and what your agents have already done.</p>
+          </div>
+
+          <div class="grid-2" style="grid-template-columns:1.5fr 1fr;align-items:start">
+            <!-- left: activation + recents -->
+            <div>
+              <div class="card" style="margin-bottom:18px">
+                <div class="card-h">
+                  <div><h3>Get to your first win</h3><div class="sub">Teams that finish this activate 3× faster</div></div>
+                  <span class="badge badge-brand" id="act-count">1 / 4 done</span>
+                </div>
+                <div id="checklist">
+                  <div class="check done" data-k="signup"><span class="cbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div class="c-main"><div class="c-t">Create your workspace</div><div class="c-d">Intelligaia Studio is ready.</div></div></div>
+                  <div class="check now" data-k="first-summary"><span class="cbox"></span><div class="c-main"><div class="c-t">Get your first summary</div><div class="c-d">Upload a past recording and watch the agents work.</div></div><button class="btn btn-brand btn-sm" onclick="simulateProcessing()">Upload</button></div>
+                  <div class="check" data-k="connected"><span class="cbox"></span><div class="c-main"><div class="c-t">Connect a meeting platform</div><div class="c-d">Let the bot auto-join Meet, Zoom, Teams or WebEx.</div></div><button class="btn btn-outline btn-sm" onclick="go('settings')">Connect</button></div>
+                  <div class="check" data-k="invited"><span class="cbox"></span><div class="c-main"><div class="c-t">Invite a teammate</div><div class="c-d">Shared decisions are where Nucleux gets sticky.</div></div><button class="btn btn-outline btn-sm" onclick="markActivation('invited');toast('Invite sent')">Invite</button></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-h"><div><h3>Recent meetings</h3><div class="sub">Sample sessions to explore</div></div><button class="btn btn-ghost btn-sm" onclick="go('projects')">View all</button></div>
+                <a class="lrow" onclick="go('meeting')"><span class="l-ic" style="background:var(--av-violet)">Z</span><div class="l-main"><div class="l-title">Zuora · CPQ Q3 scope review</div><div class="l-sub">CPQ · Q3 redesign · 3 decisions · 4 action items</div></div><span class="badge badge-green"><span class="dot g"></span>Summarised</span><span class="l-meta">2h ago</span></a>
+                <a class="lrow" onclick="go('meeting')"><span class="l-ic" style="background:var(--av-ink)">C</span><div class="l-main"><div class="l-title">Cisco · Q2 review &amp; decisions log</div><div class="l-sub">Partner kit · 2026 · 5 decisions · 6 action items</div></div><span class="badge badge-green"><span class="dot g"></span>Summarised</span><span class="l-meta">28 May</span></a>
+                <a class="lrow" onclick="go('meeting')"><span class="l-ic" style="background:var(--av-amber);color:#3a2a00">A</span><div class="l-main"><div class="l-title">Foundations · 01</div><div class="l-sub">AI-native foundations · processing transcript…</div></div><span class="badge badge-amber"><span class="dot a"></span>Processing</span><span class="l-meta">21 May</span></a>
+              </div>
+            </div>
+
+            <!-- right: what nucleux did + ask -->
+            <div>
+              <div class="card" style="margin-bottom:18px;background:linear-gradient(160deg,#f6f4ff,#fff);border-color:#ddd6fe">
+                <div class="card-pad">
+                  <div class="row" style="margin-bottom:10px"><span class="k-ico" style="background:var(--brand);color:#fff;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/></svg></span><b style="font-size:15px">Ask your meetings</b></div>
+                  <p style="font-size:13px;color:var(--muted-foreground);margin:0 0 12px">The retrieval agent answers across everything you've captured — with citations.</p>
+                  <button class="btn btn-brand btn-block" onclick="openCmdk()">Try "what did we decide about pricing?" <span class="kbd mono" style="border:1px solid rgba(255,255,255,.4);padding:1px 5px;border-radius:4px;font-size:11px">⌘K</span></button>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-h"><h3>This week</h3></div>
+                <div class="card-pad" style="display:flex;flex-direction:column;gap:14px">
+                  <div class="row" style="justify-content:space-between"><span style="color:var(--muted-foreground);font-size:13px">Meetings captured</span><b>2</b></div>
+                  <div class="row" style="justify-content:space-between"><span style="color:var(--muted-foreground);font-size:13px">Decisions logged</span><b>8</b></div>
+                  <div class="row" style="justify-content:space-between"><span style="color:var(--muted-foreground);font-size:13px">Action items extracted</span><b>10</b></div>
+                  <div class="row" style="justify-content:space-between"><span style="color:var(--muted-foreground);font-size:13px">Hours of notes saved</span><b style="color:var(--brand-deep)">~3.5h</b></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== AGENT SEARCH ===================== -->
+      <section class="screen" id="screen-search">
+        <div class="page">
+          <div class="page-head"><h1>Agent search</h1><p>Ask a question in plain language. The retrieval agent answers across every meeting and cites its sources.</p></div>
+          <div class="card" style="margin-bottom:18px">
+            <div class="cmdk-in" style="border-bottom:1px solid var(--border)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.9"><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/></svg><input class="input" style="border:0;box-shadow:none;font-size:16px" value="What did we decide about CPQ pricing, and did it change?"/><button class="btn btn-brand btn-sm">Ask</button></div>
+            <div class="ai-ans" style="margin:16px">
+              <div class="aih"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/></svg> Retrieval agent · answered from 3 meetings</div>
+              <p>Across the CPQ engagement, the team's pricing decision <b>changed once</b>. On <b>8 May</b> the plan was to ship a simplified quote builder <em>and</em> multi-currency together in Q3. On <b>3 June</b> that was revised: <b>ship the simplified quote builder in Q3, defer multi-currency to Q4</b> to protect the timeline. Owner: <b>Priya R.</b></p>
+              <span class="cite">↳ Discovery · 8 May · 41:02 &nbsp;&nbsp;·&nbsp;&nbsp; Zuora · CPQ Q3 scope review · 3 Jun · 18:24</span>
+            </div>
+          </div>
+          <div class="sectiontitle">Matching moments</div>
+          <div class="card">
+            <a class="lrow" onclick="go('meeting')"><span class="badge badge-blue mono" style="font-size:11px">18:24</span><div class="l-main"><div class="l-title">"…let's lock the simplified builder for Q3 and push multi-currency to Q4."</div><div class="l-sub">Zuora · CPQ Q3 scope review · Priya R.</div></div><span class="badge badge-amber">Decision changed</span></a>
+            <a class="lrow" onclick="go('meeting')"><span class="badge badge-blue mono" style="font-size:11px">41:02</span><div class="l-main"><div class="l-title">"We want both the builder and multi-currency in the same Q3 drop."</div><div class="l-sub">Discovery · CPQ renewal pain points · Karan V.</div></div><span class="badge">Superseded</span></a>
+            <a class="lrow" onclick="go('meeting')"><span class="badge badge-blue mono" style="font-size:11px">06:11</span><div class="l-main"><div class="l-title">"Pricing tiers stay as-is for renewals — no change there."</div><div class="l-sub">Kickoff with Zuora · Yogesh S.</div></div><span class="badge">Context</span></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== AGENTS GALLERY ===================== -->
+      <section class="screen" id="screen-agents">
+        <div class="page">
+          <div class="page-head"><h1>Agents</h1><p>Nucleux is a platform of cooperating agents. Meeting Summarizer is live — the rest light up as you grow.</p></div>
+          <div class="grid-3">
+            <a class="card agent-card" onclick="go('meeting')">
+              <div class="row" style="justify-content:space-between"><span class="ag-ic" style="background:var(--brand)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h10M4 18h7"/></svg></span><span class="badge badge-green"><span class="dot g"></span>Active</span></div>
+              <h3>Meeting Summarizer</h3>
+              <p>Turns any meeting into a summary, decisions, and action items with owners. The core of Nucleux.</p>
+              <div class="ag-foot"><span class="badge badge-brand">In POC</span><span style="font-size:12px;color:var(--muted-foreground)">Open →</span></div>
+            </a>
+            <div class="card agent-card">
+              <div class="row" style="justify-content:space-between"><span class="ag-ic" style="background:var(--av-blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg></span><span class="badge badge-green"><span class="dot g"></span>Active</span></div>
+              <h3>Retrieval &amp; Chat</h3>
+              <p>Answers questions across every meeting with citations. Powers agent search and the chat panel.</p>
+              <div class="ag-foot"><span class="badge badge-blue">Phase 2</span><button class="btn btn-ghost btn-sm" onclick="openCmdk()">Try it</button></div>
+            </div>
+            <div class="card agent-card">
+              <div class="row" style="justify-content:space-between"><span class="ag-ic" style="background:var(--av-amber);color:#3a2a00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><span class="badge">Setup</span></div>
+              <h3>Scheduler</h3>
+              <p>Watches your calendar and sends the capture bot to join meetings automatically.</p>
+              <div class="ag-foot"><span class="badge badge-blue">Phase 2</span><button class="btn btn-ghost btn-sm" onclick="go('settings')">Connect calendar</button></div>
+            </div>
+            <div class="card agent-card">
+              <div class="row" style="justify-content:space-between"><span class="ag-ic" style="background:var(--av-green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v14m0 0-4-4m4 4 4-4M5 21h14"/></svg></span><span class="badge">Setup</span></div>
+              <h3>Capture</h3>
+              <p>The bot attendee. Joins Meet, Zoom, Teams &amp; WebEx and records with a visible indicator.</p>
+              <div class="ag-foot"><span class="badge badge-blue">Phase 2</span><button class="btn btn-ghost btn-sm" onclick="go('settings')">Connect</button></div>
+            </div>
+            <div class="card agent-card">
+              <div class="row" style="justify-content:space-between"><span class="ag-ic" style="background:var(--av-pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10m6 10V4m6 16v-7"/></svg></span><span class="badge badge-outline">Soon</span></div>
+              <h3>Insight</h3>
+              <p>Spots recurring topics, flags changed decisions, and scores whether projects are progressing.</p>
+              <div class="ag-foot"><span class="badge" style="background:#f0eeff;color:#5b48e0;border-color:#ddd6fe">Phase 3</span><button class="btn btn-ghost btn-sm" onclick="go('analytics')">Preview</button></div>
+            </div>
+            <div class="card agent-card">
+              <div class="row" style="justify-content:space-between"><span class="ag-ic" style="background:var(--av-ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><span class="badge badge-outline">Soon</span></div>
+              <h3>Integration</h3>
+              <p>Pushes action items to Jira, drafts user stories, and publishes notes to Confluence &amp; Slack.</p>
+              <div class="ag-foot"><span class="badge" style="background:#f0eeff;color:#5b48e0;border-color:#ddd6fe">Phase 3</span><span style="font-size:12px;color:var(--muted-foreground)">Jira · Slack</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PROJECTS ===================== -->
+      <section class="screen" id="screen-projects">
+        <div class="page">
+          <div class="crumb"><a onclick="go('home')">Home</a><span class="sep">/</span><span style="color:var(--foreground);font-weight:500">Intelligaia Studio</span></div>
+          <div class="page-head row" style="justify-content:space-between">
+            <div><h1>Intelligaia Studio</h1><p>Client engagements and internal initiatives — everything we run lives here.</p></div>
+            <div class="row"><div class="avstack"><span class="av" data-c="a">YS</span><span class="av" data-c="v">KV</span><span class="av" data-c="p">PR</span><span class="av" data-c="b">AN</span><span class="more">+4</span></div><button class="btn btn-outline btn-sm">Invite</button></div>
+          </div>
+          <div class="tabs"><button class="tab active" onclick="projTab(this,'grid')">Projects <span class="badge" style="margin-left:4px">6</span></button><button class="tab" onclick="projTab(this,'sessions')">All sessions <span class="badge" style="margin-left:4px">9</span></button></div>
+
+          <div id="proj-grid" class="grid-3">
+            <a class="card card-pad" style="cursor:pointer" onclick="go('meeting')"><div class="row" style="justify-content:space-between"><span class="l-ic" style="background:var(--av-violet)">Z</span><span class="proj-tag badge badge-amber">External</span></div><h3 style="margin:14px 0 4px;font-size:15px;font-weight:650">CPQ · Q3 redesign</h3><p style="font-size:13px;color:var(--muted-foreground);margin:0">Tighter quoting, fewer drop-offs across the renewal journey.</p><div class="row" style="justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="avstack"><span class="av" data-c="a">YS</span><span class="av" data-c="v">KV</span><span class="av" data-c="p">PR</span></div><span style="font-size:12px;color:var(--muted-foreground)"><b style="color:var(--foreground)">11</b> sessions</span></div></a>
+            <a class="card card-pad" style="cursor:pointer" onclick="go('meeting')"><div class="row" style="justify-content:space-between"><span class="l-ic" style="background:var(--av-ink)">C</span><span class="proj-tag badge badge-amber">External</span></div><h3 style="margin:14px 0 4px;font-size:15px;font-weight:650">Partner kit · 2026 refresh</h3><p style="font-size:13px;color:var(--muted-foreground);margin:0">Fewer decks, tighter narrative for the Cisco field collateral.</p><div class="row" style="justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="avstack"><span class="av" data-c="v">KV</span><span class="av" data-c="a">YS</span><span class="more">+3</span></div><span style="font-size:12px;color:var(--muted-foreground)"><b style="color:var(--foreground)">18</b> sessions</span></div></a>
+            <a class="card card-pad" style="cursor:pointer" onclick="go('meeting')"><div class="row" style="justify-content:space-between"><span class="l-ic" style="background:var(--av-green)">S</span><span class="proj-tag badge badge-red">Confidential</span></div><h3 style="margin:14px 0 4px;font-size:15px;font-weight:650">Sales Cloud · CPQ wedge</h3><p style="font-size:13px;color:var(--muted-foreground);margin:0">Discovery for a competitive replacement; restricted access.</p><div class="row" style="justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="avstack"><span class="av" data-c="v">KV</span><span class="av" data-c="a">YS</span></div><span style="font-size:12px;color:var(--muted-foreground)"><b style="color:var(--foreground)">7</b> sessions</span></div></a>
+            <a class="card card-pad" style="cursor:pointer" onclick="go('meeting')"><div class="row" style="justify-content:space-between"><span class="l-ic" style="background:var(--av-amber);color:#3a2a00">A</span><span class="proj-tag badge badge-blue">Internal</span></div><h3 style="margin:14px 0 4px;font-size:15px;font-weight:650">AI-native foundations</h3><p style="font-size:13px;color:var(--muted-foreground);margin:0">Levelling the studio up on AI infrastructure and cost shape.</p><div class="row" style="justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="avstack"><span class="av" data-c="a">YS</span><span class="av" data-c="p">PR</span><span class="more">+5</span></div><span style="font-size:12px;color:var(--muted-foreground)"><b style="color:var(--foreground)">5</b> sessions</span></div></a>
+            <a class="card card-pad" style="cursor:pointer" onclick="go('meeting')"><div class="row" style="justify-content:space-between"><span class="l-ic" style="background:var(--av-pink)">S</span><span class="proj-tag badge badge-blue">Internal</span></div><h3 style="margin:14px 0 4px;font-size:15px;font-weight:650">Studio playbooks</h3><p style="font-size:13px;color:var(--muted-foreground);margin:0">Repeatable plays we use across client engagements.</p><div class="row" style="justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="avstack"><span class="av" data-c="a">YS</span><span class="av" data-c="g">RM</span></div><span style="font-size:12px;color:var(--muted-foreground)"><b style="color:var(--foreground)">3</b> sessions</span></div></a>
+            <a class="card card-pad" style="cursor:pointer" onclick="go('meeting')"><div class="row" style="justify-content:space-between"><span class="l-ic" style="background:var(--av-amber);color:#3a2a00">B</span></div><h3 style="margin:14px 0 4px;font-size:15px;font-weight:650">Brand evolution v2</h3><p style="font-size:13px;color:var(--muted-foreground);margin:0">Working notes on the next visual identity push.</p><div class="row" style="justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="avstack"><span class="av" data-c="a">YS</span><span class="av" data-c="p">PR</span></div><span style="font-size:12px;color:var(--muted-foreground)"><b style="color:var(--foreground)">2</b> sessions</span></div></a>
+          </div>
+
+          <div id="proj-sessions" style="display:none">
+            <div class="sectiontitle">Today</div>
+            <div class="card" style="margin-bottom:14px">
+              <a class="lrow" onclick="go('meeting')"><span class="badge mono" style="font-size:11px">11:00</span><div class="l-main"><div class="l-title">Foundations · 02</div><div class="l-sub">AI-native foundations</div></div><span class="badge badge-blue">Google Meet</span><span class="l-meta">Upcoming</span></a>
+              <a class="lrow" onclick="go('meeting')"><span class="badge mono" style="font-size:11px">18:00</span><div class="l-main"><div class="l-title">Zuora · CPQ Q3 scope review</div><div class="l-sub">CPQ · Q3 redesign</div></div><span class="badge badge-blue">Zoom</span><span class="l-meta">Upcoming</span></a>
+            </div>
+            <div class="sectiontitle">Past · this week</div>
+            <div class="card">
+              <a class="lrow" onclick="go('meeting')"><span class="badge badge-green mono" style="font-size:11px">▶ 50m</span><div class="l-main"><div class="l-title">Cisco · Q2 review &amp; decisions log</div><div class="l-sub">Partner kit · 2026 · 28 May</div></div><span class="badge badge-green"><span class="dot g"></span>Summarised</span></a>
+              <a class="lrow" onclick="go('meeting')"><span class="badge badge-green mono" style="font-size:11px">▶ 59m</span><div class="l-main"><div class="l-title">Foundations · 01</div><div class="l-sub">AI-native foundations · 21 May</div></div><span class="badge badge-green"><span class="dot g"></span>Summarised</span></a>
+              <a class="lrow" onclick="go('meeting')"><span class="badge badge-green mono" style="font-size:11px">▶ 60m</span><div class="l-main"><div class="l-title">Discovery · CPQ renewal pain points</div><div class="l-sub">CPQ · Q3 redesign · 8 May</div></div><span class="badge badge-green"><span class="dot g"></span>Summarised</span></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== MEETING DETAIL ===================== -->
+      <section class="screen" id="screen-meeting">
+        <div class="page">
+          <div class="crumb"><a onclick="go('projects')">CPQ · Q3 redesign</a><span class="sep">/</span><span style="color:var(--foreground);font-weight:500">Zuora · CPQ Q3 scope review</span></div>
+          <div class="page-head row" style="justify-content:space-between;align-items:flex-start">
+            <div><h1>Zuora · CPQ Q3 scope review</h1><p>3 Jun · 18:00 · 45 min · Zoom &nbsp;·&nbsp; <span class="badge badge-green"><span class="dot g"></span>Summarised by Meeting Summarizer</span></p></div>
+            <div class="row"><button class="btn btn-outline btn-sm" onclick="toast('Exported as PDF')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Export</button><button class="btn btn-outline btn-sm" onclick="toast('Share link copied')">Share</button></div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" onclick="mtgTab(this,'summary')">Summary</button>
+            <button class="tab" onclick="mtgTab(this,'actions')">Action items <span class="badge" style="margin-left:4px">4</span></button>
+            <button class="tab" onclick="mtgTab(this,'transcript')">Transcript</button>
+            <button class="tab" onclick="mtgTab(this,'shots')">Screenshots</button>
+            <button class="tab" onclick="mtgTab(this,'chat')">Ask this meeting</button>
+          </div>
+
+          <!-- summary -->
+          <div class="mtg-pane" data-pane="summary">
+            <div class="grid-2" style="grid-template-columns:1.6fr 1fr;align-items:start">
+              <div class="card">
+                <div class="card-h"><h3>Summary</h3><span class="badge badge-brand">AI-generated</span></div>
+                <div class="summary-block">
+                  <p class="sb-lead">The team reviewed the Q3 scope for the CPQ redesign with Zuora. The headline decision: ship the simplified quote builder in Q3 and move multi-currency to Q4 to protect the timeline — a change from the earlier plan to do both together. Design will deliver the quote-builder flow by 13 Jun; engineering flagged the pricing-rules API as the main risk.</p>
+                  <div class="sectiontitle" style="margin-top:18px">Key points</div>
+                  <div class="kp"><span class="kp-b"></span><div>Renewal drop-off is concentrated at the quote-edit step; simplifying it is the priority for Q3.</div></div>
+                  <div class="kp"><span class="kp-b"></span><div>Multi-currency adds API complexity; splitting it out de-risks the Q3 ship.</div></div>
+                  <div class="kp"><span class="kp-b"></span><div>Pricing tiers for renewals stay unchanged — no pricing migration needed.</div></div>
+                  <div class="kp"><span class="kp-b"></span><div>Next design review scheduled for 6 Jun on the quote builder.</div></div>
+                </div>
+              </div>
+              <div>
+                <div class="card" style="margin-bottom:16px">
+                  <div class="card-h"><h3>Decisions</h3></div>
+                  <div class="card-pad" style="display:flex;flex-direction:column;gap:12px">
+                    <div class="row" style="align-items:flex-start;gap:9px"><span class="badge badge-amber" style="margin-top:2px">Changed</span><div style="font-size:13.5px">Ship simplified quote builder in Q3; defer multi-currency to Q4.</div></div>
+                    <div class="row" style="align-items:flex-start;gap:9px"><span class="badge badge-green" style="margin-top:2px">New</span><div style="font-size:13.5px">Keep renewal pricing tiers as-is.</div></div>
+                    <div class="row" style="align-items:flex-start;gap:9px"><span class="badge badge-green" style="margin-top:2px">New</span><div style="font-size:13.5px">Design review on 6 Jun before build starts.</div></div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-h"><h3>Attendees</h3></div>
+                  <div class="card-pad" style="display:flex;flex-direction:column;gap:10px">
+                    <div class="row"><span class="av" data-c="a">YS</span><div><div style="font-size:13px;font-weight:600">Yogesh S.</div><div style="font-size:11.5px;color:var(--muted-foreground)">Intelligaia · host</div></div></div>
+                    <div class="row"><span class="av" data-c="v">KV</span><div><div style="font-size:13px;font-weight:600">Karan V.</div><div style="font-size:11.5px;color:var(--muted-foreground)">Intelligaia</div></div></div>
+                    <div class="row"><span class="av" data-c="p">PR</span><div><div style="font-size:13px;font-weight:600">Priya R.</div><div style="font-size:11.5px;color:var(--muted-foreground)">Zuora · PM</div></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- actions -->
+          <div class="mtg-pane" data-pane="actions" style="display:none">
+            <div class="card-h" style="border:0;padding:0 0 14px"><div class="sub" style="color:var(--muted-foreground)">Extracted by the Action-item agent · check off as you go</div><button class="btn btn-outline btn-sm" onclick="toast('Pushed 4 items to Jira')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Push to Jira</button></div>
+            <div class="action-item" onclick="this.classList.toggle('done')"><span class="ai-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div style="flex:1"><div class="ai-t">Deliver simplified quote-builder flow for design review</div><div class="ai-m"><span class="av" data-c="p" style="width:18px;height:18px;font-size:9px">PR</span> Priya R. · <span class="badge badge-amber">Due 13 Jun</span></div></div></div>
+            <div class="action-item" onclick="this.classList.toggle('done')"><span class="ai-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div style="flex:1"><div class="ai-t">Spike the pricing-rules API to confirm Q3 feasibility</div><div class="ai-m"><span class="av" data-c="v" style="width:18px;height:18px;font-size:9px">KV</span> Karan V. · <span class="badge badge-amber">Due 10 Jun</span></div></div></div>
+            <div class="action-item done" onclick="this.classList.toggle('done')"><span class="ai-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div style="flex:1"><div class="ai-t">Confirm renewal pricing tiers unchanged with finance</div><div class="ai-m"><span class="av" data-c="a" style="width:18px;height:18px;font-size:9px">YS</span> Yogesh S. · Done</div></div></div>
+            <div class="action-item" onclick="this.classList.toggle('done')"><span class="ai-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div style="flex:1"><div class="ai-t">Schedule the 6 Jun design review &amp; invite Zuora</div><div class="ai-m"><span class="av" data-c="a" style="width:18px;height:18px;font-size:9px">YS</span> Yogesh S. · <span class="badge badge-amber">Due 5 Jun</span></div></div></div>
+          </div>
+
+          <!-- transcript -->
+          <div class="mtg-pane" data-pane="transcript" style="display:none">
+            <div class="card card-pad">
+              <div class="transcript-line"><div><div class="tl-spk">Yogesh S.</div><div class="tl-time mono">17:02</div></div><div class="tl-txt">Let's settle the Q3 scope today. The renewal drop-off is mostly at the quote-edit step — that's where I want our focus.</div></div>
+              <div class="transcript-line"><div><div class="tl-spk">Priya R.</div><div class="tl-time mono">18:24</div></div><div class="tl-txt">Agreed. I'd push to lock the simplified builder for Q3 and move multi-currency to Q4 — doing both together is what blew the last estimate.</div></div>
+              <div class="transcript-line"><div><div class="tl-spk">Karan V.</div><div class="tl-time mono">19:40</div></div><div class="tl-txt">From engineering, the pricing-rules API is the real risk. If we isolate multi-currency, Q3 is realistic. I'll spike it this week.</div></div>
+              <div class="transcript-line"><div><div class="tl-spk">Yogesh S.</div><div class="tl-time mono">21:15</div></div><div class="tl-txt">Good. Pricing tiers for renewals stay as they are — no migration. Let's review the builder flow on the 6th before any build.</div></div>
+            </div>
+          </div>
+
+          <!-- screenshots -->
+          <div class="mtg-pane" data-pane="shots" style="display:none">
+            <p style="color:var(--muted-foreground);font-size:13.5px;margin-bottom:14px">Timestamped captures aligned to the discussion. Click a thumbnail to jump to that moment in the transcript. <span class="badge badge-blue">Phase 2</span></p>
+            <div class="grid-3">
+              <div class="card" style="overflow:hidden"><div style="height:120px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);display:flex;align-items:center;justify-content:center;color:#818cf8"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="m3 14 5-4 4 3 4-4 5 5"/></svg></div><div style="padding:10px 12px;font-size:12px"><b>Quote builder · current</b><div class="mono" style="color:var(--muted-foreground);font-size:11px">18:05</div></div></div>
+              <div class="card" style="overflow:hidden"><div style="height:120px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);display:flex;align-items:center;justify-content:center;color:#4ade80"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="m3 14 5-4 4 3 4-4 5 5"/></svg></div><div style="padding:10px 12px;font-size:12px"><b>Proposed simplified flow</b><div class="mono" style="color:var(--muted-foreground);font-size:11px">22:31</div></div></div>
+              <div class="card" style="overflow:hidden"><div style="height:120px;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;color:#f59e0b"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="m3 14 5-4 4 3 4-4 5 5"/></svg></div><div style="padding:10px 12px;font-size:12px"><b>Q3 / Q4 split plan</b><div class="mono" style="color:var(--muted-foreground);font-size:11px">31:18</div></div></div>
+            </div>
+          </div>
+
+          <!-- chat -->
+          <div class="mtg-pane" data-pane="chat" style="display:none">
+            <div class="card chatpanel">
+              <div class="chat-scroll" id="chat-scroll">
+                <div class="bubble bot">Ask me anything about this meeting — decisions, owners, timing, or what changed.</div>
+                <div class="bubble user">Who owns the pricing API risk and by when?</div>
+                <div class="bubble bot">Karan V. owns it. He committed to spiking the pricing-rules API this week, with a due date of <b>10 Jun</b>, to confirm the Q3 build is feasible.<span class="cite">↳ 19:40 · Karan V.</span></div>
+              </div>
+              <div class="suggest"><button onclick="askChat('What decisions changed?')">What decisions changed?</button><button onclick="askChat('List the action items')">List the action items</button><button onclick="askChat('What is the Q3 risk?')">What is the Q3 risk?</button></div>
+              <div class="chat-in"><input class="input" id="chat-input" placeholder="Ask this meeting…" onkeydown="if(event.key==='Enter')askChat(this.value)"/><button class="btn btn-brand" onclick="askChat(document.getElementById('chat-input').value)">Send</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== ANALYTICS ===================== -->
+      <section class="screen" id="screen-analytics">
+        <div class="page">
+          <div class="page-head row" style="justify-content:space-between">
+            <div><h1>Analytics &amp; insights</h1><p>What the Insight agent surfaces once your team is using Nucleux. <span class="badge" style="background:#f0eeff;color:#5b48e0;border-color:#ddd6fe">Phase 3 preview</span></p></div>
+            <select class="input" style="width:auto;height:34px"><option>Last 30 days</option><option>Last 7 days</option><option>This quarter</option></select>
+          </div>
+
+          <div class="grid-4" style="margin-bottom:18px">
+            <div class="card kpi"><div class="k-top"><span class="k-lab">Meetings captured</span><span class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></span></div><div class="k-val">42</div><div class="k-delta up">▲ 18% vs last month</div></div>
+            <div class="card kpi"><div class="k-top"><span class="k-lab">Decisions logged</span><span class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg></span></div><div class="k-val">137</div><div class="k-delta up">▲ 24%</div></div>
+            <div class="card kpi"><div class="k-top"><span class="k-lab">Decision changes</span><span class="k-ico" style="background:var(--amber-soft);color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></span></div><div class="k-val">11</div><div class="k-delta down">▼ flagged for review</div></div>
+            <div class="card kpi"><div class="k-top"><span class="k-lab">Hours saved</span><span class="k-ico" style="background:var(--green-soft);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><div class="k-val">63h</div><div class="k-delta up">▲ across the team</div></div>
+          </div>
+
+          <div class="grid-2" style="align-items:start;margin-bottom:18px">
+            <div class="card span-2">
+              <div class="card-h"><div><h3>Recurring topics over time</h3><div class="sub">What the team keeps coming back to</div></div></div>
+              <div class="card-pad">
+                <svg viewBox="0 0 720 220" width="100%" height="220" font-family="Inter">
+                  <g stroke="#e4e4e7" stroke-width="1"><line x1="40" y1="20" x2="40" y2="180"/><line x1="40" y1="180" x2="700" y2="180"/></g>
+                  <g fill="#a1a1aa" font-size="11"><text x="34" y="184" text-anchor="end">0</text><text x="34" y="130" text-anchor="end">5</text><text x="34" y="80" text-anchor="end">10</text><text x="34" y="34" text-anchor="end">15</text></g>
+                  <g fill="#a1a1aa" font-size="11" text-anchor="middle"><text x="120" y="198">Wk1</text><text x="260" y="198">Wk2</text><text x="400" y="198">Wk3</text><text x="540" y="198">Wk4</text><text x="660" y="198">Wk5</text></g>
+                  <polyline fill="none" stroke="#6d5dfb" stroke-width="2.5" points="120,150 260,120 400,90 540,70 660,55"/>
+                  <polyline fill="none" stroke="#10b981" stroke-width="2.5" points="120,165 260,150 400,140 540,120 660,110"/>
+                  <polyline fill="none" stroke="#f59e0b" stroke-width="2.5" points="120,140 260,148 400,130 540,135 660,128"/>
+                  <g><circle cx="660" cy="55" r="3.5" fill="#6d5dfb"/><circle cx="660" cy="110" r="3.5" fill="#10b981"/><circle cx="660" cy="128" r="3.5" fill="#f59e0b"/></g>
+                </svg>
+                <div class="chart-legend"><span><span class="lk" style="background:#6d5dfb"></span>Pricing &amp; CPQ</span><span><span class="lk" style="background:#10b981"></span>API / infra risk</span><span><span class="lk" style="background:#f59e0b"></span>Timeline / scope</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3" style="align-items:start">
+            <div class="card">
+              <div class="card-h"><div><h3>Meeting health</h3><div class="sub">Progress vs repetition</div></div></div>
+              <div class="card-pad">
+                <div class="gauge-wrap">
+                  <svg viewBox="0 0 120 120" width="110" height="110">
+                    <circle cx="60" cy="60" r="48" fill="none" stroke="#e4e4e7" stroke-width="12"/>
+                    <circle cx="60" cy="60" r="48" fill="none" stroke="#16a34a" stroke-width="12" stroke-linecap="round" stroke-dasharray="226 301" transform="rotate(-90 60 60)"/>
+                  </svg>
+                  <div><div class="health-num" style="color:var(--green)">75</div><div style="font-size:12.5px;color:var(--muted-foreground)">Healthy — projects are moving, low repetition.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><div><h3>Decision changes</h3><div class="sub">Flagged this month</div></div></div>
+              <div class="card-pad">
+                <div class="kp" style="border:0;padding:6px 0"><span class="badge badge-amber">3 Jun</span><div style="font-size:13px;margin-left:8px">CPQ scope: multi-currency moved Q3 → Q4</div></div>
+                <div class="kp" style="padding:6px 0"><span class="badge badge-amber">22 May</span><div style="font-size:13px;margin-left:8px">Partner kit: 6 decks → 3 decks</div></div>
+                <div class="kp" style="padding:6px 0"><span class="badge badge-amber">14 May</span><div style="font-size:13px;margin-left:8px">Foundations: build vs buy on vector DB</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><div><h3>Team adoption</h3><div class="sub">Activation funnel</div></div></div>
+              <div class="card-pad" style="display:flex;flex-direction:column;gap:9px">
+                <div><div class="row" style="justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>Signed up</span><b>12</b></div><div class="bar"><i style="width:100%"></i></div></div>
+                <div><div class="row" style="justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>Got first summary</span><b>10</b></div><div class="bar"><i style="width:83%"></i></div></div>
+                <div><div class="row" style="justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>Connected platform</span><b>8</b></div><div class="bar"><i style="width:67%"></i></div></div>
+                <div><div class="row" style="justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>Weekly active</span><b>7</b></div><div class="bar"><i style="width:58%"></i></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SETTINGS ===================== -->
+      <section class="screen" id="screen-settings">
+        <div class="page">
+          <div class="page-head"><h1>Settings</h1><p>Integrations, consent, and your team.</p></div>
+          <div class="tabs"><button class="tab active" onclick="setTab(this,'integrations')">Integrations</button><button class="tab" onclick="setTab(this,'privacy')">Privacy &amp; consent</button><button class="tab" onclick="setTab(this,'team')">Team</button><button class="tab" onclick="setTab(this,'plan')">Plan</button></div>
+
+          <div class="set-pane" data-set="integrations">
+            <div class="card">
+              <div class="card-h"><h3>Meeting platforms</h3></div>
+              <div class="lrow"><span class="l-ic" style="background:#00897B">M</span><div class="l-main"><div class="l-title">Google Meet</div><div class="l-sub">Auto-join &amp; capture Meet calls</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this);markActivation('connected')">Connect</button></div>
+              <div class="lrow"><span class="l-ic" style="background:#2D8CFF">Z</span><div class="l-main"><div class="l-title">Zoom</div><div class="l-sub">Record &amp; transcribe Zoom</div></div><button class="btn btn-brand btn-sm conn-btn" onclick="toggleConn(this)">Connected ✓</button></div>
+              <div class="lrow"><span class="l-ic" style="background:#5059C9">T</span><div class="l-main"><div class="l-title">Microsoft Teams</div><div class="l-sub">Join &amp; capture Teams</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this);markActivation('connected')">Connect</button></div>
+              <div class="lrow"><span class="l-ic" style="background:#00BCEB;color:#063">W</span><div class="l-main"><div class="l-title">WebEx</div><div class="l-sub">Capture Cisco WebEx</div></div><button class="btn btn-outline btn-sm conn-btn" onclick="toggleConn(this);markActivation('connected')">Connect</button></div>
+            </div>
+            <div class="card" style="margin-top:16px">
+              <div class="card-h"><h3>Downstream <span class="badge" style="background:#f0eeff;color:#5b48e0;border-color:#ddd6fe">Phase 3</span></h3></div>
+              <div class="lrow"><span class="l-ic" style="background:#0052CC">J</span><div class="l-main"><div class="l-title">Jira</div><div class="l-sub">Push action items as issues</div></div><button class="btn btn-outline btn-sm" onclick="toast('Jira — coming in Phase 3')">Connect</button></div>
+              <div class="lrow"><span class="l-ic" style="background:#4A154B">S</span><div class="l-main"><div class="l-title">Slack</div><div class="l-sub">Post summaries to a channel</div></div><button class="btn btn-outline btn-sm" onclick="toast('Slack — coming in Phase 3')">Connect</button></div>
+            </div>
+          </div>
+
+          <div class="set-pane" data-set="privacy" style="display:none">
+            <div class="card">
+              <div class="card-h"><div><h3>Consent</h3><div class="sub">You control how Nucleux uses your data</div></div></div>
+              <div class="consent-item" style="border:0;border-bottom:1px solid var(--border);border-radius:0;margin:0"><div class="ci-main"><div class="ci-t">Record &amp; transcribe meetings</div><div class="ci-d">Capture and transcription agents may process connected meetings.</div></div><button class="switch on" onclick="toggleSwitch(this)"></button></div>
+              <div class="consent-item" style="border:0;border-bottom:1px solid var(--border);border-radius:0;margin:0"><div class="ci-main"><div class="ci-t">Generate summaries &amp; action items</div><div class="ci-d">AI agents may process transcripts.</div></div><button class="switch on" onclick="toggleSwitch(this)"></button></div>
+              <div class="consent-item" style="border:0;border-bottom:1px solid var(--border);border-radius:0;margin:0"><div class="ci-main"><div class="ci-t">Visible recording indicator</div><div class="ci-d">Participants always see the bot is present.</div></div><button class="switch on" onclick="toggleSwitch(this)"></button></div>
+              <div class="consent-item" style="border:0;border-radius:0;margin:0"><div class="ci-main"><div class="ci-t">Use my data to train models</div><div class="ci-d">Off by default.</div></div><button class="switch" onclick="toggleSwitch(this)"></button></div>
+            </div>
+            <div class="card" style="margin-top:16px"><div class="card-pad row" style="justify-content:space-between"><div><div style="font-weight:600;font-size:14px">Retention</div><div style="font-size:12.5px;color:var(--muted-foreground)">How long recordings &amp; transcripts are kept</div></div><select class="input" style="width:auto;height:36px"><option>Keep forever</option><option>12 months</option><option>90 days</option><option selected>Custom</option></select></div></div>
+          </div>
+
+          <div class="set-pane" data-set="team" style="display:none">
+            <div class="card">
+              <div class="card-h"><h3>Members</h3><button class="btn btn-brand btn-sm">Invite</button></div>
+              <div class="lrow"><span class="av" data-c="a">YS</span><div class="l-main"><div class="l-title">Yogesh Singh</div><div class="l-sub">yogesh.singh@intelligaia.com</div></div><span class="badge badge-brand">Owner</span></div>
+              <div class="lrow"><span class="av" data-c="v">KV</span><div class="l-main"><div class="l-title">Karan V.</div><div class="l-sub">karan@intelligaia.com</div></div><span class="badge">Admin</span></div>
+              <div class="lrow"><span class="av" data-c="p">PR</span><div class="l-main"><div class="l-title">Priya R.</div><div class="l-sub">priya@zuora.com · guest</div></div><span class="badge">Member</span></div>
+            </div>
+          </div>
+
+          <div class="set-pane" data-set="plan" style="display:none">
+            <div class="grid-2">
+              <div class="card card-pad"><h3 style="margin:0 0 4px">Free</h3><div style="font-size:30px;font-weight:760">$0</div><p style="color:var(--muted-foreground);font-size:13px">5 meetings · upload only · 1 workspace</p><button class="btn btn-outline btn-block" disabled style="opacity:.6">Current plan</button></div>
+              <div class="card card-pad" style="border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)"><h3 style="margin:0 0 4px">Pro <span class="badge badge-brand">Popular</span></h3><div style="font-size:30px;font-weight:760">$24<span style="font-size:14px;color:var(--muted-foreground);font-weight:500">/user/mo</span></div><p style="color:var(--muted-foreground);font-size:13px">Unlimited meetings · live capture · chat · analytics</p><button class="btn btn-brand btn-block" onclick="toast('Upgrade to Pro')">Upgrade</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROCESSING MODAL -->
+      <div class="cmdk-ov" id="proc-ov">
+        <div class="cmdk" style="max-width:440px">
+          <div class="card-h"><h3 id="proc-title">Processing your recording…</h3></div>
+          <div style="padding:18px 20px">
+            <div class="proc-step run" data-ps="0"><span class="ps-ic"><svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3a9 9 0 1 0 9 9"/></svg></span> Uploading &amp; preparing audio</div>
+            <div class="proc-step wait" data-ps="1"><span class="ps-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/></svg></span> Transcription agent · speech-to-text</div>
+            <div class="proc-step wait" data-ps="2"><span class="ps-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/></svg></span> Summarizer agent · key points</div>
+            <div class="proc-step wait" data-ps="3"><span class="ps-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/></svg></span> Action-item agent · decisions &amp; tasks</div>
+            <p style="font-size:12px;color:var(--subtle-foreground);margin:14px 0 0">This usually takes under a minute for a 45-min meeting.</p>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        /* checklist / activation */
+        const ACT=['signup','first-summary','connected','invited'];
+        const actState={signup:true,'first-summary':false,connected:false,invited:false};
+        function updateChecklist(k){
+          if(k && actState.hasOwnProperty(k)) actState[k]=true;
+          let done=0;
+          document.querySelectorAll('#checklist .check').forEach(c=>{
+            const key=c.dataset.k; const is=actState[key];
+            c.classList.toggle('done',is);
+            if(is){done++;c.classList.remove('now');}
+          });
+          // mark first undone as "now"
+          let marked=false;
+          document.querySelectorAll('#checklist .check').forEach(c=>{
+            if(!actState[c.dataset.k] && !marked){c.classList.add('now');marked=true;}
+            else if(!actState[c.dataset.k]) c.classList.remove('now');
+          });
+          const cc=document.getElementById('act-count'); if(cc) cc.textContent=done+' / 4 done';
+        }
+        /* processing simulation */
+        function simulateProcessing(){
+          const ov=document.getElementById('proc-ov'); ov.classList.add('open');
+          const steps=document.querySelectorAll('#proc-ov .proc-step');
+          steps.forEach((s,i)=>{s.className='proc-step '+(i===0?'run':'wait');s.querySelector('.ps-ic').innerHTML=i===0?'<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3a9 9 0 1 0 9 9"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/></svg>';});
+          let i=0;
+          const tick=setInterval(()=>{
+            steps[i].className='proc-step done'; steps[i].querySelector('.ps-ic').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="M20 6 9 17l-5-5"/></svg>';
+            i++;
+            if(i<steps.length){steps[i].className='proc-step run';steps[i].querySelector('.ps-ic').innerHTML='<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3a9 9 0 1 0 9 9"/></svg>';}
+            else{clearInterval(tick);document.getElementById('proc-title').textContent='Done — your summary is ready';setTimeout(()=>{ov.classList.remove('open');markActivation('first-summary');go('meeting');toast('Summary ready in 48s');},700);}
+          },780);
+        }
+        /* tabs */
+        function projTab(b,t){document.querySelectorAll('#screen-projects .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('proj-grid').style.display=t==='grid'?'grid':'none';document.getElementById('proj-sessions').style.display=t==='sessions'?'block':'none';}
+        function mtgTab(b,t){document.querySelectorAll('#screen-meeting .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#screen-meeting .mtg-pane').forEach(p=>p.style.display=p.dataset.pane===t?'block':'none');}
+        function setTab(b,t){document.querySelectorAll('#screen-settings .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#screen-settings .set-pane').forEach(p=>p.style.display=p.dataset.set===t?'block':'none');}
+        /* chat */
+        const CHAT_A={
+          'what decisions changed?':'One decision changed: on 3 Jun the team moved multi-currency from Q3 to Q4, keeping only the simplified quote builder in Q3.<span class="cite">↳ 18:24 · Priya R.</span>',
+          'list the action items':'Four action items: (1) Priya — deliver quote-builder flow by 13 Jun; (2) Karan — spike pricing-rules API by 10 Jun; (3) Yogesh — confirm renewal tiers (done); (4) Yogesh — schedule 6 Jun review.',
+          'what is the q3 risk?':'The main Q3 risk is the pricing-rules API complexity. Isolating multi-currency to Q4 reduces it; Karan is spiking it this week to confirm feasibility.<span class="cite">↳ 19:40 · Karan V.</span>'
+        };
+        function askChat(q){
+          if(!q||!q.trim())return; const sc=document.getElementById('chat-scroll');
+          sc.insertAdjacentHTML('beforeend','<div class="bubble user">'+q+'</div>');
+          const key=q.trim().toLowerCase();
+          const a=CHAT_A[key]||'Based on this meeting: the team locked the simplified quote builder for Q3 and deferred multi-currency to Q4. Want the owners or the timeline?';
+          setTimeout(()=>{sc.insertAdjacentHTML('beforeend','<div class="bubble bot">'+a+'</div>');sc.scrollTop=sc.scrollHeight;},350);
+          const ci=document.getElementById('chat-input'); if(ci)ci.value=''; sc.scrollTop=sc.scrollHeight;
+        }
+      </script>
+
+    </main>
+  </div>
+</div><!-- /app -->
+
+<!-- COMMAND PALETTE -->
+<div class="cmdk-ov" id="cmdk-ov" onclick="if(event.target===this)closeCmdk()">
+  <div class="cmdk">
+    <div class="cmdk-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/></svg><input id="cmdk-input" placeholder="Ask across your meetings, or jump to anything…" oninput="cmdkFilter(this.value)"/><span class="kbd mono" style="font-size:11px;border:1px solid var(--border);padding:1px 6px;border-radius:5px;color:var(--muted-foreground)">esc</span></div>
+    <div class="cmdk-body" id="cmdk-body"></div>
+  </div>
+</div>
+
+<!-- CREATE MODAL -->
+<div class="cmdk-ov" id="create-ov" onclick="if(event.target===this)closeCreate()">
+  <div class="cmdk" style="max-width:480px">
+    <div class="card-h"><h3>What do you want to create?</h3><button class="icon-btn" onclick="closeCreate()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div style="padding:8px">
+      <button class="cmdk-item" style="width:100%;text-align:left" onclick="closeCreate();go('meeting')"><span class="ck-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v14m0 0-4-4m4 4 4-4M5 21h14"/></svg></span><div><div style="font-weight:600">Upload a recording</div><div class="ck-sub">Transcribe &amp; summarise a past meeting</div></div></button>
+      <button class="cmdk-item" style="width:100%;text-align:left" onclick="closeCreate();toast('Schedule flow')"><span class="ck-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><div><div style="font-weight:600">Schedule a session</div><div class="ck-sub">Bot joins &amp; captures a live meeting</div></div></button>
+      <button class="cmdk-item" style="width:100%;text-align:left" onclick="closeCreate();go('projects')"><span class="ck-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><div><div style="font-weight:600">New project</div><div class="ck-sub">Group sessions &amp; decisions</div></div></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg><span id="toast-msg">Done</span></div>
+
+<div class="demo-pill">
+  <span>Prototype — jump to:</span>
+  <select onchange="go(this.value)" id="jump">
+    <option value="landing">Landing</option>
+    <option value="signup">Sign up</option>
+    <option value="onboarding">Onboarding</option>
+    <option value="home">Day-0 Dashboard</option>
+    <option value="search">Agent search</option>
+    <option value="agents">Agents gallery</option>
+    <option value="projects">Projects</option>
+    <option value="meeting">Meeting detail</option>
+    <option value="analytics">Analytics</option>
+    <option value="settings">Settings</option>
+  </select>
+</div>
+
+<script>
+/* ===== router ===== */
+const FS = ['landing','signup','onboarding'];
+function go(route){
+  if(FS.includes(route)){
+    document.getElementById('app').classList.remove('show');
+    document.getElementById('fullscreen').classList.add('show');
+    document.querySelectorAll('.fs-screen').forEach(s=>s.style.display = s.dataset.fs===route?'block':'none');
+    if(route==='onboarding'){obGoto(0);}
+    window.scrollTo(0,0);
+  } else {
+    document.getElementById('fullscreen').classList.remove('show');
+    document.getElementById('app').classList.add('show');
+    document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id==='screen-'+route));
+    document.querySelectorAll('.nav-link[data-nav]').forEach(n=>n.classList.toggle('active', n.dataset.nav===route));
+    const m=document.querySelector('.main'); if(m) m.scrollTo(0,0);
+  }
+  const jp=document.getElementById('jump'); if(jp) jp.value=route;
+}
+/* ===== onboarding ===== */
+let obI=0;
+function startOnboarding(){ go('onboarding'); }
+function obGoto(i){
+  obI=Math.max(0,Math.min(3,i));
+  document.querySelectorAll('.ob-panel').forEach(p=>p.classList.toggle('active', +p.dataset.p===obI));
+  document.querySelectorAll('.ob-step').forEach(s=>{const n=+s.dataset.s;s.classList.toggle('active',n===obI);s.classList.toggle('done',n<obI);});
+  document.getElementById('ob-back').style.visibility = obI===0?'hidden':'visible';
+  document.getElementById('ob-count').textContent = 'Step '+(obI+1)+' of 4';
+  document.getElementById('ob-next').textContent = obI===3?'Go to dashboard':'Continue';
+}
+function obStep(d){ if(obI===3 && d>0){ go('home'); markActivation('connected'); return;} obGoto(obI+d); }
+function toggleConn(b){ const on=b.classList.toggle('btn-brand'); b.classList.toggle('btn-outline',!on); b.textContent= on?'Connected ✓':'Connect'; }
+function toggleSwitch(b){ b.classList.toggle('on'); }
+/* ===== create / cmdk ===== */
+function openCreate(){document.getElementById('create-ov').classList.add('open');}
+function closeCreate(){document.getElementById('create-ov').classList.remove('open');}
+function openCmdk(){document.getElementById('cmdk-ov').classList.add('open');setTimeout(()=>document.getElementById('cmdk-input').focus(),30);cmdkFilter('');}
+function closeCmdk(){document.getElementById('cmdk-ov').classList.remove('open');}
+const CMD_NAV=[
+  {t:'Home / Dashboard',s:'Go to home',r:'home',i:'home'},
+  {t:'Agents gallery',s:'Browse Nucleux agents',r:'agents',i:'grid'},
+  {t:'Projects',s:'All projects & sessions',r:'projects',i:'folder'},
+  {t:'Analytics',s:'Team insights & adoption',r:'analytics',i:'chart'},
+  {t:'Settings',s:'Integrations, consent, team',r:'settings',i:'gear'},
+];
+const CMD_MTG=[
+  {t:'Zuora · CPQ Q3 scope review',s:'CPQ · Q3 redesign · 3 Jun',r:'meeting'},
+  {t:'Cisco · Q2 review & decisions log',s:'Partner kit · 28 May',r:'meeting'},
+  {t:'Foundations · 01',s:'AI-native foundations · 21 May',r:'meeting'},
+  {t:'Discovery · CPQ renewal pain points',s:'CPQ · Q3 redesign · 8 May',r:'meeting'},
+];
+function ic(name){const M={home:'<path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',grid:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',chart:'<path d="M4 20V10m6 10V4m6 16v-7"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1l-.3-2.5h-4l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L4 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/>',doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>'};return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">'+(M[name]||M.doc)+'</svg>';}
+function cmdkFilter(q){
+  q=(q||'').toLowerCase();
+  const body=document.getElementById('cmdk-body');
+  let html='';
+  if(q.length>3 && /\b(decide|decision|pricing|when|what|who|status|action)\b/.test(q)){
+    html+=`<div class="ai-ans"><div class="aih"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/></svg> Retrieval agent</div><p>Based on 3 meetings: the team decided to <b>ship the simplified quote builder in Q3</b> and defer multi-currency to Q4. Owner: Priya. This reversed the 8 May decision to do both together.</p><span class="cite">↳ Zuora · CPQ Q3 scope review · 18:24 &nbsp;·&nbsp; Discovery · 8 May · 41:02</span></div>`;
+  }
+  const mtg=CMD_MTG.filter(m=>!q||(m.t+m.s).toLowerCase().includes(q));
+  const nav=CMD_NAV.filter(m=>!q||(m.t+m.s).toLowerCase().includes(q));
+  if(mtg.length){html+='<div class="cmdk-grp">Meetings</div>'+mtg.map(m=>`<a class="cmdk-item" onclick="closeCmdk();go('${m.r}')"><span class="ck-ic">${ic('doc')}</span><div><div>${m.t}</div><div class="ck-sub">${m.s}</div></div><span class="ck-tail">↵</span></a>`).join('');}
+  if(nav.length){html+='<div class="cmdk-grp">Go to</div>'+nav.map(m=>`<a class="cmdk-item" onclick="closeCmdk();go('${m.r}')"><span class="ck-ic">${ic(m.i)}</span><div><div>${m.t}</div><div class="ck-sub">${m.s}</div></div></a>`).join('');}
+  if(!html)html='<div style="padding:30px;text-align:center;color:var(--muted-foreground);font-size:13px">No matches. Try "what did we decide about pricing?"</div>';
+  body.innerHTML=html;
+}
+/* ===== misc ===== */
+let toastT;
+function toast(m){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+function markActivation(k){ /* hook for activation checklist */ try{updateChecklist(k);}catch(e){} }
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCmdk();}
+  if(e.key==='Escape'){closeCmdk();closeCreate();}
+});
+/* boot */
+go('landing');
+</script>
+</body>
+</html>

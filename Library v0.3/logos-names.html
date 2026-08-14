@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Naming + mark studies — Intelligaia AI UX Pattern Library</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink-0:#fff; --ink-25:#fbfbfa; --ink-50:#f5f5f3; --ink-100:#ebebe8;
+      --ink-200:#d8d8d2; --ink-400:#88887d; --ink-500:#5d5d54; --ink-950:#050504;
+      --fg:#050504; --fg-mid:#5d5d54; --fg-muted:#88887d; --border:#ebebe8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--ink-25);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      padding: 64px 32px;
+    }
+    .wrap { max-width: 1400px; margin: 0 auto; }
+    h1 {
+      font-size: 56px; font-weight: 600;
+      letter-spacing: -0.035em;
+      margin: 0 0 16px; line-height: 1;
+    }
+    .lede {
+      font-size: 18px; line-height: 1.55;
+      color: var(--fg-mid); max-width: 780px;
+      margin: 0 0 32px;
+    }
+    .switcher { display: inline-flex; gap: 12px; margin-bottom: 56px; flex-wrap: wrap; }
+    .switcher a {
+      color: var(--fg-mid); font-size: 14px; text-decoration: none;
+      padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border);
+    }
+    .switcher a.is-current { background: var(--ink-950); color: var(--ink-0); border-color: var(--ink-950); }
+    .switcher a:hover:not(.is-current) { color: var(--fg); border-color: var(--ink-200); }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--ink-0); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .card__head {
+      padding: 18px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    }
+    .card__name { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; }
+    .card__id {
+      font-family: "JetBrains Mono", monospace; font-size: 12px;
+      color: var(--fg-muted); letter-spacing: 0.06em;
+    }
+    .card__etymology {
+      padding: 8px 22px 4px; font-size: 12px;
+      color: var(--fg-muted); letter-spacing: 0.06em;
+      text-transform: uppercase; font-weight: 600;
+      font-family: "JetBrains Mono", monospace;
+      border-bottom: 1px dashed var(--border);
+    }
+    .card__desc {
+      padding: 14px 22px 18px; font-size: 13.5px; line-height: 1.55;
+      color: var(--fg-mid); border-bottom: 1px solid var(--border);
+    }
+    .card__body { display: grid; grid-template-columns: 1fr 1fr; }
+    .stage {
+      padding: 40px 28px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 200px; position: relative;
+    }
+    .stage--light { background: var(--ink-0); border-right: 1px solid var(--border); }
+    .stage--dark  {
+      background: radial-gradient(ellipse at 30% 30%, #14141a 0%, #050504 80%);
+      color: var(--ink-0);
+    }
+    .stage::after {
+      content: attr(data-label);
+      position: absolute; top: 12px; left: 14px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; opacity: 0.45;
+    }
+    .lockup { display: inline-flex; align-items: center; gap: 14px; }
+    .word {
+      font-family: "Fraunces", "Newsreader", serif;
+      font-style: italic; font-weight: 500;
+      font-size: 36px; letter-spacing: -0.022em;
+      line-height: 1;
+      font-variation-settings: "opsz" 96, "SOFT" 30, "WONK" 0;
+    }
+    .stage svg { flex: 0 0 auto; }
+    .meta {
+      padding: 16px 22px; display: flex; flex-wrap: wrap; gap: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .chip {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--ink-50); font-size: 11px; color: var(--fg-mid);
+    }
+    .note {
+      grid-column: 1 / -1; background: var(--ink-0);
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 28px 32px;
+    }
+    .note h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .note p { font-size: 14px; line-height: 1.6; color: var(--fg-mid); margin: 0 0 8px; }
+    .note p:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Naming + mark studies.</h1>
+    <p class="lede">Six product-name candidates — each paired with a custom glyph that fits the name's specific meaning rather than re-using the cube mark. The first option, <em>Intelli Agent</em>, is the most brand-DNA fit — half of the parent name carried directly into the product. The next four are progressively more independent.</p>
+
+    <nav class="switcher">
+      <a href="logos.html">Flat studies</a>
+      <a href="logos-iso.html">Iso studies (cube)</a>
+      <a href="logos-names.html" class="is-current">Naming studies</a>
+    </nav>
+
+    <div class="grid">
+
+      <!-- ═════════════════ Intelli Agent ═════════════════ -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Intelli Agent</span>
+          <span class="card__id">01 / 06</span>
+        </header>
+        <div class="card__etymology">Coined · <em style="font-family:Fraunces;font-style:italic">Intelli</em>(gaia) + <em style="font-family:Fraunces;font-style:italic">Agent</em></div>
+        <div class="card__desc">Most brand-DNA option. Half of the parent name ("Intelli") fused with the literal product subject ("Agent"). Reads as a phrase, not a coined word — meaning is immediate, no explanation needed. Glyph: a lowercase <em>i</em> whose dot is replaced with a four-ray sparkle. Intelligaia's "i" carrying the AI activity indicator. Quiet, intelligent, subtle.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="34" height="50" viewBox="0 0 26 44" xmlns="http://www.w3.org/2000/svg">
+                <!-- Sparkle (dot of the i) -->
+                <g transform="translate(13, 9)" stroke="#050504" stroke-width="1.5" stroke-linecap="round">
+                  <line x1="0" y1="-7"   x2="0" y2="-3.5"/>
+                  <line x1="0" y1="3.5"  x2="0" y2="7"/>
+                  <line x1="-7" y1="0"   x2="-3.5" y2="0"/>
+                  <line x1="3.5" y1="0"  x2="7" y2="0"/>
+                </g>
+                <circle cx="13" cy="9" r="2.4" fill="#050504"/>
+                <!-- Stem of i -->
+                <rect x="10.6" y="17" width="4.8" height="23" rx="2.2" fill="#050504"/>
+              </svg>
+              <span class="word">intelli agent</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="34" height="50" viewBox="0 0 26 44" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="ia-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%"   stop-color="#fbbf24"/>
+                    <stop offset="33%"  stop-color="#e11d48"/>
+                    <stop offset="66%"  stop-color="#7c3aed"/>
+                    <stop offset="100%" stop-color="#60a5fa"/>
+                  </linearGradient>
+                </defs>
+                <g transform="translate(13, 9)" stroke="url(#ia-grad)" stroke-width="1.6" stroke-linecap="round">
+                  <line x1="0" y1="-7"   x2="0" y2="-3.5"/>
+                  <line x1="0" y1="3.5"  x2="0" y2="7"/>
+                  <line x1="-7" y1="0"   x2="-3.5" y2="0"/>
+                  <line x1="3.5" y1="0"  x2="7" y2="0"/>
+                </g>
+                <circle cx="13" cy="9" r="2.4" fill="url(#ia-grad)"/>
+                <rect x="10.6" y="17" width="4.8" height="23" rx="2.2" fill="#f5f5f3"/>
+              </svg>
+              <span class="word">intelli agent</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">i + sparkle</span>
+          <span class="chip">Parent-brand DNA</span>
+          <span class="chip">Reads as a phrase</span>
+        </div>
+      </div>
+
+      <!-- ═════════════════ Praxia ═════════════════ -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Praxia</span>
+          <span class="card__id">02 / 06</span>
+        </header>
+        <div class="card__etymology">Coined · from Greek <em style="font-family:Fraunces;font-style:italic">praxis</em> (action / applied practice)</div>
+        <div class="card__desc">Differentiates from competitors who only <em>catalog</em> patterns — Praxia is named for the act of <em>doing</em>. Glyph: a continuous loop / lemniscate, the cycle of practice → reflect → refine.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="50" height="36" viewBox="0 0 50 36" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 14 18 C 14 8, 25 8, 25 18 C 25 28, 36 28, 36 18 C 36 8, 25 8, 25 18 C 25 28, 14 28, 14 18 Z"
+                      fill="none" stroke="#050504" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="14" cy="18" r="2.6" fill="#050504"/>
+              </svg>
+              <span class="word">praxia</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="50" height="36" viewBox="0 0 50 36" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="pg" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#fbbf24"/>
+                    <stop offset="50%" stop-color="#a78bfa"/>
+                    <stop offset="100%" stop-color="#60a5fa"/>
+                  </linearGradient>
+                </defs>
+                <path d="M 14 18 C 14 8, 25 8, 25 18 C 25 28, 36 28, 36 18 C 36 8, 25 8, 25 18 C 25 28, 14 28, 14 18 Z"
+                      fill="none" stroke="url(#pg)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="14" cy="18" r="2.6" fill="#fbbf24"/>
+              </svg>
+              <span class="word">praxia</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Lemniscate / loop</span>
+          <span class="chip">Continuous practice</span>
+          <span class="chip">Greek root</span>
+        </div>
+      </div>
+
+      <!-- ═════════════════ Cairn ═════════════════ -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Cairn</span>
+          <span class="card__id">03 / 06</span>
+        </header>
+        <div class="card__etymology">Scottish Gaelic <em style="font-family:Fraunces;font-style:italic">càrn</em> · a stack of stones marking a trail</div>
+        <div class="card__desc">Hikers, surveyors, designers stack these to mark a path. Fits the four-phase journey shape of the library (Onboarding → Initially → During → Over time = stones along the route). Earthy, sturdy, completely unclaimed.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="44" height="50" viewBox="0 0 32 44" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="16" cy="40" rx="12" ry="3.2" fill="#1a1a16"/>
+                <ellipse cx="13" cy="32" rx="9.5" ry="3" fill="#3f3f38"/>
+                <ellipse cx="18" cy="24" rx="7.5" ry="2.7" fill="#5d5d54"/>
+                <ellipse cx="14" cy="16" rx="5.5" ry="2.4" fill="#88887d"/>
+                <circle cx="17" cy="8" r="3.6" fill="#b6b6ad"/>
+              </svg>
+              <span class="word">cairn</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="44" height="50" viewBox="0 0 32 44" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="16" cy="40" rx="12" ry="3.2" fill="#1e40af" opacity="0.85"/>
+                <ellipse cx="13" cy="32" rx="9.5" ry="3" fill="#7c3aed" opacity="0.85"/>
+                <ellipse cx="18" cy="24" rx="7.5" ry="2.7" fill="#e11d48" opacity="0.85"/>
+                <ellipse cx="14" cy="16" rx="5.5" ry="2.4" fill="#d97706" opacity="0.85"/>
+                <circle cx="17" cy="8" r="3.6" fill="#fbbf24"/>
+              </svg>
+              <span class="word">cairn</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Stacked stones</span>
+          <span class="chip">Trail marker</span>
+          <span class="chip">4 phases = 4 stones</span>
+        </div>
+      </div>
+
+      <!-- ═════════════════ Mira ═════════════════ -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Mira</span>
+          <span class="card__id">04 / 06</span>
+        </header>
+        <div class="card__etymology">Spanish <em style="font-family:Fraunces;font-style:italic">mira</em> (look) · also the variable star Mira in Cetus</div>
+        <div class="card__desc">A library is, fundamentally, an instrument for <em>seeing</em> — for noticing patterns you'd otherwise miss. Glyph: an aperture / iris / observatory lens, concentric rings narrowing to a fixed centre point.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="44" height="44" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="17" fill="none" stroke="#050504" stroke-width="1.4"/>
+                <circle cx="20" cy="20" r="12" fill="none" stroke="#050504" stroke-width="1.4"/>
+                <circle cx="20" cy="20" r="7"  fill="none" stroke="#050504" stroke-width="1.4"/>
+                <circle cx="20" cy="20" r="2.6" fill="#050504"/>
+              </svg>
+              <span class="word">mira</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="44" height="44" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="mg" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%"  stop-color="#fbbf24"/>
+                    <stop offset="40%" stop-color="#e11d48"/>
+                    <stop offset="70%" stop-color="#7c3aed"/>
+                    <stop offset="100%" stop-color="#1e40af"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="20" cy="20" r="17" fill="none" stroke="url(#mg)" stroke-width="1.6" opacity="0.55"/>
+                <circle cx="20" cy="20" r="12" fill="none" stroke="url(#mg)" stroke-width="1.6" opacity="0.75"/>
+                <circle cx="20" cy="20" r="7"  fill="none" stroke="url(#mg)" stroke-width="1.6"/>
+                <circle cx="20" cy="20" r="2.6" fill="#fbbf24"/>
+              </svg>
+              <span class="word">mira</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Aperture / iris</span>
+          <span class="chip">Observation</span>
+          <span class="chip">Star reference</span>
+        </div>
+      </div>
+
+      <!-- ═════════════════ Folio ═════════════════ -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Folio</span>
+          <span class="card__id">05 / 06</span>
+        </header>
+        <div class="card__etymology">Latin <em style="font-family:Fraunces;font-style:italic">folium</em> (leaf, page) · a single sheet folded into pages</div>
+        <div class="card__desc">A library is literally a collection of folios. Most direct, most editorial — feels like a publication, not a tool. Glyph: three offset rounded leaves, each a different stop of the brand gradient where they meet.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="42" height="48" viewBox="0 0 32 38" xmlns="http://www.w3.org/2000/svg">
+                <rect x="9" y="2"  width="18" height="22" rx="2.4" fill="#b6b6ad"/>
+                <rect x="6" y="6"  width="18" height="22" rx="2.4" fill="#5d5d54"/>
+                <rect x="3" y="10" width="18" height="22" rx="2.4" fill="#0c0c0a"/>
+              </svg>
+              <span class="word">folio</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="42" height="48" viewBox="0 0 32 38" xmlns="http://www.w3.org/2000/svg">
+                <rect x="9" y="2"  width="18" height="22" rx="2.4" fill="#fbbf24" opacity="0.75"/>
+                <rect x="6" y="6"  width="18" height="22" rx="2.4" fill="#a78bfa" opacity="0.75"/>
+                <rect x="3" y="10" width="18" height="22" rx="2.4" fill="#60a5fa" opacity="0.85"/>
+              </svg>
+              <span class="word">folio</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">Stacked pages</span>
+          <span class="chip">Editorial</span>
+          <span class="chip">Publication tone</span>
+        </div>
+      </div>
+
+      <!-- ═════════════════ Lumen ═════════════════ -->
+      <div class="card">
+        <header class="card__head">
+          <span class="card__name">Lumen</span>
+          <span class="card__id">06 / 06</span>
+        </header>
+        <div class="card__etymology">Latin <em style="font-family:Fraunces;font-style:italic">lumen</em> (light) · also the SI unit of luminous flux</div>
+        <div class="card__desc">A library that <em>illuminates</em> the agentic UX landscape. Glyph: a small filled centre + eight rays of varying length — measured light, not a sunburst. Reads as a finely-tuned instrument.</div>
+        <div class="card__body">
+          <div class="stage stage--light" data-label="Light">
+            <div class="lockup">
+              <svg width="44" height="44" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <g stroke="#050504" stroke-width="1.8" stroke-linecap="round">
+                  <line x1="20" y1="3"  x2="20" y2="9"/>
+                  <line x1="20" y1="31" x2="20" y2="37"/>
+                  <line x1="3"  y1="20" x2="9"  y2="20"/>
+                  <line x1="31" y1="20" x2="37" y2="20"/>
+                  <line x1="8.5"  y1="8.5"  x2="12.5" y2="12.5"/>
+                  <line x1="27.5" y1="27.5" x2="31.5" y2="31.5"/>
+                  <line x1="8.5"  y1="31.5" x2="12.5" y2="27.5"/>
+                  <line x1="27.5" y1="12.5" x2="31.5" y2="8.5"/>
+                </g>
+                <circle cx="20" cy="20" r="5.5" fill="#050504"/>
+              </svg>
+              <span class="word">lumen</span>
+            </div>
+          </div>
+          <div class="stage stage--dark" data-label="Dark">
+            <div class="lockup">
+              <svg width="44" height="44" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="lg" cx="50%" cy="50%" r="55%">
+                    <stop offset="0%"  stop-color="#fef08a"/>
+                    <stop offset="60%" stop-color="#fbbf24"/>
+                    <stop offset="100%" stop-color="#d97706"/>
+                  </radialGradient>
+                </defs>
+                <g stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" opacity="0.85">
+                  <line x1="20" y1="3"  x2="20" y2="9"/>
+                  <line x1="20" y1="31" x2="20" y2="37"/>
+                  <line x1="3"  y1="20" x2="9"  y2="20"/>
+                  <line x1="31" y1="20" x2="37" y2="20"/>
+                  <line x1="8.5"  y1="8.5"  x2="12.5" y2="12.5"/>
+                  <line x1="27.5" y1="27.5" x2="31.5" y2="31.5"/>
+                  <line x1="8.5"  y1="31.5" x2="12.5" y2="27.5"/>
+                  <line x1="27.5" y1="12.5" x2="31.5" y2="8.5"/>
+                </g>
+                <circle cx="20" cy="20" r="5.5" fill="url(#lg)"/>
+              </svg>
+              <span class="word">lumen</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="chip">8-ray burst</span>
+          <span class="chip">SI unit</span>
+          <span class="chip">Instrument-like</span>
+        </div>
+      </div>
+
+      <!-- ═════════════════ Note ═════════════════ -->
+      <div class="note">
+        <h3>How each name fits</h3>
+        <p>
+          <strong>Intelli Agent</strong> — strongest <em>brand-DNA</em> name. Half of "Intelligaia" carried directly into the product name. Zero explanation needed: the name <em>is</em> the description. Best fit if you want the product to read as a first-party Intelligaia offering, not a separately-branded sub-brand.
+        </p>
+        <p>
+          <strong>Praxia</strong> — strongest <em>positioning</em> name. Built into the word is the differentiator (applied vs theoretical). Coined, fully ownable trademark. Best fit if you want the library to read as <em>a working method</em>, not a reference book.
+        </p>
+        <p>
+          <strong>Cairn</strong> — strongest <em>metaphor</em> name. Stones marking a trail = patterns marking the AI journey. Earthy, sturdy, design-trade flavour, unclaimed.
+        </p>
+        <p>
+          <strong>Mira</strong> — strongest <em>concept</em> name. "Look." Three letters, two syllables, lands instantly. Slight risk: Mira Studios (Hollywood) and a few smaller products use it; brand presence is diluted.
+        </p>
+        <p>
+          <strong>Folio</strong> — strongest <em>editorial</em> name. Publication / craft tone, signals the library reads like a magazine. Slight risk: Folio.io is a finance tool — different category but the .com is taken.
+        </p>
+        <p>
+          <strong>Lumen</strong> — strongest <em>tech</em> name. SI unit gives it precision. Slight risk: Lumen Technologies (formerly CenturyLink) is huge; brand collision in B2B.
+        </p>
+        <p style="padding-top: 10px; border-top: 1px solid var(--border); color: var(--fg);">
+          <strong>My pick from this set</strong>: <strong>Intelli Agent.</strong> It says exactly what it is, carries the parent brand, doesn't require coining or explaining a metaphor, and the sparkle-dotted "i" glyph is small enough to use anywhere. Praxia and Cairn remain strong fallbacks if you want more independent identity.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

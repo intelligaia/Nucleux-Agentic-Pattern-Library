@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="preconnect" href="https://rsms.me/"/>
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Inter", sans-serif;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  .shell {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: #f9f8f6;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 40px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06);
+    position: relative;
+  }
+
+  /* ── Left icon sidebar ── */
+  .sidebar-icons {
+    width: 52px;
+    background: #fff;
+    border-right: 1px solid #ebebeb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 0;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .si-avatar {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    margin-bottom: 8px;
+  }
+  .si-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .si-btn:hover, .si-btn.active { background: #f3f4f6; color: #374151; }
+  .si-btn svg { width: 16px; height: 16px; }
+  .si-spacer { flex: 1; }
+  .si-user {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#f59e0b,#ef4444);
+    font-size: 10px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Main content ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+    border-right: 1px solid #ebebeb;
+  }
+
+  .topbar {
+    height: 44px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .topbar-title { font-size: 13px; font-weight: 500; color: #111; }
+  .topbar-search {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 6px;
+    background: #f5f5f5; border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px; color: #9ca3af;
+  }
+  .topbar-icons { display: flex; gap: 8px; margin-left: 10px; }
+  .topbar-icons svg { width: 16px; height: 16px; color: #9ca3af; }
+
+  .content {
+    flex: 1;
+    padding: 18px 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* meeting header */
+  .meet-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .meet-back {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: #111;
+  }
+  .meet-back svg { width: 14px; height: 14px; color: #6b7280; }
+  .meet-share {
+    display: flex; align-items: center; gap: 5px;
+    background: #111; color: #fff;
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; font-weight: 500;
+  }
+  .meet-share svg { width: 12px; height: 12px; }
+
+  .meet-meta {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: #6b7280;
+  }
+  .meet-meta svg { width: 12px; height: 12px; }
+  .avatars { display: flex; }
+  .av {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid #fff;
+    margin-left: -5px;
+    font-size: 8px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .av:first-child { margin-left: 0; }
+  .badge-sum {
+    background: #ecfdf5; color: #059669; border-radius: 20px;
+    padding: 2px 8px; font-size: 10px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+    border: 1px solid #a7f3d0;
+  }
+  .badge-sum svg { width: 10px; height: 10px; }
+
+  /* video thumbnail */
+  .video-thumb {
+    background: #1a1a2e;
+    border-radius: 10px;
+    height: 120px;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .video-main {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg,#1e2235,#2d3153);
+    position: relative;
+  }
+  .slide-preview {
+    background: #fff;
+    border-radius: 6px;
+    width: 78%;
+    height: 82%;
+    padding: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .slide-title { font-size: 6px; font-weight: 700; color: #111; }
+  .slide-body { display: flex; gap: 4px; flex: 1; }
+  .slide-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .slide-line { height: 3px; border-radius: 2px; background: #e5e7eb; }
+  .slide-line.dark { background: #9ca3af; width: 80%; }
+  .slide-chart {
+    width: 38px; background: #f3f4f6; border-radius: 3px;
+    display: flex; align-items: flex-end; gap: 2px; padding: 3px;
+  }
+  .slide-bar { flex: 1; border-radius: 1px; background: #6366f1; }
+  .video-side {
+    width: 52px;
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 4px;
+    background: #111827;
+  }
+  .face {
+    width: 44px; height: 40px; border-radius: 4px;
+    overflow: hidden; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: #fff;
+  }
+
+  /* chapter tiles */
+  .chapters {
+    display: flex; gap: 6px; overflow: hidden; flex-shrink: 0;
+  }
+  .chapter {
+    flex: 1;
+    background: #f9fafb; border: 1px solid #f0f0f0;
+    border-radius: 8px; padding: 6px 7px;
+    min-width: 0;
+  }
+  .ch-time {
+    font-size: 9px; font-weight: 700; color: #fff;
+    background: #111; border-radius: 4px;
+    padding: 1px 5px; display: inline-block; margin-bottom: 3px;
+  }
+  .ch-label { font-size: 9px; color: #374151; line-height: 1.3; }
+
+  /* tabs */
+  .tabs {
+    display: flex; gap: 0;
+    background: #f3f4f6; border-radius: 10px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1; text-align: center;
+    font-size: 11px; font-weight: 500; color: #6b7280;
+    padding: 5px 8px; border-radius: 7px; cursor: pointer;
+  }
+  .tab.active {
+    background: #fff; color: #111;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+    font-weight: 600;
+  }
+
+  /* action items */
+  .action-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; font-weight: 700; color: #111;
+    flex-shrink: 0;
+  }
+  .action-items { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .action-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 7px 8px;
+    border-radius: 7px;
+  }
+  .action-item:hover { background: #f9fafb; }
+  .cb {
+    width: 14px; height: 14px; border-radius: 3px;
+    border: 1.5px solid #d1d5db; flex-shrink: 0; margin-top: 1px;
+  }
+  .action-text { font-size: 11px; color: #374151; line-height: 1.4; flex: 1; }
+  .action-av {
+    width: 18px; height: 18px; border-radius: 50%;
+    font-size: 8px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .add-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: #9ca3af; padding: 4px 8px;
+  }
+
+  /* ── Assistant panel ── */
+  .assistant {
+    width: 240px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .asst-head {
+    height: 44px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px;
+    flex-shrink: 0;
+  }
+  .asst-title { font-size: 13px; font-weight: 600; color: #111; }
+  .asst-icons { display: flex; gap: 8px; color: #9ca3af; }
+  .asst-icons svg { width: 14px; height: 14px; }
+
+  .asst-body {
+    flex: 1;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .asst-greeting {
+    font-size: 11.5px; color: #374151; line-height: 1.5;
+  }
+
+  .user-msg {
+    background: #f3f4f6; border-radius: 10px 10px 10px 3px;
+    padding: 8px 10px;
+    font-size: 11px; color: #374151;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .user-msg-init { font-size: 11px; color: #374151; }
+  .cn-badge {
+    background: #111; color: #fff; border-radius: 4px;
+    font-size: 9px; font-weight: 700; padding: 1px 5px;
+  }
+
+  .asst-response {
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .asst-icon {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg,#10b981,#059669);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .asst-icon svg { width: 12px; height: 12px; color: #fff; }
+  .asst-text { font-size: 11px; color: #374151; line-height: 1.5; }
+  .asst-text strong { color: #111; }
+
+  .asst-footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 10px 12px;
+    flex-shrink: 0;
+  }
+  .suggestions { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .sug {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10.5px; color: #374151;
+    padding: 4px 6px; border-radius: 6px;
+    cursor: pointer;
+  }
+  .sug:hover { background: #f9fafb; }
+  .sug svg { width: 12px; height: 12px; color: #8b5cf6; flex-shrink: 0; }
+
+  .ctx-bar {
+    background: #f3f4f6; border-radius: 8px;
+    padding: 6px 8px; display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: #6b7280; margin-bottom: 6px;
+  }
+  .ctx-bar svg { width: 12px; height: 12px; }
+
+  .input-bar {
+    display: flex; align-items: center;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    padding: 7px 10px; gap: 6px;
+    background: #fff;
+  }
+  .input-bar input {
+    flex: 1; border: none; outline: none;
+    font-size: 11px; color: #374151; font-family: inherit;
+    background: transparent;
+  }
+  .input-bar input::placeholder { color: #9ca3af; }
+  .input-icons { display: flex; gap: 6px; color: #9ca3af; }
+  .input-icons svg { width: 14px; height: 14px; }
+
+  .disclaimer { font-size: 9px; color: #9ca3af; text-align: center; margin-top: 5px; line-height: 1.3; }
+
+  /* ── ANNOTATION TILES ── */
+  .annotations {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .anno {
+    position: absolute;
+    pointer-events: all;
+  }
+
+  .anno-card {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 11px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: box-shadow .2s, transform .2s;
+    cursor: default;
+  }
+  .anno-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.14);
+    transform: translateY(-1px);
+  }
+  .anno-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .anno-label {
+    font-size: 11px; font-weight: 600; color: #111;
+  }
+  .anno-cat {
+    font-size: 9.5px; font-weight: 500;
+    border-radius: 20px;
+    padding: 2px 7px;
+    margin-left: 2px;
+  }
+
+  /* colour variants */
+  .c-indigo  { background: #6366f1; }
+  .c-emerald { background: #10b981; }
+  .c-amber   { background: #f59e0b; }
+  .c-rose    { background: #f43f5e; }
+  .c-violet  { background: #8b5cf6; }
+  .c-sky     { background: #0ea5e9; }
+
+  .bg-indigo  { background: #eef2ff; color: #4338ca; }
+  .bg-emerald { background: #ecfdf5; color: #059669; }
+  .bg-amber   { background: #fffbeb; color: #b45309; }
+  .bg-rose    { background: #fff1f2; color: #be123c; }
+  .bg-violet  { background: #f5f3ff; color: #6d28d9; }
+  .bg-sky     { background: #f0f9ff; color: #0369a1; }
+
+  /* SVG connector lines */
+  .anno-svg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .anno-line {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+    opacity: 0.55;
+  }
+  .anno-dot-target {
+    r: 4;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Left icon sidebar -->
+  <div class="sidebar-icons">
+    <div class="si-avatar">P</div>
+    <div class="si-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    </div>
+    <div class="si-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+    </div>
+    <div class="si-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    </div>
+    <div class="si-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 4 0M9 5h6"/></svg>
+    </div>
+    <div class="si-spacer"></div>
+    <div class="si-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0"/></svg>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="topbar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>
+      <span class="topbar-title">CPG — Q3 scope</span>
+      <div class="topbar-search">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Ask or search
+      </div>
+      <div class="topbar-icons">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Header -->
+      <div class="meet-header">
+        <div class="meet-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          CPG — Q3 scope review
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="meet-share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            Share
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        </div>
+      </div>
+
+      <!-- Meta -->
+      <div class="meet-meta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>
+        June 16 at 9:00 am · 2 min ·
+        <div class="avatars">
+          <div class="av" style="background:#6366f1">C</div>
+          <div class="av" style="background:#f59e0b">A</div>
+          <div class="av" style="background:#10b981">J</div>
+          <div class="av" style="background:#ef4444">P</div>
+          <div class="av" style="background:#8b5cf6">+2</div>
+        </div>
+        5 participants ·
+        <div class="badge-sum">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Summarized
+        </div>
+      </div>
+
+      <!-- Video -->
+      <div class="video-thumb">
+        <div class="video-main">
+          <div class="slide-preview">
+            <div class="slide-title">CPG Division: Q3 Scope & Portfolio Review</div>
+            <div class="slide-body">
+              <div class="slide-text">
+                <div class="slide-line dark"></div>
+                <div style="height:3px"></div>
+                <div class="slide-line" style="width:95%"></div>
+                <div class="slide-line" style="width:88%"></div>
+                <div class="slide-line" style="width:92%"></div>
+                <div class="slide-line" style="width:75%"></div>
+                <div style="height:4px"></div>
+                <div class="slide-line dark" style="width:70%"></div>
+                <div class="slide-line" style="width:95%"></div>
+                <div class="slide-line" style="width:82%"></div>
+              </div>
+              <div class="slide-chart">
+                <div class="slide-bar" style="height:60%;background:#10b981"></div>
+                <div class="slide-bar" style="height:80%;background:#6366f1"></div>
+                <div class="slide-bar" style="height:50%;background:#f59e0b"></div>
+                <div class="slide-bar" style="height:90%;background:#6366f1"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="video-side">
+          <div class="face" style="background:#374151;font-size:8px;font-weight:700;color:#fff">SL</div>
+          <div class="face" style="background:#4b5563;font-size:8px;font-weight:700;color:#fff">AM</div>
+          <div class="face" style="background:#1f2937;font-size:8px;font-weight:700;color:#fff">LT</div>
+        </div>
+      </div>
+
+      <!-- Chapters -->
+      <div class="chapters">
+        <div class="chapter"><div class="ch-time">1:07</div><div class="ch-label">Shape and form choices</div></div>
+        <div class="chapter"><div class="ch-time">0:30</div><div class="ch-label">Visual Depth & Ingredients</div></div>
+        <div class="chapter"><div class="ch-time">0:45</div><div class="ch-label">Blockers & Holdups</div></div>
+        <div class="chapter"><div class="ch-time">1:15</div><div class="ch-label">Next Steps Planning</div></div>
+        <div class="chapter"><div class="ch-time">1:30</div><div class="ch-label">Prompts & Wireframes</div></div>
+        <div class="chapter"><div class="ch-time">2:00</div><div class="ch-label">Wrap-up</div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab">Summary</div>
+        <div class="tab">Transcript</div>
+        <div class="tab active">Actions</div>
+        <div class="tab">Deep Analysis</div>
+      </div>
+
+      <!-- Action Items -->
+      <div class="action-head">
+        Action Items
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      </div>
+      <div class="action-items">
+        <div class="action-item">
+          <div class="cb"></div>
+          <div class="action-text">Ensure the team reviews Sprint 11 and ACS details before the next call.</div>
+          <div class="action-av" style="background:#6366f1">CN</div>
+        </div>
+        <div class="action-item">
+          <div class="cb"></div>
+          <div class="action-text">Arrange and conduct demo practice in the stage environment.</div>
+          <div class="action-av" style="background:#10b981">CN</div>
+        </div>
+        <div class="action-item">
+          <div class="cb"></div>
+          <div class="action-text">Review current service changes for the related ticket, coordinate with Canvas for testing.</div>
+          <div class="action-av" style="background:#f59e0b">CN</div>
+        </div>
+      </div>
+      <div class="add-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add action item
+      </div>
+    </div>
+  </div>
+
+  <!-- Assistant Panel -->
+  <div class="assistant">
+    <div class="asst-head">
+      <span class="asst-title">Assistant</span>
+      <div class="asst-icons">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+    </div>
+    <div class="asst-body">
+      <div class="asst-greeting">Hi Eric! I've summarized this meeting. What else can I help you find?</div>
+      <div class="user-msg">
+        <span class="user-msg-init">What were the main risks discussed in this call?</span>
+        <span class="cn-badge">CN</span>
+      </div>
+      <div class="asst-response">
+        <div class="asst-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+        </div>
+        <div class="asst-text">From the Q3 Roadmap Sync on Jun 12: <strong>Feature X was moved to Q4.</strong> The analytics dashboard remains the Q2 ship target. Weekly syncs were introduced to Tuesdays.</div>
+      </div>
+    </div>
+    <div class="asst-footer">
+      <div class="suggestions">
+        <div class="sug">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+          Give me action items
+        </div>
+        <div class="sug">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+          Summarize this meeting
+        </div>
+        <div class="sug">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+          Can you help me catch up
+        </div>
+      </div>
+      <div class="ctx-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/></svg>
+        CPG — Q3 sc...
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <div class="input-bar">
+        <input type="text" placeholder="Ask me Anything" readonly/>
+        <div class="input-icons">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+        </div>
+      </div>
+      <div class="disclaimer">AI insights are for informational purposes and may contain inaccuracies.</div>
+    </div>
+  </div>
+
+  <!-- ANNOTATION LAYER -->
+  <div class="annotations">
+
+    <!-- SVG lines -->
+    <svg class="anno-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Open Input → input bar -->
+      <line class="anno-line" stroke="#6366f1" x1="72%" y1="92%" x2="86%" y2="88%" />
+      <circle class="anno-dot-target" cx="86%" cy="88%" fill="#6366f1" opacity="0.7"/>
+      <!-- Suggested Prompts → suggestions -->
+      <line class="anno-line" stroke="#8b5cf6" x1="58%" y1="105%" x2="80%" y2="78%" />
+      <!-- Action Items → action list -->
+      <line class="anno-line" stroke="#10b981" x1="8%" y1="108%" x2="20%" y2="80%" />
+      <!-- Summary Tabs → tabs -->
+      <line class="anno-line" stroke="#f59e0b" x1="14%" y1="32%" x2="22%" y2="52%" />
+      <!-- Summarized badge → meta badge -->
+      <line class="anno-line" stroke="#f43f5e" x1="82%" y1="14%" x2="68%" y2="18%" />
+    </svg>
+
+    <!-- 1. Summarized badge → Explainability -->
+    <div class="anno" style="top:6%;right:3%;">
+      <div class="anno-card">
+        <div class="anno-dot c-rose"></div>
+        <span class="anno-label">Status Badge</span>
+        <span class="anno-cat bg-rose">During Interaction · Explainability</span>
+      </div>
+    </div>
+
+    <!-- 2. Summary/Transcript Tabs → Refinement -->
+    <div class="anno" style="top:28%;left:2%;">
+      <div class="anno-card">
+        <div class="anno-dot c-amber"></div>
+        <span class="anno-label">Progress Tabs</span>
+        <span class="anno-cat bg-amber">During Interaction · Refinement</span>
+      </div>
+    </div>
+
+    <!-- 3. Action Items → Output & Processing -->
+    <div class="anno" style="bottom:14%;left:1%;">
+      <div class="anno-card">
+        <div class="anno-dot c-emerald"></div>
+        <span class="anno-label">Task Output</span>
+        <span class="anno-cat bg-emerald">During Interaction · Output &amp; Processing</span>
+      </div>
+    </div>
+
+    <!-- 4. Suggested Prompts → Prompt Scaffolds -->
+    <div class="anno" style="bottom:3%;left:38%;">
+      <div class="anno-card">
+        <div class="anno-dot c-violet"></div>
+        <span class="anno-label">Suggested Prompts</span>
+        <span class="anno-cat bg-violet">Initially · Prompt Scaffolds</span>
+      </div>
+    </div>
+
+    <!-- 5. Open Input → Entry Points -->
+    <div class="anno" style="bottom:3%;right:2%;">
+      <div class="anno-card">
+        <div class="anno-dot c-indigo"></div>
+        <span class="anno-label">Open Input</span>
+        <span class="anno-cat bg-indigo">Initially · Entry Points</span>
+      </div>
+    </div>
+
+  </div><!-- /annotations -->
+
+</div>
+</body>
+</html>

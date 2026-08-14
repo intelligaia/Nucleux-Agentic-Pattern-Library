@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <!-- Anthropic / Claude mark: five radial strokes in amber -->
+  <g transform="translate(12,12)">
+    <rect x="-1.4" y="-5.5" width="2.8" height="11" rx="1.4" fill="#D97706" transform="rotate(0)"/>
+    <rect x="-1.4" y="-5.5" width="2.8" height="11" rx="1.4" fill="#D97706" transform="rotate(36)"/>
+    <rect x="-1.4" y="-5.5" width="2.8" height="11" rx="1.4" fill="#D97706" transform="rotate(72)"/>
+    <rect x="-1.4" y="-5.5" width="2.8" height="11" rx="1.4" fill="#D97706" transform="rotate(108)"/>
+    <rect x="-1.4" y="-5.5" width="2.8" height="11" rx="1.4" fill="#D97706" transform="rotate(144)"/>
+  </g>
+</svg>

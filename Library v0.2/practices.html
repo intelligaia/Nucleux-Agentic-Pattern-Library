@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Scenarios — Nucleux</title>
+  <meta name="description" content="Real product moments that compose Nucleux patterns — meeting summarisers, sales discovery copilots, compliance reviewers, code-review agents, and more." />
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Noto+Sans+Devanagari:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+      <nav class="gnav__center" aria-label="Primary">
+        <a class="gnav__link" href="library.html">Library</a>
+        <a class="gnav__link is-current" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="sandbox.html">Sandbox</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="library.html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Download SDK
+        </a>
+        <a class="gnav__cta" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-page">
+
+    <!-- Small hero — phrase, not display -->
+    <!-- ────────────────────────────────────────────────────
+         FEATURED PRODUCT CAROUSEL — single top title for the page.
+         "Let's shape your product idea." with Medha + Yantra slides.
+         ──────────────────────────────────────────────────── -->
+    <section class="shape" id="shape">
+      <div class="container">
+        <header class="shape__head">
+          <span class="shape__eyebrow">Featured products built on Nucleux</span>
+          <h2 class="shape__title">Let's shape your <em>product idea.</em></h2>
+          <p class="shape__lede">Two flagship Intelligaia products composed from the patterns in this library. A private AI workspace, and an enterprise AI gateway.</p>
+        </header>
+
+        <div class="shape__carousel" data-shape>
+          <button class="shape__arrow shape__arrow--prev" type="button" data-shape-prev aria-label="Previous product">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="shape__viewport">
+            <div class="shape__track" data-shape-track>
+
+              <article class="shape__slide" data-shape-slide="medha">
+                <div class="shape__copy">
+                  <div class="shape__brand shape__brand--medha">
+                    <svg class="shape__spark" viewBox="0 0 24 24" fill="none" stroke="url(#medha-grad)" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                      <path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3"/>
+                      <circle cx="12" cy="12" r="2.3" fill="url(#medha-grad)" stroke="none"/>
+                    </svg>
+                    <span class="shape__wordmark">
+                      <span class="medha-me">मे</span><span class="medha-dha">dha</span>
+                    </span>
+                  </div>
+                  <h3 class="shape__product">Your private AI workspace.</h3>
+                  <p class="shape__desc">Chat across models, ground answers in your own documents, keep every conversation inside your environment. Built for government and regulated teams.</p>
+                  <ul class="shape__bullets">
+                    <li>Every model — kimi, qwen, llama — in one place</li>
+                    <li>Documents and chats stay inside your boundary</li>
+                    <li>Voice input + searchable history</li>
+                  </ul>
+                  <div class="shape__ctas">
+                    <a class="shape__cta shape__cta--primary" href="scenario.html?id=medha">View Medha</a>
+                    <a class="shape__cta shape__cta--ghost" href="sandbox.html?usecase=medha" target="_blank" rel="noopener">Try in sandbox →</a>
+                  </div>
+                </div>
+                <div class="shape__visual">
+                  <div class="shape__frame">
+                    <div class="shape__chrome"><span></span><span></span><span></span></div>
+                    <div class="shape__mock-wrap" id="shape-mock-medha"></div>
+                    <div class="shape__gloss"></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="shape__slide" data-shape-slide="yantra">
+                <div class="shape__copy">
+                  <div class="shape__brand shape__brand--yantra">
+                    <span class="shape__wordmark">
+                      <span class="yantra-ya">य</span><span class="yantra-antra">antra</span>
+                    </span>
+                    <svg class="shape__atom" viewBox="0 0 24 24" fill="none" stroke="url(#yantra-grad)" stroke-width="1.6" aria-hidden="true">
+                      <ellipse cx="12" cy="12" rx="10" ry="4"/>
+                      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/>
+                      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>
+                      <circle cx="12" cy="12" r="1.8" fill="url(#yantra-grad)" stroke="none"/>
+                    </svg>
+                    <span class="shape__brand-by">BY <em>intelligaia</em> · humanizing AI for enterprises</span>
+                  </div>
+                  <h3 class="shape__product">An enterprise AI gateway.</h3>
+                  <p class="shape__desc">A single control plane for every model in your environment. Token budgets, latency, model routing, audit trails — and one-tap access to Medha.</p>
+                  <ul class="shape__bullets">
+                    <li>Track requests, tokens and latency across models</li>
+                    <li>Per-user quotas and role-based access</li>
+                    <li>Audit logs for every prompt and response</li>
+                  </ul>
+                  <div class="shape__ctas">
+                    <a class="shape__cta shape__cta--primary" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Talk to us</a>
+                    <a class="shape__cta shape__cta--ghost" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Book a walkthrough →</a>
+                  </div>
+                </div>
+                <div class="shape__visual">
+                  <div class="shape__frame">
+                    <div class="shape__chrome"><span></span><span></span><span></span></div>
+                    <div class="shape__mock-wrap" id="shape-mock-yantra"></div>
+                    <div class="shape__gloss"></div>
+                  </div>
+                </div>
+              </article>
+
+            </div>
+          </div>
+
+          <button class="shape__arrow shape__arrow--next" type="button" data-shape-next aria-label="Next product">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="shape__dots" data-shape-dots>
+            <button class="shape__dot is-active" type="button" data-shape-go="0" aria-label="Go to slide 1"></button>
+            <button class="shape__dot" type="button" data-shape-go="1" aria-label="Go to slide 2"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scenario grid — uniform, no zig-zag -->
+    <section class="px-grid">
+      <div class="container">
+        <div class="scn-grid">
+
+          <article class="scn scn--feature" id="medha">
+            <div class="scn__media" data-tint="violet">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Private AI workspace</span>
+              <h3 class="scn__name">Medha</h3>
+              <p class="scn__desc">A private AI assistant. Chat across models, ground answers in your own documents, and keep every conversation inside your environment — built for government and regulated teams.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Model selection</span>
+                <span class="chip-px">Knowledge base</span>
+                <span class="chip-px">Voice input</span>
+                <span class="chip-px">Data ownership</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="meeting-summariser">
+            <div class="scn__media" data-tint="emerald">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Internal ops</span>
+              <h3 class="scn__name">Meeting summariser</h3>
+              <p class="scn__desc">An assistant that turns an hour-long meeting into a verified five-bullet recap with action items.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Streaming</span>
+                <span class="chip-px">Citations</span>
+                <span class="chip-px">Follow-up</span>
+                <span class="chip-px">Memory</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="sales-discovery-copilot">
+            <div class="scn__media" data-tint="amber">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Sales</span>
+              <h3 class="scn__name">Sales discovery copilot</h3>
+              <p class="scn__desc">A live-call sidecar that turns a sales conversation into a structured account brief inside the CRM.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Voice input</span>
+                <span class="chip-px">Templates</span>
+                <span class="chip-px">Action plan</span>
+                <span class="chip-px">Connectors</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="customer-support-triage">
+            <div class="scn__media" data-tint="emerald">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Customer ops</span>
+              <h3 class="scn__name">Customer support triage</h3>
+              <p class="scn__desc">An agent-assist sidecar that drafts replies and flags the moment a human hand-off becomes likely.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Suggested prompts</span>
+                <span class="chip-px">Summary</span>
+                <span class="chip-px">Confidence indicator</span>
+                <span class="chip-px">Memory</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="code-review-copilot">
+            <div class="scn__media" data-tint="indigo">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Developer tools</span>
+              <h3 class="scn__name">Code review copilot</h3>
+              <p class="scn__desc">A reviewer that explains <em>why</em> each suggestion, line by line, with reasoning made visible inline.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Inline action</span>
+                <span class="chip-px">Stream of thought</span>
+                <span class="chip-px">Visual editing</span>
+                <span class="chip-px">Regenerate</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="compliance-reviewer">
+            <div class="scn__media" data-tint="sky">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Security</span>
+              <h3 class="scn__name">Compliance reviewer</h3>
+              <p class="scn__desc">A second-pair-of-eyes agent for policy documents — every claim traced back to the source rule.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Citations</span>
+                <span class="chip-px">Verification</span>
+                <span class="chip-px">References</span>
+                <span class="chip-px">Footprints</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="onboarding-companion">
+            <div class="scn__media" data-tint="violet">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">HR &amp; knowledge</span>
+              <h3 class="scn__name">Onboarding companion</h3>
+              <p class="scn__desc">A first-30-days assistant for new hires — patient, citation-led, knows when to send a human.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Disclosure</span>
+                <span class="chip-px">Example gallery</span>
+                <span class="chip-px">Templates</span>
+                <span class="chip-px">Personalisation</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="clinical-note-assistant">
+            <div class="scn__media" data-tint="rose">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Healthcare</span>
+              <h3 class="scn__name">Clinical note assistant</h3>
+              <p class="scn__desc">A structured-note drafter that turns an encounter into a verified summary, traceable to a chart line.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Disclosure</span>
+                <span class="chip-px">Confidence indicator</span>
+                <span class="chip-px">Citations</span>
+                <span class="chip-px">Verification</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="tutoring-agent">
+            <div class="scn__media" data-tint="emerald">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Education</span>
+              <h3 class="scn__name">Tutoring agent</h3>
+              <p class="scn__desc">A tutor that gives three ways to think about a problem, watches engagement, adapts the next lesson.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Example gallery</span>
+                <span class="chip-px">Variations</span>
+                <span class="chip-px">Memory</span>
+                <span class="chip-px">Personalisation</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="threat-narrative">
+            <div class="scn__media" data-tint="sky">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Security</span>
+              <h3 class="scn__name">Threat narrative</h3>
+              <p class="scn__desc">A SOC copilot that turns a noisy alert cluster into a single story — what happened, what's affected, what to do.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Action plan</span>
+                <span class="chip-px">Verification</span>
+                <span class="chip-px">Footprints</span>
+                <span class="chip-px">Confidence indicator</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="citizen-eligibility-guide">
+            <div class="scn__media" data-tint="rose">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Public services</span>
+              <h3 class="scn__name">Citizen eligibility guide</h3>
+              <p class="scn__desc">A walk-through for benefits programmes — cites the rule for every answer, hands off when the question gets thorny.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Disclosure</span>
+                <span class="chip-px">Consent</span>
+                <span class="chip-px">Citations</span>
+                <span class="chip-px">Knowledge bases</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="proposal-drafter">
+            <div class="scn__media" data-tint="amber">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Sales</span>
+              <h3 class="scn__name">Proposal drafter</h3>
+              <p class="scn__desc">An RFP-response agent that grounds every section in past wins and pulls a draft together for review.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Templates</span>
+                <span class="chip-px">Knowledge bases</span>
+                <span class="chip-px">Variations</span>
+                <span class="chip-px">Citations</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="scn" id="knowledge-librarian">
+            <div class="scn__media" data-tint="violet">
+              <div class="scn__chrome"><span></span><span></span><span></span></div>
+              <div class="scn__play">
+                <svg viewBox="0 0 60 60" width="52" height="52" aria-hidden="true">
+                  <circle cx="30" cy="30" r="29" fill="rgba(255,255,255,0.92)"/>
+                  <polygon points="24,18 24,42 44,30" fill="#0c0c0a"/>
+                </svg>
+              </div>
+            </div>
+            <div class="scn__body">
+              <span class="scn__tag">Internal ops</span>
+              <h3 class="scn__name">Knowledge librarian</h3>
+              <p class="scn__desc">A search-and-summarise agent over your internal wikis — every answer comes with the source paragraph.</p>
+              <div class="scn__patterns">
+                <span class="chip-px">Searching &amp; filtering</span>
+                <span class="chip-px">Citations</span>
+                <span class="chip-px">References</span>
+                <span class="chip-px">Summary</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot foot--simple">
+    <div class="container">
+      <div class="foot__bottom">
+        <span class="foot__meta">© 2026 Intelligaia · Nucleux Pattern Library</span>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="library.html">Library</a>
+          <a href="practices.html">Scenarios</a>
+          <a href="docs.html">Docs</a>
+          <a href="https://www.intelligaia.com" target="_blank" rel="noopener">intelligaia.com ↗</a>
+          <a href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Contact ↗</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="patterns.js"></script>
+  <script src="global.js"></script>
+  <script src="medha-mock.js"></script>
+  <script src="yantra-mock.js"></script>
+  <script>
+    // Inject the Medha + Yantra mocks into the showcase carousel slots,
+    // then wire prev/next + dot navigation with auto-rotate.
+    (function () {
+      const medhaSlot = document.getElementById("shape-mock-medha");
+      const yantraSlot = document.getElementById("shape-mock-yantra");
+      if (medhaSlot && window.NUCLEUX_MEDHA_MOCK) {
+        medhaSlot.innerHTML = window.NUCLEUX_MEDHA_MOCK.replace('class="medha-mock"', 'class="medha-mock medha-mock--hero"');
+      }
+      if (yantraSlot && window.NUCLEUX_YANTRA_MOCK) {
+        yantraSlot.innerHTML = window.NUCLEUX_YANTRA_MOCK.replace('class="yantra-mock"', 'class="yantra-mock yantra-mock--hero"');
+      }
+
+      const root = document.querySelector("[data-shape]");
+      if (!root) return;
+      const track = root.querySelector("[data-shape-track]");
+      const slides = root.querySelectorAll("[data-shape-slide]");
+      const dots = root.querySelectorAll("[data-shape-go]");
+      let idx = 0;
+      let timer = null;
+
+      function go(n) {
+        idx = (n + slides.length) % slides.length;
+        track.style.transform = `translateX(-${idx * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle("is-active", i === idx));
+      }
+      function next() { go(idx + 1); }
+      function prev() { go(idx - 1); }
+      function startAuto() { stopAuto(); timer = setInterval(next, 7000); }
+      function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+
+      root.querySelector("[data-shape-next]").addEventListener("click", () => { next(); stopAuto(); setTimeout(startAuto, 12000); });
+      root.querySelector("[data-shape-prev]").addEventListener("click", () => { prev(); stopAuto(); setTimeout(startAuto, 12000); });
+      dots.forEach(d => d.addEventListener("click", () => {
+        go(parseInt(d.getAttribute("data-shape-go"), 10) || 0);
+        stopAuto(); setTimeout(startAuto, 12000);
+      }));
+      root.addEventListener("mouseenter", stopAuto);
+      root.addEventListener("mouseleave", startAuto);
+      startAuto();
+    })();
+  </script>
+  <script>
+    // Enhance each scenario card with View / Sandbox CTAs, a recorded-video
+    // feel (REC + duration), and a mini product-UI preview as the thumbnail.
+    (function () {
+      const SBX_MAP = {
+        "medha":                   "medha",
+        "meeting-summariser":      "research-agent",
+        "sales-discovery-copilot": "sales-copilot",
+        "customer-support-triage": "support-agent",
+        "code-review-copilot":     "code-agent",
+        "proposal-drafter":        "research-agent",
+        "knowledge-librarian":     "research-agent",
+        "compliance-reviewer":     "support-agent",
+        "onboarding-companion":    "research-agent",
+        "clinical-note-assistant": "research-agent",
+        "tutoring-agent":          "research-agent",
+        "threat-narrative":        "research-agent",
+        "citizen-eligibility-guide": "research-agent"
+      };
+      // Each scenario maps to a tool archetype — used to pick the right preview UI.
+      const ARCH_BY_SCN = {
+        "medha":                   "chat",
+        "meeting-summariser":      "rightrail",
+        "sales-discovery-copilot": "rightrail",
+        "customer-support-triage": "email",
+        "code-review-copilot":     "code",
+        "compliance-reviewer":     "code",
+        "onboarding-companion":    "chat",
+        "clinical-note-assistant": "rightrail",
+        "tutoring-agent":          "chat",
+        "threat-narrative":        "rightrail",
+        "citizen-eligibility-guide": "chat",
+        "proposal-drafter":        "rightrail",
+        "knowledge-librarian":     "rightrail"
+      };
+      // Mini product-UI mocks per archetype. Each one is a self-contained
+      // visual that looks like a real AI-product screenshot.
+      const PV = {
+        chat: `
+          <div class="scn-pv scn-pv--chat">
+            <div class="scn-pv__sidebar">
+              <div class="scn-pv__sb-row scn-pv__sb-row--active"></div>
+              <div class="scn-pv__sb-row"></div>
+              <div class="scn-pv__sb-row"></div>
+            </div>
+            <div class="scn-pv__main">
+              <div class="scn-pv__msg scn-pv__msg--user">
+                <span class="scn-pv__bubble scn-pv__bubble--user"></span>
+              </div>
+              <div class="scn-pv__msg scn-pv__msg--ai">
+                <span class="scn-pv__avatar"></span>
+                <div class="scn-pv__bubble scn-pv__bubble--ai">
+                  <span class="scn-pv__line"></span>
+                  <span class="scn-pv__line" style="width:70%"></span>
+                  <span class="scn-pv__ai-tag">AI</span>
+                </div>
+              </div>
+              <div class="scn-pv__input"><span class="scn-pv__send"></span></div>
+            </div>
+          </div>`,
+        rightrail: `
+          <div class="scn-pv scn-pv--rightrail">
+            <div class="scn-pv__doc">
+              <span class="scn-pv__line" style="width:50%;height:6px"></span>
+              <span class="scn-pv__line"></span>
+              <span class="scn-pv__line" style="width:78%"></span>
+              <span class="scn-pv__line"></span>
+              <span class="scn-pv__line" style="width:62%"></span>
+            </div>
+            <div class="scn-pv__panel">
+              <div class="scn-pv__panel-head">
+                <span class="scn-pv__avatar"></span>
+                <span class="scn-pv__panel-name">Aria <span class="scn-pv__ai-tag">AI</span></span>
+              </div>
+              <div class="scn-pv__bubble scn-pv__bubble--ai">
+                <span class="scn-pv__line"></span>
+                <span class="scn-pv__line" style="width:70%"></span>
+              </div>
+              <div class="scn-pv__panel-input"></div>
+            </div>
+          </div>`,
+        code: `
+          <div class="scn-pv scn-pv--code">
+            <div class="scn-pv__filetree">
+              <span class="scn-pv__file"></span>
+              <span class="scn-pv__file scn-pv__file--active"></span>
+              <span class="scn-pv__file"></span>
+            </div>
+            <div class="scn-pv__editor">
+              <div class="scn-pv__codeline"><span class="scn-pv__gutter">1</span><span class="scn-pv__tok scn-pv__tok--kw">function</span><span class="scn-pv__tok scn-pv__tok--fn">render</span></div>
+              <div class="scn-pv__codeline"><span class="scn-pv__gutter">2</span><span class="scn-pv__tok scn-pv__tok--str">"…"</span></div>
+              <div class="scn-pv__codeline scn-pv__codeline--ai">
+                <span class="scn-pv__gutter">3</span>
+                <span class="scn-pv__ai-tag">AI</span>
+                <span class="scn-pv__line" style="width:50%;background:rgba(217,119,6,0.55)"></span>
+              </div>
+            </div>
+          </div>`,
+        email: `
+          <div class="scn-pv scn-pv--email">
+            <div class="scn-pv__inbox">
+              <span class="scn-pv__inbox-row scn-pv__inbox-row--active"></span>
+              <span class="scn-pv__inbox-row"></span>
+              <span class="scn-pv__inbox-row"></span>
+            </div>
+            <div class="scn-pv__mail">
+              <div class="scn-pv__mail-head">
+                <span class="scn-pv__line" style="width:60%;height:6px"></span>
+                <span class="scn-pv__line" style="width:30%"></span>
+              </div>
+              <div class="scn-pv__draft">
+                <span class="scn-pv__ai-tag">AI draft</span>
+                <span class="scn-pv__line"></span>
+                <span class="scn-pv__line" style="width:80%"></span>
+                <span class="scn-pv__line" style="width:55%"></span>
+              </div>
+              <div class="scn-pv__mail-actions">
+                <span class="scn-pv__send-pill">Send</span>
+              </div>
+            </div>
+          </div>`,
+        creative: `
+          <div class="scn-pv scn-pv--creative">
+            <div class="scn-pv__tools">
+              <span class="scn-pv__tool"></span>
+              <span class="scn-pv__tool scn-pv__tool--active"></span>
+              <span class="scn-pv__tool"></span>
+            </div>
+            <div class="scn-pv__canvas">
+              <div class="scn-pv__asset">
+                <span class="scn-pv__ai-tag scn-pv__ai-tag--corner">AI</span>
+              </div>
+            </div>
+            <div class="scn-pv__props">
+              <span class="scn-pv__line"></span>
+              <span class="scn-pv__line" style="width:60%"></span>
+            </div>
+          </div>`
+      };
+
+      const DURATIONS = ["1:24", "0:58", "1:12", "0:48", "1:36", "1:02"];
+
+      document.querySelectorAll(".scn").forEach((card, i) => {
+        const id = card.id;
+        const body = card.querySelector(".scn__body");
+        const media = card.querySelector(".scn__media");
+        if (!body || !media || body.querySelector(".scn__actions")) return;
+
+        // Inject the mini product-UI preview into the media area, BEFORE the chrome.
+        // Medha gets its own faithful UI mock; everything else uses the generic
+        // archetype preview.
+        const arch = ARCH_BY_SCN[id] || "chat";
+        if (!media.querySelector(".scn-pv, .medha-mock")) {
+          const wrap = document.createElement("div");
+          wrap.className = "scn-pv-wrap";
+          if (id === "medha" && window.NUCLEUX_MEDHA_MOCK) {
+            wrap.innerHTML = window.NUCLEUX_MEDHA_MOCK;
+          } else {
+            wrap.innerHTML = PV[arch] || PV.chat;
+          }
+          media.insertBefore(wrap, media.firstChild);
+        }
+
+        // Add the REC badge + duration on top
+        if (!media.querySelector(".scn__rec")) {
+          const rec = document.createElement("span");
+          rec.className = "scn__rec";
+          rec.textContent = "● REC";
+          media.appendChild(rec);
+          const dur = document.createElement("span");
+          dur.className = "scn__duration";
+          dur.textContent = DURATIONS[i % DURATIONS.length];
+          media.appendChild(dur);
+        }
+
+        // Add the View / Try-in-sandbox actions
+        const sbxId = SBX_MAP[id];
+        const actions = document.createElement("div");
+        actions.className = "scn__actions";
+        actions.innerHTML = `
+          <a class="scn__action scn__action--primary" href="scenario.html?id=${encodeURIComponent(id)}">
+            <span>View agent</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          ${sbxId ? `
+            <a class="scn__action scn__action--ghost" href="sandbox.html?usecase=${encodeURIComponent(sbxId)}" target="_blank" rel="noopener">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M14 3h7v7M10 21H3v-7M21 3l-7 7M3 21l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Try in sandbox</span>
+            </a>` : ""}
+        `;
+        body.appendChild(actions);
+      });
+    })();
+  </script>
+</body>
+</html>

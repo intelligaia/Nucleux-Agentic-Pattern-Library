@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Contact — Nucleux AI UX Pattern Library</title>
+  <meta name="description" content="Book a scoping call with the Nucleux team." />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      color: #0a0a0a;
+      min-height: 100vh;
+      background: #f8f8fa;
+      background-image:
+        radial-gradient(ellipse 60% 50% at 15% 60%, rgba(180,200,255,0.35) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 80% 30%, rgba(255,230,160,0.3) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 55% 75%, rgba(200,180,255,0.25) 0%, transparent 60%);
+    }
+
+    /* ── page layout — matches landing page container ── */
+    .contact-page {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      align-items: center;
+    }
+    .contact-wrap {
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 64px 32px;
+      gap: 200px;
+      align-items: start;
+    }
+
+    /* ── left copy ── */
+    .contact-copy__eyebrow { display: none; }
+
+    .contact-copy__note {
+      font-size: 18px;
+      font-weight: 400;
+      color: #5d5d54;
+      line-height: 1.45;
+      margin: 0 0 24px;
+    }
+    .contact-copy__note:last-child { margin-bottom: 0; }
+
+    /* ── form card ── */
+    .contact-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.09);
+      border-radius: 18px;
+      padding: 36px;
+    }
+    .contact-card h2 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0 0 24px;
+      color: #0a0a0a;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #111;
+    }
+    .form-group label span { color: #888; font-weight: 400; }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #0a0a0a;
+      background: #fff;
+      outline: none;
+      transition: border-color .15s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: #0a0a0a; }
+    .form-group textarea { resize: vertical; min-height: 84px; }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #bbb; }
+
+    /* checkboxes */
+    .check-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 10px;
+      display: block;
+      color: #111;
+    }
+    .checks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+    }
+    .check-item input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: #0a0a0a;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin: 0;
+    }
+    .check-item span { font-size: 13.5px; color: #333; }
+
+    /* submit */
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: #0a0a0a;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background .15s;
+    }
+    .btn-submit:hover { background: #222; }
+
+
+    .contact-page {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact-wrap {
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+      .contact-wrap {
+        grid-template-columns: 1fr;
+        padding: 40px 20px 60px;
+        gap: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL NAV -->
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <img class="brand__mark" src="nucleux-logo.svg" alt="Nucleux" width="120" height="24" />
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item gnav__item--has-flyout">
+          <a class="gnav__link" href="#components">Components</a>
+          <div class="gnav__flyout" role="menu" aria-label="Components">
+            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Basic Components</span>
+              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
+            </a>
+            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
+              <span class="gnav__flyout-cat-name">Agentic Components</span>
+              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
+            </a>
+          </div>
+        </div>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/>
+          </svg>
+          GitHub
+        </a>
+        <a class="gnav__cta gnav__cta--active" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="contact-page">
+  <div class="contact-wrap">
+
+    <!-- Left copy — Option A: pattern library value prop + proof numbers -->
+    <div class="contact-copy">
+      <p class="contact-copy__eyebrow">The AI UX Pattern Library</p>
+      <p class="contact-copy__note">The fastest way to build better AI products isn't starting from scratch—it's building on patterns that already work.</p>
+      <p class="contact-copy__note">Nucleux helps transform proven AI interaction patterns into production-ready experiences, so you can spend more time solving real problems and less time reinventing common ones.</p>
+      <p class="contact-copy__note">Whether you're exploring an idea, improving an existing product, or planning your next release, we'd love to help.</p>
+
+    </div>
+
+    <!-- Form card -->
+    <div class="contact-card">
+      <h2>Book your scoping call</h2>
+
+      <form action="https://www.intelligaia.com/contact" method="get" target="_blank">
+
+        <div class="form-group">
+          <label for="name">Your name <span>*</span></label>
+          <input type="text" id="name" name="name" required placeholder="Full name" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email <span>*</span></label>
+          <input type="email" id="email" name="email" required placeholder="you@company.com" />
+        </div>
+
+        <span class="check-label">I need help with</span>
+        <div class="checks">
+          <label class="check-item">
+            <input type="checkbox" name="help" value="pattern-library-integration" />
+            <span>Pattern Library Integration</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="help" value="ai-experience-design" />
+            <span>AI Experience Design</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="help" value="agent-workflow-design" />
+            <span>Agent Workflow Design</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="help" value="ai-design-system-audit" />
+            <span>AI Design System Audit</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="help" value="custom-pattern-development" />
+            <span>Custom Pattern Development</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="help" value="other" />
+            <span>Other</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="message">What are you looking to build? <span>*</span></label>
+          <textarea id="message" name="message" required placeholder="A sentence or two is enough — we'll dig in on the call."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Request my call →</button>
+
+      </form>
+    </div>
+
+  </div>
+  </div>
+
+
+</body>
+</html>
