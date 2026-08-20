@@ -1,0 +1,554 @@
+/* ============================================================
+   GLOBAL NAV — COMPONENTS MEGA FLYOUT
+   Shared by every page that renders .gnav. Paired with
+   nav-mega.js, which builds the panel markup, so the flyout
+   exists in exactly one place instead of being copied into
+   each page's <head>.
+
+   THEMING: every colour here comes from a semantic token
+   (--surface, --border, --fg, --fg-muted). Those tokens are
+   already flipped for the dark pages by styles.css, so this
+   file needs no dark variant and — importantly — no
+   `body.landing-dark` selectors. That matters because
+   index-v2.html carries `landing-dark` as a structural hook
+   while rendering light; keying off the class there would
+   paint the panel dark on a light page. Tokens can't get that
+   wrong.
+   ============================================================ */
+
+/* the hover wash, derived from the foreground so it inverts with the
+   theme on its own. --ink-25 would have been wrong: it is not
+   theme-flipped, so it stays near-white and would wash a dark nav. */
+.gnav { --nav-mega-wash: color-mix(in oklab, var(--fg) 6%, transparent); }
+
+/* ── THE NAV BAR ITSELF ──
+   styles.css builds the bar from --bg (#fbfbfa, a warm off-white) at 84%,
+   while the flyout sheet below it is --surface (pure white). Those are two
+   different colours, so on every page except the landing one the panel
+   dropped out of a slightly grey bar and the seam showed.
+
+   Both now come from the SAME token, so the bar and the sheet cannot
+   disagree: --surface is white on the light pages and #100e1c on the dark
+   ones, and the border is derived from --fg rather than the fixed
+   #dcdcd5, which read heavy against white.
+
+   Specificity is a plain `.gnav`, matching styles.css, and this file loads
+   after it — so it wins on the light pages while
+   `body.landing-dark .gnav` (two classes) still wins on the dark ones and
+   keeps them dark. */
+.gnav {
+  /* Solid, not translucent. At 88% the page tinted the bar as content
+     scrolled under it, so the bar drifted away from the flyout sheet —
+     which is opaque --surface — and the seam came back in motion even
+     though the two matched at rest. Opaque on both sides means they are
+     the same white at every scroll position. */
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in oklab, var(--fg) 8%, transparent);
+  /* the blur has nothing left to sample through an opaque bar, and
+     dropping it also drops a needless full-width compositing pass */
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+}
+
+/* ── positioning ───────────────────────────────────────────
+   The panel spans the viewport, so it cannot be positioned against
+   .gnav__item (a ~100px box). The item is set to `static` so the
+   panel's containing block becomes .gnav itself — `position: sticky`,
+   therefore a positioned ancestor, full width, no overflow clipping
+   and already z-index 60. left:0/right:0 then reaches both edges
+   with no 100vw hack and no scrollbar overshoot.
+
+   The panel stays a DOM child of .gnav__item even though it lays out
+   against .gnav: :hover propagates up the DOM, not the layout tree,
+   so pointing at the panel keeps the item hovered. No JS, no timers. */
+/* Scoped through .gnav on purpose. `position: static` has to beat
+   `.gnav__item--has-flyout { position: relative }` in styles.css AND a
+   page-local `.gnav__item { position: relative }` in an inline <style>
+   that parses after this file. Both are one class, so raising this to two
+   wins on specificity rather than on source order — which an inline
+   <style> block would otherwise always take. */
+.gnav .gnav__item {
+  position: static;
+  display: flex;
+  align-items: center;
+}
+.gnav .gnav__item .gnav__link { display: inline-flex; align-items: center; gap: 4px; }
+/* the trigger opens a panel rather than navigating */
+.gnav .gnav__item > .gnav__link { cursor: default; user-select: none; }
+
+/* HOVER BRIDGE. A static item shrinks to the label itself, which opens a
+   dead strip between the label's bottom and the panel's top (the nav's
+   bottom edge). Crossing it drops :hover — and `visibility` cannot be
+   transitioned, so the panel would go pointer-events:none mid-travel and
+   a row could never be reached. .gnav__link is already position:relative
+   and carries no pseudo-elements, so a transparent pad hung off its
+   bottom closes the gap. It is only as wide as the label, so unlike a
+   full-width bridge it never covers the search field or the CTA. */
+/* ::before, NOT ::after. styles.css uses `.gnav__link.is-current::after`
+   for the current-page underline — same specificity as a bridge on
+   ::after, so on the page where Components IS current the two rules
+   merged: this rule's 34px height won on source order while the
+   underline's `background: var(--fg)` still applied, painting a solid
+   black block under the label. ::before is unused, so the bridge and the
+   underline stay independent. */
+.gnav .gnav__item > .gnav__link::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  top: 100%;
+  height: 34px;
+  background: transparent;   /* belt and braces: never paints */
+}
+
+.gnav__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+
+  /* CLOSED / EXIT — a dissolve.
+     `visibility` is not animatable, so left untransitioned it flips to
+     hidden on the first frame of the exit and the panel is simply gone,
+     the opacity fade underneath never seen. A 0s transition DELAYED by
+     the length of the fade holds it painted for the full 340ms, then
+     hides it once it has already reached zero.
+
+     `transform` gets the same treatment: the panel enters with a 6px
+     rise, and running that in reverse would read as a slide rather than
+     a dissolve, so its reset is deferred too and happens unseen.
+
+     `pointer-events` is deliberately NOT transitioned — the panel must
+     stop intercepting clicks the instant the pointer leaves, even while
+     it is still visible. */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 340ms cubic-bezier(.33, 0, .25, 1),
+              visibility 0s linear 340ms;
+}
+/* OPEN / ENTER — quicker than the exit */
+.gnav__item:hover .gnav__dropdown,
+.gnav__item:focus-within .gnav__dropdown,
+.gnav__dropdown:hover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 180ms ease,
+              visibility 0s;
+}
+
+/* ── THE SCRIM ──
+   Black at 10% over the page while the panel is open, so the flyout reads
+   as a layer above the page rather than part of it.
+
+   It is a pseudo-element of the WRAPPER, which is why the 6px rise had to
+   move off the wrapper and onto the sheet below: a transformed ancestor
+   becomes the containing block for `position: fixed`, so with the
+   transform still here the scrim's inset would have resolved against the
+   panel's own box mid-transition and snapped to the viewport at the end.
+   With the wrapper untransformed, `fixed` always means the viewport.
+
+   Being inside the wrapper also means it inherits the wrapper's opacity,
+   so it cross-fades with the panel for free — no second transition to
+   keep in sync. z-index -1 keeps it under the opaque sheet (safe here
+   because the wrapper itself paints no background), and it starts at the
+   nav's bottom edge so the bar stays white. */
+.gnav__dropdown::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--nav-h, 72px);
+  bottom: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, 0.10);
+  pointer-events: none;   /* dims the page, never blocks it */
+}
+
+/* the rise now belongs to the sheet. Same deferred reset as before: it
+   snaps back to the start offset only after the fade has finished, so the
+   exit reads as a dissolve rather than a slide. */
+.gnav__dropdown-inner {
+  transform: translate3d(0, -6px, 0);
+  transition: transform 0s linear 340ms;
+}
+.gnav__item:hover .gnav__dropdown-inner,
+.gnav__item:focus-within .gnav__dropdown-inner,
+.gnav__dropdown:hover .gnav__dropdown-inner {
+  transform: none;
+  transition: transform 300ms cubic-bezier(.22, 1, .36, 1);
+}
+
+/* ── the sheet ── */
+.gnav__dropdown-inner {
+  background: var(--surface);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 0;
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.18);
+}
+
+/* ── the grid: pitch | ShadCN | Material 3.0 ──
+   Content tracks the nav's own 1480px measure so the heading lines up
+   with the wordmark. The left column is the narrowest of the three: it
+   holds two short lines, while the family columns hold two-line
+   descriptions and want the room. */
+.gnav__mega {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: var(--s-10, 40px) var(--gutter, 24px) var(--s-12, 48px);
+  display: grid;
+  grid-template-columns: minmax(240px, 0.68fr) minmax(300px, 1fr) minmax(300px, 1fr);
+  align-items: stretch;
+  gap: 0;
+}
+/* the separators are cell borders, so each rule spans the full row
+   height on its own rather than being a fixed-height element */
+.gnav__mega-col + .gnav__mega-col {
+  border-left: 1px solid var(--border);
+  padding-left: clamp(20px, 2.2vw, 34px);
+  /* the matching inset on the right, so a hovered row in the middle
+     column stops short of the NEXT separator as well */
+  padding-right: clamp(14px, 1.4vw, 22px);
+}
+/* the left column holds only the heading, so centre it against the
+   taller family columns rather than leaving dead space beneath */
+.gnav__mega-col:first-child {
+  padding-right: clamp(20px, 2.2vw, 34px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* no closing rule on the far right — the sheet's own bottom hairline
+   already terminates the block */
+.gnav__mega-col:last-child { border-right: 0; }
+
+.gnav__mega-title {
+  font-family: var(--font-display);
+  font-size: clamp(21px, 1.9vw, 27px);
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.022em;
+  color: var(--fg);
+  margin: 0;
+  /* Two lines. `text-wrap: balance` is deliberately NOT used: it
+     equalises line lengths, which on this narrow column produced three
+     short lines instead of two full ones. */
+  max-width: 22ch;
+  text-wrap: normal;
+}
+
+/* ── the families ── */
+.gnav__dropdown-grouplabel {
+  display: block;
+  padding: 0 0 var(--s-4, 16px);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.gnav__dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  /* No negative margin: pulling the row left to sit flush on the column
+     edge put the hover wash right up against the separator. Starting at
+     the content edge keeps the wash inset from the rule on both sides. */
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+.gnav__dropdown-link:hover,
+.gnav__dropdown-link:focus { background: var(--nav-mega-wash); }
+/* the text cell must be allowed to shrink, or it sits at its min-content
+   width and the description breaks a line early, orphaning a word */
+.gnav__dropdown-link > span:last-child { min-width: 0; flex: 1 1 auto; }
+
+.gnav__dropdown-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* no chip — the glyph sits straight on the surface */
+  background: transparent;
+  border-radius: 0;
+  /* width/height + flex-shrink:0 is not enough on its own: once the text
+     cell is allowed to grow, flexbox can still compress an inline-flex
+     item below its stated size. flex:0 0 auto pins the basis so the
+     glyph keeps its aspect ratio at every width. */
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  color: var(--fg);
+}
+.gnav__dropdown-icon > svg { width: 22px; height: 22px; flex: 0 0 auto; display: block; }
+
+.gnav__dropdown-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.3;
+}
+.gnav__dropdown-desc {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  line-height: 1.45;
+  margin-top: 2px;
+  max-width: none;
+}
+
+/* Material 3.0 is not built yet, so its rows are rendered as spans, not
+   links — there is nothing to navigate to. They keep the layout and lose
+   the affordances: no hover wash, no pointer, not in the tab order. */
+.gnav__dropdown-link--soon { cursor: default; opacity: .6; }
+.gnav__dropdown-link--soon:hover,
+.gnav__dropdown-link--soon:focus { background: transparent; }
+.gnav__dropdown-link--soon .gnav__dropdown-desc { font-style: italic; }
+
+/* ══════════════════════════════════════════════════════════
+   ACTIONS CLUSTER — GitHub as an icon, Sign up as the primary
+   ══════════════════════════════════════════════════════════ */
+
+/* ── SEARCH: collapsed to an icon, expands leftward on hover ──
+   Three classes deep so it outranks the page-local
+   `body.landing-light .gnav__search` on the landing page, which is two
+   classes and parses after this file. */
+.gnav .gnav__search.gnav__search--x {
+  /* the FLOW footprint never changes: a 38px circle, same as GitHub.
+     .gnav__inner is space-between, so a control that actually grew in the
+     flex line would drag the primary nav links sideways on every hover. */
+  position: relative;
+  /* same 45px as the GitHub icon and the pills — a 38px circle next to
+     45px controls read as a stepped row */
+  width: 45px;
+  height: 45px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;   /* the shell overflows leftward out of this box */
+}
+
+/* the part that actually moves */
+.gnav .gnav__search--x .gnav__search-shell {
+  position: absolute;
+  top: 0;
+  right: 0;            /* right-anchored: growth happens to the LEFT */
+  height: 45px;
+  width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;   /* the icon is the only flex item now */
+  border-radius: 9999px;
+  overflow: hidden;    /* clips the field while collapsed */
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 16%, transparent);
+  /* width is the only geometry animated, and it is the thing being asked
+     for — a transform-based fake would squash the glyph and the caret */
+  transition: width 420ms cubic-bezier(.22, 1, .36, 1),
+              background 260ms ease,
+              box-shadow 260ms ease;
+}
+.gnav .gnav__search--x:hover .gnav__search-shell,
+.gnav .gnav__search--x:focus-within .gnav__search-shell,
+.gnav .gnav__search--x.is-open .gnav__search-shell {
+  width: 200px;        /* about the pill's original width */
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 22%, transparent);
+}
+
+/* the icon: pinned to the right edge so it never slides during the grow */
+.gnav .gnav__search--x .gnav__search-btn {
+  position: relative;   /* above the input's box */
+  z-index: 1;
+  flex: 0 0 45px;
+  width: 45px;
+  height: 45px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+/* Absolutely positioned, NOT a flex item. As a flex item its 16px
+   left padding could not shrink below itself, so at the collapsed 38px it
+   still occupied 18px and shoved the icon rightward — the magnifier ended
+   up clipped by the circle's own edge. Out of the flex line it cannot
+   push anything, and `right: 38px` reserves exactly the icon's width. */
+.gnav .gnav__search--x .gnav__search-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 45px;
+  height: 45px;
+  padding: 0 4px 0 18px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  /* fades a beat behind the width so letters do not appear mid-slide */
+  opacity: 0;
+  transition: opacity 180ms ease 120ms;
+}
+.gnav .gnav__search--x:hover .gnav__search-input,
+.gnav .gnav__search--x:focus-within .gnav__search-input,
+.gnav .gnav__search--x.is-open .gnav__search-input { opacity: 1; }
+.gnav .gnav__search--x .gnav__search-input::placeholder { color: var(--fg-muted); }
+/* on the way out the text goes first, then the shell closes over it */
+.gnav .gnav__search--x:not(:hover):not(:focus-within):not(.is-open) .gnav__search-input {
+  transition: opacity 120ms ease;
+}
+
+/* the search field is a text input, so it keeps a text caret even though
+   the collapsed state reads as a button */
+.gnav .gnav__search--x .gnav__search-input { cursor: text; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gnav .gnav__search--x .gnav__search-shell { transition: none; }
+  .gnav .gnav__search--x .gnav__search-input { transition: none; }
+}
+
+/* GitHub loses its label, so it also loses the solid ink pill: an
+   icon-only control that heavy would out-shout the button next to it.
+   A quiet circle keeps it available without competing. */
+/* Scoped through .gnav (three classes) so it outranks the page-local
+   `body.landing-light .gnav__sdk { background: var(--ink-950) }` on the
+   landing page, which is two classes and parses after this file — it was
+   repainting the icon button as a solid black circle. */
+.gnav .gnav__sdk.gnav__sdk--icon {
+  /* 45px, matching .gnav__cta's rendered height (11px padding + 13.5px
+     line + 1px border), so the icon reads as a peer of the pills rather
+     than a smaller secondary control */
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  gap: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 16%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.18s cubic-bezier(.34, 1.56, .64, 1);
+}
+.gnav .gnav__sdk.gnav__sdk--icon:hover {
+  background: color-mix(in oklab, var(--fg) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 30%, transparent);
+  transform: translateY(-1px);
+}
+.gnav .gnav__sdk.gnav__sdk--icon > svg { display: block; }
+
+/* Sign up inherits the primary treatment GitHub used to hold, and matches
+   .gnav__cta's geometry exactly so the two pills read as a pair. */
+.gnav__signup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 9999px;
+  background: var(--ink-950);
+  color: var(--ink-0);
+  border: 1px solid var(--ink-950);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.18s cubic-bezier(.34, 1.56, .64, 1);
+}
+.gnav__signup:hover {
+  background: var(--ink-700);
+  border-color: var(--ink-700);
+  transform: translateY(-1px);
+}
+/* On the genuinely dark pages the ink pill would vanish into the bar, so
+   it flips: the surface becomes the ink and the type becomes the page.
+
+   `:not(.landing-light)` is load-bearing. index-v2.html carries
+   `landing-dark` as its STRUCTURAL hook while rendering light, so a bare
+   `body.landing-dark` selector caught it and painted #0a0912 type onto a
+   near-black pill — invisible. Every dark-only rule in this file has to
+   exclude the light twin explicitly. */
+body.landing-dark:not(.landing-light) .gnav__signup {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: #0a0912;
+}
+body.landing-dark:not(.landing-light) .gnav__signup:hover {
+  background: #ece9ff;
+  border-color: #ece9ff;
+}
+
+/* four controls now instead of three — keep them from crowding */
+.gnav__inner .gnav__actions { gap: 10px; }
+
+/* ── the chevron ──
+   A sibling of the label rather than a child of it, because
+   nav-splitflap.js clears the label's contents when it takes over. The
+   item is a flex row, so the two sit side by side; the gap below is what
+   separates them. */
+.gnav .gnav__item { gap: 5px; }
+.gnav__caret {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--fg-mid);
+  /* nudge onto the label's optical centre — the glyph's ink sits high in
+     its own box */
+  margin-top: 1px;
+  transition: transform 0.2s cubic-bezier(.22, 1, .36, 1), color 0.15s ease;
+}
+.gnav__caret > svg { display: block; }
+/* points up while the panel is open, and darkens with the label */
+.gnav__item:hover .gnav__caret,
+.gnav__item:focus-within .gnav__caret {
+  transform: rotate(180deg);
+  color: var(--fg);
+}
+
+/* the old two-item flyout this panel replaces — nav-mega.js removes the
+   markup, but the rule keeps it from flashing on a slow parse */
+.gnav__item--has-flyout > .gnav__flyout { display: none !important; }
+
+@media (max-width: 1100px) {
+  .gnav__mega { grid-template-columns: 1fr 1fr; }
+  .gnav__mega-col:first-child { grid-column: 1 / -1; padding-right: 0; padding-bottom: var(--s-8, 32px); }
+  .gnav__mega-col:nth-child(2) { border-left: 0; padding-left: 0; }
+  .gnav__mega-col:last-child { border-right: 0; }
+}
+@media (max-width: 900px) {
+  .gnav__dropdown { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* no rise, and a shorter cross-fade — but keep the delayed visibility,
+     otherwise the fade is invisible again */
+  .gnav__dropdown {
+    transition: opacity 140ms linear, visibility 0s linear 140ms;
+  }
+  .gnav__item:hover .gnav__dropdown,
+  .gnav__item:focus-within .gnav__dropdown,
+  .gnav__dropdown:hover {
+    transition: opacity 140ms linear, visibility 0s;
+  }
+  /* no rise at all */
+  .gnav__dropdown-inner,
+  .gnav__item:hover .gnav__dropdown-inner,
+  .gnav__item:focus-within .gnav__dropdown-inner,
+  .gnav__dropdown:hover .gnav__dropdown-inner { transform: none; transition: none; }
+}

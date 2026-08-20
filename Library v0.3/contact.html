@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://rsms.me/" />
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="nav-mega.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -173,18 +174,8 @@
       </a>
 
       <nav class="gnav__center" aria-label="Primary">
-                <div class="gnav__item gnav__item--has-flyout">
+                <div class="gnav__item">
           <a class="gnav__link" href="#components">Components</a>
-          <div class="gnav__flyout" role="menu" aria-label="Components">
-            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
-              <span class="gnav__flyout-cat-name">Basic Components</span>
-              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
-            </a>
-            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
-              <span class="gnav__flyout-cat-name">Agentic Components</span>
-              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
-            </a>
-          </div>
         </div>
         <a class="gnav__link" href="practices.html">Scenarios</a>
         <a class="gnav__link" href="docs.html">Docs</a>
@@ -279,5 +270,9 @@
   </div>
 
 
+    <script src="patterns.js"></script>
+  <script src="global.js"></script>
+<script src="nav-splitflap.js"></script>
+<script src="nav-mega.js"></script>
 </body>
 </html>

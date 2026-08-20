@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="nav-mega.css" />
 </head>
 <body>
 
@@ -25,18 +26,8 @@
       </a>
 
       <nav class="gnav__center" aria-label="Primary">
-                <div class="gnav__item gnav__item--has-flyout">
+                <div class="gnav__item">
           <a class="gnav__link" href="#components">Components</a>
-          <div class="gnav__flyout" role="menu" aria-label="Components">
-            <a class="gnav__flyout-cat" href="basic-components.html" role="menuitem">
-              <span class="gnav__flyout-cat-name">Basic Components</span>
-              <span class="gnav__flyout-cat-desc">Buttons, inputs, cards and the other foundational building blocks.</span>
-            </a>
-            <a class="gnav__flyout-cat" href="library.html" role="menuitem">
-              <span class="gnav__flyout-cat-name">Agentic Components</span>
-              <span class="gnav__flyout-cat-desc">Prompt scaffolds, agent status, streaming output and other AI-native patterns.</span>
-            </a>
-          </div>
         </div>
         <a class="gnav__link" href="practices.html">Scenarios</a>
         <a class="gnav__link" href="docs.html">Docs</a>
@@ -578,5 +569,7 @@
   <script src="landing.js"></script>
   <script src="patterns.js"></script>
   <script src="global.js"></script>
+<script src="nav-splitflap.js"></script>
+<script src="nav-mega.js"></script>
 </body>
 </html>

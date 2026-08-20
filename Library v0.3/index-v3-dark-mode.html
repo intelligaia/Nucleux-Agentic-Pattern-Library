@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Intelligaia — AI UX Pattern Library</title>
+  <title>Intelligaia — AI UX Pattern Library (v3)</title>
   <meta name="description" content="A pattern language for agentic products. By Intelligaia." />
 
   <link rel="preconnect" href="https://rsms.me/" />
@@ -17,13 +17,10 @@
     .npm-link { color: inherit; text-decoration: none; }
     .npm-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-    /* nav: the Components item is laid out by the shared nav-mega.css.
-       The `position: relative` that used to live here is gone on purpose —
-       it re-anchored the flyout to the ~100px label and the panel stopped
-       reaching the viewport edges. */
-    /* The Components mega flyout now lives in the shared nav-mega.css +
-       nav-mega.js, so every page gets the same panel from one source.
-       Roughly 230 lines of page-local CSS were removed from here. */
+    /* The Components flyout is styled by the shared nav-mega.css and built
+       by nav-mega.js. The page-local rules that used to sit here pinned the
+       panel to the label (left:50%/translateX) and so kept it from going
+       full width once the shared file took over. */
 
     /* ── Madlibs Prompt Scaffold demo section ── */
     .ml-section { border-top: 1px solid var(--border); overflow: visible !important; }
@@ -966,6 +963,27 @@
     }
   </style>
 
+  <!-- ════════════════════════════════════════════════════
+       GHOST CURSOR (v3) — React Bits <GhostCursor /> ported
+       to the static page. Scoped to the hero.
+       ════════════════════════════════════════════════════ -->
+  <style>
+    .ghost-cursor {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;              /* above the aurora + particles, below the copy */
+    }
+    .ghost-cursor > canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+    @media (prefers-reduced-motion: reduce), (pointer: coarse) {
+      .ghost-cursor { display: none; }
+    }
+  </style>
 
   <!-- ════════════════════════════════════════════════════
        SECTION SEAMS (v3) — no rules between sections, and the
@@ -1304,313 +1322,16 @@
     body.landing-dark .brand__mark--inline { --brand-word: #EEF0F4; }
     .brand__mark--inline { height: 28px; width: auto; display: block; }
   </style>
-
-  <!-- ════════════════════════════════════════════════════
-       LIGHT THEME (v3) — index-v3.html is the light twin of
-       index-v3-dark-mode.html.
-
-       The dark file's layout, motion and structural rules are
-       all scoped to body.landing-dark, so the class stays on
-       the body and only the COLOUR half is re-declared here.
-       Every selector below mirrors a dark one at identical
-       specificity and sits last in the document, so it wins on
-       order — no !important arms race, no duplicated layout.
-       ════════════════════════════════════════════════════ -->
-  <style>
-    /* ── 1. semantic tokens flip back to the light scale ── */
-    body.landing-light {
-      --bg:            #fbfbfa;
-      --surface:       #ffffff;
-      --border:        rgba(12,12,10,0.10);
-      --border-strong: rgba(12,12,10,0.20);
-      --fg:            #0c0c0a;
-      --fg-alt:        #2b2b28;
-      --fg-mid:        #6b6b66;
-      --fg-muted:      #96968f;
-      background: #fbfbfa;
-      color: var(--fg);
-    }
-
-    /* ── 2. nav ── */
-    /* The landing page needs its own selector here only because it carries
-       `landing-dark` (the structural hook) and sets html.nav-over-hero —
-       both of which outrank the plain `.gnav` rule in nav-mega.css. The
-       VALUES are the same token expressions as that shared rule, so the
-       bar matches every other page and the flyout sheet exactly. */
-    body.landing-light .gnav,
-    html.nav-over-hero body.landing-light .gnav {
-      background: var(--surface);
-      -webkit-backdrop-filter: none;
-              backdrop-filter: none;
-      border-bottom: 1px solid color-mix(in oklab, var(--fg) 8%, transparent);
-    }
-    body.landing-light .gnav__link { color: rgba(12,12,10,0.62); }
-    body.landing-light .gnav__link:hover,
-    body.landing-light .gnav__link.is-current { color: #0c0c0a; }
-    /* ── nav action cluster: back to the shared styles.css treatment ──
-       These three were re-tinted for the dark surface (grey GitHub pill,
-       washed-out borders), which left the landing page looking unlike every
-       other page in the library. Deleting the overrides is NOT enough: the
-       body still carries `landing-dark` as its structural hook, so the dark
-       rules in styles.css would simply take over again (white-on-white).
-       So each is restated at the BASE value, from the same tokens
-       styles.css uses — a solid ink GitHub pill, an ink-bordered Contact Us
-       and a white search field. */
-    body.landing-light .gnav__sdk {
-      background: var(--ink-950);
-      color: var(--ink-0);
-      box-shadow: none;
-    }
-    body.landing-light .gnav__sdk:hover { background: var(--ink-700); }
-    body.landing-light .gnav__cta {
-      background: transparent;
-      color: var(--fg);
-      border: 1px solid var(--ink-950);
-    }
-    body.landing-light .gnav__cta:hover { background: var(--ink-950); color: var(--ink-0); }
-    body.landing-light .gnav__search {
-      background: var(--surface);
-      border-color: var(--border-strong);
-      color: var(--fg-mid);
-    }
-    body.landing-light .gnav__search:hover {
-      border-color: var(--fg);
-      color: var(--fg);
-      background: var(--ink-25);
-    }
-    /* the inlined mark keeps its authored UX gradient; only the wordmark
-       letters go back to ink for the light nav */
-    body.landing-light .brand__mark,
-    html.nav-over-hero body.landing-light .brand__mark { filter: none; }
-    body.landing-light .brand__mark--inline { --brand-word: #0A0A0A; }
-
-    /* ── 3. the ground ── */
-    body.landing-light .scene { background-color: #fbfbfa; }
-    body.landing-light .foot {
-      background: linear-gradient(180deg, #ffffff 0%, #f4f4f1 100%);
-      border-top-color: rgba(12,12,10,0.08);
-    }
-
-    /* ── 4. hero gradient field ──
-       `screen` blends toward white, so on a light ground the aurora
-       disappeared entirely. `multiply` blends toward the pigment instead,
-       which is the light-mode equivalent: the same three drifting blobs
-       now tint the page rather than glow on it. Hues are lifted to
-       pastels so multiply lands as a wash, not a stain. */
-    body.landing-light .ag-hero-media__aurora {
-      filter: blur(72px) saturate(126%);
-      opacity: .50;
-    }
-    /* `screen` blends toward white and vanished on the light ground; and
-       `multiply` escaped the hero's mask in Chrome — the blend resolved
-       against the page backdrop while the mask only clipped the element's
-       own paint, so the field ended on a hard 703px line. Normal
-       compositing masks correctly, and pastel-on-near-white needs no
-       blend mode to read. */
-    body.landing-light .ag-hero-media__aurora span { mix-blend-mode: normal; }
-    body.landing-light .ag-hero-media__aurora span:nth-child(1) {
-      background: radial-gradient(circle at 50% 50%, #a181ff, transparent 66%);
-    }
-    body.landing-light .ag-hero-media__aurora span:nth-child(2) {
-      background: radial-gradient(circle at 50% 50%, #ff8ab4, transparent 64%);
-    }
-    body.landing-light .ag-hero-media__aurora span:nth-child(3) {
-      background: radial-gradient(circle at 50% 50%, #7fb0ff, transparent 68%);
-    }
-    /* the scrim settles the field down toward the page white and still
-       fades to nothing at the seam, so the particles carry across */
-    body.landing-light .ag-hero-media__scrim {
-      background: linear-gradient(180deg,
-        rgba(251,251,250,.16) 0%,
-        rgba(251,251,250,.28) 45%,
-        rgba(251,251,250,.16) 82%,
-        rgba(251,251,250,0) 100%) !important;
-    }
-
-    /* ── 5. particle field ──
-       landing.js already draws the dots in near-black, which is what the
-       light surface wants — so the dark file's invert()/brightness() lift
-       is simply switched off. (Opacity is written inline by the scroll
-       dimmer, so it is deliberately not set here.) */
-    body.landing-light .scene__bg #hero-canvas { filter: none; }
-
-    /* ── 6. tiles: sections 2 and 4 — flat, not glass ──
-       A plain opaque surface. `backdrop-filter: none` is explicit and
-       load-bearing: styles.css puts a blur on .fw-stage and the dark
-       #labs block puts one on .practice, so simply deleting the glass
-       rules here would have left those in place and the tiles would still
-       have been frosted. */
-    body.landing-light .framework .fw-stage,
-    body.landing-light #labs .practice {
-      background-color: #ffffff;
-      border-color: rgba(12,12,10,0.09);
-      -webkit-backdrop-filter: none;
-              backdrop-filter: none;
-      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, var(--shadow-2);
-    }
-    body.landing-light .fw-stage__meta { border-top-color: rgba(12,12,10,0.10); }
-
-    /* ── 7. spotlight hover ──
-       The dark spotlight is a pale, barely-there tint (84% lightness at
-       .16 alpha) because it is adding light to a black card. On white it
-       has to REMOVE light instead, so the same violet→rose hue band is
-       taken to a mid lightness and a higher alpha. --sp-fill is a custom
-       property, so re-declaring it here re-points every rule that reads
-       it — fill, ring, bloom and hover all follow automatically. */
-    /* ── the pointer-tracked wash ──
-       Back on, at 20% alpha, and HOVER-ONLY. The base .fw-stage rule
-       paints var(--sp-fill) unconditionally, but --x/--y are only written
-       for the card under the cursor — so on every idle card the gradient
-       resolved at 0,0 and parked a faint blob in the top-left corner.
-       Declaring the fill here but suppressing it at rest keeps idle cards
-       clean and lets the wash arrive with the pointer. */
-    body.landing-light .fw-stage,
-    body.landing-light #labs .practice {
-      --sp-fill: radial-gradient(
-        var(--spotlight-size) var(--spotlight-size) at
-        calc(var(--x, 0) * 1px) calc(var(--y, 0) * 1px),
-        hsl(var(--hue) 90% 66% / .20), transparent 66%);
-    }
-    body.landing-light .framework .fw-stage,
-    body.landing-light #labs .practice { background-image: none; }
-    /* ── the hover stroke ──
-       Back to a single pink drawn on the element's OWN border, at a much
-       lower alpha than before. Both pseudo-elements — the gradient ring
-       and the outer halo — are switched off: with no interior wash left,
-       a separate lit ring on top of a plain border only read as a double
-       outline. The hue still slides violet → rose across the row, so the
-       stroke is not one flat pink on every card. */
-    body.landing-light .fw-stage::before,
-    body.landing-light .fw-stage::after,
-    body.landing-light #labs .practice::after { display: none; }
-    body.landing-light .framework .fw-stage:hover,
-    body.landing-light .framework .fw-stage.is-live:hover,
-    body.landing-light #labs .practice:hover {
-      background-color: #ffffff;
-      background-image: var(--sp-fill);
-      background-repeat: no-repeat;
-      background-position: 50% 50%;
-      /* the pink stroke, at .32 rather than the .55 it used to carry */
-      border-color: hsl(var(--hue) 80% 66% / .32);
-      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset,
-                  0 18px 44px -20px hsl(var(--hue) 68% 48% / .18),
-                  var(--shadow-3);
-      transform: translateY(-6px) scale(1.012);
-    }
-
-    /* ── 8. indicators ── */
-    body.landing-light .ag-pin__dot,
-    body.landing-light .ag-rail-bar { background: rgba(12,12,10,.16); }
-    body.landing-light .ag-pin__dot.is-on,
-    body.landing-light .ag-rail-bar.is-on { background: #7c3aed; }
-    /* ── LABS RAIL: soft right edge ──
-       The rail scrolls horizontally inside the container, so the tile at
-       the right was sliced off on the container's edge — a hard vertical
-       cut through the card. This fades it into the page instead.
-
-       Two effects stacked, which is what makes it read as depth rather
-       than as a white bar: a gradient to the page background, plus a
-       backdrop blur that is itself masked so the blur ramps up across the
-       same distance. The blur is what stops the fade looking like a flat
-       scrim laid on top.
-
-       `right` matches the rail's own -26px negative margin so the fade
-       ends exactly where the rail's overflow does, and it is
-       pointer-events:none so it never eats a hover or a click on the tile
-       underneath. */
-    body.landing-light #labs .ag-rail-wrap::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      right: -26px;
-      width: clamp(72px, 9vw, 150px);
-      z-index: 3;
-      pointer-events: none;
-      background: linear-gradient(to right,
-        rgba(251, 251, 250, 0) 0%,
-        rgba(251, 251, 250, 0.55) 42%,
-        rgba(251, 251, 250, 0.92) 78%,
-        rgb(251, 251, 250) 100%);
-      -webkit-backdrop-filter: blur(4px);
-              backdrop-filter: blur(4px);
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 55%);
-              mask-image: linear-gradient(to right, transparent 0%, #000 55%);
-      opacity: 1;
-      transition: opacity .32s var(--ag-ease, ease);
-    }
-    /* nothing left to scroll to — the fade would just be a white smudge
-       over the last card's edge */
-    body.landing-light #labs .ag-rail-wrap.is-rail-end::after { opacity: 0; }
-
-    body.landing-light .ag-rail-btn {
-      border-color: rgba(12,12,10,.14);
-      background: rgba(255,255,255,.88);
-      color: #0c0c0a;
-    }
-
-    /* ── 9. accents ── */
-    body.landing-light .t-eyebrow { color: #6d28d9; }
-    body.landing-light #practices .t-eyebrow,
-    body.landing-light #labs .t-eyebrow { color: #6d28d9; }
-    body.landing-light .practice__icon { color: #6d28d9; }
-    body.landing-light .practice:hover .practice__icon { color: #4c1d95; }
-    body.landing-light .cat__cta { border-bottom-color: rgba(12,12,10,0.45); }
-
-    /* ── 10. section 3 tiles ── */
-    body.landing-light #practices .practice {
-      background: rgba(255,255,255,0.80);
-      border-color: rgba(12,12,10,0.09);
-    }
-    body.landing-light #practices .practice:hover {
-      background: #ffffff;
-      border-color: rgba(12,12,10,0.16);
-      box-shadow: var(--shadow-3);
-    }
-
-    /* ── 11. buttons ── */
-    body.landing-light .btn--solid { background: #0c0c0a; border-color: #0c0c0a; color: #fff; }
-    body.landing-light .btn--solid:hover { background: #2b2b28; border-color: #2b2b28; }
-    body.landing-light .btn--ghost { color: var(--fg); border-color: rgba(12,12,10,0.24); }
-    body.landing-light .btn--ghost:hover {
-      border-color: rgba(12,12,10,0.55);
-      background: rgba(12,12,10,0.04);
-    }
-
-    /* ── 12. cats / misc surfaces ── */
-    body.landing-light .cat__icon {
-      background: rgba(12,12,10,0.04);
-      border-color: rgba(12,12,10,0.10);
-      color: var(--fg);
-    }
-    body.landing-light .cat__sub { background: rgba(12,12,10,0.035); }
-    body.landing-light .cat__sub:hover { background: rgba(12,12,10,0.07); }
-    body.landing-light .cat__sub-arrow {
-      background: rgba(12,12,10,0.05);
-      border-color: rgba(12,12,10,0.12);
-      color: var(--fg-mid);
-    }
-
-
-    /* ── 14. typed caret keeps the brand gradient but loses the dark-mode
-       bloom, which sat as a grey smudge on white ── */
-    body.landing-light .ht-caret { box-shadow: 0 0 10px rgba(140, 82, 255, .28); }
-  </style>
 </head>
-  <!-- The three.js importmap lived here for the GhostCursor module, which has
-       been removed; nothing else on this page imports three. -->
-<!-- NOTE ON THE BODY CLASSES
-     `landing-dark` is no longer a theme here — it is the STRUCTURAL hook. Every
-     layout rule this page depends on (the centred section heads, the section-3
-     tile geometry, the pinned framework, the suppressed background glows) is
-     scoped to it, both in this file and in the shared styles.css. Removing it
-     would strip the layout, not just the colours.
-
-     `landing-light` carries the palette. It is declared last, at matching
-     specificity, so it overrides every colour the hook sets while leaving the
-     geometry alone. To restyle, edit the LIGHT THEME block at the end of the
-     head — do not delete `landing-dark`. -->
-<body class="landing-dark landing-light">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+<body class="landing-dark">
   <script>
     /* set before landing.js / the rotator run: the headline types itself in,
        so anything that animates inside it has to wait for the typing to end */
@@ -1624,7 +1345,7 @@
        ──────────────────────────────────────────────────── -->
   <header class="gnav">
     <div class="container gnav__inner">
-      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+      <a class="brand" href="index-v3-dark-mode.html" aria-label="Nucleux">
         <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
 <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
@@ -2440,12 +2161,6 @@
           var mid = tiles[i].offsetLeft - grid.offsetLeft + tiles[i].offsetWidth * 0.5;
           barEls[i].classList.toggle('is-on', mid > left && mid < right);
         }
-        /* The right-edge fade signals "there is more this way", so retire it
-           once the rail is scrolled out. 2px of slack because scrollLeft is
-           fractional on trackpads and at non-integer zoom, and an exact
-           comparison never quite lands. */
-        var atEnd = grid.scrollLeft >= grid.scrollWidth - grid.clientWidth - 2;
-        wrap.classList.toggle('is-rail-end', atEnd);
       }
       grid.addEventListener('scroll', sync, { passive: true });
       addEventListener('resize', sync);
@@ -2589,6 +2304,295 @@
     else begin();
   })();
   </script>
+
+
+
+
+  <!-- ─── GHOST CURSOR — React Bits <GhostCursor /> ported to vanilla ES modules ─── -->
+  <script type="module">
+  /* The component is React + three + postprocessing. React is not available on
+     this static page, so the React shell (refs, effects, prop diffing) is
+     dropped and the part that matters — the fbm smoke shader, the trail ring
+     buffer, the inertia/fade model and the bloom + film-grain composer — is
+     carried over as-is. Props are fixed to the values from the usage example. */
+  const OPTS = {
+    color: '#7c00ff',
+    brightness: 0.9,
+    edgeIntensity: 0,
+    trailLength: 10,
+    inertia: 0.5,
+    grainIntensity: 0.05,
+    bloomStrength: 0.1,
+    bloomRadius: 0.6,
+    bloomThreshold: 0.025,
+    fadeDelayMs: 1000,
+    fadeDurationMs: 300,
+    mixBlendMode: 'screen',
+    maxDevicePixelRatio: 0.5,
+    targetPixels: 1.3e6
+  };
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) throw new Error('reduced motion');
+  if (matchMedia('(pointer: coarse)').matches) throw new Error('touch');
+
+  const parent = document.querySelector('.hero');
+  if (!parent) throw new Error('no hero');
+
+  let THREE, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass;
+  try {
+    THREE            = await import('three');
+    ({ EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js'));
+    ({ RenderPass }     = await import('three/addons/postprocessing/RenderPass.js'));
+    ({ ShaderPass }     = await import('three/addons/postprocessing/ShaderPass.js'));
+    ({ UnrealBloomPass }= await import('three/addons/postprocessing/UnrealBloomPass.js'));
+  } catch (e) {
+    console.warn('[ghost-cursor] three.js unavailable — effect skipped', e);
+    throw e;
+  }
+
+  const host = document.createElement('div');
+  host.className = 'ghost-cursor';
+  host.setAttribute('aria-hidden', 'true');
+  parent.insertBefore(host, parent.firstChild);
+
+  const maxTrail = Math.max(1, Math.floor(OPTS.trailLength));
+
+  const baseVertexShader = `
+    varying vec2 vUv;
+    void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
+  `;
+
+  const fragmentShader = `
+    uniform float iTime;
+    uniform vec3  iResolution;
+    uniform vec2  iMouse;
+    uniform vec2  iPrevMouse[MAX_TRAIL_LENGTH];
+    uniform float iOpacity;
+    uniform float iScale;
+    uniform vec3  iBaseColor;
+    uniform float iBrightness;
+    uniform float iEdgeIntensity;
+    varying vec2  vUv;
+    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7))) * 43758.5453123); }
+    float noise(vec2 p){
+      vec2 i = floor(p), f = fract(p);
+      f *= f * (3. - 2. * f);
+      return mix(mix(hash(i + vec2(0.,0.)), hash(i + vec2(1.,0.)), f.x),
+                 mix(hash(i + vec2(0.,1.)), hash(i + vec2(1.,1.)), f.x), f.y);
+    }
+    float fbm(vec2 p){
+      float v = 0.0; float a = 0.5;
+      mat2 m = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+      for(int i=0;i<5;i++){ v += a * noise(p); p = m * p * 2.0; a *= 0.5; }
+      return v;
+    }
+    vec3 tint1(vec3 base){ return mix(base, vec3(1.0), 0.15); }
+    vec3 tint2(vec3 base){ return mix(base, vec3(0.8, 0.9, 1.0), 0.25); }
+    vec4 blob(vec2 p, vec2 mousePos, float intensity, float activity) {
+      vec2 q = vec2(fbm(p * iScale + iTime * 0.1), fbm(p * iScale + vec2(5.2,1.3) + iTime * 0.1));
+      vec2 r = vec2(fbm(p * iScale + q * 1.5 + iTime * 0.15), fbm(p * iScale + q * 1.5 + vec2(8.3,2.8) + iTime * 0.15));
+      float smoke = fbm(p * iScale + r * 0.8);
+      float radius = 0.5 + 0.3 * (1.0 / iScale);
+      float distFactor = 1.0 - smoothstep(0.0, radius * activity, length(p - mousePos));
+      float alpha = pow(smoke, 2.5) * distFactor;
+      vec3 c1 = tint1(iBaseColor);
+      vec3 c2 = tint2(iBaseColor);
+      vec3 color = mix(c1, c2, sin(iTime * 0.5) * 0.5 + 0.5);
+      return vec4(color * alpha * intensity, alpha * intensity);
+    }
+    void main() {
+      vec2 uv = (gl_FragCoord.xy / iResolution.xy * 2.0 - 1.0) * vec2(iResolution.x / iResolution.y, 1.0);
+      vec2 mouse = (iMouse * 2.0 - 1.0) * vec2(iResolution.x / iResolution.y, 1.0);
+      vec3 colorAcc = vec3(0.0);
+      float alphaAcc = 0.0;
+      vec4 b = blob(uv, mouse, 1.0, iOpacity);
+      colorAcc += b.rgb; alphaAcc += b.a;
+      for (int i = 0; i < MAX_TRAIL_LENGTH; i++) {
+        vec2 pm = (iPrevMouse[i] * 2.0 - 1.0) * vec2(iResolution.x / iResolution.y, 1.0);
+        float t = 1.0 - float(i) / float(MAX_TRAIL_LENGTH);
+        t = pow(t, 2.0);
+        if (t > 0.01) {
+          vec4 bt = blob(uv, pm, t * 0.8, iOpacity);
+          colorAcc += bt.rgb; alphaAcc += bt.a;
+        }
+      }
+      colorAcc *= iBrightness;
+      vec2 uv01 = gl_FragCoord.xy / iResolution.xy;
+      float edgeDist = min(min(uv01.x, 1.0 - uv01.x), min(uv01.y, 1.0 - uv01.y));
+      float distFromEdge = clamp(edgeDist * 2.0, 0.0, 1.0);
+      float k = clamp(iEdgeIntensity, 0.0, 1.0);
+      float edgeMask = mix(1.0 - k, 1.0, distFromEdge);
+      float outAlpha = clamp(alphaAcc * iOpacity * edgeMask, 0.0, 1.0);
+      gl_FragColor = vec4(colorAcc, outAlpha);
+    }
+  `;
+
+  const FilmGrainShader = {
+    uniforms: { tDiffuse: { value: null }, iTime: { value: 0 }, intensity: { value: OPTS.grainIntensity } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform sampler2D tDiffuse; uniform float iTime; uniform float intensity; varying vec2 vUv;
+      float hash1(float n){ return fract(sin(n)*43758.5453); }
+      void main(){
+        vec4 color = texture2D(tDiffuse, vUv);
+        float n = hash1(vUv.x*1000.0 + vUv.y*2000.0 + iTime) * 2.0 - 1.0;
+        color.rgb += n * intensity * color.rgb;
+        gl_FragColor = color;
+      }`
+  };
+
+  const UnpremultiplyShader = {
+    uniforms: { tDiffuse: { value: null } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform sampler2D tDiffuse; varying vec2 vUv;
+      void main(){
+        vec4 c = texture2D(tDiffuse, vUv);
+        float a = max(c.a, 1e-5);
+        gl_FragColor = vec4(clamp(c.rgb / a, 0.0, 1.0), c.a);
+      }`
+  };
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      antialias: true, alpha: true, depth: false, stencil: false,
+      powerPreference: 'high-performance', premultipliedAlpha: false, preserveDrawingBuffer: false
+    });
+  } catch (e) {
+    console.warn('[ghost-cursor] no WebGL context — effect skipped', e);
+    host.remove();
+    throw e;
+  }
+  renderer.setClearColor(0x000000, 0);
+  renderer.domElement.style.pointerEvents = 'none';
+  renderer.domElement.style.mixBlendMode = OPTS.mixBlendMode;
+  host.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const geom = new THREE.PlaneGeometry(2, 2);
+
+  const trail = Array.from({ length: maxTrail }, () => new THREE.Vector2(0.5, 0.5));
+  let head = 0;
+
+  const baseColor = new THREE.Color(OPTS.color);
+  const material = new THREE.ShaderMaterial({
+    defines: { MAX_TRAIL_LENGTH: maxTrail },
+    uniforms: {
+      iTime: { value: 0 },
+      iResolution: { value: new THREE.Vector3(1, 1, 1) },
+      iMouse: { value: new THREE.Vector2(0.5, 0.5) },
+      iPrevMouse: { value: trail.map(v => v.clone()) },
+      iOpacity: { value: 1.0 },
+      iScale: { value: 1.0 },
+      iBaseColor: { value: new THREE.Vector3(baseColor.r, baseColor.g, baseColor.b) },
+      iBrightness: { value: OPTS.brightness },
+      iEdgeIntensity: { value: OPTS.edgeIntensity }
+    },
+    vertexShader: baseVertexShader,
+    fragmentShader,
+    transparent: true, depthTest: false, depthWrite: false
+  });
+  scene.add(new THREE.Mesh(geom, material));
+
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), OPTS.bloomStrength, OPTS.bloomRadius, OPTS.bloomThreshold);
+  composer.addPass(bloomPass);
+  const filmPass = new ShaderPass(FilmGrainShader);
+  composer.addPass(filmPass);
+  composer.addPass(new ShaderPass(UnpremultiplyShader));
+
+  let hasSize = false;
+  function calcScale() {
+    const r = host.getBoundingClientRect();
+    const current = Math.min(Math.max(1, r.width), Math.max(1, r.height));
+    return Math.max(0.5, Math.min(2.0, current / 600));
+  }
+  function resize() {
+    const rect = host.getBoundingClientRect();
+    const cssW = Math.floor(rect.width), cssH = Math.floor(rect.height);
+    if (cssW <= 0 || cssH <= 0) { hasSize = false; return; }
+    const dpr = Math.min(window.devicePixelRatio || 1, OPTS.maxDevicePixelRatio);
+    const need = cssW * cssH * dpr * dpr;
+    const scale = need <= OPTS.targetPixels ? 1 : Math.max(0.5, Math.min(1, Math.sqrt(OPTS.targetPixels / Math.max(1, need))));
+    const pr = dpr * scale;
+    renderer.setPixelRatio(pr);
+    renderer.setSize(cssW, cssH, false);
+    composer.setPixelRatio?.(pr);
+    composer.setSize(cssW, cssH);
+    const wpx = Math.max(1, Math.floor(cssW * pr)), hpx = Math.max(1, Math.floor(cssH * pr));
+    material.uniforms.iResolution.value.set(wpx, hpx, 1);
+    material.uniforms.iScale.value = calcScale();
+    bloomPass.setSize(wpx, hpx);
+    hasSize = true;
+  }
+  resize();
+  new ResizeObserver(resize).observe(parent);
+
+  const currentMouse = new THREE.Vector2(0.5, 0.5);
+  const velocity = new THREE.Vector2(0, 0);
+  let fadeOpacity = 1, lastMove = performance.now(), pointerActive = false;
+  let running = false, raf = null;
+  const start = performance.now();
+
+  function animate() {
+    if (!hasSize) { raf = requestAnimationFrame(animate); return; }
+    const now = performance.now();
+    const t = (now - start) / 1000;
+
+    if (pointerActive) {
+      velocity.set(currentMouse.x - material.uniforms.iMouse.value.x,
+                   currentMouse.y - material.uniforms.iMouse.value.y);
+      material.uniforms.iMouse.value.copy(currentMouse);
+      fadeOpacity = 1.0;
+    } else {
+      velocity.multiplyScalar(OPTS.inertia);
+      if (velocity.lengthSq() > 1e-6) material.uniforms.iMouse.value.add(velocity);
+      const dt = now - lastMove;
+      if (dt > OPTS.fadeDelayMs) {
+        fadeOpacity = Math.max(0, 1 - Math.min(1, (dt - OPTS.fadeDelayMs) / OPTS.fadeDurationMs));
+      }
+    }
+
+    const N = trail.length;
+    head = (head + 1) % N;
+    trail[head].copy(material.uniforms.iMouse.value);
+    const arr = material.uniforms.iPrevMouse.value;
+    for (let i = 0; i < N; i++) arr[i].copy(trail[(head - i + N) % N]);
+
+    material.uniforms.iOpacity.value = fadeOpacity;
+    material.uniforms.iTime.value = t;
+    filmPass.uniforms.iTime.value = t;
+    composer.render();
+
+    if (!pointerActive && fadeOpacity <= 0.001) { running = false; raf = null; return; }
+    raf = requestAnimationFrame(animate);
+  }
+  function ensureLoop() { if (!running) { running = true; raf = requestAnimationFrame(animate); } }
+
+  parent.addEventListener('pointermove', e => {
+    const rect = parent.getBoundingClientRect();
+    currentMouse.set(
+      THREE.MathUtils.clamp((e.clientX - rect.left) / Math.max(1, rect.width), 0, 1),
+      THREE.MathUtils.clamp(1 - (e.clientY - rect.top) / Math.max(1, rect.height), 0, 1)
+    );
+    pointerActive = true;
+    lastMove = performance.now();
+    ensureLoop();
+  }, { passive: true });
+  parent.addEventListener('pointerenter', () => { pointerActive = true; ensureLoop(); }, { passive: true });
+  parent.addEventListener('pointerleave', () => { pointerActive = false; lastMove = performance.now(); ensureLoop(); }, { passive: true });
+
+  /* stop entirely when the hero is off screen — this page already runs two
+     canvases and a blurred aurora */
+  new IntersectionObserver(es => { if (!es[0].isIntersecting) { running = false; if (raf) cancelAnimationFrame(raf); raf = null; } })
+    .observe(parent);
+
+  ensureLoop();
+  </script>
+
 
   <!-- ─── section 2: the cluster sits back a little ─── -->
   <script>

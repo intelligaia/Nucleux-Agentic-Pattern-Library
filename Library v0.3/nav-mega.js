@@ -1,0 +1,344 @@
+/* ============================================================
+   GLOBAL NAV — COMPONENTS MEGA FLYOUT (markup)
+   Paired with nav-mega.css. Runs on every page that renders
+   .gnav and rebuilds the Components flyout in place, so the
+   panel is authored once here instead of being pasted into
+   fifteen documents that then drift apart.
+
+   The pages arrived at this point with two different flyouts:
+
+     • most pages:   .gnav__item--has-flyout > .gnav__flyout
+                     with two .gnav__flyout-cat rows
+     • index-v2:     .gnav__item > .gnav__dropdown, already
+                     carrying an early version of this panel
+
+   Both are replaced by the same generated panel below, so the
+   markup no longer depends on which variant a page shipped with.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var ICON = {
+    basic:
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>' +
+      '<rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>' +
+      '</svg>',
+    /* The shield is drawn 17 wide x 19.6 tall rather than the 14 x 20 it
+       used to be. At the old proportions it read as squeezed next to the
+       18 x 18 grid icon — same box, visibly narrower glyph. */
+    agentic:
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M12 2.3 20.4 5.5V11.7C20.4 16.9 16.8 20.5 12 21.7 7.2 20.5 3.6 16.9 3.6 11.7V5.5Z"/>' +
+      '<path d="M8.7 12.1 11.1 14.5 15.5 9.7"/>' +
+      '</svg>'
+  };
+
+  /* The chevron lives NEXT TO the label, never inside it: nav-splitflap.js
+     does `link.textContent = ''` when it takes the label over for the flip
+     animation, which would delete any child markup. As a sibling inside
+     .gnav__item it survives, still rotates on hover (the CSS keys off
+     .gnav__item:hover) and still keeps the panel open when pointed at,
+     because it is inside the hovered item. */
+  var CHEVRON =
+    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M6 9.5 12 15.5 18 9.5"/>' +
+    '</svg>';
+
+  var FAMILIES = [
+    {
+      id: 'shadcn',
+      label: 'ShadCN',
+      rows: [
+        { icon: 'basic',   title: 'Basic Components',
+          desc: 'Buttons, inputs, cards and the other foundational building blocks.',
+          href: 'basic-components.html' },
+        { icon: 'agentic', title: 'Agentic Components',
+          desc: 'Task, reasoning and agent-state components built for AI-native flows.',
+          href: 'library.html' }
+      ]
+    },
+    {
+      id: 'material',
+      label: 'Material 3.0',
+      rows: [
+        { icon: 'basic',   title: 'Basic Components',   desc: 'Coming soon', href: null },
+        { icon: 'agentic', title: 'Agentic Components', desc: 'Coming soon', href: null }
+      ]
+    }
+  ];
+
+  var TITLE = 'Building blocks for agentic experiences';
+
+  function rowHTML(row) {
+    /* A row with no href is rendered as a span, not a disabled link: there
+       is nothing to navigate to, so it should not be focusable and should
+       not advertise itself as a destination. */
+    var tag  = row.href ? 'a' : 'span';
+    var cls  = 'gnav__dropdown-link' + (row.href ? '' : ' gnav__dropdown-link--soon');
+    var attr = row.href ? ' href="' + row.href + '"' : ' aria-disabled="true"';
+    return '<' + tag + ' class="' + cls + '" role="menuitem"' + attr + '>' +
+             '<span class="gnav__dropdown-icon" aria-hidden="true">' + ICON[row.icon] + '</span>' +
+             '<span>' +
+               '<span class="gnav__dropdown-title" style="display:block;">' + row.title + '</span>' +
+               '<span class="gnav__dropdown-desc" style="display:block;">' + row.desc + '</span>' +
+             '</span>' +
+           '</' + tag + '>';
+  }
+
+  function panelHTML() {
+    var cols = FAMILIES.map(function (fam) {
+      return '<div class="gnav__mega-col" role="group" aria-labelledby="nav-mega-' + fam.id + '">' +
+               '<span class="gnav__dropdown-grouplabel" id="nav-mega-' + fam.id + '">' + fam.label + '</span>' +
+               fam.rows.map(rowHTML).join('') +
+             '</div>';
+    }).join('');
+
+    return '<div class="gnav__dropdown" role="menu">' +
+             '<div class="gnav__dropdown-inner">' +
+               '<div class="gnav__mega">' +
+                 '<div class="gnav__mega-col">' +
+                   '<p class="gnav__mega-title">' + TITLE + '</p>' +
+                 '</div>' +
+                 cols +
+               '</div>' +
+             '</div>' +
+           '</div>';
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     THE ACTIONS CLUSTER
+     GitHub collapses to an icon-only button and a Sign up button takes
+     over the primary slot after it. Done here rather than in fifteen
+     documents for the same reason as the flyout: one definition, no drift.
+     ══════════════════════════════════════════════════════════ */
+  function actions() {
+    var wrap = document.querySelector('.gnav__inner .gnav__actions');
+    if (!wrap) return;
+
+    /* ── SEARCH: an icon that grows a field to its left ──
+       global.js injects a <button class="gnav__search"> that opens the ⌘K
+       modal. A button cannot legally contain an <input>, so the control is
+       rebuilt as a wrapper: the icon keeps the button role (and the
+       data-search-open hook, so clicking it still opens the full modal),
+       and an input sits to its left inside a shell that animates its own
+       width.
+
+       The shell is absolutely positioned and right-anchored. That is what
+       makes it expand LEFTWARD without touching layout: .gnav__inner is
+       space-between, so growing anything in the actions cluster would
+       otherwise drag the primary nav links sideways on every hover. */
+    var search = wrap.querySelector('.gnav__search');
+    if (search && !search.classList.contains('gnav__search--x')) {
+      var wasButton = search.tagName === 'BUTTON';
+      var host = search;
+      if (wasButton) {
+        /* swap the <button> for a <div> so the <input> inside is valid and
+           focusable; keep the class so existing layout rules still apply */
+        host = document.createElement('div');
+        host.className = search.className;
+        search.parentNode.replaceChild(host, search);
+      }
+      host.classList.add('gnav__search--x');
+      host.innerHTML =
+        '<div class="gnav__search-shell">' +
+          '<input class="gnav__search-input" type="text" autocomplete="off" spellcheck="false" ' +
+                 'placeholder="Search patterns" aria-label="Search the library" tabindex="-1" />' +
+          '<button class="gnav__search-btn" type="button" data-search-open aria-label="Search the library">' +
+            '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+            '<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>' +
+            '<path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+          '</button>' +
+        '</div>';
+
+      var field = host.querySelector('.gnav__search-input');
+
+      /* While collapsed the input is off the tab order and unreachable —
+         it is clipped, not hidden, so without this a Tab would land the
+         caret in an invisible field. */
+      function setReachable(on) { field.setAttribute('tabindex', on ? '0' : '-1'); }
+
+      host.addEventListener('mouseenter', function () { setReachable(true); });
+      host.addEventListener('mouseleave', function () {
+        /* Do NOT collapse while the user is typing or has typed. The
+           pointer drifting off a 186px field mid-word would otherwise
+           throw the query away — the whole point is that it stays usable. */
+        if (document.activeElement === field || field.value) return;
+        setReachable(false);
+        host.classList.remove('is-open');
+      });
+
+      field.addEventListener('focus', function () { host.classList.add('is-open'); });
+      field.addEventListener('blur', function () {
+        if (!field.value) host.classList.remove('is-open');
+      });
+      field.addEventListener('input', function () {
+        host.classList.toggle('is-open', true);
+      });
+
+      field.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { field.value = ''; field.blur(); host.classList.remove('is-open'); return; }
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        /* MUST stop here. global.js has a document-level keydown that runs
+           openActiveSearch() — "open the highlighted result" — whenever the
+           body carries `is-nx-search`. Opening the modal below sets that
+           class, and this very same Enter then bubbled up to that handler,
+           which navigated straight to the first pattern page. The user
+           pressed Enter once and landed two screens away. */
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+        var q = field.value.trim();
+        if (!q) return;
+
+        /* Hand the query to the existing ⌘K modal rather than
+           reimplementing the index: click its own trigger, then write the
+           query in and fire `input` so global.js's runSearch() picks it up
+           through its normal listener. Deferred a tick so the modal opens
+           after this keydown has finished unwinding. */
+        setTimeout(function () {
+          var trigger = host.querySelector('[data-search-open]');
+          if (trigger) trigger.click();
+          setTimeout(function () {
+            var modal = document.querySelector('.nx-search__input');
+            if (!modal) return;
+            modal.value = q;
+            modal.dispatchEvent(new Event('input', { bubbles: true }));
+            modal.focus();
+          }, 90);
+        }, 0);
+
+        field.value = '';
+        host.classList.remove('is-open');
+      });
+    }
+
+    var sdk = wrap.querySelector('.gnav__sdk');
+    if (sdk && !sdk.classList.contains('gnav__sdk--icon')) {
+      /* Strip the "GitHub" label but keep the mark. Removing only the text
+         nodes leaves the <svg> untouched — innerHTML surgery would mean
+         re-authoring the 500-character path. */
+      var kids = Array.prototype.slice.call(sdk.childNodes);
+      for (var i = 0; i < kids.length; i++) {
+        if (kids[i].nodeType === 3) sdk.removeChild(kids[i]);
+      }
+      sdk.classList.add('gnav__sdk--icon');
+      /* The word carried the meaning; without it the control needs one.
+         Derive it from the destination rather than hard-coding "GitHub":
+         nucleux-dark.html points this same slot at library.html with a
+         download glyph, and labelling that "GitHub" would be a lie to a
+         screen reader. */
+      var label = /github\.com/i.test(sdk.href || '') ? 'GitHub' :
+                  (sdk.getAttribute('aria-label') || 'Open');
+      sdk.setAttribute('aria-label', label);
+      sdk.setAttribute('title', label);
+      var svg = sdk.querySelector('svg');
+      if (svg) { svg.setAttribute('width', '20'); svg.setAttribute('height', '20'); }
+    }
+
+    if (!wrap.querySelector('.gnav__signup')) {
+      var signup = document.createElement('a');
+      signup.className = 'gnav__signup';
+      /* No sign-up page exists yet, so this points at contact.html —
+         change the href here and every page follows. */
+      signup.href = 'contact.html';
+      signup.textContent = 'Sign up';
+      /* Last in the cluster — after Contact Us — but BEFORE .gnav__toggle,
+         the mobile hamburger, which is display:none on desktop yet still
+         the final child. Appending blindly would put Sign up behind it and
+         break the small-screen ordering. */
+      var cta = wrap.querySelector('.gnav__cta');
+      var toggle = wrap.querySelector('.gnav__toggle');
+      if (cta) wrap.insertBefore(signup, cta.nextSibling);
+      else if (toggle) wrap.insertBefore(signup, toggle);
+      else wrap.appendChild(signup);
+      /* if the anchor above landed it after the toggle, pull it back */
+      if (toggle && signup.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_PRECEDING) {
+        wrap.insertBefore(signup, toggle);
+      }
+    }
+  }
+
+  function findItem(nav) {
+    /* Prefer an explicit flyout container, then fall back to matching the
+       label text — some pages mark the item up as a plain .gnav__item with
+       no distinguishing class. */
+    var item = nav.querySelector('.gnav__item--has-flyout') ||
+               nav.querySelector('.gnav__item');
+    if (item) return item;
+
+    var links = nav.querySelectorAll('.gnav__link');
+    for (var i = 0; i < links.length; i++) {
+      if ((links[i].textContent || '').trim().toLowerCase() === 'components') {
+        /* wrap the bare link so the panel has somewhere to live */
+        var wrap = document.createElement('div');
+        wrap.className = 'gnav__item';
+        links[i].parentNode.insertBefore(wrap, links[i]);
+        wrap.appendChild(links[i]);
+        return wrap;
+      }
+    }
+    return null;
+  }
+
+  function build() {
+    var nav = document.querySelector('.gnav .gnav__center') || document.querySelector('.gnav');
+    if (!nav) return;
+
+    var item = findItem(nav);
+    if (!item) return;
+
+    item.classList.add('gnav__item');
+
+    /* drop whichever flyout this page shipped with */
+    var old = item.querySelectorAll('.gnav__flyout, .gnav__dropdown');
+    for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+
+    var trigger = item.querySelector('.gnav__link');
+    if (trigger) {
+      /* The trigger opens a panel; it is not a destination. Pages shipped
+         it as <a href="#components">, which jumped the page and pushed a
+         history entry on click. Neutralise it without replacing the
+         element — nav-splitflap.js has already taken over its contents. */
+      if (trigger.tagName === 'A') {
+        trigger.removeAttribute('href');
+        trigger.setAttribute('role', 'button');
+        trigger.setAttribute('tabindex', '0');
+      }
+      trigger.setAttribute('aria-haspopup', 'true');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.style.cursor = 'default';
+
+      /* the affordance: Components opens onto more, and should say so */
+      if (!item.querySelector('.gnav__caret')) {
+        var caret = document.createElement('span');
+        caret.className = 'gnav__caret';
+        caret.setAttribute('aria-hidden', 'true');
+        caret.innerHTML = CHEVRON;
+        trigger.parentNode.insertBefore(caret, trigger.nextSibling);
+      }
+
+      /* keep the announced state in step with the visual one */
+      item.addEventListener('mouseenter', function () { trigger.setAttribute('aria-expanded', 'true'); });
+      item.addEventListener('mouseleave', function () { trigger.setAttribute('aria-expanded', 'false'); });
+      item.addEventListener('focusin',    function () { trigger.setAttribute('aria-expanded', 'true'); });
+      item.addEventListener('focusout',   function () { trigger.setAttribute('aria-expanded', 'false'); });
+    }
+
+    item.insertAdjacentHTML('beforeend', panelHTML());
+  }
+
+  function boot() { build(); actions(); }
+
+  /* nav-splitflap.js rewrites the nav labels, so run after it: at
+     DOMContentLoaded both are queued, and this file is included last. */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
