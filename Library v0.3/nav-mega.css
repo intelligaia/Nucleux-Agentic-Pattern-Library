@@ -319,7 +319,25 @@
    Three classes deep so it outranks the page-local
    `body.landing-light .gnav__search` on the landing page, which is two
    classes and parses after this file. */
+/* ── SEARCH FIELD — Intelligaia Agentic Design System, "Input / round" ──
+   Values read off the Figma library (file FRymkQ8Nd2VEX74l4tWCE9) rather
+   than eyeballed:
+     card/card              #ffffff   → surface
+     general/border         #e2e8f0   → 1px hairline
+     general/foreground     #020617   → typed text
+     general/muted fg       #64748b   → placeholder + idle glyph
+     semantic/rounded-full  9999px    → the pill
+     paragraph small        14px / 21px, Inter Regular, 0.07px tracking
+     shadow-sm              0 1px 2px -1px + 0 1px 3px, rgba(0,0,0,.10)
+
+   Held in custom properties so the two dark pages can re-point them at
+   their own palette instead of painting a white field on a black bar. */
 .gnav .gnav__search.gnav__search--x {
+  --ds-input-bg: #ffffff;
+  --ds-input-border: #e2e8f0;
+  --ds-input-fg: #020617;
+  --ds-input-placeholder: #64748b;
+  --ds-input-shadow: 0 1px 2px -1px rgba(0, 0, 0, .1), 0 1px 3px 0 rgba(0, 0, 0, .1);
   /* the FLOW footprint never changes: a 38px circle, same as GitHub.
      .gnav__inner is space-between, so a control that actually grew in the
      flex line would drag the primary nav links sideways on every hover. */
@@ -346,10 +364,13 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;   /* the icon is the only flex item now */
-  border-radius: 9999px;
-  overflow: hidden;    /* clips the field while collapsed */
-  background: transparent;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 16%, transparent);
+  border-radius: 9999px;   /* semantic/rounded-full */
+  overflow: hidden;        /* clips the field while collapsed */
+  /* The DS surface applies collapsed too: this control is an input at
+     every width, and reading as a field rather than as a fourth icon
+     button is the whole point of the distinction. */
+  background: var(--ds-input-bg);
+  box-shadow: inset 0 0 0 1px var(--ds-input-border), var(--ds-input-shadow);
   /* width is the only geometry animated, and it is the thing being asked
      for — a transform-based fake would squash the glyph and the caret */
   transition: width 420ms cubic-bezier(.22, 1, .36, 1),
@@ -359,16 +380,18 @@
 .gnav .gnav__search--x:hover .gnav__search-shell,
 .gnav .gnav__search--x:focus-within .gnav__search-shell,
 .gnav .gnav__search--x.is-open .gnav__search-shell {
-  width: 200px;        /* about the pill's original width */
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 22%, transparent);
+  width: 200px;
+  background: var(--ds-input-bg);
+  box-shadow: inset 0 0 0 1px var(--ds-input-border), var(--ds-input-shadow);
 }
 
 /* the icon: pinned to the right edge so it never slides during the grow */
 .gnav .gnav__search--x .gnav__search-btn {
-  position: relative;   /* above the input's box */
+  /* absolute at the LEFT edge, matching the three icon buttons */
+  position: absolute;
+  left: 0;
+  top: 0;
   z-index: 1;
-  flex: 0 0 45px;
   width: 45px;
   height: 45px;
   display: inline-flex;
@@ -377,9 +400,12 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--fg);
+  color: var(--ds-input-placeholder);   /* muted at rest, like the placeholder */
   cursor: pointer;
+  transition: color .2s ease;
 }
+.gnav .gnav__search--x:hover .gnav__search-btn,
+.gnav .gnav__search--x:focus-within .gnav__search-btn { color: var(--ds-input-fg); }
 
 /* Absolutely positioned, NOT a flex item. As a flex item its 16px
    left padding could not shrink below itself, so at the collapsed 38px it
@@ -389,17 +415,20 @@
 .gnav .gnav__search--x .gnav__search-input {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 45px;
+  left: 45px;
+  right: 0;
   height: 45px;
-  padding: 0 4px 0 18px;
+  padding: 0 18px 0 2px;
   border: 0;
   outline: none;
   background: transparent;
-  color: var(--fg);
+  /* paragraph small/regular */
+  color: var(--ds-input-fg);
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  letter-spacing: 0.07px;
   /* fades a beat behind the width so letters do not appear mid-slide */
   opacity: 0;
   transition: opacity 180ms ease 120ms;
@@ -407,7 +436,7 @@
 .gnav .gnav__search--x:hover .gnav__search-input,
 .gnav .gnav__search--x:focus-within .gnav__search-input,
 .gnav .gnav__search--x.is-open .gnav__search-input { opacity: 1; }
-.gnav .gnav__search--x .gnav__search-input::placeholder { color: var(--fg-muted); }
+.gnav .gnav__search--x .gnav__search-input::placeholder { color: var(--ds-input-placeholder); }
 /* on the way out the text goes first, then the shell closes over it */
 .gnav .gnav__search--x:not(:hover):not(:focus-within):not(.is-open) .gnav__search-input {
   transition: opacity 120ms ease;
@@ -422,40 +451,141 @@
   .gnav .gnav__search--x .gnav__search-input { transition: none; }
 }
 
-/* GitHub loses its label, so it also loses the solid ink pill: an
-   icon-only control that heavy would out-shout the button next to it.
-   A quiet circle keeps it available without competing. */
-/* Scoped through .gnav (three classes) so it outranks the page-local
-   `body.landing-light .gnav__sdk { background: var(--ink-950) }` on the
-   landing page, which is two classes and parses after this file — it was
-   repainting the icon button as a solid black circle. */
-.gnav .gnav__sdk.gnav__sdk--icon {
-  /* 45px, matching .gnav__cta's rendered height (11px padding + 13.5px
-     line + 1px border), so the icon reads as a peer of the pills rather
-     than a smaller secondary control */
+/* ══════════════════════════════════════════════════════════
+   COLLAPSING ICON CONTROLS — GitHub and Contact Us
+
+   SPECIFICITY: every rule below is scoped through .gnav__actions, giving
+   four classes. styles.css has `body.landing-dark .gnav__sdk:hover` and
+   `body.landing-dark .gnav__cta:hover` — three classes PLUS an element —
+   so a three-class selector here LOST the tie, and index-v2.html (which
+   carries landing-dark as its structural hook) washed GitHub translucent
+   and inked Contact Us black on hover despite these rules.
+   One implementation for both, so their geometry and timing cannot drift.
+   Each is a circle the size of the pills; on hover it grows LEFTWARD and
+   reveals its label, with the glyph anchored at the right.
+
+   Per-control width comes from --x-open, set on the element below.
+
+   These grow in the flex line rather than absolutely (which is what
+   search does). Search is leftmost so it can overlay empty nav space;
+   these two sit between other controls, and an absolute shell growing
+   leftward would paint straight over its neighbour. In flow, with the
+   cluster right-aligned inside a reserved width, the icons to the left
+   slide aside instead of being covered.
+   ══════════════════════════════════════════════════════════ */
+.gnav .gnav__actions .gnav__iconx {
+  position: relative;
   width: 45px;
   height: 45px;
   padding: 0;
   gap: 0;
   border-radius: 9999px;
+  overflow: hidden;              /* clips the label while collapsed */
   background: transparent;
   color: var(--fg);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 16%, transparent);
+  border: 1px solid color-mix(in oklab, var(--fg) 16%, transparent);
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  text-decoration: none;
+  transition: width 420ms cubic-bezier(.22, 1, .36, 1),
+              background 260ms ease,
+              border-color 260ms ease;
+}
+.gnav .gnav__actions .gnav__iconx:hover,
+.gnav .gnav__actions .gnav__iconx:focus-visible {
+  width: var(--x-open, 150px);
+  /* A light pill with a soft shadow — deliberately NOT the primary ink
+     treatment. styles.css fills .gnav__cta with --ink-950 on hover and
+     used to make .gnav__sdk a solid black pill; both are cancelled here
+     so these read as peers of the search field, not as calls to action.
+     Sign up is the only dark control in the cluster. */
+  background: var(--surface);
+  color: var(--fg);
+  border-color: color-mix(in oklab, var(--fg) 14%, transparent);
+  box-shadow: 0 1px 2px rgba(12, 12, 10, .05),
+              0 6px 16px -8px rgba(12, 12, 10, .16);
+  /* styles.css also lifts .gnav__cta on hover */
+  transform: none;
+}
+.gnav .gnav__actions .gnav__iconx .gnav__iconx-shell {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* THE GLYPH.
+   Collapsed it is centred in the 45px circle, which puts it 13px from the
+   right edge. Expanded, the control wants the same padding on both sides
+   as Sign up, so the glyph glides out to 20px. Transitioning `right` on
+   the same curve as the width makes that one continuous motion rather
+   than a jump — 7px, in step with the pill opening. */
+.gnav .gnav__actions .gnav__iconx .gnav__iconx-ico {
+  position: absolute;
+  /* (43 - 22) / 2 — FORTY-THREE, not 45: the control carries a 1px
+     border on each side, so its content box is 2px narrower than its
+     border box and centring off 45 left the glyph off-centre. Keep this
+     in step with the svg size written in nav-mega.js. */
+  left: 10.5px;
+  top: 0;
+  height: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.18s cubic-bezier(.34, 1.56, .64, 1);
+  z-index: 1;
+  transition: right 420ms cubic-bezier(.22, 1, .36, 1);
 }
-.gnav .gnav__sdk.gnav__sdk--icon:hover {
-  background: color-mix(in oklab, var(--fg) 7%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 30%, transparent);
-  transform: translateY(-1px);
+.gnav .gnav__actions .gnav__iconx:hover .gnav__iconx-ico,
+.gnav .gnav__actions .gnav__iconx:focus-visible .gnav__iconx-ico { left: 20px; }
+.gnav .gnav__actions .gnav__iconx .gnav__iconx-ico > svg { display: block; }
+
+/* THE LABEL.
+   Out of the flex line: as a flex item its left padding could not shrink
+   below itself and would shove the glyph past the collapsed circle's
+   edge. `left: 50px` = 20px padding + 22px glyph + 8px gap, so the text
+   starts 8px after the glyph; `right: 20px` closes the pill with the same
+   padding the glyph has on the other side. */
+.gnav .gnav__actions .gnav__iconx .gnav__iconx-label {
+  position: absolute;
+  top: 0;
+  left: 50px;
+  right: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--fg);
+  opacity: 0;
+  /* fades a beat behind the width, so letters do not appear mid-slide */
+  transition: opacity 180ms ease 120ms;
 }
-.gnav .gnav__sdk.gnav__sdk--icon > svg { display: block; }
+.gnav .gnav__actions .gnav__iconx:hover .gnav__iconx-label,
+.gnav .gnav__actions .gnav__iconx:focus-visible .gnav__iconx-label { opacity: 1; }
+/* on the way back the text goes first, then the shell closes over nothing */
+.gnav .gnav__actions .gnav__iconx:not(:hover):not(:focus-visible) .gnav__iconx-label {
+  transition: opacity 120ms ease;
+}
+
+/* Fallbacks only. nav-mega.js measures each label and writes the real
+   --x-open inline, so a longer label (nucleux-dark.html says "Download
+   SDK") opens wide enough instead of being clipped. */
+.gnav .gnav__actions .gnav__sdk.gnav__iconx { --x-open: 118px; }
+.gnav .gnav__actions .gnav__x.gnav__iconx   { --x-open: 146px; }
+.gnav .gnav__actions .gnav__cta.gnav__iconx { --x-open: 148px; }
+
+/* The X mark is a filled glyph, so it needs no stroke and must not
+   inherit the hairline treatment the line icons use. */
+.gnav .gnav__actions .gnav__x .gnav__iconx-ico > svg { fill: currentColor; stroke: none; }
 
 /* Sign up inherits the primary treatment GitHub used to hold, and matches
-   .gnav__cta's geometry exactly so the two pills read as a pair. */
+   .gnav__cta's original geometry so the pill still reads as the anchor. */
 .gnav__signup {
   display: inline-flex;
   align-items: center;
@@ -483,8 +613,7 @@
    `:not(.landing-light)` is load-bearing. index-v2.html carries
    `landing-dark` as its STRUCTURAL hook while rendering light, so a bare
    `body.landing-dark` selector caught it and painted #0a0912 type onto a
-   near-black pill — invisible. Every dark-only rule in this file has to
-   exclude the light twin explicitly. */
+   near-black pill — invisible. */
 body.landing-dark:not(.landing-light) .gnav__signup {
   background: var(--fg);
   border-color: var(--fg);
@@ -495,8 +624,26 @@ body.landing-dark:not(.landing-light) .gnav__signup:hover {
   border-color: #ece9ff;
 }
 
-/* four controls now instead of three — keep them from crowding */
-.gnav__inner .gnav__actions { gap: 10px; }
+/* ── the cluster reserves the width its widest state needs ──
+   Collapsed the five controls come to ~317px; the widest single in-flow
+   expansion is Contact at ~+99px. Reserving 470px and right-aligning
+   means an expanding control eats into transparent space that was already
+   there, so .gnav__inner's space-between never redistributes and the
+   primary nav links do not twitch when a control opens. */
+.gnav__inner .gnav__actions {
+  gap: 10px;
+  justify-content: flex-end;
+  min-width: 470px;
+}
+@media (max-width: 1180px) {
+  /* not enough room to hold the reserve open — let it size to content */
+  .gnav__inner .gnav__actions { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gnav .gnav__actions .gnav__iconx,
+  .gnav .gnav__actions .gnav__iconx .gnav__iconx-ico,
+  .gnav .gnav__actions .gnav__iconx .gnav__iconx-label { transition: none; }
+}
 
 /* ── the chevron ──
    A sibling of the label rather than a child of it, because
@@ -551,4 +698,19 @@ body.landing-dark:not(.landing-light) .gnav__signup:hover {
   .gnav__item:hover .gnav__dropdown-inner,
   .gnav__item:focus-within .gnav__dropdown-inner,
   .gnav__dropdown:hover .gnav__dropdown-inner { transform: none; transition: none; }
+}
+
+/* The two dark pages re-point the DS input tokens at their own palette —
+   a #ffffff field with an #e2e8f0 hairline would be a hole in a black
+   bar. Same geometry, same type scale, inverted surface. */
+body.landing-dark:not(.landing-light) .gnav .gnav__search.gnav__search--x {
+  --ds-input-bg: var(--surface);
+  --ds-input-border: rgba(255, 255, 255, .14);
+  --ds-input-fg: var(--fg);
+  --ds-input-placeholder: var(--fg-mid);
+  /* `none` would be invalid as a list item in
+     `box-shadow: inset …, var(--ds-input-shadow)`, which throws the whole
+     declaration away and took the hairline with it. A transparent no-op
+     shadow keeps the list valid. */
+  --ds-input-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 }

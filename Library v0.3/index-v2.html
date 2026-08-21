@@ -385,9 +385,18 @@
       overflow: hidden;
       vertical-align: bottom;
       line-height: inherit;
-      /* room for descenders (g, p) and the period without the clip biting */
-      padding-bottom: 0.14em;
-      margin-bottom: -0.14em;
+      /* Room for descenders. At 0.14em the mask cut the tail off the `g`
+         in "Scale Stage" and "Growth Stage" — Inter's descender drops
+         about 0.21em below the baseline and the 1.05 line-height leaves
+         no slack. 0.28em clears it.
+
+         NOTE: this figure and the ±135% travel below are a pair. The mask
+         is now 1.33em tall against a 1.05em phrase, so the old ±110%
+         (1.155em) no longer parked the incoming phrase fully outside the
+         mask — its top edge peeked in at the bottom. Raise one, raise the
+         other. */
+      padding-bottom: 0.28em;
+      margin-bottom: -0.28em;
     }
     .rot__sizer {
       visibility: hidden;
@@ -429,14 +438,14 @@
       -webkit-text-fill-color: transparent;
               color: transparent;
       animation: agentic-shift 12s ease-in-out infinite;
-      transform: translateY(110%);
+      transform: translateY(135%);
       opacity: 0;
       transition: transform .9s cubic-bezier(.22, 1, .36, 1),
                   opacity   .9s cubic-bezier(.22, 1, .36, 1);
       will-change: transform, opacity;
     }
     .rot__item.is-in  { transform: translateY(0);     opacity: 1; }
-    .rot__item.is-out { transform: translateY(-110%); opacity: 0; }
+    .rot__item.is-out { transform: translateY(-135%); opacity: 0; }
     .rot__item.no-anim { transition: none; }
 
     /* screen readers get one stable phrase instead of a ticker */
@@ -1356,28 +1365,15 @@
        So each is restated at the BASE value, from the same tokens
        styles.css uses — a solid ink GitHub pill, an ink-bordered Contact Us
        and a white search field. */
-    body.landing-light .gnav__sdk {
-      background: var(--ink-950);
-      color: var(--ink-0);
-      box-shadow: none;
-    }
-    body.landing-light .gnav__sdk:hover { background: var(--ink-700); }
-    body.landing-light .gnav__cta {
-      background: transparent;
-      color: var(--fg);
-      border: 1px solid var(--ink-950);
-    }
-    body.landing-light .gnav__cta:hover { background: var(--ink-950); color: var(--ink-0); }
-    body.landing-light .gnav__search {
-      background: var(--surface);
-      border-color: var(--border-strong);
-      color: var(--fg-mid);
-    }
-    body.landing-light .gnav__search:hover {
-      border-color: var(--fg);
-      color: var(--fg);
-      background: var(--ink-25);
-    }
+    /* NOT overridden here any more: .gnav__sdk, .gnav__cta, .gnav__search.
+       All three are now collapsing icon controls owned by nav-mega.css.
+       The rules that used to sit here dated from when GitHub was a solid
+       ink pill and Contact Us inked itself on hover — and because a
+       page-local <style> parses after the linked file, they were winning
+       the tie against nav-mega's own hover rules at equal specificity and
+       flipping both controls black. Deleting them is safe: the shared
+       rules are scoped `.gnav .gnav__iconx` (three classes), which beats
+       styles.css's `body.landing-dark .gnav__sdk` on its own. */
     /* the inlined mark keeps its authored UX gradient; only the wordmark
        letters go back to ink for the light nav */
     body.landing-light .brand__mark,
@@ -1457,19 +1453,34 @@
        taken to a mid lightness and a higher alpha. --sp-fill is a custom
        property, so re-declaring it here re-points every rule that reads
        it — fill, ring, bloom and hover all follow automatically. */
-    /* ── the pointer-tracked wash ──
-       Back on, at 20% alpha, and HOVER-ONLY. The base .fw-stage rule
-       paints var(--sp-fill) unconditionally, but --x/--y are only written
-       for the card under the cursor — so on every idle card the gradient
-       resolved at 0,0 and parked a faint blob in the top-left corner.
-       Declaring the fill here but suppressing it at rest keeps idle cards
-       clean and lets the wash arrive with the pointer. */
+    /* ── the pointer-tracked wash: the Nucleux brand gradient ──
+       The stops are the wordmark's own gradient, lifted off the inlined
+       logo SVG in this file — #8B57C7 violet through #21A4D7 cyan — so the
+       wash is the same gradient as the logo rather than a lookalike.
+
+       Core alpha .19: below the .28 the brand version first carried, and
+       a shade under the single-pink .20 it replaces. Still six stops to a
+       full transparent at 100%, which is what keeps the rim from showing
+       an edge at this small a radius.
+
+       HOVER-ONLY. The base .fw-stage rule paints var(--sp-fill)
+       unconditionally, but --x/--y are only written for the card under the
+       cursor, so on every idle card the gradient resolved at 0,0 and
+       parked a faint blob in the top-left corner. */
+    body.landing-light .framework__grid,
+    body.landing-light #labs .practices__grid { --sp-size: 110; }
+
     body.landing-light .fw-stage,
     body.landing-light #labs .practice {
       --sp-fill: radial-gradient(
         var(--spotlight-size) var(--spotlight-size) at
         calc(var(--x, 0) * 1px) calc(var(--y, 0) * 1px),
-        hsl(var(--hue) 90% 66% / .20), transparent 66%);
+        rgba(139, 87, 199, .19) 0%,
+        rgba(120, 100, 205, .15) 26%,
+        rgba(101, 122, 209, .10) 46%,
+        rgba(33, 164, 215, .06) 66%,
+        rgba(33, 164, 215, .025) 84%,
+        transparent 100%);
     }
     body.landing-light .framework .fw-stage,
     body.landing-light #labs .practice { background-image: none; }
@@ -1493,7 +1504,10 @@
       /* the pink stroke, at .32 rather than the .55 it used to carry */
       border-color: hsl(var(--hue) 80% 66% / .32);
       box-shadow: 0 1px 0 rgba(255,255,255,.9) inset,
-                  0 18px 44px -20px hsl(var(--hue) 68% 48% / .18),
+                  /* brand violet, matching the wash's inner stop — the
+                     stroke stays on --hue, which is the pink the user
+                     asked for separately */
+                  0 18px 44px -20px rgba(110, 78, 190, .16),
                   var(--shadow-3);
       transform: translateY(-6px) scale(1.012);
     }
@@ -1503,44 +1517,57 @@
     body.landing-light .ag-rail-bar { background: rgba(12,12,10,.16); }
     body.landing-light .ag-pin__dot.is-on,
     body.landing-light .ag-rail-bar.is-on { background: #7c3aed; }
-    /* ── LABS RAIL: soft right edge ──
-       The rail scrolls horizontally inside the container, so the tile at
-       the right was sliced off on the container's edge — a hard vertical
-       cut through the card. This fades it into the page instead.
+    /* ── LABS RAIL: faders on both edges ──
+       The rail scrolls horizontally inside the container, so a tile at
+       either end gets sliced off on the container's edge — a hard vertical
+       cut through the card. These fade it into the page instead.
 
-       Two effects stacked, which is what makes it read as depth rather
-       than as a white bar: a gradient to the page background, plus a
-       backdrop blur that is itself masked so the blur ramps up across the
-       same distance. The blur is what stops the fade looking like a flat
-       scrim laid on top.
+       A pure gradient, no backdrop-filter. The blur that used to sit here
+       smeared the card's own text as it receded, which read as
+       out-of-focus content rather than as content passing under a fader;
+       ramping the alpha alone keeps the type crisp right up to the point
+       it disappears.
 
-       `right` matches the rail's own -26px negative margin so the fade
-       ends exactly where the rail's overflow does, and it is
-       pointer-events:none so it never eats a hover or a click on the tile
+       `left`/`right` match the rail's own -26px negative margins so each
+       fade ends exactly where the rail's overflow does, and both are
+       pointer-events:none so they never eat a hover or a click on the tile
        underneath. */
+    body.landing-light #labs .ag-rail-wrap::before,
     body.landing-light #labs .ag-rail-wrap::after {
       content: "";
       position: absolute;
       top: 0;
       bottom: 0;
-      right: -26px;
       width: clamp(72px, 9vw, 150px);
       z-index: 3;
       pointer-events: none;
+      transition: opacity .32s var(--ag-ease, ease);
+    }
+    /* right edge: more to come */
+    body.landing-light #labs .ag-rail-wrap::after {
+      right: -26px;
       background: linear-gradient(to right,
         rgba(251, 251, 250, 0) 0%,
         rgba(251, 251, 250, 0.55) 42%,
         rgba(251, 251, 250, 0.92) 78%,
         rgb(251, 251, 250) 100%);
-      -webkit-backdrop-filter: blur(4px);
-              backdrop-filter: blur(4px);
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 55%);
-              mask-image: linear-gradient(to right, transparent 0%, #000 55%);
       opacity: 1;
-      transition: opacity .32s var(--ag-ease, ease);
     }
-    /* nothing left to scroll to — the fade would just be a white smudge
-       over the last card's edge */
+    /* left edge: mirrored, for the cards that have scrolled off */
+    body.landing-light #labs .ag-rail-wrap::before {
+      left: -26px;
+      background: linear-gradient(to left,
+        rgba(251, 251, 250, 0) 0%,
+        rgba(251, 251, 250, 0.55) 42%,
+        rgba(251, 251, 250, 0.92) 78%,
+        rgb(251, 251, 250) 100%);
+      opacity: 1;
+    }
+    /* Each fader retires at its own end of the track: at rest there is
+       nothing off-screen to the left, and once scrolled out there is
+       nothing left to the right — in both cases the gradient would just be
+       a white smudge over the end card's edge. */
+    body.landing-light #labs .ag-rail-wrap.is-rail-start::before { opacity: 0; }
     body.landing-light #labs .ag-rail-wrap.is-rail-end::after { opacity: 0; }
 
     body.landing-light .ag-rail-btn {
@@ -1698,7 +1725,7 @@
     <div class="container hero__content">
       <h1 class="hero__title" data-parallax-y="-0.08">
         One pattern library for the<br/>
-        <em>teams</em> shipping <span class="rot" aria-hidden="true"><span class="rot__sizer">Enterprise AI.</span><span class="rot__item is-in">Enterprise AI.</span><span class="rot__item">Scale Stage.</span><span class="rot__item">Growth Stage.</span><span class="rot__item">Early Stage.</span><span class="rot__item">Prelaunch.</span></span><span class="rot-sr">Enterprise AI.</span>
+        <em>teams</em> in <span class="rot" aria-hidden="true"><span class="rot__sizer">Enterprise AI.</span><span class="rot__item is-in">Enterprise AI.</span><span class="rot__item">Scale Stage.</span><span class="rot__item">Growth Stage.</span><span class="rot__item">Early Stage.</span><span class="rot__item">Prelaunch.</span></span><span class="rot-sr">Enterprise AI.</span>
       </h1>
 
       <p class="hero__sub" data-parallax-y="-0.04">
@@ -2440,11 +2467,13 @@
           var mid = tiles[i].offsetLeft - grid.offsetLeft + tiles[i].offsetWidth * 0.5;
           barEls[i].classList.toggle('is-on', mid > left && mid < right);
         }
-        /* The right-edge fade signals "there is more this way", so retire it
-           once the rail is scrolled out. 2px of slack because scrollLeft is
+        /* Each fade signals "there is more this way", so each retires at
+           its own end of the track. 2px of slack because scrollLeft is
            fractional on trackpads and at non-integer zoom, and an exact
            comparison never quite lands. */
+        var atStart = grid.scrollLeft <= 2;
         var atEnd = grid.scrollLeft >= grid.scrollWidth - grid.clientWidth - 2;
+        wrap.classList.toggle('is-rail-start', atStart);
         wrap.classList.toggle('is-rail-end', atEnd);
       }
       grid.addEventListener('scroll', sync, { passive: true });

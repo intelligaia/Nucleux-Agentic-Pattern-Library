@@ -115,6 +115,82 @@
      over the primary slot after it. Done here rather than in fifteen
      documents for the same reason as the flyout: one definition, no drift.
      ══════════════════════════════════════════════════════════ */
+  var PHONE_SVG =
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M6.6 3.5 8.9 3.9c.5.1.9.5 1 1l.5 2.4c.1.5-.1 1-.5 1.3L8.3 10a12 12 0 0 0 5.7 5.7l1.4-1.6c.3-.4.8-.6 1.3-.5l2.4.5c.5.1.9.5 1 1l.4 2.3c.1.7-.4 1.4-1.1 1.5-1 .2-2 .2-2.6.1C10.2 18.2 5.8 13.8 4.5 7.2c-.1-.6-.1-1.6.1-2.6.1-.7.8-1.2 1.5-1.1Z"/>' +
+    '</svg>';
+
+  /* The X wordmark. `fill: currentColor` rather than a stroke, so it
+     inherits the control's ink and reads solid black on the light nav —
+     the mark is a filled glyph, not a line drawing. */
+  var X_SVG =
+    '<svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+    '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68' +
+    'l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117' +
+    'l11.966 15.644Z"/></svg>';
+
+  /* One shell shape for every collapsing icon control (GitHub, Contact),
+     so their geometry and timing cannot drift apart. `glyph` may be an
+     existing <svg> node to adopt or a markup string. */
+  function iconxShell(text, glyph) {
+    var shell = document.createElement('span');
+    shell.className = 'gnav__iconx-shell';
+
+    var label = document.createElement('span');
+    label.className = 'gnav__iconx-label';
+    label.textContent = text;
+
+    var ico = document.createElement('span');
+    ico.className = 'gnav__iconx-ico';
+    ico.setAttribute('aria-hidden', 'true');
+    if (glyph && glyph.nodeType === 1) ico.appendChild(glyph);
+    else ico.innerHTML = glyph || '';
+
+    shell.appendChild(label);
+    shell.appendChild(ico);
+    return shell;
+  }
+
+  /* The open width has to be measured, not guessed: nucleux-dark.html's
+     GitHub slot is labelled "Download SDK", half again as wide as
+     "GitHub", and a hardcoded --x-open clipped it.
+
+     Measured with a detached probe, NOT label.scrollWidth. While the
+     control is collapsed the label's box is `right: 47px` inside a 45px
+     host, so its content width is zero and scrollWidth just reports
+     clientWidth — every control came back at the 110px floor. A probe
+     carrying the same computed font is independent of the collapsed
+     geometry.
+
+     open = 20px + 22px glyph + 8px gap + text + 20px, PLUS 2px for the
+     control's 1px border on each side. The label is inset from the
+     padding box (left:50/right:20), so without that 2px the box came out
+     two pixels short of the text and clipped the last glyph. */
+  function sizeIconx(el) {
+    var label = el.querySelector('.gnav__iconx-label');
+    if (!label) return;
+    var cs = getComputedStyle(label);
+    var probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap';
+    probe.style.fontFamily = cs.fontFamily;
+    probe.style.fontSize = cs.fontSize;
+    probe.style.fontWeight = cs.fontWeight;
+    probe.style.letterSpacing = cs.letterSpacing;
+    probe.textContent = label.textContent;
+    document.body.appendChild(probe);
+    var text = probe.getBoundingClientRect().width;
+    probe.parentNode.removeChild(probe);
+    el.style.setProperty('--x-open', Math.max(114, Math.ceil(text) + 72) + 'px');
+  }
+
+  /* webfonts can land after this runs and change the text metrics */
+  function remeasure() {
+    var all = document.querySelectorAll('.gnav .gnav__iconx');
+    for (var i = 0; i < all.length; i++) sizeIconx(all[i]);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+
   function actions() {
     var wrap = document.querySelector('.gnav__inner .gnav__actions');
     if (!wrap) return;
@@ -148,9 +224,9 @@
           '<input class="gnav__search-input" type="text" autocomplete="off" spellcheck="false" ' +
                  'placeholder="Search patterns" aria-label="Search the library" tabindex="-1" />' +
           '<button class="gnav__search-btn" type="button" data-search-open aria-label="Search the library">' +
-            '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-            '<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>' +
-            '<path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+            '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+            '<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.9"/>' +
+            '<path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>' +
           '</button>' +
         '</div>';
 
@@ -219,25 +295,65 @@
 
     var sdk = wrap.querySelector('.gnav__sdk');
     if (sdk && !sdk.classList.contains('gnav__sdk--icon')) {
-      /* Strip the "GitHub" label but keep the mark. Removing only the text
-         nodes leaves the <svg> untouched — innerHTML surgery would mean
-         re-authoring the 500-character path. */
-      var kids = Array.prototype.slice.call(sdk.childNodes);
-      for (var i = 0; i < kids.length; i++) {
-        if (kids[i].nodeType === 3) sdk.removeChild(kids[i]);
-      }
-      sdk.classList.add('gnav__sdk--icon');
       /* The word carried the meaning; without it the control needs one.
          Derive it from the destination rather than hard-coding "GitHub":
          nucleux-dark.html points this same slot at library.html with a
          download glyph, and labelling that "GitHub" would be a lie to a
          screen reader. */
-      var label = /github\.com/i.test(sdk.href || '') ? 'GitHub' :
-                  (sdk.getAttribute('aria-label') || 'Open');
-      sdk.setAttribute('aria-label', label);
-      sdk.setAttribute('title', label);
-      var svg = sdk.querySelector('svg');
-      if (svg) { svg.setAttribute('width', '20'); svg.setAttribute('height', '20'); }
+      var sdkLabel = /github\.com/i.test(sdk.href || '') ? 'GitHub' :
+                     ((sdk.textContent || '').trim() || sdk.getAttribute('aria-label') || 'Open');
+      /* Keep the existing <svg> — re-authoring GitHub's 500-character path
+         inline here would be silly — and move it into the shell. */
+      var sdkSvg = sdk.querySelector('svg');
+      if (sdkSvg) { sdkSvg.setAttribute('width', '22'); sdkSvg.setAttribute('height', '22'); }
+      sdk.textContent = '';
+      sdk.classList.add('gnav__sdk--icon', 'gnav__iconx');
+      sdk.setAttribute('aria-label', sdkLabel);
+      sdk.setAttribute('title', sdkLabel);
+      sdk.appendChild(iconxShell(sdkLabel, sdkSvg));
+      sizeIconx(sdk);
+    }
+
+    /* ── SHARE ON X ──
+       Same collapsing control as GitHub, inserted directly after it. The
+       href is a share intent carrying whichever page the user is on, built
+       at runtime rather than hardcoded so every page shares itself. */
+    if (sdk && !wrap.querySelector('.gnav__x')) {
+      var xa = document.createElement('a');
+      xa.className = 'gnav__sdk gnav__x gnav__iconx';
+      xa.href = 'https://x.com/intent/post?url=' + encodeURIComponent(location.href) +
+                '&text=' + encodeURIComponent(document.title || 'Nucleux');
+      xa.target = '_blank';
+      xa.rel = 'noopener';
+      xa.setAttribute('aria-label', 'Share on X');
+      xa.setAttribute('title', 'Share on X');
+      xa.appendChild(iconxShell('Share on X', X_SVG));
+      wrap.insertBefore(xa, sdk.nextSibling);
+      sizeIconx(xa);
+    }
+
+    /* ── CONTACT US: the same collapse-and-reveal as search ──
+       Rebuilt as an icon with the label to its left inside a shell that
+       animates its own width. Unlike search this stays a single <a>, so
+       the whole control — collapsed circle or expanded pill — is one
+       click target.
+
+       This one expands IN FLOW rather than absolutely, because it sits
+       between two other controls. Growing leftward from an absolute shell
+       would have painted straight over the GitHub icon. In flow, the flex
+       line is right-aligned inside a reserved-width cluster, so the icons
+       to its left slide out of the way instead of being covered. */
+    var cta = wrap.querySelector('.gnav__cta');
+    if (cta && !cta.classList.contains('gnav__cta--x')) {
+      var ctaHref = cta.getAttribute('href') || 'contact.html';
+      var ctaText = (cta.textContent || 'Contact Us').trim() || 'Contact Us';
+      cta.classList.add('gnav__cta--x');
+      cta.setAttribute('href', ctaHref);
+      cta.setAttribute('aria-label', ctaText);
+      cta.textContent = '';
+      cta.classList.add('gnav__iconx');
+      cta.appendChild(iconxShell(ctaText, PHONE_SVG));
+      sizeIconx(cta);
     }
 
     if (!wrap.querySelector('.gnav__signup')) {
