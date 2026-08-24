@@ -316,13 +316,40 @@
 
     /* ── SHARE ON X ──
        Same collapsing control as GitHub, inserted directly after it. The
-       href is a share intent carrying whichever page the user is on, built
-       at runtime rather than hardcoded so every page shares itself. */
+       href is a share intent that always points at the Library landing
+       page — the shared link must be a public address X can crawl for the
+       preview card, so it is never location.href (which on localhost or
+       file:// yields a bare post with no card). */
     if (sdk && !wrap.querySelector('.gnav__x')) {
       var xa = document.createElement('a');
       xa.className = 'gnav__sdk gnav__x gnav__iconx';
-      xa.href = 'https://x.com/intent/post?url=' + encodeURIComponent(location.href) +
-                '&text=' + encodeURIComponent(document.title || 'Nucleux');
+      /* A post on X is PLAIN TEXT — there is no markup, so a word cannot
+         carry a hyperlink the way it can in HTML. X linkifies exactly two
+         things: bare URLs and @handles. "@Intelligaia" is therefore the
+         one way to make a NAME clickable — X resolves it to
+         x.com/Intelligaia on post, and it also notifies the account,
+         which a plain URL would not.
+
+         The Nucleux address rides in the `url` parameter instead of the
+         text: X appends it at the end and builds the preview card from
+         it, so putting it in the text too would post the link twice.
+         That is why the text ends on the 👉 with no link after it — the
+         arrow points at the URL X is about to append.
+
+         Override per page with <meta name="x:share-text" content="…">. */
+      var xText  = document.querySelector('meta[name="x:share-text"]');
+      var xShare = document.querySelector('meta[name="x:share-url"]');
+
+      var shareText = (xText && xText.content) ||
+        'Building an agent inside your product? Check out Nucleux by ' +
+        '@Intelligaia \uD83D\uDC49';
+
+      /* the X button always points at the Library landing page, not
+         whichever page the visitor happens to be reading */
+      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/index-v2.html';
+
+      xa.href = 'https://x.com/intent/post?url=' + encodeURIComponent(xUrl) +
+                '&text=' + encodeURIComponent(shareText);
       xa.target = '_blank';
       xa.rel = 'noopener';
       xa.setAttribute('aria-label', 'Share on X');

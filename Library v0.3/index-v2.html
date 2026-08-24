@@ -6,6 +6,31 @@
   <title>Intelligaia — AI UX Pattern Library</title>
   <meta name="description" content="A pattern language for agentic products. By Intelligaia." />
 
+  <!-- ── SHARE CARD ──
+       X (and LinkedIn, Slack, iMessage…) build their link preview by
+       crawling these tags, not from anything the share button can pass in
+       the intent URL — there is no way to attach an image to a post from a
+       link. `summary_large_image` is what makes the card render as the wide
+       banner rather than a small thumbnail. The image URL must be absolute
+       and publicly reachable: the crawler fetches it from its own servers,
+       so a relative path or a localhost address renders no card at all. -->
+  <link rel="canonical" href="https://nucleux.in/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleux" />
+  <meta property="og:url" content="https://nucleux.in/" />
+  <meta property="og:title" content="Intelligaia — AI UX Pattern Library" />
+  <meta property="og:description" content="A pattern language for agentic products. By Intelligaia." />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png" />
+  <meta property="og:image:width" content="515" />
+  <meta property="og:image:height" content="272" />
+  <meta property="og:image:alt" content="Nucleux — UI components for AI agents" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Intelligaia — AI UX Pattern Library" />
+  <meta name="twitter:description" content="A pattern language for agentic products. By Intelligaia." />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png" />
+  <meta name="twitter:image:alt" content="Nucleux — UI components for AI agents" />
+
+
   <link rel="preconnect" href="https://rsms.me/" />
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -397,6 +422,10 @@
          other. */
       padding-bottom: 0.28em;
       margin-bottom: -0.28em;
+      /* The mask is held open at the WIDEST phrase and never resized, so
+         "teams in" beside it never shifts as phrases swap. Phrases sit
+         flush to its left edge, so the space after "in" is identical for
+         every phrase and all the slack falls at the far right. */
     }
     .rot__sizer {
       visibility: hidden;
@@ -419,12 +448,39 @@
 
     .rot__item {
       position: absolute;
+      /* flush to the mask's left edge — the gap after "teams in" must be
+         constant, so the slack from shorter phrases stays on the right */
       left: 0;
-      top: 0;
       white-space: nowrap;
+      /* THE DESCENDER FIX.
+         `background-clip: text` paints only within the element's box, and
+         .hero__title's line-height of 1.02 makes that box SHORTER than the
+         font's own em box: at 71.68px the line box is 73.1px while Inter
+         needs 84px (67 ascent + 17 descent). Measured ink runs to 77.6px
+         below the box top — 4.5px past the bottom — so the tails of g/p
+         and the rounded feet of a/u/n were painted off and the phrase
+         looked shaved along the baseline.
+
+         Padding alone is not enough. Chromium clips to the border box, so
+         padding fixes it there; WebKit clips `-webkit-background-clip:
+         text` to the CONTENT box and ignores padding entirely, which is
+         why it still looked cut. Growing the content box via line-height
+         is what works in both.
+
+         1.18 gives an 84.6px box against 83.3px of ink. That pushes the
+         baseline 5.7px down, so `top` pulls it back by the same amount —
+         the phrase stays locked to the baseline of "teams in" beside it.
+         The element is absolutely positioned, so none of this moves the
+         headline. Padding stays as belt and braces for the border-box
+         engines. */
       /* inherit every headline property — typography untouched */
       font: inherit;
       letter-spacing: inherit;
+      /* AFTER `font: inherit`, not before: that shorthand resets
+         line-height to the inherited 1.02 and silently undid this. */
+      line-height: 1.18;
+      top: -0.08em;
+      padding-bottom: 0.14em;
       /* animated gradient, moved here from .hero__title em */
       background: linear-gradient(120deg,
         #d97706 0%,
@@ -1382,8 +1438,15 @@
 
     /* ── 3. the ground ── */
     body.landing-light .scene { background-color: #fbfbfa; }
+    /* The final section (team photo + footer) lives inside .foot. It used
+       to carry a white → #f4f4f1 gradient, which made it the only block
+       on the page not sitting on the page ground — every other section
+       (.scene, .practices, #labs) is transparent and shows the body's
+       --bg through. Transparent here too, so it matches by inheriting the
+       same surface rather than by re-stating a colour that could drift
+       from --bg later. */
     body.landing-light .foot {
-      background: linear-gradient(180deg, #ffffff 0%, #f4f4f1 100%);
+      background: transparent;
       border-top-color: rgba(12,12,10,0.08);
     }
 
@@ -1576,6 +1639,18 @@
       color: #0c0c0a;
     }
 
+    /* The same guard for the other background-clip:text words. styles.css
+       pads these 0.14em for exactly this reason; that figure was a guess
+       and it is the one that proved too small on the rotator, so they get
+       the same 0.24em here. Negative margin keeps the layout identical. */
+    body.landing-light .hero__title em,
+    body.landing-light .practices__title em,
+    body.landing-light .makers__bigword em,
+    body.landing-light .cat__name em {
+      padding-bottom: 0.24em;
+      margin-bottom: -0.24em;
+    }
+
     /* ── 9. accents ── */
     body.landing-light .t-eyebrow { color: #6d28d9; }
     body.landing-light #practices .t-eyebrow,
@@ -1725,7 +1800,7 @@
     <div class="container hero__content">
       <h1 class="hero__title" data-parallax-y="-0.08">
         One pattern library for the<br/>
-        <em>teams</em> in <span class="rot" aria-hidden="true"><span class="rot__sizer">Enterprise AI.</span><span class="rot__item is-in">Enterprise AI.</span><span class="rot__item">Scale Stage.</span><span class="rot__item">Growth Stage.</span><span class="rot__item">Early Stage.</span><span class="rot__item">Prelaunch.</span></span><span class="rot-sr">Enterprise AI.</span>
+        <em>teams</em> in <span class="rot" aria-hidden="true"><span class="rot__sizer">Enterprise AI.</span><span class="rot__item is-in">Enterprise.</span><span class="rot__item">Scale Stage.</span><span class="rot__item">Growth Stage.</span><span class="rot__item">Early Stage.</span><span class="rot__item">Prelaunch.</span></span><span class="rot-sr">Enterprise.</span>
       </h1>
 
       <p class="hero__sub" data-parallax-y="-0.04">
@@ -2479,6 +2554,7 @@
       grid.addEventListener('scroll', sync, { passive: true });
       addEventListener('resize', sync);
       sync();
+
     })();
   })();
   </script>
