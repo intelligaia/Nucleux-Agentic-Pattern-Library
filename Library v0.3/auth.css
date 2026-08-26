@@ -1,0 +1,330 @@
+/* ══════════════════════════════════════════════════════════
+   AUTH — shared by signin.html and signup.html
+
+   One stylesheet for both pages. They are the same screen with
+   different fields, and keeping the styles together is what
+   stops them drifting apart the way two copies would.
+
+   Neither page loads nav-mega.js. These are auth screens: the
+   mega flyout, the search field and the action cluster are all
+   invitations to go somewhere else, and the one thing these
+   pages ask for is an email address. The header keeps the
+   wordmark and three escape hatches.
+
+   The wordmark sits in the same place as on every other page —
+   same `container--wide` measure, same `--gutter`, same
+   `--nav-h` row — so moving between them never shifts the logo.
+   ══════════════════════════════════════════════════════════ */
+
+body.auth {
+  /* Same wash as the Contact page: a flat base with three soft radial
+     gradients over it — blue low-left, warm amber upper-right, violet
+     centre-low. Copied rather than re-invented so the two "quiet" pages
+     of the site share one atmosphere.
+
+     `background` sets the base colour and `background-image` the ramps,
+     deliberately as two declarations: the shorthand would reset the
+     image every time the colour is touched. */
+  background: #f8f8fa;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 15% 60%, rgba(180, 200, 255, 0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 30%, rgba(255, 230, 160, 0.30) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 55% 75%, rgba(200, 180, 255, 0.25) 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--fg);
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── header ── */
+.auth-nav {
+  height: var(--nav-h, 72px);
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+/* Just the wordmark now — the Home / Docs / Need Help? links are gone.
+   `space-between` had nothing left to distribute against, so the row is a
+   plain left-aligned flex line. */
+.auth-nav__inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* ── the centred column ──
+   `flex: 1` on the main plus `justify-content: center` is what
+   centres the card in whatever height is left under the header,
+   rather than centring it in the viewport and letting the header
+   push it visually low. */
+.auth-main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px var(--gutter, 32px) 72px;
+}
+.auth-card {
+  width: 100%;
+  /* 430. This is the FIELD width only — the headline sizes itself (see
+     `width: max-content` on .auth-title), so narrowing the column no
+     longer drags the heading's line breaks around with it. That coupling
+     is what made every earlier width change a two-variable problem. */
+  max-width: 430px;
+  text-align: left;
+}
+
+.auth-title {
+  /* The headline wraps inside the column, like everything else. It briefly
+     sized itself with `max-content` so a long first line could be held
+     without widening the fields — but that let it hang past the inputs,
+     which read as misalignment rather than as a deliberate overhang. The
+     column is the measure. */
+  font-family: var(--font-display, inherit);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0;
+  color: var(--fg);
+}
+.auth-sub {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--fg-mid, #55555a);
+  /* the same 26px the landing page uses between a heading and the
+     line under it, so the rhythm carries across pages */
+  margin: 26px 0 0;
+}
+
+/* ── buttons ── */
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background .16s ease, border-color .16s ease,
+              color .16s ease, transform .16s ease;
+}
+.auth-btn:active { transform: translateY(1px); }
+
+.auth-btn--google {
+  margin-top: 32px;
+  background: #ffffff;
+  border-color: var(--border, #e5e5e2);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(16, 16, 20, .04);
+}
+.auth-btn--google:hover { border-color: color-mix(in oklab, var(--fg) 22%, transparent); }
+.auth-btn--google svg { flex: 0 0 auto; }
+
+.auth-btn--primary {
+  margin-top: 20px;
+  background: var(--fg);
+  color: var(--bg);
+}
+.auth-btn--primary:hover { background: color-mix(in oklab, var(--fg) 86%, #ffffff); }
+
+/* ── OR rule ──
+   One flex row with two growing hairlines, so the rule always meets
+   the word regardless of the column width. */
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted, #96968f);
+}
+.auth-or::before,
+.auth-or::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--border, #e5e5e2);
+}
+
+/* ── the field ── */
+.auth-field { margin-top: 4px; }
+.auth-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.auth-input-shell {
+  position: relative;
+  display: block;
+}
+.auth-input-shell svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fg-muted, #96968f);
+  pointer-events: none;
+}
+.auth-input {
+  width: 100%;
+  height: 48px;
+  /* the icon sits at 16px and is 18px wide, so the text starts at 46px
+     — padding, not a flex gap, because the input is a replaced element
+     and cannot lay its own placeholder out around a sibling */
+  padding: 0 16px 0 46px;
+  /* The design system's DEFAULT Input, not the Round variant: radius 8,
+     1px #e2e8f0 stroke, and a 3px #cbd5e1 focus ring — measured off the
+     Input component rather than matched by eye to the nav's search pill.
+     `Round` (9999) is the variant this used to borrow, and it belongs to
+     the nav, not to a form. */
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  /* opaque, not translucent: the page now has colour behind it, and a
+     see-through field would tint differently depending on which gradient
+     it happened to sit over */
+  background: #ffffff;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.auth-input::placeholder { color: var(--fg-muted, #96968f); }
+.auth-input:focus {
+  border-color: #cbd5e1;
+  box-shadow: 0 0 0 3px #cbd5e1;
+}
+
+/* ── legal ── */
+.auth-legal {
+  margin: 20px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-mid, #55555a);
+  text-align: center;
+}
+.auth-legal a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.auth-legal a:hover { color: var(--fg); }
+
+@media (max-width: 640px) {
+  .auth-main { padding-top: 24px; }
+}
+
+/* ── switching between the two flows ──
+   Every auth screen is a dead end for somebody: whoever lands on
+   sign-in without an account, and whoever lands on sign-up with
+   one. This line is the way back, and it sits below the legal
+   text so it reads as the last resort rather than competing with
+   the primary button. */
+.auth-switch {
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border, #e5e5e2);
+  font-size: 14px;
+  color: var(--fg-mid, #55555a);
+  text-align: center;
+}
+.auth-switch a {
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--fg) 28%, transparent);
+  padding-bottom: 1px;
+  transition: border-color .16s ease;
+}
+.auth-switch a:hover { border-bottom-color: var(--fg); }
+
+/* ── stacked fields ──
+   Sign-up asks for two things, sign-in for one. The gap lives on
+   the group so a page can add or drop a field without either
+   page hand-tuning margins. */
+.auth-fields { display: flex; flex-direction: column; gap: 18px; }
+
+/* ── secondary link inside a label row ──
+   "Forgot?" sits on the label's baseline rather than under the
+   field, where it would push the primary button down and read as
+   a second action of equal weight. */
+.auth-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.auth-label-row .auth-label { margin-bottom: 8px; }
+.auth-mini {
+  font-size: 13px;
+  color: var(--fg-mid, #55555a);
+  text-decoration: none;
+}
+.auth-mini:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── the gradient word ──
+   The same treatment the landing page gives its emphasis words: one
+   120deg ramp, over-sized and slid back and forth by `agentic-shift`
+   (defined in styles.css, which these pages already load).
+
+   `background-clip: text` paints only inside the element's own box, and
+   the box is a tight line at this size — hence the padding-bottom, which
+   keeps the descender of a `g` from being shaved off. The negative
+   margin takes the same space back out of the layout so the line height
+   is unchanged. */
+.auth-title em {
+  font-style: normal;
+  background: linear-gradient(120deg,
+    #d97706 0%,
+    #e11d48 38%,
+    #7c3aed 72%,
+    #1e40af 100%);
+  background-size: 220% 220%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  animation: agentic-shift 12s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-title em { animation: none; background-position: 30% 50%; }
+}
+
+/* The headline's <br> is retired: it existed to hold a line the column was
+   too narrow for, and the column is now the thing that decides. Kept as a
+   no-op so any stray markup cannot force a break. */
+.auth-br { display: none; }
+
+/* ── the wordmark ──
+   Inlined as SVG rather than <img>, for the same reason the landing page
+   inlines it: the file's own fill is a mid grey, and an <img> gives no
+   way to reach inside it. Inline, the letters read `var(--brand-word)`
+   and the UX keeps its own gradient stops, so the mark matches the
+   landing page exactly instead of arriving washed out.
+
+   styles.css lifts .brand__mark with `filter: brightness()` on the dark
+   nav — there is no dark nav here, and that filter would wash the
+   gradient, so it is explicitly off. */
+.auth-nav .brand__mark--inline {
+  height: 28px;
+  width: auto;
+  display: block;
+  filter: none;
+  --brand-word: #0A0A0A;
+}

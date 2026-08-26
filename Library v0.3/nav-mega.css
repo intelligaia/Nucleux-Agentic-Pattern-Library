@@ -19,7 +19,22 @@
 /* the hover wash, derived from the foreground so it inverts with the
    theme on its own. --ink-25 would have been wrong: it is not
    theme-flipped, so it stays near-white and would wash a dark nav. */
-.gnav { --nav-mega-wash: color-mix(in oklab, var(--fg) 6%, transparent); }
+.gnav {
+  --nav-mega-wash: color-mix(in oklab, var(--fg) 6%, transparent);
+  /* Contrast-checked greys for the flyout's secondary type. Measured on
+     the panel's white surface: --dim 6.4:1, --quiet 5.2:1. Both clear
+     WCAG AA for body text; the pair keeps a visible step between a
+     disabled row's title and its "Coming soon" note. */
+  --nav-mega-dim:   rgb(90, 90, 85);
+  --nav-mega-quiet: rgb(110, 110, 104);
+}
+/* On genuinely dark pages the same roles invert — light greys on the dark
+   panel. `:not(.landing-light)` keeps index-v2 out of it: that page wears
+   landing-dark as a structural hook while rendering light. */
+body.landing-dark:not(.landing-light) .gnav {
+  --nav-mega-dim:   rgb(200, 200, 194);
+  --nav-mega-quiet: rgb(170, 170, 163);
+}
 
 /* ── THE NAV BAR ITSELF ──
    styles.css builds the bar from --bg (#fbfbfa, a warm off-white) at 84%,
@@ -202,7 +217,12 @@
   margin: 0 auto;
   padding: var(--s-10, 40px) var(--gutter, 24px) var(--s-12, 48px);
   display: grid;
-  grid-template-columns: minmax(240px, 0.68fr) minmax(300px, 1fr) minmax(300px, 1fr);
+  /* The two family columns are NOT equal. ShadCN carries a full sentence
+     per row; Material carries the two words "Coming soon". Splitting them
+     1fr/1fr starved the side with the text — at 13px the descriptions
+     wrapped to two lines while half the Material column sat empty. The
+     ratio follows the content instead. */
+  grid-template-columns: minmax(240px, 0.68fr) minmax(300px, 1.18fr) minmax(260px, 0.82fr);
   align-items: stretch;
   gap: 0;
 }
@@ -246,11 +266,20 @@
 .gnav__dropdown-grouplabel {
   display: block;
   padding: 0 0 var(--s-4, 16px);
-  font-size: 10.5px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.09em;
+  /* 0.09em was tuned for a 10.5px eyebrow, where wide tracking is what
+     makes small uppercase readable. Tracking scales inversely with size,
+     so it loosens slightly on the way back down from 18px — uppercase at
+     16px still wants a little air to stop the caps closing up. */
+  letter-spacing: 0.04em;
+  line-height: 1.2;
   text-transform: uppercase;
-  color: var(--fg-muted);
+  /* NOT --fg-muted: that token is rgb(150,150,143) — 2.98:1 on white.
+     16px is below the 18.66px bold threshold for "large text", so the
+     looser 3:1 rule never applies here and the full 4.5:1 is required.
+     This grey is 5.13:1. */
+  color: var(--nav-mega-quiet);
 }
 .gnav__dropdown-link {
   display: flex;
@@ -296,8 +325,13 @@
   line-height: 1.3;
 }
 .gnav__dropdown-desc {
-  font-size: 11.5px;
-  color: var(--fg-muted);
+  /* One step below the 14px title, so the row reads title-then-detail
+     rather than two lines of equal weight. */
+  font-size: 13px;
+  /* Same grey as the "Coming soon" note on the Material rows — one colour
+     for every secondary line in the panel. It is also the fix for the same
+     audit failure: --fg-muted is 2.98:1 on white, under the 4.5:1 bar. */
+  color: var(--nav-mega-quiet);
   line-height: 1.45;
   margin-top: 2px;
   max-width: none;
@@ -305,11 +339,23 @@
 
 /* Material 3.0 is not built yet, so its rows are rendered as spans, not
    links — there is nothing to navigate to. They keep the layout and lose
-   the affordances: no hover wash, no pointer, not in the tab order. */
-.gnav__dropdown-link--soon { cursor: default; opacity: .6; }
+   the affordances: no hover wash, no pointer, not in the tab order.
+
+   `opacity: .6` used to do the dimming, and that is what failed the
+   contrast audit: opacity composites the text toward the surface behind
+   it, so the already-muted rgb(150,150,143) landed near rgb(192,192,188)
+   — about 1.9:1 on white, less than half the 4.5:1 minimum. Dimming is
+   now done with explicit colours that were picked against the surface,
+   so "Coming soon" reads as secondary without going illegible. */
+.gnav__dropdown-link--soon { cursor: default; }
 .gnav__dropdown-link--soon:hover,
 .gnav__dropdown-link--soon:focus { background: transparent; }
-.gnav__dropdown-link--soon .gnav__dropdown-desc { font-style: italic; }
+.gnav__dropdown-link--soon .gnav__dropdown-icon,
+.gnav__dropdown-link--soon .gnav__dropdown-title { color: var(--nav-mega-dim); }
+.gnav__dropdown-link--soon .gnav__dropdown-desc {
+  font-style: italic;
+  color: var(--nav-mega-quiet);
+}
 
 /* ══════════════════════════════════════════════════════════
    ACTIONS CLUSTER — GitHub as an icon, Sign up as the primary

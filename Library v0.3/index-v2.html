@@ -826,7 +826,14 @@
       min-height: calc(100vh - var(--nav-h, 72px));
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      /* `center` is what opened the gap under the hero. The pinned content
+         is shorter than the sticky box (which must stay a full viewport
+         tall for the scroll track to work), so centring it pushed ~180px
+         of dead space above the heading — on top of the hero's own bottom
+         padding. Anchoring to the top removes that band; the leftover room
+         now falls BELOW the tiles, where it is scrolled through rather
+         than looked at. */
+      justify-content: flex-start;
       padding: var(--s-6) 0;
     }
     /* the heading is the anchor of the pinned section — it must not drift.
@@ -1713,12 +1720,345 @@
      geometry alone. To restyle, edit the LIGHT THEME block at the end of the
      head — do not delete `landing-dark`. -->
 <body class="landing-dark landing-light">
+  <!-- NB: this block sits before the first <script> ON PURPOSE. It used to
+       live at the end of the document, after every script, and the typed
+       headline measured its caret against a layout this CSS had not yet
+       changed — so the caret was placed for centred text and only snapped
+       left once typing began. Styles must be parsed before the scripts
+       that measure them. It is still after every other <style>, so it
+       keeps winning on order. -->
+  <!-- ════════════════════════════════════════════════════
+       CONTENT ALIGNMENT — back to left, ragged right.
+
+       The centring was applied section by section, and each of
+       those rules also carries measure, spacing and type
+       settings that must survive. So rather than unpick them,
+       this block re-states ONLY the alignment properties and
+       parses last, which is what makes it win.
+
+       Three properties do the work together, and all three are
+       needed: `text-align` moves the glyphs, `margin-inline`
+       undoes the auto-centring that pins a max-width block to
+       the middle of its container, and `justify-items` /
+       `align-items` handle the two heads that are flex or grid
+       parents rather than plain blocks.
+
+       Specificity: the section-3 and section-4 rules are
+       `body.landing-dark #labs .practices__title` — an ID, so
+       a plain class selector loses no matter where it sits.
+       Adding `.landing-light` (this page carries both classes)
+       matches that weight and the later position decides it.
+
+       Nothing here touches animation: the typed headline, the
+       rotator, the reveals and the tile hovers are all driven
+       by transform, opacity and clip-path, none of which is
+       affected by text alignment.
+       ════════════════════════════════════════════════════ -->
+  <style>
+    /* ── the hero / section-2 seam ──
+       Two paddings stack at this edge: the hero's bottom and the
+       framework's top. 55px each, so every join on the page is the same
+       110px of content-to-content space. */
+    body.landing-light .hero {
+      padding-bottom: 55px;
+      /* Section 2 must not peek above the fold — the hero owns the first
+         screen on its own. The nav sits over the hero and the hero starts
+         below it, so the height to fill is the viewport MINUS the nav,
+         not the whole viewport.
+
+         min-height, never height: on a short window the copy has to be
+         able to push the section taller rather than spill out of it.
+
+         svh, not vh, with a vh fallback for engines that lack it: on
+         mobile `100vh` is the LARGEST viewport (URL bar retracted), so a
+         vh-sized hero hangs below the fold while the bar is showing and
+         the first scroll reveals nothing. svh is the small viewport. */
+      /* The hero owns the WHOLE first screen while its intro plays — the
+         typed headline, then the description, then the CTA. Nothing from
+         section 2 should compete with that. --fold-peek is therefore 0
+         to begin with and only opens once the intro is done (see the
+         `hero-intro-done` rule below), which slides section 2 up into
+         view as the reward for having watched the sequence.
+
+         min-height, never height: on a short window the copy must be able
+         to push the hero taller instead of spilling out of it. */
+      --fold-peek: 0px;
+      /* the reveal itself — min-height animates, so section 2 rises into
+         frame rather than appearing between two frames */
+      transition: min-height 900ms cubic-bezier(.22, 1, .36, 1);
+      min-height: calc(100vh - var(--nav-h, 72px) - var(--fold-peek));
+      min-height: calc(100svh - var(--nav-h, 72px) - var(--fold-peek));
+    }
+    /* Intro finished: give back 260px so the section-2 heading crosses the
+       fold and the page reads as continuing. The class is set by the typing
+       script — and also set immediately when there is no intro to wait for
+       (reduced motion), so the peek is never stranded closed. */
+    html.hero-intro-done body.landing-light .hero { --fold-peek: 240px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.landing-light .hero { transition: none; }
+    }
+    body.landing-light .framework { padding-top: 55px; }
+
+    /* ── the section 2 / section 3 seam, matched to the one above ──
+       The hero seam is 55 + 55 = 110px of content-to-content space. The
+       sections had each drifted to their own values, so the page loosened
+       as it went down for no reason anyone chose. One pair of numbers
+       everywhere means the rhythm is a decision, not an accumulation.
+
+       The framework's bottom padding is also the tail of its pin track,
+       so trimming it shortens the scroll a touch — checked: all four
+       tiles still land before section 3 comes into view. */
+    body.landing-light .framework { padding-bottom: 55px; }
+
+    /* ── every seam on the page is 55 + 55 ──
+       The sections had drifted to their own values — #practices 40/80,
+       #labs 48/80, .foot 80/80 — so no two joins measured the same. One
+       pair of numbers everywhere means the rhythm is a decision rather
+       than an accumulation.
+
+       The pinned box's own 24px top padding is removed with them: it sat
+       INSIDE section 2 and pushed its heading 24px further from the hero
+       than any other section's heading is from what precedes it, which is
+       most of why that one seam measured wider. */
+    body.landing-light .ag-pin .ag-pin__inner {
+      padding-top: 0;
+      /* Where the pinned box parks under the nav. `top: var(--nav-h)` alone
+         parked it flush against the nav's bottom hairline, so while section
+         2 was pinned its heading sat directly on that rule with nothing
+         between them. The offset is the gap.
+
+         This is the PINNED position only — it does not change where the
+         section sits in normal flow, so the 80px seam under the hero is
+         unaffected. */
+      top: calc(var(--nav-h, 72px) + 40px);
+    }
+
+    body.landing-dark.landing-light #practices,
+    body.landing-dark.landing-light #labs,
+    body.landing-light .foot {
+      padding-top: 55px;
+      padding-bottom: 55px;
+    }
+
+    /* ── the pinned box hugs its content ──
+       .ag-pin__inner was a full viewport tall (min-height: 100vh - nav)
+       with the content anchored to its top, so ~370px of the pinned box
+       was empty and section 3 could not reach the screen until all of it
+       had scrolled past — the row completed, and you still had to keep
+       scrolling to see anything. Sizing the box to its content puts
+       section 3 exactly 80px under the last tile, so it is already on
+       screen when the fourth tile lands.
+
+       Sticky is unaffected: position: sticky needs a tall TRACK (the
+       container), not a tall sticky element. */
+    body.landing-light .ag-pin .ag-pin__inner {
+      min-height: 0;
+      padding-bottom: 0;
+    }
+    body.landing-dark.landing-light #practices { padding-top: 55px; }
+
+    /* ── the pinned box hugs its content ──
+       .ag-pin__inner is a full viewport tall so the sticky has something
+       to hold, but the head + one row of tiles only fills the upper part
+       of it. The rest was empty band, and because the box is sticky you
+       had to scroll a whole screen through that emptiness after the last
+       tile landed before section 3 could arrive.
+
+       Sizing the box to its content removes the band: the tiles are the
+       bottom of the section, so as soon as the row is complete the next
+       section is what follows — separated by the same 80px seam as the
+       hero. Sticky still works; it only needs a box shorter than the
+       viewport, not one exactly as tall as it. */
+    body.landing-light .ag-pin .ag-pin__inner { min-height: 0; }
+
+    /* ── hero: heading-to-description spacing ──
+       The gap here was NOT a margin problem. landing.js parallaxes any
+       [data-parallax-y] element, and it was moving the headline and the
+       description by different amounts — at rest the title is pulled UP
+       52.8px while the description drifts DOWN 10px. That is 63px of
+       apparent gap that exists in no stylesheet, on top of the 32px
+       margin, and it changes as you scroll.
+
+       Section 2 does not have this problem because its head already
+       opts out (`.ag-pin .framework__head { transform: none !important }`)
+       — which is exactly why its spacing reads correctly and the hero's
+       did not. Same treatment here, then the same 16px margin section 2
+       uses, so the two sections are spaced by one rule rather than two
+       accidents. */
+    body.landing-light .hero__title[data-parallax-y],
+    body.landing-light .hero__sub[data-parallax-y],
+    body.landing-light .hero__title,
+    body.landing-light .hero__sub,
+    /* Section 2's head needs the same opt-out, and it needs it
+       UNCONDITIONALLY. The existing rule is scoped `.ag-pin
+       .framework__head` — correct while the section is pinned, but the pin
+       removes that class when it releases, and from that moment landing.js
+       was free to parallax the heading again. Measured after release: the
+       title pulled 121px upward, so the 26px gap to the description opened
+       to 148px and kept drifting as you scrolled. That is the gap that
+       appears "on the way back down" — the section only looks right until
+       the first time you scroll past it. */
+    body.landing-light .framework__head,
+    body.landing-light .framework__head [data-parallax-y],
+    body.landing-light .framework__title,
+    body.landing-light .framework__sub,
+    body.landing-dark.landing-light #practices .practices__head,
+    body.landing-dark.landing-light #practices .practices__title,
+    body.landing-dark.landing-light #practices .practices__sub,
+    body.landing-dark.landing-light #labs .practices__head,
+    body.landing-dark.landing-light #labs .practices__title,
+    body.landing-dark.landing-light #labs .practices__sub {
+      transform: none !important;
+      --py: 0px !important;
+    }
+    /* ── heading → description, one value for the whole page ──
+       Every section had settled on 16px; this lifts them together to 26px
+       so the relationship stays identical from the hero to the Labs head.
+       Sections 3 and 4 are reached through their IDs because that is the
+       weight the rules upstream carry.
+
+       .makers__pitch is set 4px looser than the rest. Its heading is the
+       one that runs to three lines of display type with descenders, and
+       its box already overlaps the pitch by design (the measured gap is
+       negative), so matching the number here would not match the look. */
+    body.landing-light .hero__sub,
+    body.landing-light .framework__sub,
+    body.landing-dark.landing-light #practices .practices__sub,
+    body.landing-dark.landing-light #labs .practices__sub {
+      margin-top: 26px;
+    }
+    body.landing-dark.landing-light .makers__pitch { margin-top: 30px; }
+
+    /* ── description → tiles, the same in both tile sections ──
+       Section 2 sat at 56px, Labs at 70px, so the two rows of cards hung
+       at different distances from the copy above them. Labs comes down to
+       match. Its head carries 84px rather than 56 because the rail adds
+       22px of top padding for the hover lift and pulls it back with a
+       -22px margin; the number that matters is the measured gap to the
+       tile, which is now 56px in both. */
+    body.landing-dark.landing-light #labs .practices__head {
+      margin-bottom: 70px;
+    }
+
+    /* ── hero ── */
+    body.landing-light .hero__content { text-align: left; }
+    body.landing-light .hero__title,
+    body.landing-light .hero__sub {
+      text-align: left;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    body.landing-light .hero__actions { justify-content: flex-start; }
+
+    /* ── section 2 (framework) ── */
+    body.landing-light .framework__head {
+      justify-items: start;
+      text-align: left;
+    }
+    body.landing-light .framework__title,
+    body.landing-light .framework__sub {
+      margin-left: 0;
+      margin-right: 0;
+      text-align: left;
+    }
+
+    /* ── sections 3 and 4 (scenario, Labs) ──
+       ID-carrying selectors upstream, so these match on
+       `.landing-dark.landing-light` + the same ID. */
+    body.landing-dark.landing-light #practices .practices__head,
+    body.landing-dark.landing-light #practices .t-eyebrow,
+    body.landing-dark.landing-light #practices .practices__title,
+    body.landing-dark.landing-light #practices .practices__sub,
+    body.landing-dark.landing-light #labs .practices__head,
+    body.landing-dark.landing-light #labs .t-eyebrow,
+    body.landing-dark.landing-light #labs .practices__title,
+    body.landing-dark.landing-light #labs .practices__sub {
+      text-align: left;
+      margin-inline: 0;
+    }
+
+    /* ── final section (makers) ──
+       `align-items` is the cross-axis here: the column is a
+       flex container, so text-align alone would leave the
+       blocks themselves still centred. */
+    body.landing-dark.landing-light .makers {
+      align-items: flex-start;
+      text-align: left;
+    }
+    body.landing-dark.landing-light .makers__bigword {
+      text-align: left;
+      align-self: flex-start;
+      margin-inline: 0;
+    }
+    body.landing-dark.landing-light .makers__pitch {
+      text-align: left;
+      margin-left: 0;
+      margin-right: 0;
+    }
+  </style>
+
   <script>
     /* set before landing.js / the rotator run: the headline types itself in,
-       so anything that animates inside it has to wait for the typing to end */
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+       so anything that animates inside it has to wait for the typing to end.
+
+       The intro plays on every visit EXCEPT one: arriving back from the
+       auth pages. Someone returning from sign-in is mid-task, not being
+       welcomed, and making them watch the headline get typed again reads
+       as a wait rather than as polish.
+
+       This is keyed on the REFERRER, not on a stored flag. A flag would
+       also suppress the intro for someone who simply revisits the page
+       later in the same session; the referrer answers the narrower
+       question actually being asked — "did you just come from auth?".
+
+       Two guards on the referrer: it is parsed rather than substring-
+       matched, so a foreign URL that merely contains "signin.html" in a
+       query string cannot trigger it, and the origin must match ours.
+
+       This runs in <head>, BEFORE the hero paints, so the returning
+       visitor never sees a frame of the un-typed state. */
+    (function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var fromAuth = false;
+
+      /* 1. The marker the auth pages leave behind. This is the one that
+            catches a BACK navigation, where document.referrer is empty or
+            stale — a history entry keeps the referrer it was originally
+            loaded with, not the page you just returned from. Read once and
+            cleared, so it suppresses exactly the next hero view. */
+      try {
+        if (sessionStorage.getItem('nx-from-auth') === '1') {
+          fromAuth = true;
+          sessionStorage.removeItem('nx-from-auth');
+        }
+      } catch (e) {}
+
+      /* 2. The referrer, for a forward navigation (clicking the wordmark).
+            Parsed rather than substring-matched, so a foreign URL that
+            merely contains "signin.html" cannot trigger it, and the origin
+            has to be ours. */
+      try {
+        if (!fromAuth && document.referrer) {
+          var ref = new URL(document.referrer);
+          if (ref.origin === location.origin) {
+            var page = ref.pathname.split('/').pop();
+            fromAuth = (page === 'signin.html' || page === 'signup.html');
+          }
+        }
+      } catch (e) {}
+
+      if (fromAuth) {
+        /* Nothing to wait for, so open the fold peek immediately — the
+           reduced-motion path does the same. Without it the hero would
+           stay full-height forever, since that class is otherwise only
+           added when the typing finishes. */
+        document.documentElement.classList.add('hero-intro-done');
+        return;
+      }
       document.documentElement.classList.add('hero-typing');
-    }
+    })();
   </script>
 
   <!-- ────────────────────────────────────────────────────
@@ -2432,19 +2772,48 @@
          rail keeps its bars — there the row genuinely scrolls.) */
       var dotEls = cards.map(function () { return { classList: { toggle: function () {}, add: function () {} } }; });
 
-      /* Track length: room for each card to arrive, plus a HOLD at the end so
-         the completed row sits fully visible before the pin releases and the
-         next section starts coming up. */
-      var HOLD = 0.15;                                   // last 15% of the track
-      container.style.minHeight = (100 + cards.length * 13) + 'vh';
+      /* ── how the track is built ──
+         The track is measured against the STICKY BOX, not the viewport. A
+         sticky element travels `container height - its own height`; while
+         .ag-pin__inner was a full viewport tall those two were the same
+         number, so the old `- window.innerHeight` was right by accident.
+         Once the inner was allowed to hug its content the two diverged and
+         the cards finished a quarter of the way down the section.
+
+         The track has two parts:
+
+           ARRIVAL  cards.length * STEP — paces the four tiles in.
+           TAIL     the empty screen below the pinned row — this is what
+                    keeps section 3 OFF the screen while the tiles are
+                    still arriving. Scrolling the tail is what lifts
+                    section 3 from just under the fold to its resting
+                    place 80px below the row, so it starts appearing at
+                    the exact moment the fourth tile lands, never before.
+
+         TAIL is measured, not guessed: it is whatever screen is left
+         under the pinned box, so the behaviour holds at any window height
+         and any content height. */
+      var STEP = 90;                                     // px of scroll per card
+      var TAIL = 0;
+      function sizeTrack() {
+        var navH = parseFloat(getComputedStyle(document.documentElement)
+                     .getPropertyValue('--nav-h')) || 72;
+        TAIL = Math.max(0, window.innerHeight - inner.offsetHeight - navH);
+        container.style.minHeight =
+          (inner.offsetHeight + cards.length * STEP + TAIL) + 'px';
+      }
+      sizeTrack();
 
       var queued = false;
       var landed = 0;              // high-water mark: cards never un-land
       function update() {
         queued = false;
         var r = container.getBoundingClientRect();
-        var travel = container.offsetHeight - window.innerHeight;
-        var p = travel > 0 ? Math.min(1, Math.max(0, -r.top / travel)) : 1;
+        var travel  = container.offsetHeight - inner.offsetHeight;
+        /* progress is measured against the ARRIVAL part only; the tail
+           past it is for bringing section 3 up, not for landing cards */
+        var arrivalT = Math.max(1, travel - TAIL);
+        var p = Math.min(1, Math.max(0, -r.top / arrivalT));
 
         /* map 0 → (1 - HOLD) onto the four arrivals; the first card is already
            there when the section pins, the rest slide in one by one */
@@ -2452,9 +2821,12 @@
            first scroll rather than waiting out a third of the track, then 3
            and 4 follow at even steps. (floor() held card 2 back until
            arrive >= 1/3, which is the delay that read as a lag.) */
-        var arrive = Math.min(1, p / (1 - HOLD));
+        /* Card 1 is in place when the section pins; 2, 3 and 4 land at even
+           steps, and card 4 lands exactly at the END of the arrival run —
+           `floor`, not `ceil`. With ceil the last card arrived at two
+           thirds and the rest of the run was dead scrolling. */
         var live = 1 + Math.min(cards.length - 1,
-                                Math.ceil(arrive * (cards.length - 1) - 1e-6));
+                                Math.floor(p * (cards.length - 1) + 1e-6));
 
         /* Arrival is one-way. Scrolling back up must not run the entrance in
            reverse — once a card has landed it stays put, so the row only ever
@@ -2475,7 +2847,20 @@
            track while any of it is still visible shifts everything below by
            ~1.8 screens in one frame — that was the glitch on the way into the
            third section. Off screen, the same collapse is invisible. */
-        if (landed >= cards.length && r.bottom <= -200) release();
+        /* Release at the END OF THE TRACK — after the tail, not the moment
+           the fourth card lands.
+
+           Releasing on landing collapsed the track while the tail still had
+           work to do, and the tail is precisely what walks section 3 up from
+           below the fold. Cutting it short is what made section 3 appear all
+           at once instead of rising into place: the cards were still
+           arriving and then the next section was simply THERE.
+
+           Waiting for the track to finish keeps that walk-up intact, and by
+           then section 3 has reached its resting position, so the collapse
+           changes nothing on screen and the page stops moving from that
+           point on. */
+        if (landed >= cards.length && -r.top >= travel - 1) release();
       }
 
       var released = false;
@@ -2483,27 +2868,35 @@
         if (released) return;
         released = true;
 
-        /* Snapshot the scroll offset FIRST. Collapsing the track shortens the
-           document, and the browser clamps scrollY to the new maximum the
-           moment that happens — so reading window.scrollY afterwards gives an
-           already-reduced value and subtracting delta from it overshoots by
-           however much was clamped (~860px here, a very visible jump). */
-        var startY = window.scrollY;
+        /* Hold the view still across the collapse by MEASURING it rather
+           than computing it.
 
-        var before = container.offsetHeight;
+           The arithmetic version (scrollY minus the height removed) is not
+           enough, because two things move at once: the document gets
+           shorter, AND the sticky box drops back to the top of its
+           container from wherever it had travelled to. Correcting only for
+           the first left the tiles ~260px lower than they had just been —
+           a visible lurch at the exact moment the row completed.
+
+           So: note where the row actually is on screen, collapse, look
+           again, and scroll by the difference. Whatever combination of
+           causes moved it, this puts it back. */
+        var probe  = cards[0];
+        var wasTop = probe.getBoundingClientRect().top;
+
         container.style.minHeight = '';
         section.classList.remove('ag-pin');     // sticky + entrance rules stop applying
-        var after = container.offsetHeight;
 
-        /* The collapse removes height ABOVE the viewport, so hold the view
-           still by taking the same amount off the pre-collapse offset. */
-        var delta = before - after;
-        if (delta > 0) window.scrollTo({ top: Math.max(0, startY - delta), left: 0, behavior: 'instant' });
+        var nowTop = probe.getBoundingClientRect().top;
+        var shift  = nowTop - wasTop;
+        if (Math.abs(shift) > 0.5) {
+          window.scrollTo({ top: Math.max(0, window.scrollY + shift), left: 0, behavior: 'instant' });
+        }
       }
       addEventListener('scroll', function () {
         if (!queued) { queued = true; requestAnimationFrame(update); }
       }, { passive: true });
-      addEventListener('resize', update);
+      addEventListener('resize', function () { sizeTrack(); update(); });
       update();
     })();
 
@@ -2574,7 +2967,11 @@
   <script>
   (function () {
     var root = document.documentElement;
-    if (!root.classList.contains('hero-typing')) return;   // reduced motion
+    if (!root.classList.contains('hero-typing')) {
+      /* No intro to wait for, so there is nothing to hold section 2 back. */
+      root.classList.add('hero-intro-done');
+      return;                                             // reduced motion
+    }
 
     var title = document.querySelector('.hero__title');
     var sub   = document.querySelector('.hero__sub');
@@ -2621,13 +3018,22 @@
     caret.setAttribute('aria-hidden', 'true');
     title.appendChild(caret);
 
-    function moveCaretTo(el) {
+    /* `atStart` parks the caret on the LEFT edge of a character instead of
+       its right. It matters exactly once: before the first keystroke. The
+       character boxes are already laid out (they are hidden with opacity,
+       not display), so measuring chars[0] before typing returns a box that
+       is one glyph wide — and using its RIGHT edge put the caret a letter
+       in from the margin, where it sat until the first character landed
+       and appeared to shunt it back left. Starting on the left edge is
+       where a cursor belongs on an empty line. */
+    function moveCaretTo(el, atStart) {
       var r = el.getBoundingClientRect();
       var t = title.getBoundingClientRect();
+      var x = atStart ? (r.left - t.left) : (r.right - t.left);
       caret.style.transform =
-        'translate3d(' + (r.right - t.left) + 'px,' + (r.top - t.top + r.height * 0.12) + 'px, 0)';
+        'translate3d(' + x + 'px,' + (r.top - t.top + r.height * 0.12) + 'px, 0)';
     }
-    moveCaretTo(chars[0]);
+    moveCaretTo(chars[0], true);
 
     var i = 0;
     function typeNext() {
@@ -2651,19 +3057,35 @@
 
       var text = active.textContent;
       var n = Math.max(1, text.length);
-      var w = rot.getBoundingClientRect().width;
+
+      /* Two different widths, and using the wrong one is what sent the
+         caret off the end of the word.
+
+         The MASK (.rot) is held open at the widest phrase — "Growth
+         Stage." — so every shorter phrase leaves slack to its right. The
+         caret and the clip edge belong to the PHRASE, so both are driven
+         by the phrase's own width. Measuring the mask instead walked the
+         caret all the way to 539px on "Enterprise.", which is ~127px past
+         its final full stop, and desynced the reveal from the letters on
+         every phrase but the longest. */
+      var maskW   = rot.getBoundingClientRect().width;
+      var phraseW = active.getBoundingClientRect().width || maskW;
       var j = 0;
 
       function step() {
         j++;
         var shown = j / n;
-        rot.style.clipPath = 'inset(0 ' + ((1 - shown) * 100).toFixed(2) + '% 0 0)';
+
+        /* inset from the right in PX, not %: a percentage is a share of the
+           mask, and the mask is wider than the phrase. */
+        var hide = Math.max(0, maskW - phraseW * shown);
+        rot.style.clipPath = 'inset(0 ' + hide.toFixed(2) + 'px 0 0)';
 
         /* caret rides the clip edge */
         var r = rot.getBoundingClientRect();
         var t = title.getBoundingClientRect();
         caret.style.transform =
-          'translate3d(' + (r.left - t.left + w * shown) + 'px,' +
+          'translate3d(' + (r.left - t.left + phraseW * shown) + 'px,' +
                            (r.top - t.top + r.height * 0.12) + 'px, 0)';
 
         if (j >= n) return finishTyping();
@@ -2683,10 +3105,20 @@
         if (sub) sub.classList.add('ht-in');
         setTimeout(function () {
           if (cta) cta.classList.add('ht-in');
-          setTimeout(function () { root.classList.remove('hero-typing'); }, 900);
+          setTimeout(function () {
+            root.classList.remove('hero-typing');
+            /* the whole sequence is done — headline typed, description and
+               CTA settled. Only now does section 2 get to show itself. */
+            root.classList.add('hero-intro-done');
+          }, 900);
         }, AFTER_SUB);
       }, AFTER_TYPE);
     }
+
+    /* Failsafe: if the sequence is interrupted — a thrown error mid-run, a
+       backgrounded tab that never fires its timers — the peek must not stay
+       shut forever. Adding the class twice is harmless. */
+    setTimeout(function () { root.classList.add('hero-intro-done'); }, 30000);
 
     /* start once the webfont is in, so characters do not reflow mid-type */
     function begin() { setTimeout(typeNext, 260); }

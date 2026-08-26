@@ -111,7 +111,7 @@
 
   /* ══════════════════════════════════════════════════════════
      THE ACTIONS CLUSTER
-     GitHub collapses to an icon-only button and a Sign up button takes
+     GitHub collapses to an icon-only button and a Sign In button takes
      over the primary slot after it. Done here rather than in fifteen
      documents for the same reason as the flyout: one definition, no drift.
      ══════════════════════════════════════════════════════════ */
@@ -388,11 +388,11 @@
       signup.className = 'gnav__signup';
       /* No sign-up page exists yet, so this points at contact.html —
          change the href here and every page follows. */
-      signup.href = 'contact.html';
-      signup.textContent = 'Sign up';
+      signup.href = 'signin.html';
+      signup.textContent = 'Sign In';
       /* Last in the cluster — after Contact Us — but BEFORE .gnav__toggle,
          the mobile hamburger, which is display:none on desktop yet still
-         the final child. Appending blindly would put Sign up behind it and
+         the final child. Appending blindly would put Sign In behind it and
          break the small-screen ordering. */
       var cta = wrap.querySelector('.gnav__cta');
       var toggle = wrap.querySelector('.gnav__toggle');
