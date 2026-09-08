@@ -2,10 +2,32 @@
    INTELLIGAIA · AI UX PATTERN LIBRARY · v0.2.1
    ============================================================ */
 
+/* ── Metric-matched fallback for Inter ────────────────────────
+   Inter is loaded from a stylesheet we do not control, with
+   font-display: swap — so the page paints in a system font and then
+   re-lays-out when Inter arrives. Every text width changes at once,
+   and the nav's right-hand cluster, being right-aligned and full of
+   short labels, visibly jumps.
+
+   This face is not a font: it is the local system font with Inter's
+   metrics stamped onto it (the standard overrides for Inter against
+   Arial/Helvetica). The first paint is therefore already laid out to
+   Inter's measurements, and the swap changes glyph shapes without
+   moving anything. */
+@font-face {
+  font-family: "Inter Metrics";
+  src: local("Helvetica Neue"), local("Arial"), local("Liberation Sans");
+  size-adjust: 107.12%;
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
+
 :root {
   /* Type families */
-  --font-display: "Inter", "Inter Placeholder", ui-sans-serif, system-ui, sans-serif;
-  --font-body:    "Inter", "Inter Placeholder", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", "Inter Metrics", "Inter Placeholder", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Inter", "Inter Metrics", "Inter Placeholder", ui-sans-serif, system-ui, sans-serif;
   --font-mono:    "JetBrains Mono", "Menlo", ui-monospace, monospace;
   --font-serif:   "Newsreader", "Source Serif Pro", "Times New Roman", serif;
 
@@ -31,6 +53,9 @@
   /* Radii */
   --r-1: 4px;  --r-2: 6px;  --r-3: 8px;
   --r-4: 12px; --r-5: 16px; --r-6: 24px; --r-full: 9999px;
+  /* The shape a pill control relaxes into under the pointer. One token,
+     so every button in the product tightens by the same amount. */
+  --r-hover: 16px;
 
   /* Color */
   --ink-0:    #ffffff;
@@ -86,6 +111,16 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   background: var(--bg);
+  /* Reserve the scrollbar's width from the first frame.
+
+     A page that starts short and grows — a carousel mounting, images
+     landing, a list rendering — gains a scrollbar partway through
+     load, the viewport narrows by its width, and everything anchored
+     to the right edge slides left. In this layout that is the nav's
+     action cluster, which is why GitHub, X, Contact and Sign In were
+     the controls seen jumping. Reserving the gutter means the width
+     never changes, whether the page ends up scrolling or not. */
+  scrollbar-gutter: stable;
 }
 body {
   font-family: var(--font-body);
@@ -146,19 +181,53 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; margin: 0; 
   position: sticky;
   top: 0;
   z-index: 60;
-  background: color-mix(in oklab, var(--bg) 84%, transparent);
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 1px solid var(--border);
   height: var(--nav-h);
+
+  /* Chrome drops a backdrop-filter's compositing layer when the tab is
+     backgrounded and re-rasterises it on return — the bar and
+     everything riding on it flash for a frame, which is what showed up
+     as the right-hand actions flickering on every tab switch.
+
+     Two things settle it. The layer is promoted and declared, so the
+     compositor keeps it rather than rebuilding it from scratch; and
+     the bar's own ground is raised from 84% to 92% opacity, so even if
+     a re-raster does happen there is almost nothing behind it left to
+     show through. The glass is still glass — content scrolling under
+     still blurs — it just no longer depends on a layer surviving a
+     round trip through the background. */
+  transform: translateZ(0);
+  will-change: backdrop-filter;
+  isolation: isolate;
 }
+/* Three columns, not a flex row with space-between.
+
+   With space-between the free space is split between the items, so the
+   centre links move whenever the right-hand cluster changes width — and
+   that cluster is assembled by script on load. A grid pins the centre to
+   the middle of the bar and the actions to the right edge, so neither
+   can be moved by the other. */
 .gnav__inner {
   height: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: var(--s-6);
 }
+.gnav__inner > .brand { justify-self: start; }
+.gnav__inner > .gnav__center { justify-self: center; }
+.gnav__inner > .gnav__actions { justify-self: end; }
+
+/* The action cluster is built by nav-mega.js: the GitHub link becomes an
+   icon, an X button and Sign In are added, Contact Us collapses. Until
+   that has run the markup is the raw, half-finished version — so it is
+   held back rather than painted and swapped a frame later. The class is
+   set inline in the head and cleared by nav-mega, with a failsafe timer
+   so a script error can never leave the nav invisible. */
+html.gnav-pending .gnav__actions { visibility: hidden; }
 
 /* Brand lockup — animated mark + wordmark */
 .gnav .container { max-width: 1480px; }
@@ -345,13 +414,57 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; margin: 0; 
 }
 .gnav__cta:hover { background: var(--ink-950); color: var(--ink-0); }
 
+/* ── Shape morph on hover ────────────────────────────────────
+   At rest every control keeps the shape it already had — nothing
+   in the default state moves. Under the pointer the pill relaxes
+   into a rounded rectangle and springs back on the way out.
+
+   Two reasons this is a hover treatment rather than a new resting
+   shape. It is the cheapest possible "this is pressable" signal:
+   the corner change is legible without colour, so it survives the
+   greyscale test the rest of this library is held to. And it costs
+   no layout — a radius animates on the compositor, so nothing
+   beside the button shifts, which is exactly the failure the nav
+   already had to be fixed for.
+
+   Focus-visible gets it too: a keyboard user should see the same
+   affordance a pointer user does. */
+.btn:hover,        .btn:focus-visible,
+.gnav__cta:hover,  .gnav__cta:focus-visible,
+.gnav__sdk:hover,  .gnav__sdk:focus-visible {
+  border-radius: var(--r-hover);
+}
+
+/* The resting shape is unchanged to the eye but not to the animation.
+   A radius is clamped to half the box, so a pill written as 9999px
+   spends 99% of a transition still clamped and then snaps over the
+   last frame — the morph was there and you could not see it. Stated
+   as exactly half the control's height it renders as the identical
+   pill and animates through its whole range. Erring high is safe:
+   anything at or above half stays a pill, and these controls only get
+   shorter at narrow widths, never taller. */
+.gnav__cta, .gnav__sdk { border-radius: 22.5px; }      /* 45px tall */
+/* .btn and .gnav__cta already transition `all`; the SDK pill lists
+   its properties, so the radius has to be named. */
+.gnav__sdk {
+  transition: background var(--dur-2) var(--ease),
+              transform var(--dur-2) var(--ease),
+              border-radius 260ms cubic-bezier(.22, 1, .36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .gnav__cta, .gnav__sdk { transition: none; }
+}
+
 /* ============================================================
    BUTTONS
    ============================================================ */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 14px 22px;
-  border-radius: var(--r-full);
+  /* Half the control's height rather than --r-full: identical pill,
+     but a value the hover morph can animate out of. See the shape
+     morph note above. */
+  border-radius: 26px;
   font-size: 14px;
   font-weight: 500;
   border: 1px solid transparent;
@@ -2578,8 +2691,14 @@ body.has-shell::after {
   border-bottom: 1px solid var(--border);
 }
 .section-block:last-child { border-bottom: none; }
+/* Title, then the line that explains it, stacked and left-aligned.
+
+   These used to sit on one baseline with the description pushed to
+   the right margin — which put the sentence a long way from the
+   heading it belongs to, ragged-left, in a column narrow enough to
+   break four short lines. A section intro reads as an intro when it
+   sits under its own title. */
 .section-block__head {
-  display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-6);
   margin-bottom: var(--s-5);
 }
 /* Sentence case, larger, visible — not tracked uppercase */
@@ -2590,7 +2709,9 @@ body.has-shell::after {
   color: var(--fg);
 }
 .section-block__lede {
-  font-size: 13.5px; color: var(--fg-mid); max-width: 380px; text-align: right;
+  margin-top: 6px;
+  font-size: 14px; line-height: 1.6; color: var(--fg-mid);
+  max-width: 62ch; text-align: left;
 }
 
 .qa-grid {
@@ -8025,3 +8146,36 @@ body.landing-dark .cats__intro h2 {
   line-height: 1.02;
   max-width: none;
 }
+
+/* ══════════════════════════════════════════════════════════
+   WORDMARK — one treatment, every page
+
+   The mark used to be an <img> pointing at nucleux-logo.svg, and that
+   file carries its own mid-grey fill. An <img> gives no way to reach
+   inside it, so every page that used one rendered a grey wordmark while
+   the landing page — which had always inlined the SVG — rendered black.
+   Inlining everywhere is what makes them agree: the letters read
+   `--brand-word` and the UX keeps its own gradient stops.
+
+   `filter: none` is !important on purpose. Two rules above lift the mark
+   with `brightness()` — one for the nav over the hero, one for the dark
+   body — and both were written for the grey <img>. Against the inline
+   version they wash the UX gradient out instead.
+   ══════════════════════════════════════════════════════════ */
+.brand__mark--inline {
+  height: 28px;
+  width: auto;
+  display: block;
+  filter: none !important;
+  --brand-word: #0A0A0A;
+}
+/* Genuinely dark pages invert the letters. `:not(.landing-light)` keeps
+   index-v2 out of it — that page wears landing-dark as a structural hook
+   while rendering light. */
+body.landing-dark:not(.landing-light) .brand__mark--inline { --brand-word: #EEF0F4; }
+
+/* An empty .main (the Material 3.0 set, before it has content) would
+   collapse to zero height and let the sidebar's border float against
+   nothing. This keeps the column open at the same height a populated one
+   starts at. */
+.main:empty { min-height: 70vh; }

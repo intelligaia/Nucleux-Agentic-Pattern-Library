@@ -1312,10 +1312,19 @@
     });
   }
 
-  ready(() => {
-    injectChrome();
-    wire();
-  });
+  /* The chrome is injected NOW, not on DOMContentLoaded.
+
+     This script is the last thing before </body>, so the elements it
+     adds — the search control in the nav's action cluster above all —
+     are in the tree before the browser's first paint. Deferring it
+     meant the header painted once without the search button and again
+     with it, and because the cluster is right-aligned, adding an item
+     shifted every button in it. That was the flicker on refresh.
+
+     Behaviour still waits for the document: wiring listeners early
+     would be binding against a page that is not finished yet. */
+  injectChrome();
+  ready(wire);
 })();
 
 /* ============================================================
@@ -1324,8 +1333,10 @@
    so every page gets a working mobile menu with no markup change.
    ============================================================ */
 (function () {
-  function ready(fn){ document.readyState !== "loading" ? fn() : document.addEventListener("DOMContentLoaded", fn); }
-  ready(function () {
+  /* Also synchronous: the hamburger is appended to the same
+     right-hand cluster, so adding it after paint moved the same
+     buttons the search control did. */
+  function build() {
     var inner = document.querySelector(".gnav__inner");
     if (!inner || document.querySelector(".gnav__toggle")) return;
 
@@ -1394,5 +1405,8 @@
     window.addEventListener("resize", function () {
       if (window.innerWidth > 1080) close();
     });
-  });
+  }
+
+  if (document.querySelector(".gnav__inner")) build();
+  else document.addEventListener("DOMContentLoaded", build);
 })();

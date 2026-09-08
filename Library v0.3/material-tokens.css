@@ -1,0 +1,206 @@
+/* ============================================================
+   MATERIAL 3 — DESIGN TOKENS
+
+   Source: Material 3 Design Kit (Community), file UyW7AQxv5hepnaFDaCb2iq.
+   The values marked READ were pulled out of that file's variables
+   through the Figma MCP bridge, not typed from memory:
+
+     M3/sys/light/primary                 #6750A4   READ  57994:2451
+     M3/sys/light/on-primary              #FFFFFF   READ  57994:2451
+     M3/sys/light/primary-container       #EADDFF   READ  57998:43062
+     M3/sys/light/on-primary-container    #4F378A   READ  57998:43062
+     M3/sys/light/secondary               #625B71   READ  57998:43027
+     M3/sys/light/on-secondary            #FFFFFF   READ  57998:43027
+     M3/sys/light/secondary-container     #E8DEF8   READ  57998:43027
+     M3/sys/light/on-secondary-container  #4A4459   READ  57998:43027
+     M3/sys/light/tertiary                #7D5260   READ  57998:42992
+     M3/sys/light/on-tertiary             #FFFFFF   READ  57998:42992
+     M3/sys/light/tertiary-container      #FFD8E4   READ  57998:42992
+     M3/sys/light/on-tertiary-container   #633B48   READ  57998:42992
+     M3/sys/light/on-surface              #1D1B20   READ  57994:2490
+     M3/sys/light/on-surface-variant      #49454F   READ  57994:15768
+     M3/sys/light/outline-variant         #CAC4D0   READ  57994:15768
+     Corner/Extra-large                   28        READ  57998:42992
+     M3/Elevation Light/3                 (shadow)  READ  57998:42992
+     Static/Label Large                   14/20/500/+0.1    READ 57994:15768
+     Static/Title Medium                  16/24/500/+0.15   READ 57998:43027
+     Static/Headline Small                24/32/400/0       READ 57994:2451
+
+   The linked node is the kit's Actions page — buttons, FABs,
+   segmented and split buttons — so it exposes the roles those
+   components consume and no others. The surface tiers, outline,
+   error and the rest of the type scale are M3 baseline values
+   and are marked BASELINE below. Replace any BASELINE line with
+   a READ one by linking a node in this file that uses it.
+
+   Nothing here is a Nucleux value. The expressive violet/rose/
+   amber triad used elsewhere in this library is deliberately
+   absent: on a Material page the palette is Material's.
+   ============================================================ */
+:root {
+
+  /* ── Colour · light scheme ──────────────────────────────── */
+  --md-sys-color-primary:               #6750A4;   /* READ     */
+  --md-sys-color-on-primary:            #FFFFFF;   /* READ     */
+  --md-sys-color-primary-container:     #EADDFF;   /* READ     */
+  --md-sys-color-on-primary-container:  #4F378A;   /* READ     */
+
+  --md-sys-color-secondary:              #625B71;  /* READ     */
+  --md-sys-color-on-secondary:           #FFFFFF;  /* READ     */
+  --md-sys-color-secondary-container:    #E8DEF8;  /* READ     */
+  --md-sys-color-on-secondary-container: #4A4459;  /* READ     */
+
+  --md-sys-color-tertiary:               #7D5260;  /* READ     */
+  --md-sys-color-on-tertiary:            #FFFFFF;  /* READ     */
+  --md-sys-color-tertiary-container:     #FFD8E4;  /* READ     */
+  --md-sys-color-on-tertiary-container:  #633B48;  /* READ     */
+
+  --md-sys-color-error:                  #B3261E;  /* BASELINE */
+  --md-sys-color-on-error:               #FFFFFF;  /* BASELINE */
+  --md-sys-color-error-container:        #F9DEDC;  /* BASELINE */
+  --md-sys-color-on-error-container:     #852221;  /* BASELINE */
+
+  --md-sys-color-surface:                #FEF7FF;  /* BASELINE */
+  --md-sys-color-on-surface:             #1D1B20;  /* READ     */
+  --md-sys-color-surface-variant:        #E7E0EC;  /* BASELINE */
+  --md-sys-color-on-surface-variant:     #49454F;  /* READ     */
+
+  --md-sys-color-surface-container-lowest: #FFFFFF; /* BASELINE */
+  --md-sys-color-surface-container-low:    #F7F2FA; /* BASELINE */
+  --md-sys-color-surface-container:        #F3EDF7; /* BASELINE */
+  --md-sys-color-surface-container-high:   #ECE6F0; /* BASELINE */
+  --md-sys-color-surface-container-highest:#E6E0E9; /* BASELINE */
+
+  --md-sys-color-outline:                #79747E;  /* BASELINE */
+  --md-sys-color-outline-variant:        #CAC4D0;  /* READ     */
+  --md-sys-color-scrim:                  #000000;  /* BASELINE */
+
+  /* ── Shape ──────────────────────────────────────────────── */
+  --md-sys-shape-corner-none:        0px;    /* BASELINE */
+  --md-sys-shape-corner-extra-small: 4px;    /* BASELINE */
+  --md-sys-shape-corner-small:       8px;    /* BASELINE */
+  --md-sys-shape-corner-medium:      12px;   /* BASELINE */
+  --md-sys-shape-corner-large:       16px;   /* BASELINE */
+  --md-sys-shape-corner-extra-large: 28px;   /* READ     */
+  --md-sys-shape-corner-full:        9999px; /* BASELINE */
+
+  /* ── Elevation ──────────────────────────────────────────── */
+  --md-sys-elevation-1:
+    0 1px 2px 0 rgba(0,0,0,0.30),
+    0 1px 3px 1px rgba(0,0,0,0.15);                              /* BASELINE */
+  --md-sys-elevation-2:
+    0 1px 2px 0 rgba(0,0,0,0.30),
+    0 2px 6px 2px rgba(0,0,0,0.15);                              /* BASELINE */
+  /* Exact values off M3/Elevation Light/3 — two stacked shadows,
+     #0000004D at 0/1/3 and #00000026 at 0/4/8 with 3 spread. */
+  --md-sys-elevation-3:
+    0 1px 3px 0 rgba(0,0,0,0.30),
+    0 4px 8px 3px rgba(0,0,0,0.15);                              /* READ */
+
+  /* ── State layer opacities ──────────────────────────────── */
+  --md-sys-state-hover-opacity:    0.08;   /* BASELINE */
+  --md-sys-state-focus-opacity:    0.10;   /* BASELINE */
+  --md-sys-state-pressed-opacity:  0.10;   /* BASELINE */
+  --md-sys-state-disabled-content: 0.38;   /* BASELINE */
+  --md-sys-state-disabled-layer:   0.12;   /* BASELINE */
+
+  /* ── Motion ─────────────────────────────────────────────── */
+  --md-sys-motion-easing-standard:      cubic-bezier(0.2, 0, 0, 1);      /* BASELINE */
+  --md-sys-motion-easing-emphasized:    cubic-bezier(0.2, 0, 0, 1);      /* BASELINE */
+  --md-sys-motion-duration-short4:      200ms;                            /* BASELINE */
+  --md-sys-motion-duration-medium2:     300ms;                            /* BASELINE */
+
+  /* ── Typography ─────────────────────────────────────────── */
+  /* Roboto is the kit's font on every type style read above —
+     every Static font variable in the file resolves to "Roboto". */
+  --md-ref-typeface-plain: Roboto, "Helvetica Neue", Arial, sans-serif;
+  --md-ref-typeface-brand: Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --md-sys-typescale-display-large-size:   57px; --md-sys-typescale-display-large-line:   64px; /* BASELINE */
+  --md-sys-typescale-headline-large-size:  32px; --md-sys-typescale-headline-large-line:  40px; /* BASELINE */
+  --md-sys-typescale-headline-medium-size: 28px; --md-sys-typescale-headline-medium-line: 36px; /* BASELINE */
+  --md-sys-typescale-headline-small-size:  24px; --md-sys-typescale-headline-small-line:  32px; /* READ */
+  --md-sys-typescale-headline-small-weight: 400;                                                /* READ */
+  --md-sys-typescale-headline-small-tracking: 0;                                                /* READ */
+
+  --md-sys-typescale-title-large-size:   22px; --md-sys-typescale-title-large-line:   28px;     /* BASELINE */
+  --md-sys-typescale-title-medium-size:  16px; --md-sys-typescale-title-medium-line:  24px;     /* READ */
+  --md-sys-typescale-title-medium-weight: 500;                                                  /* READ */
+  --md-sys-typescale-title-medium-tracking: 0.15px;                                             /* READ */
+  --md-sys-typescale-title-small-size:   14px; --md-sys-typescale-title-small-line:   20px;     /* BASELINE */
+
+  --md-sys-typescale-body-large-size:   16px; --md-sys-typescale-body-large-line:   24px;       /* BASELINE */
+  --md-sys-typescale-body-large-tracking: 0.5px;                                                /* BASELINE */
+  --md-sys-typescale-body-medium-size:  14px; --md-sys-typescale-body-medium-line:  20px;       /* BASELINE */
+  --md-sys-typescale-body-medium-tracking: 0.25px;                                              /* BASELINE */
+  --md-sys-typescale-body-small-size:   12px; --md-sys-typescale-body-small-line:   16px;       /* BASELINE */
+  --md-sys-typescale-body-small-tracking: 0.4px;                                                /* BASELINE */
+
+  --md-sys-typescale-label-large-size:  14px; --md-sys-typescale-label-large-line:  20px;       /* READ */
+  --md-sys-typescale-label-large-weight: 500;                                                   /* READ */
+  --md-sys-typescale-label-large-tracking: 0.1px;                                               /* READ */
+  --md-sys-typescale-label-medium-size: 12px; --md-sys-typescale-label-medium-line: 16px;       /* BASELINE */
+  --md-sys-typescale-label-medium-tracking: 0.5px;                                              /* BASELINE */
+  --md-sys-typescale-label-small-size:  11px; --md-sys-typescale-label-small-line:  16px;       /* BASELINE */
+  --md-sys-typescale-label-small-tracking: 0.5px;                                               /* BASELINE */
+}
+
+/* ── Type-scale utility classes ───────────────────────────────
+   Applied by name so the markup a reader copies says which M3
+   style it is using, rather than carrying a bare font-size. */
+.md-headline-small {
+  font-family: var(--md-ref-typeface-brand);
+  font-size: var(--md-sys-typescale-headline-small-size);
+  line-height: var(--md-sys-typescale-headline-small-line);
+  font-weight: var(--md-sys-typescale-headline-small-weight);
+  letter-spacing: var(--md-sys-typescale-headline-small-tracking);
+}
+.md-title-medium {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  letter-spacing: var(--md-sys-typescale-title-medium-tracking);
+}
+.md-body-large {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line);
+  font-weight: 400;
+  letter-spacing: var(--md-sys-typescale-body-large-tracking);
+}
+.md-body-medium {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  font-weight: 400;
+  letter-spacing: var(--md-sys-typescale-body-medium-tracking);
+}
+.md-body-small {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line);
+  font-weight: 400;
+  letter-spacing: var(--md-sys-typescale-body-small-tracking);
+}
+.md-label-large {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+}
+.md-label-medium {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line);
+  font-weight: 500;
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}
+.md-label-small {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: var(--md-sys-typescale-label-small-line);
+  font-weight: 500;
+  letter-spacing: var(--md-sys-typescale-label-small-tracking);
+}

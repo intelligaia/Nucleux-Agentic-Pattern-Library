@@ -107,7 +107,12 @@ body.auth {
   gap: 10px;
   width: 100%;
   height: 48px;
-  border-radius: 999px;
+  /* Half the height rather than 999px. Identical pill at rest, but a
+     radius the hover morph can animate out of — a corner is clamped to
+     half the box, so a 999px pill sits clamped through the whole
+     transition and snaps over the last frame. Same reasoning as the
+     nav and landing buttons in styles.css. */
+  border-radius: 24px;
   font-size: 15px;
   font-weight: 600;
   font-family: inherit;
@@ -115,9 +120,19 @@ body.auth {
   text-decoration: none;
   border: 1px solid transparent;
   transition: background .16s ease, border-color .16s ease,
-              color .16s ease, transform .16s ease;
+              color .16s ease, transform .16s ease,
+              border-radius 260ms cubic-bezier(.22, 1, .36, 1);
 }
+/* The shape morph the rest of the product makes: the pill relaxes into
+   a rounded rectangle under the pointer and springs back. Nothing at
+   rest changes, and focus-visible gets it so a keyboard user sees the
+   same affordance. */
+.auth-btn:hover,
+.auth-btn:focus-visible { border-radius: var(--r-hover, 16px); }
 .auth-btn:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) {
+  .auth-btn { transition: none; }
+}
 
 .auth-btn--google {
   margin-top: 32px;
@@ -128,6 +143,10 @@ body.auth {
 }
 .auth-btn--google:hover { border-color: color-mix(in oklab, var(--fg) 22%, transparent); }
 .auth-btn--google svg { flex: 0 0 auto; }
+/* The 32px above belongs to the button when it opens the card. Below the
+   rule the rule already carries the spacing, so the margin comes off
+   rather than stacking into a hole. */
+.auth-or + .auth-btn--google { margin-top: 0; }
 
 .auth-btn--primary {
   margin-top: 20px;
@@ -216,12 +235,26 @@ body.auth {
   color: var(--fg-mid, #55555a);
   text-align: center;
 }
-.auth-legal a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
+.auth-legal a { color: inherit; }
 .auth-legal a:hover { color: var(--fg); }
+
+/* ── page footer ──
+   Home, Terms and Privacy on the bottom edge of the screen rather than
+   inside the card. They are escape hatches, not part of signing in, and
+   at the foot of the page they are reachable without ever sitting
+   between the reader and the button. No rule above them: the space is
+   the separation. */
+.auth-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding: 0 var(--gutter, 32px) 40px;
+  font-size: 13px;
+  color: var(--fg-mid, #55555a);
+}
+.auth-footer a { color: inherit; }
+.auth-footer a:hover { color: var(--fg); }
 
 @media (max-width: 640px) {
   .auth-main { padding-top: 24px; }
@@ -234,9 +267,7 @@ body.auth {
    text so it reads as the last resort rather than competing with
    the primary button. */
 .auth-switch {
-  margin: 24px 0 0;
-  padding-top: 20px;
-  border-top: 1px solid var(--border, #e5e5e2);
+  margin: 28px 0 0;
   font-size: 14px;
   color: var(--fg-mid, #55555a);
   text-align: center;
@@ -244,18 +275,24 @@ body.auth {
 .auth-switch a {
   color: var(--fg);
   font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in oklab, var(--fg) 28%, transparent);
-  padding-bottom: 1px;
-  transition: border-color .16s ease;
+  /* The back arrow rides inside the link so the whole thing is one
+     target rather than an icon beside a link. The underline is on the
+     TEXT, not the link, so it never runs under the arrow. */
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
-.auth-switch a:hover { border-bottom-color: var(--fg); }
+.auth-back { flex: 0 0 auto; }
 
 /* ── stacked fields ──
    Sign-up asks for two things, sign-in for one. The gap lives on
    the group so a page can add or drop a field without either
    page hand-tuning margins. */
 .auth-fields { display: flex; flex-direction: column; gap: 18px; }
+/* The 32px that used to arrive with the third-party button now that the
+   form opens the card — the gap belonged to the card, not to the button
+   that happened to be first. */
+.auth-sub + .auth-fields { margin-top: 32px; }
 
 /* ── secondary link inside a label row ──
    "Forgot?" sits on the label's baseline rather than under the
@@ -271,9 +308,8 @@ body.auth {
 .auth-mini {
   font-size: 13px;
   color: var(--fg-mid, #55555a);
-  text-decoration: none;
 }
-.auth-mini:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+.auth-mini:hover { color: var(--fg); }
 
 /* ── the gradient word ──
    The same treatment the landing page gives its emphasis words: one
@@ -328,3 +364,202 @@ body.auth {
   filter: none;
   --brand-word: #0A0A0A;
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   LINKS — the growing underline
+
+   No rule at rest. Under the pointer it draws in from the left and
+   runs out to the full width of the text, then retracts on the way
+   out. One behaviour for all of them, so "is this a link?" is
+   answered the same way whether it is Forgot password?, Create an
+   account, or Privacy.
+
+   Drawn as a background gradient rather than `text-decoration`,
+   because only a background can be animated: `background-size`
+   interpolates, `text-decoration-*` does not. The line sits at
+   the bottom of the box with a little padding under the text, so
+   it reads as an underline and not as a border on the element.
+
+   The padding is on the resting state as well as the hover one:
+   reserving the row the line will occupy is what stops the text
+   from nudging when it appears. */
+.auth-mini,
+.auth-footer a,
+.auth-legal a,
+.auth-switch a > span,
+.auth-switch a:not(:has(> span)) {
+  text-decoration: none;
+  padding-bottom: 2px;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  /* Slower, and on an even curve. The 320ms/(.22,1,.36,1) pairing this
+     replaces spent four fifths of its travel in the first quarter of the
+     time — an emphasised curve is for something arriving, and a line
+     tracking a pointer should just move. The standard curve at 480ms
+     reads as drawing rather than snapping. */
+  transition: background-size 480ms cubic-bezier(.4, 0, .2, 1),
+              color .2s ease;
+}
+.auth-mini:hover,
+.auth-mini:focus-visible,
+.auth-footer a:hover,
+.auth-footer a:focus-visible,
+.auth-legal a:hover,
+.auth-legal a:focus-visible,
+.auth-switch a:hover > span,
+.auth-switch a:focus-visible > span,
+.auth-switch a:not(:has(> span)):hover,
+.auth-switch a:not(:has(> span)):focus-visible {
+  background-size: 100% 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-mini, .auth-footer a, .auth-legal a, .auth-switch a > span { transition: none; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATES — validation, authentication, loading
+
+   Everything below is a STATE of the screen above, never a
+   second design of it. Nothing here changes the layout, the
+   spacing, the field or button dimensions: an error adds a line
+   under the field it belongs to, and the button swaps its label
+   for a spinner in the same box.
+
+   WHERE A MESSAGE GOES is the one real design decision, and it
+   follows the fault. A problem that belongs to one field — empty,
+   malformed — is said under that field, where the fix is. A
+   problem that belongs to the ATTEMPT — this pair of credentials
+   was not accepted — belongs to the form, because no single field
+   is at fault and the reader must not be told to "fix" the email
+   that may well be right.
+   ══════════════════════════════════════════════════════════ */
+body.auth {
+  /* One restrained error ramp, scoped to these screens. Ground, edge
+     and type, so an error never depends on colour alone: it also gets
+     an icon and a message. */
+  --auth-danger:        #b42318;
+  --auth-danger-edge:   #fda29b;
+  --auth-danger-ground: #fef3f2;
+}
+
+/* ── inline, under the field it belongs to ── */
+.auth-input--error,
+.auth-input--error:focus { border-color: var(--auth-danger-edge); }
+.auth-input--error:focus { box-shadow: 0 0 0 3px var(--auth-danger-ground); }
+.auth-input-shell--error svg { color: var(--auth-danger); }
+
+.auth-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--auth-danger);
+}
+.auth-msg svg { flex: 0 0 auto; margin-top: 1px; }
+/* Hidden rather than absent: the row is not reserved (that would leave a
+   permanent gap under every field), but the element is always in the DOM
+   so a screen reader's live region has something to announce into. */
+.auth-msg[hidden] { display: none; }
+
+/* ── form level: the attempt failed, not a field ──
+   A pill at the top of the window. Out of the flow deliberately: an
+   authentication error belongs to the attempt, not to a field, and a
+   banner inside the card would push the form down the page and read as
+   a problem with whatever it happened to sit above. Fixed, it can
+   arrive and leave without moving a single thing the reader is using. */
+.auth-alert {
+  position: fixed;
+  top: 16px;
+  /* Centred by an auto margin between two pinned edges, NOT by
+     `left: 50%` + translate: with only `left` set, the box's available
+     width is the viewport minus that 50% offset, so the sentence wrapped
+     at half the window however high max-width was set. */
+  left: 0; right: 0;
+  margin-inline: auto;
+  width: fit-content;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  /* block only: the inline margins are the centring, and a blanket
+     `margin: 0` here would quietly undo them. */
+  margin-block: 0;
+  padding: 10px 20px;
+  /* Wide enough for the sentence to sit on one line where there is room
+     — a pill that wraps stops reading as a pill — and free to wrap on a
+     narrow window rather than being clipped. */
+  max-width: min(720px, calc(100vw - 32px));
+  text-wrap: pretty;
+  border: 1px solid var(--auth-danger-edge);
+  border-radius: 999px;
+  background: var(--auth-danger-ground);
+  color: var(--auth-danger);
+  font-size: 14px;
+  line-height: 1.45;
+  box-shadow: 0 1px 2px rgba(16, 16, 20, .06),
+              0 12px 32px -20px rgba(16, 16, 20, .45);
+  animation: auth-toast-in 260ms cubic-bezier(.4, 0, .2, 1) both;
+}
+/* A dot, not an icon: at pill scale a glyph competes with the sentence,
+   and the ground is already carrying the severity. */
+.auth-alert__dot {
+  flex: 0 0 auto;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.auth-alert[hidden] { display: none; }
+@keyframes auth-toast-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-alert { animation: none; }
+}
+
+/* ── the primary action, before the form is fillable ──
+   Disabled, not hidden: the reader can see what completing the form
+   leads to. It keeps its dimensions exactly — only the ground and the
+   pointer change — so nothing moves when it becomes available. */
+.auth-btn--primary:disabled {
+  background: color-mix(in oklab, var(--fg) 22%, transparent);
+  color: #ffffff;
+  cursor: default;
+}
+.auth-btn:disabled { pointer-events: none; }
+
+/* ── authenticating ──
+   The label is replaced in place. Same height, same width, same
+   corner: the button is doing something, not becoming something. */
+.auth-spin {
+  width: 16px; height: 16px; flex: 0 0 auto;
+  border: 2px solid color-mix(in oklab, currentColor 35%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: auth-spin 720ms linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .auth-spin { animation-duration: 2.4s; }
+}
+
+/* ── show / hide the password ──
+   Inside the field, at the end, where the value it governs is. The
+   input reserves the room so a long password never runs under it. */
+.auth-reveal {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  border: 0; background: transparent;
+  padding: 4px 2px;
+  font: inherit; font-size: 13px; font-weight: 500;
+  color: var(--fg-mid, #55555a);
+  cursor: pointer;
+}
+.auth-reveal:hover { color: var(--fg); }
+.auth-input--reveal { padding-right: 62px; }

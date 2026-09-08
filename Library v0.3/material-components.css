@@ -1,0 +1,1085 @@
+/* ============================================================
+   MATERIAL 3 — COMPONENTS
+
+   The component layer, shared by every page that shows one.
+
+   It was page-local while only the pattern page rendered these.
+   The library home now draws its card thumbnails from the SAME
+   markup the Live preview mounts, so the rules have to be
+   reachable from both — and a second copy would be the exact
+   drift this library exists to avoid.
+
+   Everything resolves to a --md-sys-* token from
+   material-tokens.css. Page chrome (frames, tabs, the demo
+   surface) stays in each page's own <style>; only components
+   live here.
+   ============================================================ */
+
+/* ════════════════════════════════════════════════════════════
+   DISCLOSURE — built from Material 3 components
+
+   Every colour, radius, shadow and type style below resolves to
+   a --md-sys-* token from material-tokens.css, which in turn came
+   out of the Material 3 Design Kit. There are no literal hex
+   values and no Nucleux expressive tokens in this block: on a
+   Material page the palette is Material's.
+
+   The pieces are the kit's own components rather than bespoke
+   shapes — a list item, an assist chip, a basic dialog, text and
+   filled buttons — so a reader recognises them before they read
+   the labels.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Assist chip (M3) ─────────────────────────────────────
+   Small corner (8px), outline-variant border, label-large.
+   This is the disclosure marker itself in all three examples. */
+/* The disclosure marker. M3's assist chip is a 32dp label-large
+   control, but this one is never pressed — it is a label riding
+   alongside a name, and at full chip size it out-weighed the
+   agent's own name beside it. Dropped to 24dp on label-medium:
+   still unmissable, no longer the loudest thing in the row. */
+.md-assist-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 24px; padding: 0 9px;
+  border-radius: var(--md-sys-shape-corner-small);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}
+.md-assist-chip--tonal {
+  border-color: transparent;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.md-assist-chip__icon {
+  width: 14px; height: 14px; flex: 0 0 auto;
+  fill: var(--md-sys-color-primary);
+}
+.md-assist-chip--tonal .md-assist-chip__icon {
+  fill: var(--md-sys-color-on-secondary-container);
+}
+
+/* ── Avatar / monogram ────────────────────────────────────
+   Primary container, not primary: an identity marker is a
+   container role in M3, and on-primary-container gives 7.4:1
+   against it. */
+.md-avatar {
+  flex: 0 0 auto;
+  width: 40px; height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  display: grid; place-items: center;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+}
+.md-avatar--lg { width: 56px; height: 56px; }
+
+/* ── List item (M3 two-line) ──────────────────────────────
+   Headline is body-large on-surface; supporting text is
+   body-medium on-surface-variant. Those pairings are the M3
+   spec for a list item, not a choice made here. */
+.md-list-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 12px 16px;
+  background: var(--md-sys-color-surface-container-lowest);
+  border-radius: var(--md-sys-shape-corner-medium);
+  max-width: 560px;
+}
+.md-list-item__content { min-width: 0; }
+.md-list-item__line {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.md-list-item__headline { color: var(--md-sys-color-on-surface); margin: 0; }
+.md-list-item__supporting {
+  margin: 4px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+  max-width: 48ch;
+}
+.md-list-item__trailing {
+  margin-left: auto; flex: 0 0 auto;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ── Buttons (M3) ─────────────────────────────────────────
+   Full corner, 40dp height, label-large. Filled and text are
+   the two the dialog needs. */
+.md-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 24px;
+  border: none; border-radius: var(--md-sys-shape-corner-full);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  cursor: pointer;
+  transition: box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+.md-button--filled {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+/* The hover state layer is on-primary at 8% over primary, which
+   is how M3 defines it — not a second, darker brand colour. */
+.md-button--filled:hover {
+  background:
+    linear-gradient(rgba(255,255,255,var(--md-sys-state-hover-opacity)),
+                    rgba(255,255,255,var(--md-sys-state-hover-opacity))),
+    var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-1);
+}
+.md-button--text {
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  padding: 0 12px;
+}
+.md-button--text:hover {
+  background: color-mix(in srgb,
+    var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%),
+    transparent);
+}
+.md-button--outlined {
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+/* Tonal: the middle emphasis of the M3 button set — used where a
+   trigger should be the obvious action on the surface without
+   claiming the page's single filled slot. */
+.md-button--tonal {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+.md-button--tonal:hover {
+  box-shadow: var(--md-sys-elevation-1, 0 1px 3px rgba(16, 16, 20, 0.16));
+}
+.md-button--sm { height: 32px; padding: 0 16px; }
+
+/* ── Basic dialog (M3) ────────────────────────────────────
+   Extra-large corner (28), surface-container-high, elevation 3.
+   All three read from the kit. */
+.md-dialog {
+  max-width: 400px;
+  padding: 24px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-high);
+  box-shadow: var(--md-sys-elevation-3);
+}
+.md-dialog__icon {
+  display: block; width: 24px; height: 24px; margin: 0 auto 16px;
+  fill: var(--md-sys-color-secondary);
+}
+.md-dialog__headline {
+  margin: 0; text-align: center;
+  color: var(--md-sys-color-on-surface);
+}
+.md-dialog__body {
+  margin: 16px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-dialog__actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+  margin-top: 24px;
+}
+
+/* ── Dialog fact list ─────────────────────────────────────
+   body-medium on-surface-variant, with a primary bullet. */
+.md-facts { list-style: none; margin: 16px 0 0; padding: 0; }
+.md-facts li {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 6px 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-facts__bullet {
+  flex: 0 0 auto; margin-top: 7px;
+  width: 6px; height: 6px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary);
+}
+
+/* ── Banner (M3 pattern) ──────────────────────────────────
+   Tertiary container: in the baseline scheme that is the third
+   accent, and it separates a generated-content notice from the
+   primary actions around it without inventing a colour. */
+.md-banner {
+  display: flex; align-items: center; gap: 16px;
+  max-width: 560px;
+  padding: 12px 12px 12px 16px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+.md-banner__icon {
+  flex: 0 0 auto; width: 20px; height: 20px;
+  fill: var(--md-sys-color-on-tertiary-container);
+}
+.md-banner__text { margin: 0; flex: 1 1 auto; }
+.md-banner__action {
+  flex: 0 0 auto;
+  color: var(--md-sys-color-on-tertiary-container);
+}
+.md-banner__action:hover {
+  background: color-mix(in srgb,
+    var(--md-sys-color-on-tertiary-container)
+    calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+}
+
+/* ── Text field with generated content (M3 outlined) ──────
+   Used by the third example: the strip travels with the
+   generated value, inside the field that holds it. */
+.md-field {
+  max-width: 560px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container-lowest);
+  padding: 12px 16px;
+}
+.md-field__label {
+  display: block;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-field__value {
+  margin: 6px 0 0;
+  color: var(--md-sys-color-on-surface);
+}
+.md-field__foot {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+.md-field__spacer { margin-left: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .md-button { transition: none; }
+}
+
+
+
+/* ── Consent & Caveat ─────────────────────────────────────
+   Not yet rebuilt on Material components, but retoned onto the
+   M3 roles so nothing off-palette appears beside a Material
+   component — the rose these used is a Nucleux expressive tone
+   and read as pink on this page, including inside the demo.
+   The shapes are still bespoke; that is the next move. */
+/* ── Consent ──────────────────────────────────────────── */
+.m3-consent {
+  max-width: 520px;
+  padding: 26px 26px 22px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 44px -34px var(--md-sys-color-on-primary-container);
+}
+.m3-consent__k {
+  display: inline-block; padding: 4px 12px; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.m3-consent__title {
+  margin: 14px 0 0; font-size: 18px; font-weight: 650;
+  letter-spacing: -0.015em; color: var(--fg);
+}
+.m3-consent__sub { margin: 7px 0 0; font-size: 13px; color: var(--fg-muted); }
+.m3-consent__foot { display: flex; gap: 10px; margin-top: 22px; }
+
+.m3-scopes { list-style: none; margin: 20px 0 0; padding: 0; }
+.m3-scope {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.m3-scope:last-child { border-bottom: 0; }
+.m3-scope__n { font-size: 13.5px; font-weight: 620; color: var(--fg); }
+.m3-scope__d { margin-top: 3px; font-size: 12.5px; line-height: 1.45; color: var(--fg-muted); }
+
+.m3-toggle {
+  flex: 0 0 auto;
+  width: 46px; height: 27px; padding: 3px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 0; background: var(--ink-100, #e6e6e2);
+  cursor: pointer;
+  display: flex; align-items: center;
+  transition: background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+.m3-toggle__knob {
+  width: 21px; height: 21px; border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.22);
+  transition: transform 420ms var(--md-sys-motion-easing-standard);
+}
+.m3-toggle.is-on { background: var(--md-sys-color-primary); }
+.m3-toggle.is-on .m3-toggle__knob { transform: translateX(19px); }
+
+.m3-jit {
+  max-width: 470px;
+  padding: 18px 20px 16px;
+  border-radius: 6px 20px 20px 20px;
+  background: color-mix(in oklab, var(--md-sys-color-secondary-container) 70%, #fff);
+  border: 1px solid color-mix(in oklab, var(--md-sys-color-primary) 22%, transparent);
+}
+.m3-jit__row { display: flex; gap: 11px; align-items: flex-start; }
+.m3-jit__dot {
+  flex: 0 0 auto; margin-top: 6px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--md-sys-color-primary);
+}
+.m3-jit__text { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--fg-alt); }
+.m3-jit__text b { color: var(--fg); font-weight: 640; }
+.m3-jit__foot { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+
+.m3-granted {
+  max-width: 470px; padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border); background: #fff;
+}
+.m3-granted__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+}
+.m3-granted__t { font-size: 12.5px; font-weight: 640; color: var(--fg); }
+.m3-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.m3-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 6px 5px 12px; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+  font-size: 12px; font-weight: 580;
+}
+.m3-chip--off {
+  padding-right: 12px;
+  background: var(--ink-50); color: var(--fg-muted);
+}
+.m3-chip__x {
+  width: 17px; height: 17px; border-radius: 50%;
+  border: 0; background: transparent; color: inherit;
+  font: inherit; font-size: 13px; line-height: 1;
+  cursor: pointer; opacity: 0.6;
+}
+.m3-chip__x:hover { opacity: 1; background: rgba(0,0,0,0.07); }
+
+/* ── Caveat ───────────────────────────────────────────── */
+.m3-answer { max-width: 540px; }
+.m3-answer__text { margin: 0; font-size: 14.5px; line-height: 1.65; color: var(--fg-alt); }
+.m3-answer__text b { color: var(--fg); font-weight: 650; }
+
+/* Sharp corners (6px), amber ground: this is data ABOUT the
+   answer, and it shares its hue with citations on purpose. */
+.m3-caveat {
+  display: flex; gap: 11px; align-items: flex-start;
+  margin-top: 16px; padding: 14px 16px;
+  border-radius: 6px;
+  border-left: 3px solid var(--md-sys-color-outline);
+  background: color-mix(in oklab, var(--md-sys-color-surface-container) 75%, #fff);
+}
+.m3-caveat__ico {
+  flex: 0 0 auto; margin-top: 1px;
+  width: 16px; height: 16px;
+  fill: none; stroke: var(--md-sys-color-on-surface-variant); stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.m3-caveat__t { margin: 0; font-size: 13px; font-weight: 650; color: var(--md-sys-color-on-surface-variant); }
+.m3-caveat__d { margin: 5px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--fg-alt); }
+
+.m3-stamp {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 7px 8px 7px 13px; border-radius: 6px;
+  background: color-mix(in oklab, var(--md-sys-color-surface-container) 80%, #fff);
+  border: 1px solid color-mix(in oklab, var(--md-sys-color-outline) 22%, transparent);
+  font-size: 12.5px; color: var(--fg-alt);
+}
+.m3-stamp__dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--md-sys-color-outline);
+}
+.m3-stamp__text b { color: var(--fg); font-weight: 640; }
+
+/* The flag marks ONE clause. Underline rather than highlight so the
+   sentence still reads as a sentence. */
+.m3-flag {
+  border-bottom: 2px dotted var(--md-sys-color-outline);
+  color: var(--fg); cursor: help;
+}
+.m3-flag__note {
+  display: block; margin-top: 12px;
+  padding: 11px 14px; border-radius: 6px;
+  background: color-mix(in oklab, var(--md-sys-color-surface-container) 80%, #fff);
+  border-left: 3px solid var(--md-sys-color-outline);
+  font-size: 12.5px; line-height: 1.55; color: var(--fg-alt);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m3-btn, .m3-toggle, .m3-toggle__knob { transition: none; }
+  .m3-btn:active { transform: none; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   IDENTITY — Avatar · Name · Personality · Iconography · Color
+
+   The five patterns in this category answer one question between
+   them: who is speaking. Trust & Disclosure says "this is a
+   machine"; Identity says "and this is WHICH machine, every time
+   you meet it".
+
+   Everything here is drawn in the neural expressive language:
+   colour carries state rather than decorating it, one glyph is
+   reserved for generation and never spent elsewhere, shape
+   separates the agent's surfaces from the person's, and motion
+   appears only where something is genuinely happening. Every
+   value resolves to a --md-sys-* token; there are no literal
+   colours in this block.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── The agent mark ───────────────────────────────────────
+   Primary-container ground with the reserved glyph in primary.
+   A container role, not primary itself: the mark identifies, it
+   does not call for a press, and M3 keeps those two apart. */
+.md-agentav {
+  flex: 0 0 auto; position: relative;
+  width: 40px; height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  display: grid; place-items: center;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+}
+.md-agentav svg { width: 20px; height: 20px; fill: var(--md-sys-color-primary); }
+.md-agentav--sm { width: 28px; height: 28px; font-size: var(--md-sys-typescale-label-medium-size); }
+.md-agentav--sm svg { width: 15px; height: 15px; }
+.md-agentav--lg { width: 56px; height: 56px; }
+.md-agentav--lg svg { width: 28px; height: 28px; }
+
+/* The person's mark is deliberately a different ROLE, not a
+   different shade of the same one: a reader separates the two at
+   a glance without having to compare hues. */
+.md-agentav--human {
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-agentav--human svg { fill: var(--md-sys-color-on-surface-variant); }
+
+/* State on the mark. The ring is the only animation in this
+   category, and it runs only while the agent is actually
+   working — motion here is a status, not a flourish. */
+.md-agentav--thinking::after {
+  content: ""; position: absolute; inset: -4px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 2px solid var(--md-sys-color-primary);
+  opacity: 0.55;
+  animation: md-agentav-pulse 1600ms var(--md-sys-motion-easing-standard) infinite;
+}
+@keyframes md-agentav-pulse {
+  0%   { transform: scale(0.92); opacity: 0.55; }
+  70%  { transform: scale(1.08); opacity: 0;    }
+  100% { transform: scale(1.08); opacity: 0;    }
+}
+.md-agentav--muted { background: var(--md-sys-color-surface-container-high); }
+.md-agentav--muted svg { fill: var(--md-sys-color-outline); }
+
+/* ── Identity row / card ──────────────────────────────────── */
+.md-idrow { display: flex; align-items: center; gap: 12px; }
+.md-idrow + .md-idrow { margin-top: 12px; }
+.md-idrow__name {
+  margin: 0; color: var(--md-sys-color-on-surface);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.md-idrow__sub { margin: 2px 0 0; color: var(--md-sys-color-on-surface-variant); }
+
+.md-idcard {
+  max-width: 440px; padding: 20px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.md-idcard__head { display: flex; align-items: center; gap: 16px; }
+.md-idcard__name { margin: 0; color: var(--md-sys-color-on-surface); }
+.md-idcard__role { margin: 2px 0 0; color: var(--md-sys-color-on-surface-variant); }
+.md-idcard__foot {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+.md-idcard__spacer { margin-left: auto; }
+
+/* ── State specimen strip ─────────────────────────────────── */
+.md-states { display: flex; gap: 28px; flex-wrap: wrap; }
+.md-state { display: grid; justify-items: center; gap: 8px; }
+.md-state__label {
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--md-ref-typeface-plain);
+}
+
+/* ── Voice card (Personality) ─────────────────────────────── */
+.md-voice {
+  max-width: 480px; padding: 20px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.md-voice__k {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 24px; padding: 0 10px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.md-voice__title { margin: 12px 0 0; color: var(--md-sys-color-on-surface); }
+.md-voice__list { list-style: none; margin: 14px 0 0; padding: 0; }
+.md-voice__list li {
+  display: flex; gap: 12px; align-items: flex-start; padding: 5px 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-voice__tick {
+  flex: 0 0 auto; width: 16px; height: 16px; margin-top: 2px;
+  fill: none; stroke: var(--md-sys-color-primary);
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+.md-voice__tick--no { stroke: var(--md-sys-color-outline); }
+/* The sample is set against the rules, not beside them: a voice
+   defined only in adjectives is a voice nobody can implement. */
+.md-voice__sample {
+  margin: 16px 0 0; padding: 12px 14px;
+  border-left: 3px solid var(--md-sys-color-primary);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* ── Register comparison ──────────────────────────────────── */
+.md-registers {
+  display: grid; gap: 12px; max-width: 560px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.md-register {
+  padding: 14px 16px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+.md-register--on {
+  border-color: transparent;
+  background: var(--md-sys-color-secondary-container);
+}
+.md-register__k {
+  display: block; margin-bottom: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.md-register--on .md-register__k { color: var(--md-sys-color-on-secondary-container); }
+.md-register__t { margin: 0; color: var(--md-sys-color-on-surface); }
+
+/* ── Reserved glyph set (Iconography) ─────────────────────── */
+.md-icons { display: flex; gap: 16px; flex-wrap: wrap; }
+.md-icontile { display: grid; justify-items: center; gap: 8px; width: 92px; }
+.md-icontile__box {
+  width: 56px; height: 56px;
+  border-radius: var(--md-sys-shape-corner-large);
+  display: grid; place-items: center;
+  background: var(--md-sys-color-surface-container);
+}
+.md-icontile__box svg { width: 24px; height: 24px; fill: var(--md-sys-color-primary); }
+.md-icontile__box--tonal { background: var(--md-sys-color-secondary-container); }
+.md-icontile__box--tonal svg { fill: var(--md-sys-color-on-secondary-container); }
+.md-icontile__box--filled { background: var(--md-sys-color-primary); }
+.md-icontile__box--filled svg { fill: var(--md-sys-color-on-primary); }
+.md-icontile__label {
+  color: var(--md-sys-color-on-surface-variant); text-align: center;
+}
+
+/* A menu is where "reserved" is provable: the AI rows carry the
+   glyph, the others carry their own icons, and nobody has to be
+   told which is which. */
+.md-menu {
+  max-width: 320px; padding: 8px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-low);
+  box-shadow: var(--md-sys-elevation-2);
+}
+.md-menu__item {
+  display: flex; align-items: center; gap: 12px;
+  height: 40px; padding: 0 12px;
+  border-radius: var(--md-sys-shape-corner-small);
+  color: var(--md-sys-color-on-surface);
+}
+.md-menu__item svg {
+  width: 18px; height: 18px; flex: 0 0 auto;
+  fill: none; stroke: var(--md-sys-color-on-surface-variant);
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.md-menu__item--ai svg { fill: var(--md-sys-color-primary); stroke: none; }
+.md-menu__rule {
+  height: 1px; margin: 6px 12px;
+  background: var(--md-sys-color-outline-variant);
+}
+
+/* ── Reserved colour roles (Color) ────────────────────────── */
+.md-swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+.md-swatch { width: 116px; }
+.md-swatch__chip {
+  height: 56px; border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.md-swatch__chip--primary   { background: var(--md-sys-color-primary);           border-color: transparent; }
+.md-swatch__chip--container { background: var(--md-sys-color-primary-container);  border-color: transparent; }
+.md-swatch__chip--secondary { background: var(--md-sys-color-secondary-container);border-color: transparent; }
+.md-swatch__chip--tertiary  { background: var(--md-sys-color-tertiary-container); border-color: transparent; }
+.md-swatch__use { display: block; margin-top: 8px; color: var(--md-sys-color-on-surface); }
+.md-swatch__tok {
+  display: block; margin-top: 2px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+/* Two bubbles, two roles. This is the whole argument for a
+   reserved colour: the reader knows which one the machine wrote
+   before reading a word of either. */
+.md-turns { display: grid; gap: 10px; max-width: 480px; }
+.md-bubble {
+  padding: 12px 16px; max-width: 82%;
+  color: var(--md-sys-color-on-surface);
+}
+.md-bubble--human {
+  justify-self: end; text-align: left;
+  background: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large)
+                 var(--md-sys-shape-corner-extra-small) var(--md-sys-shape-corner-large);
+}
+.md-bubble--agent {
+  justify-self: start;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-radius: var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large)
+                 var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-extra-small);
+}
+
+/* Presence, not decoration: the outline appears while the agent
+   is in the surface and goes when it leaves. */
+.md-presence {
+  max-width: 480px; padding: 16px;
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 2px solid var(--md-sys-color-primary);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+.md-presence__head { display: flex; align-items: center; gap: 10px; }
+.md-presence__dot {
+  width: 8px; height: 8px; flex: 0 0 auto;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary);
+}
+.md-presence__label { color: var(--md-sys-color-primary); }
+.md-presence__body { margin: 10px 0 0; color: var(--md-sys-color-on-surface-variant); }
+
+@media (prefers-reduced-motion: reduce) {
+  .md-agentav--thinking::after { animation: none; opacity: 0.55; transform: none; }
+}
+
+/* Two identity rows share a left edge only if something establishes
+   one. The live stage centres its content, so without this wrapper
+   the wider row pushes its own avatar left of the narrower row's and
+   the marks stop reading as a set. */
+.md-idstack { display: grid; gap: 16px; }
+.md-idstack .md-idrow + .md-idrow { margin-top: 0; }
+
+
+/* ════════════════════════════════════════════════════════════
+   CAPABILITY DISCOVERY — Example Gallery · Templates · Nudges ·
+   Disclaimer
+
+   Identity answers "who is speaking". This category answers the
+   question immediately after it: "and what can it do for me?"
+   All four exist because a blank input is a terrible interface
+   for a system whose range nobody can guess — and because the
+   honest half of that answer is the part about what it CANNOT
+   do, which is why Disclaimer sits in the same set as the three
+   patterns that sell the capability.
+
+   Every value resolves to a --md-sys-* token.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Example gallery ──────────────────────────────────────
+   Worked examples, each showing the ask AND what came back.
+   A gallery of prompts alone teaches phrasing; a gallery of
+   results teaches range, which is the thing being discovered. */
+.md-gallery { display: grid; gap: 12px; max-width: 620px; }
+.md-gallery__filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.md-filter {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 14px;
+  border-radius: var(--md-sys-shape-corner-small);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short4)
+              var(--md-sys-motion-easing-standard);
+}
+.md-filter:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface)
+    calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+}
+/* M3 filter chips carry a leading tick when selected — the state is
+   never colour alone. */
+.md-filter.is-on {
+  background: var(--md-sys-color-secondary-container);
+  border-color: transparent;
+  color: var(--md-sys-color-on-secondary-container);
+}
+.md-filter__tick { width: 0; height: 18px; overflow: hidden;
+  fill: none; stroke: currentColor; stroke-width: 2.2;
+  stroke-linecap: round; stroke-linejoin: round;
+  transition: width var(--md-sys-motion-duration-short4)
+              var(--md-sys-motion-easing-emphasized); }
+.md-filter.is-on .md-filter__tick { width: 18px; }
+
+.md-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+/* List is one column, whatever the width — for a gallery whose
+   examples are long enough that two of them side by side stop being
+   readable. */
+.md-gallery[data-layout="list"] .md-grid { grid-template-columns: 1fr; }
+
+.md-ex {
+  display: block; width: 100%; text-align: left;
+  padding: 14px 16px;
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-lowest);
+  cursor: pointer; font-family: var(--md-ref-typeface-plain);
+  transition: box-shadow var(--md-sys-motion-duration-short4)
+                var(--md-sys-motion-easing-standard),
+              transform var(--md-sys-motion-duration-short4)
+                var(--md-sys-motion-easing-standard),
+              background-color var(--md-sys-motion-duration-short4)
+                var(--md-sys-motion-easing-standard);
+}
+.md-ex:hover { box-shadow: var(--md-sys-elevation-2); transform: translateY(-2px); }
+.md-ex:active { transform: translateY(0) scale(0.995); }
+.md-ex__k {
+  display: inline-block; margin-bottom: 8px;
+  padding: 2px 8px; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-size: var(--md-sys-typescale-label-small-size); font-weight: 600;
+}
+.md-ex__ask { margin: 0; color: var(--md-sys-color-on-surface); font-weight: 550; }
+.md-ex__out {
+  margin: 8px 0 0; padding-top: 8px;
+  border-top: 1px dashed var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-ex__use {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 10px; color: var(--md-sys-color-primary);
+  font-size: var(--md-sys-typescale-label-medium-size); font-weight: 600;
+}
+
+/* The opened example: the full ask, the full result, and the one
+   control that matters — put it in my composer. */
+.md-ex-open {
+  max-width: 560px; padding: 20px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: var(--md-sys-elevation-2);
+}
+.md-ex-open__ask {
+  margin: 10px 0 0; padding: 12px 14px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+.md-ex-open__out { margin: 14px 0 0; color: var(--md-sys-color-on-surface-variant); }
+.md-ex-open__foot {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 18px; padding-top: 14px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* ── Templates ────────────────────────────────────────────
+   A sentence with slots. The scaffold is the teaching: it shows
+   which decisions a good request has to make, and refuses to
+   let the user forget one. */
+.md-tpl {
+  max-width: 560px; padding: 20px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.md-tpl__name { margin: 0; color: var(--md-sys-color-on-surface); }
+.md-tpl__desc { margin: 4px 0 0; color: var(--md-sys-color-on-surface-variant); }
+.md-tpl__line {
+  margin: 16px 0 0; padding: 14px 16px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  line-height: 2.1;
+}
+/* An empty slot is dashed and reads as a gap; a filled one is a
+   solid tonal chip. The difference is shape and weight, not hue. */
+.md-slot {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; margin: 0 2px;
+  border-radius: var(--md-sys-shape-corner-small);
+  border: 1px dashed var(--md-sys-color-outline);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: inherit; cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short4)
+                var(--md-sys-motion-easing-standard),
+              border-color var(--md-sys-motion-duration-short4)
+                var(--md-sys-motion-easing-standard);
+}
+.md-slot:hover { border-color: var(--md-sys-color-primary); }
+.md-slot.is-set {
+  border-style: solid; border-color: transparent;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 550;
+}
+.md-slot__caret {
+  width: 12px; height: 12px; fill: none; stroke: currentColor;
+  stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+}
+.md-tpl__foot {
+  display: flex; align-items: center; gap: 8px; margin-top: 16px;
+}
+.md-tpl__count { margin-left: auto; color: var(--md-sys-color-on-surface-variant); }
+
+.md-tpl-list { display: grid; gap: 8px; max-width: 520px; }
+.md-tpl-row {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  padding: 13px 16px; text-align: left;
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-lowest);
+  font-family: var(--md-ref-typeface-plain); cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short4)
+              var(--md-sys-motion-easing-standard);
+}
+.md-tpl-row:hover { background: var(--md-sys-color-surface-container); }
+.md-tpl-row__n { display: block; color: var(--md-sys-color-on-surface); font-weight: 600; }
+.md-tpl-row__d { display: block; margin-top: 2px; color: var(--md-sys-color-on-surface-variant); }
+.md-tpl-row__go {
+  margin-left: auto; flex: 0 0 auto; width: 18px; height: 18px;
+  fill: none; stroke: var(--md-sys-color-on-surface-variant);
+  stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── Nudge ────────────────────────────────────────────────
+   Small, anchored to the thing it is about, and genuinely
+   dismissible. The tail is what makes it a nudge rather than a
+   notification: it points at the control it is describing. */
+.md-nudge {
+  position: relative; max-width: 340px;
+  padding: 14px 16px 12px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--md-sys-elevation-2);
+  animation: md-nudge-in 320ms var(--md-sys-motion-easing-emphasized) both;
+}
+@keyframes md-nudge-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.md-nudge::after {
+  content: ""; position: absolute; left: 26px; bottom: -6px;
+  width: 12px; height: 12px; transform: rotate(45deg);
+  background: var(--md-sys-color-primary-container);
+}
+.md-nudge--above::after { bottom: auto; top: -6px; }
+.md-nudge__head { display: flex; align-items: flex-start; gap: 10px; }
+.md-nudge__ico { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 1px;
+  fill: var(--md-sys-color-primary); }
+.md-nudge__t { margin: 0; font-weight: 620; }
+.md-nudge__d { margin: 4px 0 0; opacity: 0.86; }
+.md-nudge__foot { display: flex; align-items: center; gap: 6px; margin-top: 12px; }
+.md-nudge__x {
+  margin-left: auto; width: 26px; height: 26px; border: 0; border-radius: 50%;
+  background: transparent; color: inherit; cursor: pointer;
+  display: grid; place-items: center; font-size: 15px; line-height: 1; opacity: 0.7;
+}
+.md-nudge__x:hover { opacity: 1; background: rgba(0,0,0,0.07); }
+.md-nudge .md-button--text { color: var(--md-sys-color-on-primary-container); }
+
+/* The quietest form: a hint riding on the control itself, for
+   surfaces where a floating card would be too much. */
+.md-hint {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px 6px 10px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-hint__dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--md-sys-color-primary);
+}
+
+/* ── Disclaimer ───────────────────────────────────────────
+   The standing statement of limits. Full form once, compact
+   form forever after — and the compact form must reopen the
+   full one, or the limits have been said and then hidden. */
+.md-disclaim {
+  max-width: 440px; padding: 24px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-high);
+  box-shadow: var(--md-sys-elevation-3);
+}
+.md-disclaim__ico {
+  display: block; width: 24px; height: 24px; margin: 0 auto 16px;
+  fill: var(--md-sys-color-secondary);
+}
+.md-disclaim__t { margin: 0; text-align: center; color: var(--md-sys-color-on-surface); }
+.md-disclaim__b { margin: 14px 0 0; color: var(--md-sys-color-on-surface-variant); }
+.md-disclaim__list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 10px; }
+.md-disclaim__list li {
+  display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px;
+  align-items: baseline;
+  color: var(--md-sys-color-on-surface-variant);
+}
+/* Can / Cannot / Does not know as three labelled rows rather than a
+   paragraph: the middle one is the row people actually need, and in
+   prose it is the row they skip. */
+.md-disclaim__k {
+  color: var(--md-sys-color-on-surface); font-weight: 640;
+}
+.md-disclaim__foot {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px;
+}
+
+/* The line IS the control. A second labelled button beside it was
+   longer than the reminder itself and wrapped badly at the sizes this
+   actually ships in — and the whole line is a bigger, easier target
+   than the label ever was. */
+.md-disclaim-line {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  border: 0; border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: left; cursor: pointer;
+  /* Typography stated in tokens rather than `font: inherit`. As a
+     <button> this element carries a UA font, and the shorthand was
+     beating the .md-body-small class it is marked up with — so the
+     reminder rendered at whatever size its parent happened to use.
+     Body-small is the size this pattern is specified at everywhere:
+     a caption, never a paragraph. */
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line);
+  letter-spacing: var(--md-sys-typescale-body-small-tracking);
+  font-weight: 400;
+  transition: background-color var(--md-sys-motion-duration-short4)
+              var(--md-sys-motion-easing-standard);
+}
+.md-disclaim-line:hover {
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+.md-disclaim-line__ico { width: 15px; height: 15px; flex: 0 0 auto;
+  fill: var(--md-sys-color-on-surface-variant); }
+
+@media (prefers-reduced-motion: reduce) {
+  .md-disclaim-line { transition: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-ex, .md-filter, .md-filter__tick, .md-slot, .md-tpl-row { transition: none; }
+  .md-nudge { animation: none; }
+}
+
+
+/* ── Caveat ───────────────────────────────────────────────
+   The quietest pattern in the library, and deliberately so.
+   It is a standing condition of the medium — generated output
+   can be wrong — not a fault, so it never takes the error role
+   and never animates. Caption size, muted, one per surface.
+
+   Colouring this like an error would make people discount the
+   real errors, which is the opposite of what it is for. */
+.md-caveat {
+  display: flex; align-items: flex-start; gap: 7px;
+  margin: 10px 0 0; max-width: 56ch;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.md-caveat__ico {
+  flex: 0 0 auto; width: 13px; height: 13px; margin-top: 2px;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+/* Under output the reminder gets a ground, because it has to
+   separate from the content it qualifies. Next to an input it does
+   not — there is nothing to separate from. */
+.md-caveat--boxed {
+  margin-top: 14px; padding: 9px 12px;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container);
+}
+
+/* Caution is the exception, not the register. It borrows the TERTIARY
+   role rather than error: the output is not wrong, it is unverified,
+   and painting every caption red teaches readers to discount the real
+   errors — which is the opposite of what this pattern is for.
+
+   Two cues, because one was not enough. The first attempt coloured the
+   text alone with on-tertiary-container, and against on-surface-variant
+   that is two dark greys at caption size: the setting was reaching the
+   markup and changing nothing anybody could see. So the inline form
+   also takes a leading rule in the same role — colour AND shape, which
+   is the rule the rest of this library follows anyway. */
+.md-caveat--caution {
+  color: var(--md-sys-color-tertiary);
+}
+.md-caveat--caution .md-caveat__ico { stroke-width: 2.2; }
+
+/* Inline: no ground of its own, so the rule carries it. */
+.md-caveat--caution:not(.md-caveat--boxed) {
+  padding: 4px 0 4px 10px;
+  border-inline-start: 2px solid var(--md-sys-color-tertiary);
+}
+
+/* Boxed: the ground moves from neutral to the tertiary container, and
+   the text takes the on- role that ground is paired with. */
+.md-caveat--caution.md-caveat--boxed {
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.md-composer {
+  max-width: 520px; padding: 14px 16px 12px;
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+.md-composer__field {
+  margin: 0; padding: 10px 14px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The tooltip form: shown on hover AND focus, because a caveat only
+   reachable with a mouse is a caveat some users never get. */
+.md-caveat-action { display: inline-flex; align-items: center; gap: 10px; }
+.md-caveat-tip {
+  display: inline-flex; align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}

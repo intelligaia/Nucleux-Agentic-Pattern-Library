@@ -1,0 +1,2095 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Component · Material 3.0 — Nucleux</title>
+  <meta name="description" content="A Nucleux agent component in the Material 3.0 neural expressive language — description, live preview and copyable markup." />
+
+  <!-- ── SHARE CARD ──
+       X (and LinkedIn, Slack, iMessage…) build their link preview by
+       crawling these tags, not from anything the share button can pass in
+       the intent URL — there is no way to attach an image to a post from a
+       link. `summary_large_image` is what makes the card render as the wide
+       banner rather than a small thumbnail. The image URL must be absolute
+       and publicly reachable: the crawler fetches it from its own servers,
+       so a relative path or a localhost address renders no card at all. -->
+  <link rel="canonical" href="https://nucleux.in/material-pattern.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleux" />
+  <meta property="og:url" content="https://nucleux.in/material-pattern.html" />
+  <meta property="og:title" content="Component · Material 3.0 — Nucleux" />
+  <meta property="og:description" content="A Nucleux agent component in the Material 3.0 neural expressive language — description, live preview and copyable markup." />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png" />
+  <meta property="og:image:width" content="515" />
+  <meta property="og:image:height" content="272" />
+  <meta property="og:image:alt" content="Nucleux — UI components for AI agents" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Component · Material 3.0 — Nucleux" />
+  <meta name="twitter:description" content="A Nucleux agent component in the Material 3.0 neural expressive language — description, live preview and copyable markup." />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png" />
+  <meta name="twitter:image:alt" content="Nucleux — UI components for AI agents" />
+
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+  <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="nav-mega.css" />
+  <!-- Material 3 variables, read out of the Design Kit. Loaded AFTER
+       the site sheets so a --md-sys-* token always wins on this page. -->
+  <link rel="stylesheet" href="material-tokens.css" />
+  <link rel="stylesheet" href="material-components.css" />
+  <style>
+    /* ════════════════════════════════════════════════════════════
+       MATERIAL 3.0 — COMPONENT PAGE
+
+       Two layers live here and they are deliberately separated:
+
+         .mp-*  page chrome (header, example frames, code toggle)
+         .m3-*  the components themselves
+
+       Only the .m3-* layer is what a reader is copying. It is
+       written against the expressive tokens below rather than
+       inline styles, so the snippet in the code panel stays
+       readable instead of being a wall of style="".
+
+       Page-scoped rather than in styles.css for the same reason as
+       the overview page: styles.css is shared with the ShadCN set,
+       and the whole premise is that the two sets look different.
+       ════════════════════════════════════════════════════════════ */
+    /* What is left of the expressive palette on this page: it now
+       feeds only .mp-tab, the library's own Preview/Code toggle. No
+       component uses it — those are all on --md-sys-* tokens. */
+    .detail {
+      --mx-p-20: oklch(0.34 0.14 293);
+      --mx-p-40: oklch(0.50 0.20 293);
+      --mx-p-60: oklch(0.62 0.23 293);
+      --mx-p-90: oklch(0.90 0.05 293);
+      --mx-p-95: oklch(0.96 0.02 293);
+      --mx-s-20: oklch(0.36 0.14 15);
+      --mx-s-40: oklch(0.48 0.19 15);
+      --mx-s-60: oklch(0.62 0.21 15);
+      --mx-s-95: oklch(0.96 0.02 15);
+      --mx-t-20: oklch(0.38 0.09 66);
+      --mx-t-60: oklch(0.66 0.15 66);
+      --mx-t-90: oklch(0.90 0.06 66);
+      --mx-t-95: oklch(0.96 0.03 66);
+
+      --mx-capsule: 9999px;
+      --mx-lg: 28px;
+      --mx-md: 18px;
+      --mx-ease-spring:     cubic-bezier(.34, 1.56, .64, 1);
+      --mx-ease-standard:   cubic-bezier(.22, 1, .36, 1);
+      --mx-dur: 380ms;
+    }
+
+    /* ── Example frame ────────────────────────────────────── */
+    .mp-ex { margin-top: 26px; }
+
+    /* The frame is now just a wrapper: the panel is the stage
+       itself, so the code pane can carry its own dark ground
+       without a second border around both. */
+    .mp-frame { position: relative; }
+
+    /* The specimen stage. Same shape as the other library's — a
+       tinted panel, bordered, the component centred with air around
+       it — so a reader moving between the two sets is not
+       re-learning where to look. The ground is Material's
+       surface-container-low rather than a neutral grey: on this page
+       the panel behind a Material component should be a Material
+       surface. */
+    .mp-stage {
+      background: var(--md-sys-color-surface-container-low);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-large);
+      padding: 56px 40px;
+      display: grid; place-items: center;
+      min-height: 280px;
+    }
+    /* `display: grid` outranks the UA sheet's [hidden] { display: none },
+       so toggling to Code left the preview mounted underneath it. Same
+       trap as the composer's mic and send buttons — restate it at
+       author level. */
+    .mp-stage[hidden] { display: none; }
+
+    /* ── Preview / Code — M3 segmented button ─────────────────
+       Container on surface-container-high, the selected segment on
+       surface-container-lowest lifted by elevation-1. That inversion
+       is how M3 marks selection on a segmented button: the chosen
+       segment comes forward, the rest stay flat. */
+    .mp-seg {
+      display: inline-flex; align-items: center; gap: 2px;
+      padding: 3px; margin-bottom: 12px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: var(--md-sys-color-surface-container-high);
+    }
+    .mp-seg__btn {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 34px; padding: 0 16px;
+      border: 0; border-radius: var(--md-sys-shape-corner-full);
+      background: transparent;
+      color: var(--md-sys-color-on-surface-variant);
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-label-large-size);
+      line-height: var(--md-sys-typescale-label-large-line);
+      font-weight: var(--md-sys-typescale-label-large-weight);
+      letter-spacing: var(--md-sys-typescale-label-large-tracking);
+      cursor: pointer;
+      transition: background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .mp-seg__btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+    .mp-seg__btn:hover { color: var(--md-sys-color-on-surface); }
+    .mp-seg__btn[aria-selected="true"] {
+      background: var(--md-sys-color-surface-container-lowest);
+      color: var(--md-sys-color-on-surface);
+      box-shadow: var(--md-sys-elevation-1);
+    }
+    .mp-seg__btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+
+    .mp-code {
+      position: relative;
+      margin: 0; padding: 20px 22px;
+      border-radius: var(--md-sys-shape-corner-large);
+      overflow-x: auto;
+      background: #17161c;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px; line-height: 1.7;
+      color: #d7d5e4;
+      white-space: pre;
+      tab-size: 2;
+    }
+    .mp-code .t { color: #a78bfa; }   /* tag        */
+    .mp-code .a { color: #7dd3c8; }   /* attribute  */
+    .mp-code .v { color: #fbbf77; }   /* value      */
+    .mp-code .c { color: #6b6880; }   /* comment    */
+    .mp-copy {
+      position: absolute; top: 12px; right: 12px;
+      padding: 5px 11px; border-radius: var(--md-sys-shape-corner-full);
+      border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06);
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-label-medium-size);
+      color: #d7d5e4; cursor: pointer;
+    }
+    .mp-copy:hover { background: rgba(255,255,255,0.13); }
+
+    /* ── Installation ─────────────────────────────────────────
+       Tabs are underlined rather than filled: they select which of
+       four equivalent commands you are reading, and a filled pill
+       here would read as the page's primary action. */
+    .mp-inst {
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-lowest);
+      overflow: hidden;
+    }
+    .mp-inst__bar {
+      display: flex; align-items: stretch; gap: 4px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      background: color-mix(in srgb, var(--md-sys-color-surface-container) 45%, transparent);
+    }
+    .mp-inst__tab {
+      position: relative;
+      padding: 12px 10px 11px;
+      border: 0; background: transparent; cursor: pointer;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+    .mp-inst__tab:hover { color: var(--md-sys-color-on-surface); }
+    .mp-inst__tab[aria-selected="true"] {
+      color: var(--md-sys-color-on-surface); font-weight: 600;
+    }
+    .mp-inst__tab[aria-selected="true"]::after {
+      content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px;
+      height: 2px; background: var(--md-sys-color-on-surface);
+      border-radius: 2px 2px 0 0;
+    }
+    .mp-inst__copy {
+      margin-left: auto; align-self: center;
+      width: 32px; height: 32px; display: grid; place-items: center;
+      border: 0; border-radius: var(--md-sys-shape-corner-small);
+      background: transparent; color: var(--md-sys-color-on-surface-variant);
+      cursor: pointer;
+    }
+    .mp-inst__copy svg { width: 17px; height: 17px; }
+    .mp-inst__copy:hover { background: var(--md-sys-color-surface-container-high);
+                           color: var(--md-sys-color-on-surface); }
+    .mp-inst__copy.is-done { color: var(--md-sys-color-primary); }
+    .mp-inst__cmd {
+      margin: 0; padding: 18px 22px; overflow-x: auto;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13.5px; line-height: 1.6; white-space: pre;
+    }
+    .mp-inst__cmd .c-run { color: #2563eb; }
+    .mp-inst__cmd .c-arg { color: #15803d; }
+
+    /* ── Usage ────────────────────────────────────────────────
+       The line numbers are their own column, not text inside the
+       <pre>: numbers inside the code get selected and copied along
+       with it, which makes the snippet unusable on paste. */
+    .mp-usage {
+      position: relative;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-lowest);
+      overflow: hidden;
+    }
+    /* A copy control, not a language badge. The badge named a fact the
+       reader could already see and did nothing; this is the one thing
+       anyone actually wants from a usage block. M3 icon button — 32dp,
+       corner-full, on-surface-variant, with a real state layer. */
+    .mp-usage__copy {
+      position: absolute; top: 12px; right: 12px;
+      width: 32px; height: 32px; padding: 0;
+      border: 0; border-radius: var(--md-sys-shape-corner-full);
+      background: transparent; color: var(--md-sys-color-on-surface-variant);
+      display: grid; place-items: center; cursor: pointer;
+      transition: background-color var(--md-sys-motion-duration-short4)
+                  var(--md-sys-motion-easing-standard);
+    }
+    .mp-usage__copy svg {
+      grid-area: 1 / 1;
+      width: 16px; height: 16px;
+      fill: none; stroke: currentColor; stroke-width: 1.7;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .mp-usage__copy:hover {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface)
+        calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+    }
+    /* Confirmation swaps the glyph for a tick in CSS rather than by
+       rewriting the button — the control keeps its accessible name and
+       there is no innerHTML to lose. */
+    .mp-usage__copy .mp-usage__tick { display: none; }
+    .mp-usage__copy.is-done { color: var(--md-sys-color-primary); }
+    .mp-usage__copy.is-done .mp-usage__tick { display: block; }
+    .mp-usage__copy.is-done .mp-usage__pages { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .mp-usage__copy { transition: none; }
+    }
+    .mp-usage__body { display: flex; }
+    .mp-usage__nums {
+      flex: 0 0 auto;
+      display: flex; flex-direction: column;
+      padding: 20px 0 20px 18px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px; line-height: 24px;
+      color: var(--md-sys-color-outline);
+      text-align: right; user-select: none;
+      min-width: 34px;
+    }
+    .mp-usage__code {
+      flex: 1 1 auto; min-width: 0;
+      margin: 0; padding: 20px 22px 20px 16px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px; line-height: 24px;
+      color: var(--md-sys-color-on-surface);
+      white-space: pre;
+    }
+    .mp-usage__code .t { color: #15803d; }
+    .mp-usage__code .a { color: #1d4ed8; }
+    .mp-usage__code .v { color: #b91c1c; }
+    .mp-usage__code .c { color: var(--md-sys-color-outline); }
+
+    /* ── Foot: composed of / related ──────────────────────── */
+    /* The breadcrumb, hero, section blocks, chips, related cards and
+       prev/next are NOT restyled here: they use .bread / .detail__hero /
+       .section-block / .composed / .related / .detail__nav straight out of
+       styles.css, the same rules the ShadCN detail page uses. Only the
+       preview frame below is this page's own. */
+
+    /* ════════════════════════════════════════════════════════════
+       .m3-*  — THE COMPONENTS
+       This is the layer the code panel shows. Everything below is
+       real CSS a reader can lift, not preview scaffolding.
+       ════════════════════════════════════════════════════════════ */
+    /* The bespoke disclosure classes (.m3-msg, .m3-panel, .m3-strip,
+       .m3-avatar, .m3-badge, .m3-facts) were removed when Disclosure
+       moved onto Material components: they were Nucleux-toned shapes
+       with no counterpart in the kit. Consent and Caveat still use the
+       .m3-* rules below and are next to move. */
+
+    .m3-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      height: 40px; padding: 0 20px;
+      border-radius: var(--md-sys-shape-corner-full);
+      border: 1px solid transparent;
+      font: inherit; font-size: 13.5px; font-weight: 620;
+      cursor: pointer;
+      transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .m3-btn:active { transform: scale(0.97); }
+    .m3-btn--primary { background: var(--md-sys-color-primary); color: #fff; }
+    .m3-btn--primary:hover { background: var(--md-sys-color-on-primary-container); }
+    /* The "a human must press this" control. It used a Nucleux rose,
+       which read as pink beside Material components; on this page it
+       takes M3 primary and earns its weight from size and position
+       instead of from a colour outside the scheme. */
+    .m3-btn--human {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+    .m3-btn--human:hover { background: var(--md-sys-color-on-primary-container); }
+    .m3-btn--quiet { background: var(--ink-50); color: var(--fg-alt); }
+    .m3-btn--ghost {
+      background: transparent; color: var(--fg-alt); border-color: var(--border);
+    }
+    .m3-btn--ghost:hover { border-color: var(--fg-muted); color: var(--fg); }
+    .m3-btn--sm { height: 34px; padding: 0 16px; font-size: 12.5px; }
+    .m3-btn--tiny {
+      height: 28px; padding: 0 12px; font-size: 11.5px;
+      background: transparent; color: var(--fg-alt); border-color: var(--border);
+    }
+    .m3-btn--tiny:hover { color: var(--fg); border-color: var(--fg-muted); }
+
+
+    /* ════════════════════════════════════════════════════════════
+       APP CHROME — the "In context" scenes
+
+       A component shown alone on a swatch tells you what it looks
+       like. It does not tell you whether you would notice it. These
+       scenes put the same component inside a plausible product —
+       a rail, a header, a thread, real neighbouring content — so
+       the question the page answers is "would this be seen", not
+       "is this pretty".
+
+       The chrome is deliberately generic and mid-grey: it is set
+       dressing, and if it competes with the component it is wrong.
+       ════════════════════════════════════════════════════════════ */
+    .app {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container-lowest);
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      min-height: 360px;
+      font-family: var(--md-ref-typeface-plain);
+    }
+    .app--wide { grid-template-columns: 1fr; }
+
+    /* ── Rail ─────────────────────────────────────────────── */
+    .app__rail {
+      background: var(--app-rail, #f6f6f7);
+      border-right: 1px solid var(--md-sys-color-outline-variant);
+      padding: 14px 12px;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .app__brand {
+      display: flex; align-items: center; gap: 9px;
+      padding: 4px 8px 14px;
+      font-size: 13px; font-weight: 600; color: var(--app-ink, #202124);
+    }
+    .app__brand-mark {
+      width: 20px; height: 20px; border-radius: 6px;
+      background: var(--md-sys-color-primary);
+    }
+    .app__nav {
+      display: flex; align-items: center; gap: 9px;
+      padding: 7px 9px; border-radius: 7px;
+      font-size: 12.5px; color: var(--app-ink-dim, #5f6368);
+    }
+    .app__nav.is-current {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      font-weight: 500;
+    }
+    .app__nav-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; opacity: 0.5; flex: 0 0 auto;
+    }
+    .app__rail-foot { margin-top: auto; }
+
+    /* ── Body ─────────────────────────────────────────────── */
+    .app__body { display: flex; flex-direction: column; min-width: 0; }
+    .app__bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    .app__title { font-size: 13.5px; font-weight: 600; color: var(--app-ink, #202124); }
+    .app__bar-spacer { margin-left: auto; }
+    .app__pill {
+      height: 26px; padding: 0 12px; border-radius: 999px;
+      display: inline-flex; align-items: center;
+      background: var(--app-rail, #f6f6f7);
+      color: var(--app-ink-dim, #5f6368);
+      font-size: 11.5px;
+    }
+    .app__canvas {
+      flex: 1 1 auto; padding: 20px 18px;
+      display: flex; flex-direction: column; gap: 16px;
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    /* A human turn, so the reader can see the generated one against
+       something that is NOT generated — which is the entire point of
+       disclosure and cannot be judged from a lone specimen. */
+    .app__human {
+      display: flex; gap: 12px; align-items: flex-start;
+      max-width: 560px;
+    }
+    .app__human-av {
+      flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: #dfe1e5; color: #3c4043;
+      font-size: 15px; font-weight: 500;
+    }
+    .app__human-name { font-size: 16px; color: var(--app-ink, #202124); }
+    .app__human-text {
+      margin: 4px 0 0; font-size: 14px; line-height: 20px; color: #444746;
+    }
+    .app__hint {
+      margin: 0; font-size: 11.5px; color: var(--app-ink-dim, #5f6368);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .app__hint::before {
+      content: ""; width: 14px; height: 1px; background: currentColor; opacity: 0.5;
+    }
+    .app__composer {
+      margin-top: auto;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 999px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--app-rail, #f6f6f7);
+      color: var(--app-ink-dim, #5f6368);
+      font-size: 13px;
+    }
+    .app__composer-send {
+      margin-left: auto; width: 30px; height: 30px; border-radius: 50%;
+      background: var(--md-sys-color-primary);
+      display: grid; place-items: center;
+    }
+    .app__composer-send svg { width: 15px; height: 15px; fill: var(--md-sys-color-on-primary); }
+
+    /* ════════════════════════════════════════════════════════════
+       LIVE SCENE — the controls and the states
+
+       The control bar sits OUTSIDE the product frame because it is
+       the reader's, not the product's; confusing the two would make
+       the scene lie about what ships. Everything inside the frame is
+       the component's own markup and its own states.
+       ════════════════════════════════════════════════════════════ */
+    .sc-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    /* A reader-facing switch, deliberately NOT the M3 switch used
+       inside the scenes: the product's controls and the page's
+       controls must not be mistakable for each other. */
+    .sc-switch {
+      display: inline-flex; align-items: center; gap: 9px;
+      height: 32px; padding: 0 12px 0 8px;
+      border: 1px solid var(--border); border-radius: 999px;
+      background: transparent; cursor: pointer;
+      font-family: inherit; font-size: 12.5px; color: var(--fg-alt);
+    }
+    .sc-switch:hover { border-color: var(--fg-muted); color: var(--fg); }
+    .sc-switch__track {
+      width: 30px; height: 18px; border-radius: 999px; padding: 2px;
+      background: var(--ink-100, #e6e6e2); display: flex; align-items: center;
+      transition: background var(--md-sys-motion-duration-short4)
+                  var(--md-sys-motion-easing-standard);
+    }
+    .sc-switch__knob {
+      width: 14px; height: 14px; border-radius: 50%; background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.28);
+      transition: transform var(--md-sys-motion-duration-medium2)
+                  var(--md-sys-motion-easing-emphasized);
+    }
+    .sc-switch.is-on .sc-switch__track { background: var(--md-sys-color-primary); }
+    .sc-switch.is-on .sc-switch__knob { transform: translateX(12px); }
+
+    .sc-seg {
+      display: inline-flex; padding: 3px; gap: 2px;
+      border: 1px solid var(--border); border-radius: 999px;
+    }
+    .sc-seg__btn {
+      height: 26px; padding: 0 14px; border: 0; border-radius: 999px;
+      background: transparent; cursor: pointer;
+      font-family: inherit; font-size: 12.5px; color: var(--fg-muted);
+    }
+    .sc-seg__btn[aria-selected="true"] {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container); font-weight: 550;
+    }
+
+    /* ── Inside the frame ─────────────────────────────────── */
+    .sc-turn { display: flex; gap: 12px; align-items: flex-start; max-width: 620px; }
+    .sc-turn__body { min-width: 0; flex: 1 1 auto; }
+    .sc-turn__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .sc-turn__name { font-size: 15px; color: var(--app-ink, #202124); }
+    .sc-turn__time { font-size: 11.5px; color: var(--app-ink-dim, #5f6368); margin-left: auto; }
+    .sc-text {
+      margin: 6px 0 0; font-size: 14px; line-height: 21px; color: #444746;
+      max-width: 56ch;
+    }
+    .sc-text b { color: var(--app-ink, #202124); font-weight: 600; }
+    .sc-muted { color: var(--app-ink-dim, #9aa0a6); }
+
+    /* The caret is the only thing that says text is still arriving;
+       it is removed the instant the stream ends rather than left
+       blinking on finished content. */
+    .sc-caret {
+      display: inline-block; width: 2px; height: 15px; margin-left: 2px;
+      vertical-align: -2px; background: var(--md-sys-color-primary);
+      animation: sc-blink 900ms steps(2, start) infinite;
+    }
+    @keyframes sc-blink { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
+
+    .sc-working { display: flex; align-items: center; gap: 7px; margin-top: 10px; }
+    .sc-working__t { font-size: 12.5px; color: var(--app-ink-dim, #5f6368); }
+    .sc-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--md-sys-color-primary); opacity: 0.5;
+      animation: sc-pulse 1200ms var(--md-sys-motion-easing-standard) infinite;
+    }
+    .sc-dot:nth-child(2) { animation-delay: 160ms; }
+    .sc-dot:nth-child(3) { animation-delay: 320ms; }
+    @keyframes sc-pulse {
+      0%, 100% { opacity: 0.35; transform: translateY(0); }
+      50%      { opacity: 1;    transform: translateY(-2px); }
+    }
+
+    .sc-consent {
+      margin-top: 12px; max-width: 470px; padding: 16px 18px 14px;
+      border-radius: var(--md-sys-shape-corner-large);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    .sc-consent__t { margin: 0; font-size: 14px; font-weight: 620; color: var(--app-ink, #202124); }
+    .sc-consent .m3-scopes { margin-top: 8px; }
+    .sc-consent__foot { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .sc-handoff {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container);
+      font-size: 12.5px; color: var(--app-ink-dim, #5f6368);
+    }
+    .sc-handoff b { color: var(--app-ink, #202124); }
+
+    .sc-sizes { display: flex; align-items: center; gap: 20px; margin-top: 4px; }
+    .sc-size { display: grid; justify-items: center; gap: 6px; }
+    .sc-size__l { font-size: 11px; color: var(--app-ink-dim, #5f6368); }
+
+    .sc-log { display: grid; gap: 4px; }
+    .sc-log__row {
+      display: flex; gap: 12px; align-items: center;
+      padding: 10px 12px; border-radius: var(--md-sys-shape-corner-medium);
+    }
+    .sc-log__row:nth-child(odd) { background: var(--md-sys-color-surface-container-low); }
+    .sc-log__what { margin: 0; font-size: 13.5px; color: var(--app-ink, #202124); }
+    .sc-log__who { margin: 2px 0 0; font-size: 11.5px; color: var(--app-ink-dim, #5f6368); }
+
+    .sc-notif {
+      max-width: 420px; padding: 14px 16px;
+      border-radius: var(--md-sys-shape-corner-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      box-shadow: var(--md-sys-elevation-2);
+    }
+    .sc-notif__head { display: flex; align-items: center; gap: 10px; }
+    .sc-notif__n { margin: 0; font-size: 13.5px; font-weight: 620; color: var(--app-ink, #202124); }
+    .sc-notif__r { margin: 1px 0 0; font-size: 11.5px; color: var(--app-ink-dim, #5f6368); }
+
+    .sc-toolbar {
+      position: relative;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .sc-icon {
+      width: 32px; height: 32px; border: 0; border-radius: 50%;
+      background: transparent; color: var(--app-ink-dim, #5f6368);
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .sc-icon svg { width: 18px; height: 18px; }
+    .sc-icon:hover { background: rgba(0,0,0,0.06); }
+    .sc-menu { position: absolute; top: 40px; left: 0; z-index: 5; }
+    .sc-menu .md-menu__item {
+      width: 100%; border: 0; background: transparent; cursor: pointer; text-align: left;
+    }
+    .sc-menu .md-menu__item:hover { background: rgba(0,0,0,0.05); }
+    .sc-field { margin-top: 14px; max-width: 520px; }
+
+    /* The audit outlines every reserved glyph on screen at once. It
+       is a reviewer's tool, not a product state — which is exactly
+       why it belongs in the page's controls and not the app's. */
+    .sc-audit .sc-glyph,
+    .sc-audit .md-menu__item--ai svg,
+    .sc-audit .md-assist-chip__icon,
+    .sc-audit .md-agentav svg {
+      outline: 2px solid var(--md-sys-color-error);
+      outline-offset: 3px; border-radius: 2px;
+    }
+
+    .sc-doc {
+      border-radius: var(--md-sys-shape-corner-large);
+      border: 2px solid transparent;
+      padding: 16px 18px;
+      background: var(--md-sys-color-surface-container-lowest);
+      transition: border-color var(--md-sys-motion-duration-medium2)
+                  var(--md-sys-motion-easing-emphasized);
+    }
+    .sc-doc.is-live { border-color: var(--md-sys-color-primary); }
+    .sc-doc__head { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+    .sc-doc__label {
+      font-size: 12.5px; font-weight: 600; color: var(--md-sys-color-primary);
+    }
+    .sc-doc__stop { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+    .sc-doc__p { margin: 0; font-size: 17px; font-weight: 640; color: var(--app-ink, #202124); }
+    .sc-doc__body { margin: 6px 0 0; font-size: 13px; color: var(--app-ink-dim, #5f6368); }
+    .sc-bubble__tag { display: block; margin-top: 10px; }
+
+    /* Greyscale is the accessibility proof, so it has to cover the
+       WHOLE frame — a filter on the component alone would leave the
+       surrounding colour doing work the reader could not see. */
+    .sc-grey { filter: grayscale(1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sc-caret, .sc-dot { animation: none; }
+      .sc-switch__track, .sc-switch__knob, .sc-doc { transition: none; }
+    }
+
+    /* ── Consent scenes ───────────────────────────────────── */
+    .sc-consent__k {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .sc-consent__k + .sc-consent__t { margin-top: 10px; }
+    .sc-consent__sub {
+      margin: 5px 0 0; font-size: 12.5px; line-height: 1.5;
+      color: var(--app-ink-dim, #5f6368);
+    }
+
+    /* The just-in-time ask: a smaller shape than the first dialog on
+       purpose. A second full-size dialog for one permission reads as
+       the same request repeated, which is how people learn to click
+       Allow without reading it. */
+    .sc-jit {
+      margin-top: 12px; max-width: 460px; padding: 15px 17px 13px;
+      border-radius: 6px var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large)
+                     var(--md-sys-shape-corner-large);
+      background: color-mix(in oklab, var(--md-sys-color-secondary-container) 60%, #fff);
+      border: 1px solid color-mix(in oklab, var(--md-sys-color-primary) 20%, transparent);
+    }
+    .sc-jit__row { display: flex; gap: 10px; align-items: flex-start; }
+    .sc-jit__dot {
+      flex: 0 0 auto; margin-top: 6px; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--md-sys-color-primary);
+    }
+    .sc-jit__text { margin: 0; font-size: 13.5px; line-height: 1.55; color: #444746; }
+    .sc-jit__text b { color: var(--app-ink, #202124); font-weight: 620; }
+    .sc-jit__foot { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 13px; }
+
+    /* ── The standing permissions surface ─────────────────── */
+    .sc-perms { max-width: 620px; }
+    .sc-perms__head {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .sc-perms__t { margin: 0; font-size: 15px; font-weight: 640; color: var(--app-ink, #202124); }
+    .sc-perms__s { margin: 3px 0 0; font-size: 12px; color: var(--app-ink-dim, #5f6368); }
+    .sc-perms__head .md-button { margin-left: auto; flex: 0 0 auto; }
+
+    .sc-srcs { list-style: none; margin: 0; padding: 0; }
+    .sc-src {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .sc-src:last-child { border-bottom: 0; }
+    .sc-src__mark {
+      flex: 0 0 auto; width: 34px; height: 34px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-primary-container);
+      transition: background var(--md-sys-motion-duration-medium2)
+                  var(--md-sys-motion-easing-standard);
+    }
+    /* Off is a real, visible state, not just an unticked switch: the
+       row loses its colour and says what it can no longer see. */
+    .sc-src.is-off .sc-src__mark { background: var(--md-sys-color-surface-container-high); }
+    .sc-src.is-off .sc-src__n,
+    .sc-src.is-off .sc-src__d { color: var(--app-ink-dim, #9aa0a6); }
+    .sc-src__text { min-width: 0; flex: 1 1 auto; }
+    .sc-src__n { margin: 0; font-size: 13.5px; font-weight: 620; color: var(--app-ink, #202124); }
+    .sc-src__d { margin: 2px 0 0; font-size: 12.5px; color: #444746; }
+    .sc-src__u { margin: 4px 0 0; font-size: 11.5px; color: var(--app-ink-dim, #5f6368); }
+
+    .sc-note {
+      margin: 14px 0 0; padding: 11px 14px;
+      border-left: 3px solid var(--md-sys-color-primary);
+      border-radius: var(--md-sys-shape-corner-extra-small);
+      background: var(--md-sys-color-surface-container);
+      font-size: 12.5px; line-height: 1.55; color: #444746;
+    }
+
+    /* A modal has to be modal, so the scrim covers the product frame
+       and nothing behind it is reachable while the question stands. */
+    .sc-scrim {
+      position: absolute; inset: 0; z-index: 30;
+      display: grid; place-items: center; padding: 20px;
+      background: color-mix(in srgb, var(--md-sys-color-scrim) 34%, transparent);
+      animation: sc-fade 160ms var(--md-sys-motion-easing-standard);
+    }
+    .sc-scrim .md-dialog { max-width: 380px; }
+    @keyframes sc-fade { from { opacity: 0 } to { opacity: 1 } }
+
+    /* Anything that ARRIVES rises into place — an ask that appears
+       instantly reads as having always been there, which is exactly
+       the wrong impression for a permission request. */
+    .sc-rise { animation: sc-rise 260ms var(--md-sys-motion-easing-emphasized) both; }
+    @keyframes sc-rise {
+      from { opacity: 0; transform: translateY(8px) scale(0.985); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sc-rise, .sc-scrim { animation: none; }
+      .sc-src__mark { transition: none; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       LIVE PREVIEW PLAYGROUND
+
+       A workbench, not a swatch. The reader drives the pattern
+       through its own states, the code follows whatever is on
+       screen, and the read-out underneath says what caused the
+       state they are looking at.
+
+       Motion follows the neural expressive rule that a change of
+       state is one surface TRANSFORMING, not one element being
+       replaced by another: the disclosure panel grows out of its
+       own chip on a 0fr→1fr grid row, with M3's emphasized easing
+       and a small settle, rather than fading in beside it.
+       ════════════════════════════════════════════════════════════ */
+    /* The description is a standing subtitle, not a lede: one line of
+       what the pattern is and what it buys, at a size that keeps the
+       first interactive thing on the page above the fold. 20px was
+       sized for a two-sentence hero this page no longer has. */
+    .detail__oneline {
+      font-size: 16px; line-height: 1.6; max-width: 66ch;
+    }
+
+    .pv-head {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    /* Head: the view toggle on the left, and on the right the two
+       things that change what you are looking at — which state, and
+       the options behind it. Both are single controls at a fixed
+       size, so the row does not reflow as a pattern's state count
+       changes from three to six. */
+    .pv-head__right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+    .pv-select { position: relative; }
+    .pv-select__btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 34px; padding: 0 10px 0 14px;
+      border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); cursor: pointer;
+      font-family: inherit; font-size: 12.5px; color: var(--fg);
+      transition: border-color 160ms var(--md-sys-motion-easing-standard);
+    }
+    .pv-select__btn:hover { border-color: var(--fg-muted); }
+    .pv-select__k { color: var(--fg-muted); }
+    .pv-select__v { font-weight: 600; }
+    .pv-select__chev {
+      width: 14px; height: 14px; color: var(--fg-muted);
+      transition: transform 200ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pv-select__btn[aria-expanded="true"] .pv-select__chev { transform: rotate(180deg); }
+
+    .pv-select__menu {
+      position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+      min-width: 210px; padding: 6px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-low);
+      box-shadow: var(--md-sys-elevation-2);
+      animation: pv-menu-in 180ms var(--md-sys-motion-easing-emphasized) both;
+    }
+    @keyframes pv-menu-in {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .pv-select__opt {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      height: 36px; padding: 0 10px; text-align: left;
+      border: 0; border-radius: var(--md-sys-shape-corner-small);
+      background: transparent; cursor: pointer;
+      font-family: inherit; font-size: 13px; color: var(--md-sys-color-on-surface);
+    }
+    .pv-select__opt:hover {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface)
+        calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+    }
+    .pv-select__opt[aria-selected="true"] { font-weight: 620; }
+    /* A tick, and a slot for it that is always there — so choosing an
+       option does not shift the labels of the ones around it. */
+    .pv-select__tick {
+      width: 16px; height: 16px; flex: 0 0 auto;
+      color: var(--md-sys-color-primary);
+    }
+    .pv-select__tick svg { width: 16px; height: 16px; display: block; }
+
+    .pv-frame {
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      overflow: hidden;
+    }
+    .pv-stage {
+      min-height: 300px; padding: 40px 32px;
+      display: grid; place-items: center;
+      background:
+        radial-gradient(120% 120% at 50% 0%,
+          color-mix(in oklab, var(--md-sys-color-primary-container) 26%, transparent) 0%,
+          transparent 62%),
+        var(--md-sys-color-surface-container-lowest);
+    }
+    /* display:grid outranks the UA sheet's [hidden] rule, so the
+       author-level restatement is not optional. */
+    .pv-stage[hidden] { display: none; }
+    .pv-code {
+      position: relative; margin: 0; padding: 22px 24px;
+      max-height: 460px; overflow: auto;
+      background: var(--md-sys-color-surface-container-lowest);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px; line-height: 22px; color: var(--md-sys-color-on-surface);
+    }
+    .pv-code .t { color: #15803d; }
+    .pv-code .a { color: #1d4ed8; }
+    .pv-code .v { color: #b91c1c; }
+    .pv-copy {
+      position: absolute; top: 12px; right: 14px;
+      width: 32px; height: 32px; padding: 0; border: 0;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: var(--md-sys-color-surface-container);
+      color: var(--md-sys-color-on-surface-variant);
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .pv-copy svg { width: 15px; height: 15px; }
+    .pv-copy:hover { color: var(--md-sys-color-on-surface); }
+    .pv-copy.is-done { color: var(--md-sys-color-primary); }
+
+    /* Rules BETWEEN the rows only. The outer two drew a box around
+       four lines of text that needed no box — and the top one sat a
+       few pixels under the frame's own edge, reading as a seam. */
+    .pv-doc-rows { margin: 20px 0 0; padding: 0; }
+    .pv-row {
+      display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 20px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .pv-row:last-child { border-bottom: 0; }
+    .pv-row__k {
+      margin: 0; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--fg-muted);
+    }
+    .pv-row__v { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--fg-alt); }
+    .pv-live {
+      margin: 10px 0 0; min-height: 16px;
+      font-size: 12px; color: var(--fg-muted);
+    }
+
+    /* ── Specimens used by the playground ─────────────────── */
+    /* ── The shape scale ─────────────────────────────────────
+       One vocabulary, two roles, resolved here rather than in script,
+       and shared by every pattern that offers a shape control.
+
+       A CONTAINER takes the next token down from the one named, capped
+       at extra-large: a fully rounded chip is correct Material, a
+       pill-shaped content surface is not. A MARKER takes the token
+       itself. That is the whole reason the value travels as a token
+       name and not as a number — the number differs by role.
+
+         token          surface        marker
+         full           28px           9999px
+         extra-large    16px             28px
+         large          12px             16px
+         medium          8px             12px
+         small           4px              8px
+
+       Patterns opt in by putting data-shape on their own surface, so
+       the list below is explicit rather than a blanket attribute
+       selector that would also catch the markers. */
+    .pv-card[data-shape="full"],
+    .pv-consent[data-shape="full"],
+    .m3-granted[data-shape="full"],
+    .md-nudge[data-shape="full"],
+    .md-tpl[data-shape="full"]        { border-radius: var(--md-sys-shape-corner-extra-large); }
+
+    .pv-card[data-shape="extra-large"],
+    .pv-consent[data-shape="extra-large"],
+    .m3-granted[data-shape="extra-large"],
+    .md-nudge[data-shape="extra-large"],
+    .md-tpl[data-shape="extra-large"] { border-radius: var(--md-sys-shape-corner-large); }
+
+    .pv-card[data-shape="large"],
+    .pv-consent[data-shape="large"],
+    .m3-granted[data-shape="large"],
+    .md-nudge[data-shape="large"],
+    .md-tpl[data-shape="large"]       { border-radius: var(--md-sys-shape-corner-medium); }
+
+    .pv-card[data-shape="medium"],
+    .pv-consent[data-shape="medium"],
+    .m3-granted[data-shape="medium"],
+    .md-nudge[data-shape="medium"],
+    .md-tpl[data-shape="medium"]      { border-radius: var(--md-sys-shape-corner-small); }
+
+    .pv-card[data-shape="small"],
+    .pv-consent[data-shape="small"],
+    .m3-granted[data-shape="small"],
+    .md-nudge[data-shape="small"],
+    .md-tpl[data-shape="small"]       { border-radius: var(--md-sys-shape-corner-extra-small); }
+
+    .pv-disclose[data-shape="full"]        { --chip-radius: var(--md-sys-shape-corner-full); }
+    .pv-disclose[data-shape="extra-large"] { --chip-radius: var(--md-sys-shape-corner-extra-large); }
+    .pv-disclose[data-shape="large"]       { --chip-radius: var(--md-sys-shape-corner-large); }
+    .pv-disclose[data-shape="small"]       { --chip-radius: var(--md-sys-shape-corner-small); }
+
+
+    /* Flat, like every other specimen in the library. The elevation-1
+       token is two black shadows — correct on a white product surface,
+       but over the tinted preview ground it reads as a grey smudge
+       under the card rather than as height. The outline carries the
+       edge instead, which is what the other patterns' surfaces do, so
+       the whole set looks like one system. */
+    .pv-card {
+      width: min(460px, 100%); padding: 22px 24px;
+      border-radius: var(--md-sys-shape-corner-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      border: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .pv-card--quiet { box-shadow: none; background: var(--md-sys-color-surface-container-low); }
+    .pv-card__title { margin: 0; color: var(--md-sys-color-on-surface); }
+    .pv-card__meta { margin: 3px 0 0; color: var(--md-sys-color-on-surface-variant); }
+    .pv-card__empty { margin: 16px 0 14px; color: var(--md-sys-color-on-surface-variant); }
+    .pv-card__body { margin: 16px 0 0; color: var(--md-sys-color-on-surface); }
+    .pv-card .md-button { margin-top: 14px; }
+
+    .pv-status { display: flex; align-items: center; gap: 10px; margin-top: 18px;
+                 color: var(--md-sys-color-on-surface-variant); }
+    /* A ring, not a bar: the agent is working on this card, and the
+       indicator says so by living on it. */
+    .pv-status__ring {
+      width: 16px; height: 16px; flex: 0 0 auto; border-radius: 50%;
+      border: 2px solid color-mix(in oklab, var(--md-sys-color-primary) 26%, transparent);
+      border-top-color: var(--md-sys-color-primary);
+      animation: pv-spin 780ms linear infinite;
+    }
+    @keyframes pv-spin { to { transform: rotate(360deg); } }
+    .pv-skeleton { display: grid; gap: 9px; margin-top: 16px; }
+    .pv-skeleton span {
+      height: 10px; border-radius: 999px;
+      background: linear-gradient(90deg,
+        var(--md-sys-color-surface-container) 0%,
+        var(--md-sys-color-surface-container-high) 40%,
+        var(--md-sys-color-surface-container) 80%);
+      background-size: 220% 100%;
+      animation: pv-shimmer 1500ms ease-in-out infinite;
+    }
+    .pv-skeleton span:nth-child(2) { width: 88%; animation-delay: 120ms; }
+    .pv-skeleton span:nth-child(3) { width: 62%; animation-delay: 240ms; }
+    @keyframes pv-shimmer {
+      from { background-position: 120% 0; } to { background-position: -60% 0; }
+    }
+
+    /* ── The disclosure surface: chip → panel, one element ── */
+    .pv-disclose {
+      margin-top: 18px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      border: 1px solid transparent;
+      background: transparent;
+      transition:
+        background-color 320ms var(--md-sys-motion-easing-emphasized),
+        border-color 320ms var(--md-sys-motion-easing-emphasized),
+        border-radius 320ms var(--md-sys-motion-easing-emphasized);
+    }
+    /* The panel takes the chip's corner too, so the marker is one
+       shape rather than a round chip inside a differently-rounded
+       box. Capped at the extra-large token: a fully-rounded chip is
+       correct, a pill-shaped PANEL is not a Material shape, and
+       `min()` lets the cap live in CSS instead of being computed in
+       two places. */
+    .pv-disclose[data-open="true"] {
+      background: var(--md-sys-color-surface-container);
+      border-color: var(--md-sys-color-outline-variant);
+      border-radius: min(var(--chip-radius, 9999px),
+                         var(--md-sys-shape-corner-extra-large));
+    }
+    .pv-disclose__chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 30px; padding: 0 11px;
+      border-radius: var(--md-sys-shape-corner-full);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      font-family: inherit; cursor: pointer;
+      /* The chip arrives with the content rather than blinking into
+         existence: a short rise with a touch of overshoot, once. */
+      animation: pv-chip-in 380ms var(--md-sys-motion-easing-emphasized) both;
+      transition: box-shadow 200ms var(--md-sys-motion-easing-standard),
+                  transform 200ms var(--md-sys-motion-easing-standard);
+    }
+    .pv-disclose__chip:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-1px); }
+    .pv-disclose__chip:active { transform: translateY(0) scale(0.985); }
+    .pv-disclose__chip:focus-visible {
+      outline: 3px solid color-mix(in oklab, var(--md-sys-color-primary) 55%, transparent);
+      outline-offset: 2px;
+    }
+    @keyframes pv-chip-in {
+      0%   { opacity: 0; transform: translateY(6px) scale(0.94); }
+      70%  { opacity: 1; transform: translateY(0) scale(1.015); }
+      100% { opacity: 1; transform: none; }
+    }
+    .pv-disclose__ico { width: 14px; height: 14px; fill: currentColor; }
+    .pv-disclose__chev {
+      width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 320ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pv-disclose[data-open="true"] .pv-disclose__chip { margin: 10px 0 0 10px; }
+    .pv-disclose[data-open="true"] .pv-disclose__chev { transform: rotate(180deg); }
+
+    /* 0fr → 1fr is what makes this a genuine container transform:
+       the panel takes exactly the height of its content, animated,
+       with no magic max-height number to get wrong. */
+    .pv-disclose__detail {
+      display: grid; grid-template-rows: 0fr;
+      transition: grid-template-rows 380ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pv-disclose[data-open="true"] .pv-disclose__detail { grid-template-rows: 1fr; }
+    .pv-disclose__inner {
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 220ms var(--md-sys-motion-easing-standard) 60ms;
+    }
+    .pv-disclose[data-open="true"] .pv-disclose__inner { opacity: 1; }
+    .pv-disclose__inner > * { margin: 0; }
+    .pv-disclose__inner {
+      padding: 0 14px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+    .pv-disclose[data-open="true"] .pv-disclose__inner { padding: 12px 14px 14px; }
+
+    .pv-sources { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+    .pv-sources li { display: flex; gap: 10px; align-items: baseline; }
+    .pv-sources__k {
+      flex: 0 0 auto; min-width: 52px;
+      color: var(--md-sys-color-primary); font-weight: 600;
+    }
+
+    /* ── Other playground specimens ───────────────────────── */
+    .pv-consent {
+      width: min(470px, 100%); padding: 22px 24px 18px;
+      border-radius: var(--md-sys-shape-corner-extra-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      box-shadow: var(--md-sys-elevation-2);
+      animation: pv-rise 320ms var(--md-sys-motion-easing-emphasized) both;
+    }
+    @keyframes pv-rise {
+      from { opacity: 0; transform: translateY(10px) scale(0.985); }
+      to   { opacity: 1; transform: none; }
+    }
+    .pv-consent__k {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    }
+    .pv-consent__t { margin: 12px 0 0; color: var(--md-sys-color-on-surface); }
+    .pv-consent__s { margin: 5px 0 0; color: var(--md-sys-color-on-surface-variant); }
+    .pv-consent__foot { display: flex; gap: 8px; margin-top: 18px; }
+
+    .pv-namecard { width: min(440px, 100%); }
+    .pv-namecard__detail {
+      display: grid; grid-template-rows: 0fr;
+      transition: grid-template-rows 380ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pv-namecard[data-open="true"] .pv-namecard__detail { grid-template-rows: 1fr; }
+    .pv-namecard__inner {
+      overflow: hidden; opacity: 0;
+      transition: opacity 200ms var(--md-sys-motion-easing-standard) 60ms;
+    }
+    .pv-namecard[data-open="true"] .pv-namecard__inner { opacity: 1; }
+
+    /* The composer specimen used by several playgrounds. */
+    .pv-composer {
+      width: min(520px, 100%); padding: 16px 18px;
+      border-radius: var(--md-sys-shape-corner-large);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    .pv-composer__label { margin: 0; color: var(--md-sys-color-on-surface-variant); }
+    .pv-composer__value { margin: 6px 0 0; color: var(--md-sys-color-on-surface); }
+    .pv-composer__foot {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .pv-composer__foot .md-button--filled { margin-left: auto; }
+    .pv-muted { color: var(--md-sys-color-on-surface-variant); }
+    /* A resting caret: the request is the user's now, and editable. */
+    .pv-caretbar {
+      display: inline-block; width: 2px; height: 16px; margin-left: 2px;
+      vertical-align: -3px; background: var(--md-sys-color-primary);
+      animation: sc-blink 1000ms steps(2, start) infinite;
+    }
+    @media (prefers-reduced-motion: reduce) { .pv-caretbar { animation: none; } }
+
+    .pv-iconstate { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+    /* Container off: the glyph alone, at the size it would sit at
+       inside the tile, so the comparison is like for like. */
+    .pv-iconstate__bare {
+      width: 24px; height: 24px; margin: 8px;
+      fill: var(--md-sys-color-primary);
+    }
+
+    .pv-doc {
+      width: min(480px, 100%); padding: 18px 20px;
+      border-radius: var(--md-sys-shape-corner-large);
+      border: 2px solid transparent;
+      background: var(--md-sys-color-surface-container-lowest);
+      transition: border-color 320ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pv-doc.is-live { border-color: var(--md-sys-color-primary); }
+    .pv-doc__head { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .pv-doc__tag { display: block; margin-top: 9px; }
+
+    /* ── Composed from ────────────────────────────────────── */
+    .cf {
+      display: grid; gap: 2px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-bottom: 18px;
+    }
+    .cf__item {
+      padding: 14px 16px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-low);
+      transition: background-color 200ms var(--md-sys-motion-easing-standard);
+    }
+    .cf__item:hover { background: var(--md-sys-color-surface-container); }
+    .cf__name {
+      display: block; font-size: 13.5px; font-weight: 640; color: var(--fg);
+    }
+    .cf__role {
+      display: block; margin-top: 5px;
+      font-size: 12.5px; line-height: 1.55; color: var(--fg-alt);
+    }
+    .mp-sub {
+      margin: 26px 0 12px; font-size: 14px; font-weight: 650; color: var(--fg);
+    }
+    .mp-sub--flush { margin-top: 0; }
+    .section-block--plain { border-top: 1px solid var(--border); padding-top: 26px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pv-select__chev, .pv-disclose, .pv-disclose__chip, .pv-disclose__chev,
+      .pv-disclose__detail, .pv-disclose__inner, .pv-namecard__detail,
+      .pv-namecard__inner, .pv-doc, .cf__item { transition: none; }
+      .pv-status__ring, .pv-skeleton span { animation: none; }
+      .pv-disclose__chip, .pv-consent { animation: none; }
+    }
+
+    /* One focus treatment for every control the reader can reach in a
+       playground or a scene. Expressiveness never justifies an
+       invisible focus ring. */
+    .pv .md-button:focus-visible,
+    .pv-select__btn:focus-visible,
+    .pv-select__opt:focus-visible,
+    .pv-edit:focus-visible,
+    .pv-copy:focus-visible,
+    .sc-switch:focus-visible,
+    .sc-seg__btn:focus-visible,
+    .mp-scene .md-button:focus-visible,
+    .mp-scene .m3-toggle:focus-visible,
+    .mp-scene .m3-chip__x:focus-visible {
+      outline: 3px solid color-mix(in oklab, var(--md-sys-color-primary) 55%, transparent);
+      outline-offset: 2px;
+    }
+
+    /* ── Capability Discovery scenes ──────────────────────── */
+    .sc-lede { margin: 0 0 4px; color: var(--app-ink-dim, #5f6368); max-width: 56ch; }
+
+    /* The composer a pattern hands its output to. Every one of these
+       four scenes ends here on purpose: an example, a template or a
+       nudge that does not end in the user's own editable request has
+       stopped one step short of being useful. */
+    .sc-compose {
+      max-width: 560px; padding: 14px 16px;
+      border-radius: var(--md-sys-shape-corner-large);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    .sc-compose__k { margin: 0; color: var(--app-ink-dim, #5f6368); }
+    .sc-compose__v {
+      margin: 6px 0 0; font-size: 15px; line-height: 22px;
+      color: var(--app-ink, #202124);
+    }
+    .sc-compose__foot {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .sc-compose__foot .md-button--filled { margin-left: auto; }
+
+    .sc-replybox {
+      position: relative; max-width: 560px; margin-top: 4px;
+      padding: 14px 16px;
+      border-radius: var(--md-sys-shape-corner-large);
+      border: 1px dashed var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    .sc-replybox__t { display: block; color: var(--app-ink-dim, #5f6368); }
+    .sc-replybox__row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    .sc-replybox__count { color: var(--app-ink-dim, #5f6368); }
+    /* The nudge sits inside the box it is about, under the control,
+       with its tail pointing back up at it. Floating it absolutely
+       looked right until the frame clipped it — and a hint that can
+       be cut off by its own container is not anchored to anything. */
+    .sc-nudgewrap { margin-top: 18px; }
+
+    /* ════════════════════════════════════════════════════════════
+       CUSTOMIZE PANEL
+
+       Sits beside the preview rather than over it: the whole point
+       is watching the specimen change as a control moves, and a
+       panel that covers the thing it edits defeats that. It opens
+       by growing a grid column, so the frame narrows instead of
+       being overlapped.
+       ════════════════════════════════════════════════════════════ */
+    .pv-edit {
+      display: inline-flex; align-items: center; gap: 7px;
+      position: relative;
+      height: 34px; padding: 0 14px;
+      border: 1px solid var(--border); border-radius: 999px;
+      background: transparent; cursor: pointer;
+      font-family: inherit; font-size: 12.5px; color: var(--fg-alt);
+      transition: background-color 180ms var(--md-sys-motion-easing-standard),
+                  border-color 180ms var(--md-sys-motion-easing-standard),
+                  color 180ms var(--md-sys-motion-easing-standard);
+    }
+    .pv-edit__ico { width: 15px; height: 15px; }
+    .pv-edit:hover { color: var(--fg); border-color: var(--fg-muted); }
+    .pv-edit.is-on {
+      background: var(--md-sys-color-secondary-container);
+      border-color: transparent;
+      color: var(--md-sys-color-on-secondary-container);
+    }
+    /* A dot, not a count: it says "this is no longer the default",
+       which is the only thing a reader needs to know from here. */
+    .pv-edit__dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--md-sys-color-primary);
+    }
+
+    .pv-work {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 0fr;
+      gap: 0;
+      align-items: start;
+      transition: grid-template-columns 380ms var(--md-sys-motion-easing-emphasized),
+                  gap 380ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pv--tuning .pv-work {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 14px;
+    }
+
+    /* Capped so a long option list scrolls inside the panel instead
+       of stretching the row far past the specimen it is editing.
+
+       The panel itself does NOT scroll: it is a column with a fixed
+       head and a body that owns the scroll. That way the head — title,
+       state, Reset, close — is always reachable, and the one element
+       holding a scroll offset is the one the reconciler never
+       replaces. */
+    .pvc {
+      max-height: 560px;
+      display: flex; flex-direction: column; overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--md-sys-shape-corner-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      animation: pvc-in 300ms var(--md-sys-motion-easing-emphasized) both;
+    }
+    @keyframes pvc-in {
+      from { opacity: 0; transform: translateX(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .pvc__head {
+      flex: none; position: relative; z-index: 2;
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 10px 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--md-sys-color-surface-container-lowest);
+    }
+    .pvc__heading { margin-right: auto; display: grid; gap: 2px; }
+    .pvc__title { font-size: 13px; font-weight: 650; color: var(--fg); }
+    /* The panel says which state it is editing, because the panel's
+       CONTENTS depend on it. Without this the reader has to look back
+       up at the state select to know what they are changing. */
+    .pvc__scope {
+      font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--md-sys-color-primary); font-weight: 600;
+    }
+    .pvc__reset-wrap { position: relative; }
+    .pvc__reset {
+      border: 0; background: transparent; padding: 4px 8px; border-radius: 6px;
+      font: inherit; font-size: 12px; color: var(--md-sys-color-primary); cursor: pointer;
+    }
+    .pvc__reset:hover:not(:disabled) { background: var(--ink-50); }
+    .pvc__reset:disabled { color: var(--fg-muted); cursor: default; opacity: 0.6; }
+    .pvc__menu {
+      position: absolute; top: calc(100% + 6px); right: 0; z-index: 6;
+      min-width: 232px; padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-lowest);
+      box-shadow: var(--md-sys-elevation-2, 0 6px 22px rgba(16,16,20,0.14));
+      animation: pvc-in 160ms var(--md-sys-motion-easing-standard) both;
+    }
+    .pvc__menu-item {
+      display: grid; gap: 2px; width: 100%; text-align: left;
+      padding: 8px 10px; border: 0; border-radius: 8px;
+      background: transparent; font: inherit; font-size: 12.5px;
+      color: var(--fg); cursor: pointer;
+    }
+    .pvc__menu-item span { font-size: 11px; color: var(--fg-muted); }
+    .pvc__menu-item:hover:not(:disabled) { background: var(--ink-50); }
+    .pvc__menu-item:disabled { opacity: 0.45; cursor: default; }
+    .pvc__close {
+      width: 26px; height: 26px; border: 0; border-radius: 50%;
+      background: transparent; color: var(--fg-muted); cursor: pointer;
+      font-size: 17px; line-height: 1;
+    }
+    .pvc__close:hover { background: var(--ink-50); color: var(--fg); }
+    /* The scroll container. Nothing in the customizer ever replaces
+       this element, so its scrollTop survives every setting change. */
+    .pvc__body {
+      flex: 1 1 auto; min-height: 0; overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 4px 16px 16px;
+    }
+
+    .pvc-row { padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .pvc-row:last-child { border-bottom: 0; }
+    .pvc-row__head { display: flex; align-items: baseline; gap: 10px; }
+    .pvc-row__label { font-size: 12.5px; font-weight: 600; color: var(--fg); }
+    /* The current value lives with the label, not inside the control:
+       a number that moves with a thumb is read where the eye already is. */
+    .pvc-row__value {
+      margin-left: auto; font-size: 11.5px; color: var(--fg-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .pvc-row__control { margin-top: 9px; }
+    .pvc-row__hint { margin: 8px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--fg-muted); }
+
+    /* Groups, not one long list. Each carries the scope it belongs to,
+       so "All states" and "Generated · Expanded · Sources" are readable
+       facts about the setting rather than something to infer. */
+    .pvc-group { padding: 14px 0 4px; border-bottom: 1px solid var(--border); }
+    .pvc-group:last-child { border-bottom: 0; }
+    .pvc-group__head { display: flex; align-items: baseline; gap: 8px; }
+    .pvc-group__label {
+      margin: 0; font-size: 12.5px; font-weight: 700; color: var(--fg);
+      letter-spacing: 0.01em;
+    }
+    .pvc-group__scope {
+      margin-left: auto; font-size: 10.5px; color: var(--fg-muted);
+      border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%;
+    }
+    .pvc-group__note {
+      margin: 6px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--fg-muted);
+    }
+    .pvc-group .pvc-row:last-child { border-bottom: 0; }
+    .pvc-group .pvc-row { border-bottom: 0; padding: 12px 0 0; }
+    .pvc-row--cap .pvc-row__control { margin-top: 6px; }
+
+    /* Changed from the default. On a row, and on the state options in
+       the select, so a change left behind in another state is visible
+       from wherever you are. */
+    .pvc-dot {
+      display: inline-block; width: 5px; height: 5px; margin-left: 6px;
+      border-radius: 50%; background: var(--md-sys-color-primary);
+      vertical-align: middle;
+    }
+    .pvc-empty {
+      margin: 18px 0 8px; font-size: 12.5px; line-height: 1.6; color: var(--fg-muted);
+    }
+    .pvc-empty strong { color: var(--fg); font-weight: 650; }
+
+    /* The failure surface. Nothing is marked, because nothing was
+       produced — so this is a card that says what happened, not a
+       disclosure chip wearing an error colour. */
+    .pv-error {
+      display: flex; gap: 10px; align-items: flex-start;
+      margin-top: 14px; padding: 12px 14px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-error-container, #fbe9e7);
+      color: var(--md-sys-color-on-error-container, #410002);
+    }
+    .pv-error__ico {
+      width: 20px; height: 20px; flex: none; margin-top: 1px;
+      fill: none; stroke: currentColor; stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .pv-error p { margin: 0; }
+    .pv-error__why { margin-top: 4px; opacity: 0.82; }
+
+    /* Density is the one control that applies in every state, so it
+       has to actually change something in all of them. */
+    .pv-card--compact { padding: 14px 16px; }
+    .pv-card--compact .pv-card__body,
+    .pv-card--compact .pv-card__empty { margin-top: 10px; }
+    .pv-card--compact .pv-disclose { margin-top: 10px; }
+    .pv-card--compact .md-button { margin-top: 10px; }
+
+    .pvc-input {
+      width: 100%; height: 34px; padding: 0 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); color: var(--fg);
+      font: inherit; font-size: 12.5px;
+    }
+    .pvc-input:focus-visible {
+      outline: 2px solid color-mix(in oklab, var(--md-sys-color-primary) 55%, transparent);
+      outline-offset: 1px; border-color: transparent;
+    }
+
+    .pvc-seg { display: flex; gap: 4px; }
+    .pvc-seg__btn {
+      flex: 1 1 0; height: 32px; padding: 0 6px;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: transparent; cursor: pointer;
+      font: inherit; font-size: 12px; color: var(--fg-muted);
+      transition: background-color 160ms var(--md-sys-motion-easing-standard),
+                  color 160ms var(--md-sys-motion-easing-standard);
+    }
+    .pvc-seg__btn[aria-pressed="true"] {
+      background: var(--md-sys-color-secondary-container);
+      border-color: transparent;
+      color: var(--md-sys-color-on-secondary-container); font-weight: 600;
+    }
+
+    .pvc-switch {
+      display: inline-flex; align-items: center;
+      border: 0; background: transparent; padding: 0; cursor: pointer;
+    }
+    .pvc-switch__track {
+      width: 40px; height: 24px; border-radius: 999px; padding: 3px;
+      background: var(--ink-100, #e6e6e2); display: flex; align-items: center;
+      transition: background 200ms var(--md-sys-motion-easing-standard);
+    }
+    .pvc-switch__knob {
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,.3);
+      transition: transform 280ms var(--md-sys-motion-easing-emphasized);
+    }
+    .pvc-switch.is-on .pvc-switch__track { background: var(--md-sys-color-primary); }
+    .pvc-switch.is-on .pvc-switch__knob { transform: translateX(16px); }
+
+    .pvc-range {
+      width: 100%; height: 20px; -webkit-appearance: none; appearance: none;
+      background: transparent; cursor: pointer;
+    }
+    .pvc-range::-webkit-slider-runnable-track {
+      height: 4px; border-radius: 999px; background: var(--ink-100, #e6e6e2);
+    }
+    .pvc-range::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+      background: var(--md-sys-color-primary);
+      border: 2px solid var(--surface);
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    }
+    .pvc-range::-moz-range-track { height: 4px; border-radius: 999px; background: var(--ink-100, #e6e6e2); }
+    .pvc-range::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--surface);
+      background: var(--md-sys-color-primary);
+    }
+
+    /* Emphasis variants the panel switches between. Each is a real M3
+       treatment, not a shade: tonal ground, hairline outline, or type
+       alone for surfaces where the marker must not compete. */
+    /* While the panel is driving, the stage is repainted on every
+       keystroke — so entrance animations are suppressed there. */
+    .pv-stage.is-quiet .pv-disclose__chip,
+    .pv-stage.is-quiet .pv-consent,
+    .pv-stage.is-quiet .md-nudge { animation: none; }
+
+    .pv-disclose__chip { border-radius: var(--chip-radius, 9999px); }
+    .pv-disclose__chip--tonal {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      border-color: transparent;
+    }
+    .pv-disclose__chip--outlined {
+      background: transparent;
+      color: var(--md-sys-color-on-surface-variant);
+      border-color: var(--md-sys-color-outline-variant);
+    }
+    .pv-disclose__chip--plain {
+      background: transparent; border-color: transparent;
+      color: var(--md-sys-color-on-surface-variant);
+      padding-left: 0;
+    }
+    /* Non-interactive variant: no pointer, no lift, no focus ring. */
+    span.pv-disclose__chip { cursor: default; }
+    span.pv-disclose__chip:hover { box-shadow: none; transform: none; }
+
+    @media (max-width: 1180px) {
+      .pv--tuning .pv-work { grid-template-columns: minmax(0, 1fr); }
+      .pv--tuning .pvc { margin-top: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pv-work, .pvc-switch__track, .pvc-switch__knob, .pvc-seg__btn, .pv-edit { transition: none; }
+      .pvc, .pv-select__menu { animation: none; }
+    }
+
+    .mp-scene { margin-top: 26px; }
+    .mp-scene__t { margin: 0; font-size: 15.5px; font-weight: 640; color: var(--fg); }
+    .mp-scene__note {
+      margin: 6px 0 14px; font-size: 13.5px; line-height: 1.6;
+      color: var(--fg-alt); max-width: 72ch;
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       TRY IT — the interactive scene
+
+       Back to the original surface: a plain white card with its own
+       title bar, a gradient greeting, and a simple pill composer.
+
+       The gradient is the DEMO PRODUCT's brand, not Material's and
+       not Nucleux's — a stand-in for whatever assistant you are
+       putting these patterns into. It is confined to the greeting,
+       the agent mark and the send button, so it never touches a
+       control that carries meaning.
+       ════════════════════════════════════════════════════════════ */
+    .demo {
+      --demo-g1: #4285F4;
+      --demo-g2: #9B72CB;
+      --demo-g3: #D96570;
+      --demo-ink: #1f1f1f;
+      --demo-dim: #5f6368;
+      --demo-line: #e3e3e3;
+      /* The composer's state layer. Neutral near-black rather than
+         `currentColor`: the icons are already a mid grey, and a layer
+         tinted from them landed almost invisible. M3's own on-surface
+         state layer is what this is, spelled out. */
+      --gc-state: #1f1f1f;
+
+      border-radius: 20px;
+      border: 1px solid var(--demo-line);
+      background: #ffffff;
+      overflow: hidden;
+      font-family: var(--md-ref-typeface-plain);
+      display: flex; flex-direction: column;
+      min-height: 480px;
+    }
+
+    .demo__bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--demo-line);
+    }
+    .demo__mark {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: conic-gradient(from 200deg, var(--demo-g1), var(--demo-g2), var(--demo-g3), var(--demo-g1));
+    }
+    .demo__name { font-size: 14px; font-weight: 600; color: var(--demo-ink); }
+    /* Start over — an M3 text button: no fill, no outline, just the
+       label and its state layer. It is the lowest-emphasis action on
+       the surface and should read that way; a filled or tonal pill
+       here competed with the composer's send for attention. Sized
+       down to 32dp with label-medium, since it is chrome, not a
+       control anyone came here to press. */
+    .demo__reset {
+      position: relative;
+      margin-left: auto;
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 32px; padding: 0 12px;
+      border: 0; border-radius: var(--md-sys-shape-corner-full);
+      background: transparent;
+      color: var(--md-sys-color-on-surface);
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-label-medium-size);
+      line-height: var(--md-sys-typescale-label-medium-line);
+      font-weight: var(--md-sys-typescale-label-medium-weight);
+      letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+      cursor: pointer;
+    }
+    /* M3 state layer: currentColor at the token opacity on a ::before,
+       rather than swapping in a second hand-picked background. */
+    .demo__reset::before {
+      content: ""; position: absolute; inset: 0;
+      border-radius: inherit; background: currentColor; opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .demo__reset:hover::before  { opacity: var(--md-sys-state-hover-opacity); }
+    .demo__reset:active::before { opacity: var(--md-sys-state-pressed-opacity); }
+    .demo__reset:focus-visible  { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+    .demo__reset-ico {
+      position: relative;
+      width: 15px; height: 15px; flex: 0 0 auto;
+      fill: none; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .demo__scroll {
+      flex: 1 1 auto; padding: 26px 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      overflow-y: auto; max-height: 460px;
+    }
+
+    /* ── Greeting ─────────────────────────────────────────── */
+    .demo__hello {
+      font-size: 30px; line-height: 1.2; font-weight: 500;
+      letter-spacing: -0.01em;
+      background: linear-gradient(90deg, var(--demo-g1), var(--demo-g2) 45%, var(--demo-g3));
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+      /* background-clip must be re-declared after any `background`
+         shorthand or the gradient paints as a filled block. */
+      padding-bottom: 0.08em; margin: 0 0 -0.08em;
+    }
+
+    .demo__chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+    .demo__chip {
+      text-align: left; max-width: 240px;
+      padding: 14px 16px; border-radius: 14px;
+      border: 1px solid var(--demo-line); background: #fbfbfb;
+      font: inherit; font-size: 13px; line-height: 1.45; color: var(--demo-ink);
+      cursor: pointer;
+      transition: border-color 200ms ease, background 200ms ease;
+    }
+    .demo__chip:hover { background: #f4f6fb; border-color: #c9d3ea; }
+
+    /* ── Composer ─────────────────────────────────────────────
+       The Gemini prompt composer, sitting in this card. Its
+       arrangement is Gemini's — leading add button, glyph, field,
+       mode selector, then mic OR send — and every value it resolves
+       is an M3 token: corner-full on the pill, corner-extra-small
+       on the menu, label-large on the mode button, primary on the
+       send fill, the kit's elevations, and M3's own state-layer
+       opacities rather than hand-mixed hovers.
+
+       States, all reachable: rest · hover · focus · typing ·
+       sending · disabled, plus the mode menu open. Each is
+       documented beside the rule that produces it. */
+    .gc {
+      position: relative;
+      display: flex; align-items: center; gap: 4px;
+      margin: 0 18px 18px;
+      padding: 6px 8px 6px 6px;
+      border-radius: var(--md-sys-shape-corner-full);
+      border: 1px solid var(--demo-line);
+      background: #ffffff;
+      transition: box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    /* hover → elevation 1, focus → elevation 2. Gemini raises the
+       composer rather than outlining it. */
+    .gc:hover { box-shadow: var(--md-sys-elevation-1); }
+    .gc:focus-within { box-shadow: var(--md-sys-elevation-2); }
+    .gc.is-disabled { opacity: var(--md-sys-state-disabled-content); pointer-events: none; }
+
+    /* Icon button — 40dp target, full corner, M3 state layer on a
+       ::before rather than a background swap, so the layer opacity is
+       the token value and not a hand-mixed colour. */
+    .gc__icon {
+      position: relative; flex: 0 0 auto;
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 0; border-radius: var(--md-sys-shape-corner-full);
+      background: transparent; cursor: pointer; padding: 0;
+      color: var(--demo-dim);
+    }
+    .gc__icon::before {
+      content: ""; position: absolute; inset: 0;
+      border-radius: inherit; background: var(--gc-state); opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .gc__icon:hover::before  { opacity: var(--md-sys-state-hover-opacity); }
+    .gc__icon:active::before { opacity: var(--md-sys-state-pressed-opacity); }
+    .gc__icon:focus-visible  { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+    .gc__icon svg {
+      width: 22px; height: 22px; position: relative;
+      fill: none; stroke: currentColor; stroke-width: 1.9;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    /* `display: grid` on these buttons outranks the UA sheet's
+       [hidden] { display: none }, so hiding them by attribute silently
+       does nothing — the mic and send both render at once. Restate it
+       at author level. */
+    .gc__icon[hidden], .gc__send[hidden] { display: none; }
+
+    .gc__field {
+      flex: 1 1 auto; min-width: 0;
+      display: flex; align-items: center; gap: 8px;
+      padding-left: 4px;
+    }
+    .gc__glyph {
+      flex: 0 0 auto; width: 16px; height: 16px;
+      fill: none; stroke: var(--demo-dim); stroke-width: 1.6;
+      stroke-linejoin: round;
+    }
+    .gc__input {
+      flex: 1 1 auto; min-width: 0;
+      border: 0; background: transparent; outline: none;
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-body-large-size);
+      line-height: var(--md-sys-typescale-body-large-line);
+      letter-spacing: 0;
+      color: var(--demo-ink);
+      padding: 10px 0;
+    }
+    .gc__input::placeholder { color: var(--demo-dim); }
+
+    /* Mode selector — a text button in label-large that opens an M3
+       menu. The "Thinking ⌄" control. */
+    .gc__mode {
+      position: relative; flex: 0 0 auto;
+      display: inline-flex; align-items: center; gap: 4px;
+      height: 36px; padding: 0 8px 0 12px;
+      border: 0; border-radius: var(--md-sys-shape-corner-full);
+      background: transparent; cursor: pointer;
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-label-large-size);
+      line-height: var(--md-sys-typescale-label-large-line);
+      font-weight: var(--md-sys-typescale-label-large-weight);
+      letter-spacing: var(--md-sys-typescale-label-large-tracking);
+      color: var(--demo-ink);
+    }
+    .gc__mode::before {
+      content: ""; position: absolute; inset: 0;
+      border-radius: inherit; background: var(--gc-state); opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .gc__mode:hover::before { opacity: var(--md-sys-state-hover-opacity); }
+    .gc__mode[aria-expanded="true"]::before { opacity: var(--md-sys-state-focus-opacity); }
+    .gc__mode svg {
+      width: 18px; height: 18px; position: relative;
+      fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;
+      transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .gc__mode[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+    /* ── Add menu ─────────────────────────────────────────────
+       Two groups split by a rule: what you bring IN above, what the
+       agent MAKES below. Anchored above the + it belongs to, which
+       is why it is left-aligned to the composer rather than centred.
+
+       Corner-large and elevation-3, not the mode selector's
+       extra-small — this is a bigger surface carrying icons and two
+       sections, and M3 scales corner radius with the size of the
+       thing it is rounding. */
+    .gc-add {
+      position: absolute; left: 0; bottom: calc(100% + 10px);
+      min-width: 268px; padding: 8px 0;
+      border-radius: var(--md-sys-shape-corner-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      box-shadow: var(--md-sys-elevation-3);
+      z-index: 6;
+    }
+    /* 2px between rows, not the 11px of a standard M3 menu: this list
+       is nine items long and the reference sets it tight. The rows
+       keep 32px of height so they are still a real target. */
+    .gc-add__group {
+      padding: 4px 0;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .gc-add__rule {
+      height: 1px; margin: 4px 16px;
+      background: var(--md-sys-color-outline-variant);
+    }
+    .gc-add__item {
+      position: relative;
+      display: flex; align-items: center; gap: 14px;
+      min-height: 32px;
+      width: 100%; padding: 6px 16px;
+      border: 0; background: transparent; cursor: pointer; text-align: left;
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-body-medium-size);
+      line-height: var(--md-sys-typescale-body-medium-line);
+      letter-spacing: 0;
+      color: var(--md-sys-color-on-surface);
+    }
+    .gc-add__item::before {
+      content: ""; position: absolute; inset: 0;
+      background: var(--gc-state); opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .gc-add__item:hover::before  { opacity: var(--md-sys-state-hover-opacity); }
+    .gc-add__item:active::before { opacity: var(--md-sys-state-pressed-opacity); }
+    .gc-add__item:focus-visible  { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+    .gc-add__ico {
+      position: relative; flex: 0 0 auto; width: 20px; height: 20px;
+      fill: none; stroke: var(--md-sys-color-on-surface); stroke-width: 1.6;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .gc-add__label { position: relative; flex: 1 1 auto; }
+    .gc-add__more {
+      position: relative; flex: 0 0 auto; width: 18px; height: 18px;
+      fill: none; stroke: var(--md-sys-color-on-surface-variant); stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Open state: the + spins into a cross and the button fills, so
+       the control that opened the menu is visibly the one that shuts
+       it. 135deg rather than 45 — the extra half-turn reads as a
+       deliberate spin instead of a jump to the nearest equivalent
+       angle, and it lands on exactly the same cross either way. */
+    .gc__addico {
+      transition: transform 320ms var(--md-sys-motion-easing-emphasized);
+    }
+    .gc__icon.is-open .gc__addico { transform: rotate(135deg); }
+    .gc__icon.is-open::before { opacity: var(--md-sys-state-focus-opacity); }
+
+    /* M3 menu — surface-container, extra-small corner, elevation 2. */
+    .gc__menu {
+      position: absolute; right: 56px; bottom: calc(100% + 8px);
+      min-width: 216px; padding: 8px 0;
+      border-radius: var(--md-sys-shape-corner-extra-small);
+      background: var(--md-sys-color-surface-container);
+      box-shadow: var(--md-sys-elevation-2);
+      z-index: 5;
+    }
+    .gc__menu-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      width: 100%; padding: 10px 16px;
+      border: 0; background: transparent; cursor: pointer; text-align: left;
+      font-family: var(--md-ref-typeface-plain);
+      color: var(--md-sys-color-on-surface);
+    }
+    .gc__menu-item:hover {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface)
+                  calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+    }
+    .gc__menu-item[aria-checked="true"] { font-weight: 500; }
+    .gc__menu-check { width: 18px; flex: 0 0 auto; color: var(--md-sys-color-primary); }
+    .gc__menu-t { font-size: var(--md-sys-typescale-label-large-size); }
+    .gc__menu-d {
+      display: block; margin-top: 2px;
+      font-size: var(--md-sys-typescale-body-small-size);
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    /* Send — hidden until there is text. That swap with the mic is the
+       composer's most characteristic state change, and the one place
+       the brand gradient appears on a control. */
+    .gc__send {
+      position: relative;
+      flex: 0 0 auto;
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 0; border-radius: var(--md-sys-shape-corner-full);
+      background: linear-gradient(135deg, var(--demo-g1), var(--demo-g2));
+      cursor: pointer; padding: 0;
+      transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    /* The send button had no hover at all — the one control on the
+       composer you are most likely to point at. Same neutral layer as
+       its neighbours, which on a filled button reads as a darken. */
+    .gc__send::before {
+      content: ""; position: absolute; inset: 0;
+      border-radius: inherit; background: var(--gc-state); opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .gc__send:hover::before  { opacity: var(--md-sys-state-hover-opacity); }
+    .gc__send:active::before { opacity: var(--md-sys-state-pressed-opacity); }
+    .gc__send svg { position: relative; width: 18px; height: 18px; fill: #fff; }
+    .gc__send:active { transform: scale(0.94); }
+    .gc__send:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+    /* sending → the send affordance becomes stop, which is the honest
+       control while a reply is in flight. */
+    .gc__send--stop {
+      background: var(--md-sys-color-secondary-container);
+    }
+    .gc__send--stop svg { fill: var(--md-sys-color-on-secondary-container); }
+
+    /* ── Turns ────────────────────────────────────────────── */
+    .demo__turn { display: flex; gap: 14px; align-items: flex-start; }
+    .demo__turn--user { justify-content: flex-end; }
+    .demo__bubble {
+      max-width: 74%;
+      padding: 12px 16px; border-radius: 18px 18px 4px 18px;
+      background: #f0f4f9; color: var(--demo-ink);
+      font-size: 14px; line-height: 20px;
+    }
+    .demo__av {
+      flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+      background: conic-gradient(from 200deg, var(--demo-g1), var(--demo-g2), var(--demo-g3), var(--demo-g1));
+      display: grid; place-items: center;
+    }
+    .demo__av svg { fill: #fff; }
+    /* Unlabelled agent avatar — flat grey, no gradient, no mark. What
+       an unmarked turn actually looks like next to a human one. */
+    .demo__av--plain {
+      background: #dfe1e5; color: #3c4043;
+      display: grid; place-items: center;
+      font-size: 12px; font-weight: 500;
+    }
+    .demo__agent { min-width: 0; flex: 1 1 auto; }
+    .demo__agent-head {
+      display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .demo__agent-name { font-size: 14px; font-weight: 600; color: var(--demo-ink); }
+    .demo__text {
+      margin: 0; font-size: 14px; line-height: 22px; color: #3c4043; max-width: 58ch;
+    }
+    .demo__text b { color: var(--demo-ink); font-weight: 600; }
+
+    /* Thinking — a rise-and-settle, never a constant spin: a constant
+       spin says "busy" and tells you nothing about progress. */
+    /* The dots are targeted by CLASS, not `.demo__thinking span`.
+       That descendant selector also matched the label — which is a
+       span — so the label inherited the dot's size, background and
+       pulse animation, and sat translating under the dots. Hence the
+       overlap and the flicker. */
+    .demo__thinking { display: flex; align-items: center; gap: 5px; }
+    .demo__dot {
+      flex: 0 0 auto;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--demo-g2);
+      animation: demo-pulse 1.3s ease-in-out infinite;
+    }
+    .demo__dot:nth-child(2) { animation-delay: 0.16s; }
+    .demo__dot:nth-child(3) { animation-delay: 0.32s; }
+    .demo__thinking-label {
+      margin-left: 8px;
+      font-size: 13px; line-height: 20px; color: var(--demo-dim);
+      white-space: nowrap;
+    }
+    @keyframes demo-pulse {
+      0%, 100% { opacity: 0.25; transform: translateY(0); }
+      50%      { opacity: 1;    transform: translateY(-2px); }
+    }
+
+    .demo__enter { animation: demo-rise 380ms cubic-bezier(.2, 0, 0, 1) both; }
+    @keyframes demo-rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── Hint ─────────────────────────────────────────────── */
+    .demo__hintbar {
+      margin: 0 18px 16px; padding: 11px 14px;
+      border-radius: 10px;
+      background: var(--md-sys-color-surface-container);
+      color: var(--md-sys-color-on-surface-variant);
+      font-size: 12px; line-height: 1.55;
+    }
+    .demo__hintbar b { color: var(--md-sys-color-on-surface); font-weight: 600; }
+    .demo__hintbar-sim { opacity: 0.7; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .demo__dot { animation: none; opacity: 0.8; }
+      .demo__enter { animation: none; }
+      .demo__chip, .demo__reset::before { transition: none; }
+
+      /* The composer's own transitions. This list went missing when
+         the component layer was pulled into material-components.css,
+         so every one of these was still animating under reduced
+         motion — including the plus spin. */
+      .gc, .gc__icon::before, .gc__mode::before, .gc__send::before,
+      .gc-add__item::before, .gc__addico, .gc__mode svg,
+      .mp-seg__btn { transition: none; }
+      .gc__send:active { transform: none; }
+    }
+
+  </style>
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M38.0781 11.5382C38.0781 5.9997 40.5397 3.23047 45.4627 3.23047H51.9243V6.92278H46.155C43.5397 6.92278 42.232 8.46124 42.232 11.5382C42.232 14.6151 43.5397 16.1535 46.155 16.1535H51.9243V19.8459H45.4627C40.5397 19.8459 38.0781 17.0766 38.0781 11.5382Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M54.2344 3.23047V19.8459H65.7728V16.1535H58.3882V3.23047H54.2344Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M68.0781 3.23047V19.8459H80.7704V16.1535H72.232V13.1535H79.8474V9.92278H72.232V6.92278H80.7704V3.23047H68.0781Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M83.5391 3V14.0769C83.5391 18.0769 85.8468 20.0769 90.4621 20.0769C95.0775 20.0769 97.3852 18.0769 97.3852 14.0769V3H93.2314V13.6154C93.2314 15.4615 92.3083 16.3846 90.4621 16.3846C88.616 16.3846 87.6929 15.4615 87.6929 13.6154V3H83.5391Z" fill="url(#paint0_linear_mark)"/>
+        <path d="M99.6959 3H104.773L108.465 8.53846L112.157 3H117.696L112.157 11.3077L117.696 19.6154H112.157L108.465 14.0769L104.773 19.6154H99.2344L105.234 11.3077L99.6959 3Z" fill="url(#paint1_linear_mark)"/>
+        <defs>
+        <linearGradient id="paint0_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        </defs>
+        </svg>
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item">
+          <a class="gnav__link is-current" href="#components">Components</a>
+        </div>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════
+       MATERIAL 3.0 · COMPONENT PAGE
+
+       One page for every built component; ?id= picks which.
+       Both the sidebar and the main column are rendered at
+       runtime — the sidebar from material-nav.js (shared with
+       the overview, so the 89-row tree exists once) and the
+       body from material-patterns.js.
+
+       Static-first would have meant three near-identical files
+       today and eighty-nine tomorrow, each free to drift.
+       ══════════════════════════════════════════════════════ -->
+  <div class="detail-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Material 3.0 library navigation"></aside>
+    <main class="detail" id="detail"></main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+
+  <script src="material-nav.js"></script>
+  <script src="material-patterns.js"></script>
+  <script src="material-demo.js"></script>
+  <script src="material-context.js"></script>
+  <script src="material-preview.js"></script>
+  <script src="material-pattern.js"></script>
+  <script src="global.js"></script>
+  <script src="nav-splitflap.js"></script>
+  <script src="nav-mega.js"></script>
+</body>
+</html>

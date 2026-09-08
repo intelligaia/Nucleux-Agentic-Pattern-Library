@@ -122,7 +122,7 @@
 
       var to = pad(target);
       el.classList.toggle('is-hover', target === HOVER);
-      el.style.width = (target === HOVER ? W.hover : W.label) + 'px';
+      el.style.width = (target === HOVER ? W.hover : W.label).toFixed(2) + 'px';
       if (reduced) { paint(to); return; }
 
       /* hover-out: restore the default label directly — the character
@@ -171,16 +171,27 @@
       var linePx = parseFloat(cs.lineHeight);
       if (linePx) el.style.setProperty('--nav-sf-line', linePx + 'px');
 
+      /* Exact widths, not ceiled ones. Rounding each label up by a
+         fraction of a pixel added up across five labels and nudged the
+         whole centre block sideways the moment the widths were locked
+         — one small, real shift on every page load, in the row that
+         also holds the actions cluster. */
       probe.style.fontSize = basePx + 'px';
-      probe.textContent = LABEL; W.label = Math.ceil(probe.getBoundingClientRect().width);
+      probe.textContent = LABEL; W.label = probe.getBoundingClientRect().width;
       probe.style.fontSize = hoverPx + 'px';
-      probe.textContent = HOVER; W.hover = Math.ceil(probe.getBoundingClientRect().width);
+      probe.textContent = HOVER; W.hover = probe.getBoundingClientRect().width;
       el.removeChild(probe);
 
       el.classList.toggle('is-hover', wasHover);
+      /* Width is applied with the transition suppressed: this is a
+         measurement landing, not a state change, and animating it
+         would read as the label moving on its own. Re-measuring to
+         the same number writes nothing at all. */
+      var want = (shown === HOVER ? W.hover : W.label).toFixed(2) + 'px';
+      if (el.style.width === want) return;
       var prev = el.style.transition;
       el.style.transition = 'none';
-      el.style.width = (shown === HOVER ? W.hover : W.label) + 'px';
+      el.style.width = want;
       void el.offsetWidth;
       el.style.transition = prev;
     }
@@ -192,9 +203,27 @@
     }
 
     paint(pad(LABEL));
-    measure();
+
+    /* Do not lock a width until the real font is loaded.
+
+       These labels are measured and then pinned to that width. Measuring
+       against the fallback font pins the wrong number, and when the web
+       font arrives every label re-measures at once — the whole nav row
+       reflows and the actions cluster on the right visibly jumps. That
+       is one flicker per page load, on every page.
+
+       So while the fonts are still loading the label keeps its natural
+       width and simply behaves like text; the measurement happens once,
+       afterwards, with the metrics it will actually be rendered in. */
+    var fontsPending = !!(document.fonts && document.fonts.status !== 'loaded');
+
+    if (fontsPending) {
+      el.style.width = 'auto';
+      document.fonts.ready.then(function () { measure(); });
+    } else {
+      measure();
+    }
     addEventListener('resize', relayout);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
 
     if (!coarse) {
       link.addEventListener('mouseenter', function () { animateTo(HOVER); });
@@ -218,7 +247,11 @@
     });
   }
 
-  document.readyState !== 'loading'
+  /* Run as soon as this file parses. It is included at the end of the
+     body, so the nav is already in the tree — waiting for
+     DOMContentLoaded only guaranteed the header painted once in its
+     raw form and again upgraded. */
+  document.querySelector('.gnav')
     ? init()
     : document.addEventListener('DOMContentLoaded', init);
 })();

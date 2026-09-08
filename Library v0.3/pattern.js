@@ -4989,6 +4989,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
                   <div class="tree__sub-head">${esc(sub.title)}</div>
                   ${sub.patterns.map(p => `
                     <a class="tree__pattern ${p.id === currentId ? 'is-current' : ''}"
+                       data-pattern="${p.id}"
                        data-status="${p.placeholder ? 'scaffold' : 'full'}"
                        href="pattern.html?id=${encodeURIComponent(p.id)}">
                       ${esc(p.name)}<span class="badge-dot" aria-hidden="true"></span>
@@ -5046,7 +5047,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
       <section class="section-block" id="sec-example">
         <div class="section-block__head">
           <h2 class="section-block__title">Live preview</h2>
-          <div class="section-block__lede">A small, inline preview of the canonical shape.</div>
+          <div class="section-block__lede">The canonical shape of the pattern, on its own, so it can be read before it is seen in context.</div>
         </div>
         <div class="example">${v}</div>
       </section>
@@ -5111,17 +5112,6 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
     `;
 
     // Individual sections so we can re-order
-    const composedHTML = `
-      <section class="section-block" id="sec-composed">
-        <div class="section-block__head">
-          <h2 class="section-block__title">Composed from</h2>
-          <div class="section-block__lede">Primitives from the design system that build this pattern.</div>
-        </div>
-        <div class="composed">
-          ${(p.composed || []).map(c => `<span class="composed__chip">${esc(c)}</span>`).join("")}
-        </div>
-      </section>
-    `;
     const codeHTML = `
       <section class="section-block" id="sec-code">
         <div class="section-block__head">
@@ -5129,25 +5119,6 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
           <div class="section-block__lede">A canonical implementation skeleton — adapt to your framework.</div>
         </div>
         <pre class="code"><button class="code__copy" data-copy>Copy</button>${esc(p.code || "")}</pre>
-      </section>
-    `;
-    const relatedHTML = `
-      <section class="section-block" id="sec-related">
-        <div class="section-block__head">
-          <h2 class="section-block__title">Related patterns</h2>
-          <div class="section-block__lede">Patterns commonly designed alongside this one.</div>
-        </div>
-        <div class="related">
-          ${(p.related || []).map(id => {
-            const r = flat().find(x => x.p.id === id);
-            if (!r) return "";
-            return `
-              <a class="related__item" href="pattern.html?id=${encodeURIComponent(id)}">
-                <div class="related__name">${esc(r.p.name)}</div>
-                <div class="related__meta">${esc(r.stage.label)} · ${esc(r.sub.title)}</div>
-              </a>`;
-          }).join("")}
-        </div>
       </section>
     `;
     // Four questions — moved to the bottom; stacked single-column.
@@ -5168,11 +5139,9 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
         </div>
       </section>
     ` : "";
-    // Only render composed/code if the data exists, to avoid empty sections on scaffolded patterns.
-    const composedReal = (Array.isArray(p.composed) && p.composed.length) ? composedHTML : "";
+    // Only render the code shape if the data exists, to avoid empty sections on scaffolded patterns.
     const codeReal     = (p.code && p.code.trim()) ? codeHTML : "";
-    const relatedReal  = (Array.isArray(p.related) && p.related.length) ? relatedHTML : "";
-    const fullHTML = composedReal + codeReal + relatedReal + questionsHTML;
+    const fullHTML = codeReal + questionsHTML;
 
     const navHTML = `
       <div class="detail__nav">
@@ -5203,9 +5172,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
     const ph = p.placeholder === true;
     const hasVariants   = Array.isArray(p.variants)   && p.variants.length   > 0;
     const hasPlacements = Array.isArray(p.placements) && p.placements.length > 0;
-    const hasComposed   = Array.isArray(p.composed)   && p.composed.length   > 0;
     const hasCode       = !!(p.code && p.code.trim());
-    const hasRelated    = Array.isArray(p.related)    && p.related.length    > 0;
     const hasQA         = !!(p.what || p.why || p.when || p.how);
     const showScaffold  = ph && !hasVariants && !hasPlacements;
 
@@ -5215,9 +5182,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
           { id: "sec-example",    label: "Live preview" },
           hasVariants   ? { id: "sec-variants",   label: "Variants" }            : null,
           hasPlacements ? { id: "sec-placements", label: "In context" }          : null,
-          hasComposed   ? { id: "sec-composed",   label: "Composed from" }       : null,
           hasCode       ? { id: "sec-code",       label: "Code shape" }          : null,
-          hasRelated    ? { id: "sec-related",    label: "Related patterns" }    : null,
           hasQA         ? { id: "sec-questions",  label: "The four questions" }  : null
         ].filter(Boolean);
 
@@ -5235,19 +5200,22 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
     $("#toc").innerHTML = html;
   }
 
-  function wireTOC() {
+  /* Attached once. The link set is re-read on every call rather than
+     captured, because the rail is re-rendered whenever the reader
+     moves to another pattern — a captured list would keep pointing at
+     the previous page's nodes. */
+  function tocUpdate() {
     const links = $$(".toc__link");
     const sections = links.map(l => document.querySelector(l.getAttribute("href"))).filter(Boolean);
     if (!sections.length) return;
-
-    function update() {
-      const top = 80;
-      let active = sections[0];
-      for (const s of sections) if (s.getBoundingClientRect().top - top < 0) active = s;
-      links.forEach(l => l.classList.toggle("is-active", l.getAttribute("href") === "#" + active.id));
-    }
-    update();
-    window.addEventListener("scroll", update, { passive: true });
+    const top = 80;
+    let active = sections[0];
+    for (const s of sections) if (s.getBoundingClientRect().top - top < 0) active = s;
+    links.forEach(l => l.classList.toggle("is-active", l.getAttribute("href") === "#" + active.id));
+  }
+  function wireTOC() {
+    tocUpdate();
+    window.addEventListener("scroll", tocUpdate, { passive: true });
   }
 
   // ───────────────────────────────────────────────────────
@@ -5463,7 +5431,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
   // ───────────────────────────────────────────────────────
   // Behaviours
   // ───────────────────────────────────────────────────────
-  function wire(pattern) {
+  function wire() {
     document.addEventListener("click", (e) => {
       // Sidebar stage expand/collapse
       const t = e.target.closest("[data-toggle]");
@@ -5497,7 +5465,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
         // current inline carousel index (so "Open full size" matches what's on screen).
         const explicitIdx = openBtn.getAttribute("data-index");
         const idx = explicitIdx !== null ? parseInt(explicitIdx, 10) || 0 : (type === "placement" ? incxState.index : 0);
-        openLightbox(type, idx, pattern);
+        openLightbox(type, idx, currentPattern);
         return;
       }
       // Lightbox controls
@@ -5517,32 +5485,104 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
     });
   }
 
-  function boot() {
-    const all = flat();
-    // Default to "disclosure" if no ?id= is present (so the file works
-    // when double-clicked from Finder, no server required).
-    const id = getId() || "disclosure";
-    let idx = all.findIndex(x => x.p.id === id);
+  /* The pattern on screen right now. `wire()` is attached once for the
+     life of the page and reads this, rather than closing over whichever
+     pattern happened to be showing when it was called. */
+  let currentPattern = null;
 
-    // If even the fallback isn't found, land on the first pattern in the catalog.
+  /* ── Moving between patterns without reloading ──────────────
+     Every sidebar row and prev/next link points at pattern.html?id=…
+     and stays a real URL for anyone arriving cold or opening a new
+     tab. But following it as a document load rebuilds the whole page
+     including the global header, and the header re-initialises
+     visibly — the split-flap nav labels measure themselves, then
+     measure again when the fonts resolve. That flash is not the
+     sidebar's doing, and it should not be the price of clicking a row
+     in a tree you are browsing.
+
+     So same-library links are handled in place: swap the detail, move
+     the current row, push the URL. Back and forward still work, deep
+     links still work, and cmd-click still opens a new tab — because
+     the anchor is still an anchor. */
+  function show(id, { push = false, rebuildSidebar = false } = {}) {
+    const all = flat();
+    let idx = all.findIndex(x => x.p.id === id);
     if (idx < 0) idx = 0;
-    if (idx < 0) { location.href = "library.html"; return; }
 
     const current = all[idx];
     const neighbours = {
       prev: idx > 0 ? all[idx - 1] : null,
       next: idx < all.length - 1 ? all[idx + 1] : null
     };
+    currentPattern = current.p;
 
     document.title = `${current.p.name} — Intelligaia AI UX Pattern Library`;
 
-    renderSidebar(current.p.id, current.stage.id);
+    /* The tree is built once. Rebuilding it on every move would throw
+       away which stages the reader has opened and where they had
+       scrolled to — on a 89-row tree, that is their place in the
+       library. Only the current row and its stage change. */
+    if (rebuildSidebar) {
+      renderSidebar(current.p.id, current.stage.id);
+    } else {
+      $$(".tree__pattern").forEach(row =>
+        row.classList.toggle("is-current", row.getAttribute("data-pattern") === current.p.id));
+      const holder = $(`.tree__stage[data-stage="${current.stage.id}"]`);
+      if (holder) holder.setAttribute("aria-expanded", "true");
+    }
+
     renderDetail(current, neighbours);
     renderTOC(current);
-    buildLightbox();
     initIncx(current.p);
-    wire(current.p);
+    tocUpdate();
+
+    if (push) {
+      history.pushState({ id: current.p.id }, "",
+        `pattern.html?id=${encodeURIComponent(current.p.id)}`);
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function wireRouting() {
+    document.addEventListener("click", (e) => {
+      /* Anything the browser would treat as "open elsewhere" is left to
+         the browser: modified clicks, middle clicks, new-tab targets.
+         Hijacking those is the classic way client-side routing breaks
+         a link. */
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
+          e.shiftKey || e.altKey) return;
+
+      const a = e.target.closest('a[href^="pattern.html?id="]');
+      if (!a || a.target === "_blank") return;
+
+      const next = new URLSearchParams(a.getAttribute("href").split("?")[1]).get("id");
+      if (!next || !flat().some(x => x.p.id === next)) return;
+
+      e.preventDefault();
+      if (currentPattern && next === currentPattern.id) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+        return;
+      }
+      show(next, { push: true });
+    });
+
+    addEventListener("popstate", (e) => {
+      show((e.state && e.state.id) || getId() || "disclosure", { push: false });
+    });
+  }
+
+  function boot() {
+    const all = flat();
+    // Default to "disclosure" if no ?id= is present (so the file works
+    // when double-clicked from Finder, no server required).
+    const id = getId() || "disclosure";
+    if (!all.length) { location.href = "library.html"; return; }
+
+    buildLightbox();
+    wire();
     wireTOC();
+    wireRouting();
+    show(id, { push: false, rebuildSidebar: true });
 
     const s = document.createElement("style");
     s.textContent = `

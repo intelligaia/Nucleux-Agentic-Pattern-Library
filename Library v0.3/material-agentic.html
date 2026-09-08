@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Library — Nucleux</title>
-  <meta name="description" content="Browse the full pattern library: four stages, 84 patterns." />
+  <title>Agentic Components · Neural Expressive — Nucleux</title>
+  <meta name="description" content="The 89 Nucleux agent patterns redrawn in the neural expressive language — colour, motion, adaptive components, type and shape carrying agent state." />
 
   <!-- ── SHARE CARD ──
        X (and LinkedIn, Slack, iMessage…) build their link preview by
@@ -14,19 +14,19 @@
        banner rather than a small thumbnail. The image URL must be absolute
        and publicly reachable: the crawler fetches it from its own servers,
        so a relative path or a localhost address renders no card at all. -->
-  <link rel="canonical" href="https://nucleux.in/library.html" />
+  <link rel="canonical" href="https://nucleux.in/material-agentic.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Nucleux" />
-  <meta property="og:url" content="https://nucleux.in/library.html" />
-  <meta property="og:title" content="Library — Nucleux" />
-  <meta property="og:description" content="Browse the full pattern library: four stages, 84 patterns." />
+  <meta property="og:url" content="https://nucleux.in/material-agentic.html" />
+  <meta property="og:title" content="Agentic Components · Neural Expressive — Nucleux" />
+  <meta property="og:description" content="The 89 Nucleux agent patterns redrawn in the neural expressive language — colour, motion, adaptive components, type and shape carrying agent state." />
   <meta property="og:image" content="https://nucleux.in/share-on-x.png" />
   <meta property="og:image:width" content="515" />
   <meta property="og:image:height" content="272" />
   <meta property="og:image:alt" content="Nucleux — UI components for AI agents" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Library — Nucleux" />
-  <meta name="twitter:description" content="Browse the full pattern library: four stages, 84 patterns." />
+  <meta name="twitter:title" content="Agentic Components · Neural Expressive — Nucleux" />
+  <meta name="twitter:description" content="The 89 Nucleux agent patterns redrawn in the neural expressive language — colour, motion, adaptive components, type and shape carrying agent state." />
   <meta name="twitter:image" content="https://nucleux.in/share-on-x.png" />
   <meta name="twitter:image:alt" content="Nucleux — UI components for AI agents" />
 
@@ -36,11 +36,69 @@
   <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="nav-mega.css" />
+  <link rel="stylesheet" href="material-tokens.css" />
+  <link rel="stylesheet" href="material-components.css" />
+  <style>
+    /* ════════════════════════════════════════════════════════════
+       MATERIAL 3.0 — LIBRARY HOME
+
+       The layout is not styled here: .lib-stage, .lib-sub, .lib-grid,
+       .pcard and .badge all come from styles.css, the same rules the
+       ShadCN home uses. Only the card visuals and the kicker are
+       page-local, and both resolve to --md-sys-* tokens.
+       ════════════════════════════════════════════════════════════ */
+    .mh-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      align-self: flex-start;
+      padding: 6px 14px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      font-family: var(--md-ref-typeface-plain);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* A live thumbnail. The component is mounted at its true size on
+       a fixed-width stage and the whole stage is scaled — never the
+       font size, which would relayout the component and show a shape
+       the real one never takes. pointer-events off: the card is the
+       link, and a button inside it must not swallow the click. */
+    .mh-live {
+      height: 100%; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px;
+      pointer-events: none; user-select: none;
+    }
+    .mh-live__scale {
+      width: 560px; flex: 0 0 auto;
+      transform: scale(0.52);
+      transform-origin: center center;
+    }
+
+    .mh-vis { display: block; width: 100%; height: auto; }
+    .v-fill-p    { fill: var(--md-sys-color-primary); }
+    .v-fill-pc   { fill: var(--md-sys-color-primary-container); }
+    .v-fill-sc   { fill: var(--md-sys-color-secondary-container); }
+    .v-fill-tc   { fill: var(--md-sys-color-tertiary-container); }
+    .v-fill-on   { fill: var(--md-sys-color-on-surface-variant); }
+    .v-fill-line { fill: var(--md-sys-color-outline-variant); }
+    .v-stroke    { fill: none; stroke: var(--md-sys-color-outline-variant); stroke-width: 1.5; }
+
+    /* A card with no page behind it must not look pressable. */
+    .pcard--placeholder { cursor: default; }
+
+    /* The sidebar rows: only built patterns are links; the rest are
+       spans, so they are not focusable and do not advertise a
+       destination that does not exist. */
+    .tree__pattern:not(a) { cursor: default; }
+    .tree__pattern:not(a):hover { background: transparent; color: var(--fg-alt); }
+  </style>
 </head>
 <body class="has-shell">
 
@@ -93,13 +151,38 @@
     </div>
   </header>
 
+  <!-- ══════════════════════════════════════════════════════
+       MATERIAL 3.0 · AGENTIC COMPONENTS
+
+       Same shell as the ShadCN page (library.html): the global
+       nav, then the sidebar / main split. The difference is
+       where the content comes from — library.html builds itself
+       from patterns.js at runtime, and this page is static.
+
+       That is deliberate while the set is empty. Pointing this
+       page at patterns.js would render the ShadCN patterns
+       under a Material heading, which is worse than showing
+       nothing: it would claim components that do not exist yet.
+
+       The four stages and their sub-categories mirror the
+       ShadCN set exactly — same names, same order, same ids.
+       That is the point: the two sets are the same map drawn
+       in two design languages, so a reader who knows one can
+       find their way around the other.
+
+       Pattern rows are what is missing, not the structure.
+       ══════════════════════════════════════════════════════ -->
   <div class="shell">
-    <aside class="sidebar" id="sidebar" aria-label="Library navigation"></aside>
+    <aside class="sidebar" id="sidebar" aria-label="Material 3.0 library navigation"></aside>
+
     <main class="main" id="main"></main>
   </div>
 
-  <script src="patterns.js"></script>
-  <script src="library.js"></script>
+  <script src="material-nav.js"></script>
+<script src="material-patterns.js"></script>
+<script>window.MaterialNav.mount(null);</script>
+<script src="material-home.js"></script>
+
   <script src="global.js"></script>
 <script src="nav-splitflap.js"></script>
 <script src="nav-mega.js"></script>

@@ -66,7 +66,9 @@
       label: 'Material 3.0',
       rows: [
         { icon: 'basic',   title: 'Basic Components',   desc: 'Coming soon', href: null },
-        { icon: 'agentic', title: 'Agentic Components', desc: 'Coming soon', href: null }
+        { icon: 'agentic', title: 'Agentic Components',
+          desc: 'Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.',
+          href: 'material-agentic.html' }
       ]
     }
   ];
@@ -125,7 +127,7 @@
      inherits the control's ink and reads solid black on the light nav —
      the mark is a filled glyph, not a line drawing. */
   var X_SVG =
-    '<svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
     '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68' +
     'l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117' +
     'l11.966 15.644Z"/></svg>';
@@ -181,7 +183,7 @@
     document.body.appendChild(probe);
     var text = probe.getBoundingClientRect().width;
     probe.parentNode.removeChild(probe);
-    el.style.setProperty('--x-open', Math.max(114, Math.ceil(text) + 72) + 'px');
+    el.style.setProperty('--x-open', Math.max(114, text + 72).toFixed(2) + 'px');
   }
 
   /* webfonts can land after this runs and change the text metrics */
@@ -475,13 +477,28 @@
     item.insertAdjacentHTML('beforeend', panelHTML());
   }
 
-  function boot() { build(); actions(); }
+  function boot() {
+    build();
+    actions();
+    /* The cluster is finished — let it be seen. */
+    document.documentElement.classList.remove('gnav-pending');
+  }
 
-  /* nav-splitflap.js rewrites the nav labels, so run after it: at
-     DOMContentLoaded both are queued, and this file is included last. */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
+  /* Run at parse time, not at DOMContentLoaded.
+
+     `actions()` does not decorate the right-hand cluster — it REBUILDS
+     it: the GitHub link becomes an icon, an X button is inserted, the
+     Contact Us button becomes an icon, and Sign In is appended. Doing
+     that after the document is ready meant the header painted once
+     with text buttons and again as icons, two controls wider. That is
+     the flicker and the sideways jump on every refresh.
+
+     This file is included last, after nav-splitflap.js, and both now
+     run as they parse — so the ordering they depend on is unchanged,
+     and the first paint is already the finished header. */
+  if (document.querySelector('.gnav')) {
     boot();
+  } else {
+    document.addEventListener('DOMContentLoaded', boot);
   }
 })();

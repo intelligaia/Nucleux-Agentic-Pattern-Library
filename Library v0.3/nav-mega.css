@@ -87,6 +87,15 @@ body.landing-dark:not(.landing-light) .gnav {
   display: flex;
   align-items: center;
 }
+/* Room for the caret, reserved from the first frame.
+
+   The caret is inserted by script. Adding it after paint widened the
+   nav's centre block, and because the bar centres that block the whole
+   row nudged sideways — small, but visible on every load. The space is
+   held open inside the trigger instead, and the caret is pulled back
+   into it, so inserting the glyph fills a gap that was already there. */
+.gnav .gnav__item > .gnav__link { padding-right: 16px; }
+.gnav .gnav__item > .gnav__caret { margin-left: -14px; }
 .gnav .gnav__item .gnav__link { display: inline-flex; align-items: center; gap: 4px; }
 /* the trigger opens a panel rather than navigating */
 .gnav .gnav__item > .gnav__link { cursor: default; user-select: none; }
@@ -412,23 +421,33 @@ body.landing-dark:not(.landing-light) .gnav {
   justify-content: flex-end;   /* the icon is the only flex item now */
   border-radius: 9999px;   /* semantic/rounded-full */
   overflow: hidden;        /* clips the field while collapsed */
-  /* The DS surface applies collapsed too: this control is an input at
-     every width, and reading as a field rather than as a fourth icon
-     button is the whole point of the distinction. */
-  background: var(--ds-input-bg);
-  box-shadow: inset 0 0 0 1px var(--ds-input-border), var(--ds-input-shadow);
+  /* COLLAPSED, this is one of four identical circles.
+
+     It used to carry the design-system input surface at every width — a
+     white fill and a drop shadow while its three neighbours were
+     transparent hairline rings — so the row read as three buttons and
+     one odd control. At rest the four are peers: same ring, same ground,
+     same nothing. The field treatment belongs to the open state, where
+     it is actually a field and the distinction earns its keep. */
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 16%, transparent);
   /* width is the only geometry animated, and it is the thing being asked
      for — a transform-based fake would squash the glyph and the caret */
   transition: width 420ms cubic-bezier(.22, 1, .36, 1),
               background 260ms ease,
               box-shadow 260ms ease;
 }
+/* OPEN: the surface and lift the other three take on hover, plus the
+   input hairline — so all four rise identically, and this one also reads
+   as somewhere you can type. */
 .gnav .gnav__search--x:hover .gnav__search-shell,
 .gnav .gnav__search--x:focus-within .gnav__search-shell,
 .gnav .gnav__search--x.is-open .gnav__search-shell {
   width: 200px;
   background: var(--ds-input-bg);
-  box-shadow: inset 0 0 0 1px var(--ds-input-border), var(--ds-input-shadow);
+  box-shadow: inset 0 0 0 1px var(--ds-input-border),
+              0 1px 2px rgba(12, 12, 10, .05),
+              0 6px 16px -8px rgba(12, 12, 10, .16);
 }
 
 /* the icon: pinned to the right edge so it never slides during the grow */
@@ -525,7 +544,9 @@ body.landing-dark:not(.landing-light) .gnav {
   height: 45px;
   padding: 0;
   gap: 0;
-  border-radius: 9999px;
+  /* Half the height, not 9999px — the same circle, but a radius the
+     hover morph can actually animate out of. See styles.css. */
+  border-radius: 22.5px;
   overflow: hidden;              /* clips the label while collapsed */
   background: transparent;
   color: var(--fg);
@@ -538,7 +559,8 @@ body.landing-dark:not(.landing-light) .gnav {
   text-decoration: none;
   transition: width 420ms cubic-bezier(.22, 1, .36, 1),
               background 260ms ease,
-              border-color 260ms ease;
+              border-color 260ms ease,
+              border-radius 260ms cubic-bezier(.22, 1, .36, 1);
 }
 .gnav .gnav__actions .gnav__iconx:hover,
 .gnav .gnav__actions .gnav__iconx:focus-visible {
@@ -555,6 +577,10 @@ body.landing-dark:not(.landing-light) .gnav {
               0 6px 16px -8px rgba(12, 12, 10, .16);
   /* styles.css also lifts .gnav__cta on hover */
   transform: none;
+  /* The same shape morph the buttons make, on a control that is also
+     growing: the circle opens into a rounded rectangle rather than a
+     lozenge, so the whole actions cluster reads as one family. */
+  border-radius: var(--r-hover, 16px);
 }
 .gnav .gnav__actions .gnav__iconx .gnav__iconx-shell {
   position: absolute;
@@ -637,7 +663,11 @@ body.landing-dark:not(.landing-light) .gnav {
   align-items: center;
   gap: 8px;
   padding: 11px 22px;
-  border-radius: 9999px;
+  /* Half the pill's height rather than 9999px: identical at rest, and a
+     value the hover morph can animate out of — a radius is clamped to
+     half the box, so 9999px would sit clamped through the whole
+     transition and snap at the end. Same reasoning as styles.css. */
+  border-radius: 22.5px;
   background: var(--ink-950);
   color: var(--ink-0);
   border: 1px solid var(--ink-950);
@@ -646,12 +676,22 @@ body.landing-dark:not(.landing-light) .gnav {
   text-decoration: none;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.18s cubic-bezier(.34, 1.56, .64, 1);
+  transition: background 0.15s ease, border-color 0.15s ease,
+              border-radius 260ms cubic-bezier(.22, 1, .36, 1),
+              transform 0.18s cubic-bezier(.34, 1.56, .64, 1);
 }
-.gnav__signup:hover {
+.gnav__signup:hover,
+.gnav__signup:focus-visible {
   background: var(--ink-700);
   border-color: var(--ink-700);
   transform: translateY(-1px);
+  /* The shape morph the rest of the cluster makes. Sign In is the one
+     dark control here, so it has to move with them or it stops reading
+     as part of the same set. */
+  border-radius: var(--r-hover, 16px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gnav__signup { transition: none; }
 }
 /* On the genuinely dark pages the ink pill would vanish into the bar, so
    it flips: the surface becomes the ink and the type becomes the page.
