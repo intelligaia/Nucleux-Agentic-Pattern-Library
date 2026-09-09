@@ -451,6 +451,32 @@ body.auth {
 .auth-input--error:focus { box-shadow: 0 0 0 3px var(--auth-danger-ground); }
 .auth-input-shell--error svg { color: var(--auth-danger); }
 
+/* ── the shake ──
+   Played once, when a fault ARRIVES on a field — never on the keystrokes
+   that follow, or the field would judder while somebody is fixing it.
+
+   `transform` only, so nothing reflows and the message underneath stays
+   perfectly still: the field moves, the layout does not. The amplitude
+   is small and decaying (5px → 2px) because this is a nudge towards
+   something to fix, not an alarm. */
+@keyframes auth-shake {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-5px); }
+  30%  { transform: translateX(5px); }
+  45%  { transform: translateX(-3px); }
+  60%  { transform: translateX(3px); }
+  75%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+.auth-input-shell.is-shake {
+  animation: auth-shake 380ms cubic-bezier(.36, .07, .19, .97) both;
+}
+/* Motion is the one cue here that some readers cannot use — and the
+   colour, the icon and the message are all still present without it. */
+@media (prefers-reduced-motion: reduce) {
+  .auth-input-shell.is-shake { animation: none; }
+}
+
 .auth-msg {
   display: flex;
   align-items: flex-start;

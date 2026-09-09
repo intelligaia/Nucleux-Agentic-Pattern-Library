@@ -82,16 +82,17 @@
     color: color-mix(in oklab, var(--fg) 34%, transparent);
   }
 
-  /* The toast is fixed to the window in the product; in a frame it is
-     pinned to the frame instead, at the same distance from the top edge.
-     Nothing else about it changes. */
+  /* The toast is fixed to the window in the product. A frame has no
+     window, and overlaying it on the card hid the headline — so here it
+     sits in flow at the top of the frame, which is the same reading:
+     above everything, owned by the screen rather than by a field. */
   .sb-screen .auth-alert {
-    position: absolute;
-    top: 14px;
-    z-index: 2;
+    position: static;
+    display: flex;
+    margin: 0 auto 18px;
     font-size: 12.5px;
     padding: 8px 14px;
-    max-width: calc(100% - 32px);
+    max-width: 100%;
     animation: none;
   }
 
@@ -114,7 +115,8 @@
     </p>
     <ul class="sb-legend">
       <li><b>Inline message</b> — the fault belongs to one field, and is said under it.</li>
-      <li><b>Form-level message</b> — the fault belongs to the attempt; no field is marked.</li>
+      <li><b>Form-level message</b> — the fault belongs to the attempt; no field is marked.
+          Three of them: invalid email, invalid password, or both.</li>
       <li><b>Sign In</b> — always pressable; disabled only while a submission is outstanding.</li>
     </ul>
   </header>
@@ -763,12 +765,13 @@
       <figure class="sb-frame" id="state-08">
         <figcaption class="sb-cap">
           <span class="sb-num">08</span>
-          <span class="sb-name">Wrong Credentials</span>
+          <span class="sb-name">Wrong Credentials — three outcomes</span>
         </figcaption>
-        <div class="sb-screen"><p class="auth-alert" id="signin-alert" role="alert" aria-live="polite">
+        <p class="sb-sub">Password wrong</p><div class="sb-screen"><p class="auth-alert" id="signin-alert" role="alert" aria-live="polite">
     <span class="auth-alert__dot" aria-hidden="true"></span>
-    <span>We couldn’t sign you in with that email and password.
-          Check your details and try again.</span>
+    <!-- The sentence is written by the outcome: invalid email, invalid
+         password, or both. -->
+    <span data-alert-text="">Invalid password. Try again.</span>
   </p><div class="auth-card">
 
       <h1 class="auth-title">Welcome back. Continue building better <em>agentic</em> experiences.</h1>
@@ -790,6 +793,83 @@
                  manager this is the identifier on a SIGN-IN form, so it offers a
                  saved account instead of a fresh address. -->
             <input class="auth-input" id="signin-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required="" aria-describedby="signin-email-msg" value="alex@company.com">
+          </span>
+          <p class="auth-msg" id="signin-email-msg" hidden=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><span></span></p>
+        </div>
+
+        <div>
+          <!-- The recovery link rides the label's baseline rather than
+               sitting under the field, where it would push the primary
+               button down and read as a second action of equal weight. -->
+          <div class="auth-label-row">
+            <label class="auth-label" for="signin-password">Password</label>
+            <a class="auth-mini" href="reset-password.html">Forgot password?</a>
+          </div>
+          <span class="auth-input-shell">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.6" stroke="currentColor" stroke-width="1.7"></rect>
+              <path d="M8.2 10.5V7.8a3.8 3.8 0 0 1 7.6 0v2.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+            </svg>
+            <input class="auth-input auth-input--reveal" id="signin-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required="" aria-describedby="signin-password-msg" value="hunter2">
+            <!-- Masked by default; the control says what it will DO, not
+                 what the field currently is. -->
+            <button class="auth-reveal" type="button" data-reveal="" aria-controls="signin-password" aria-pressed="false">Show</button>
+          </span>
+          <p class="auth-msg" id="signin-password-msg" hidden=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><span></span></p>
+        </div>
+
+        <!-- Live from the start. A disabled primary action leaves a reader
+             who has missed a field with nothing to press and no reason
+             given; pressing this one always produces an answer — either it
+             submits, or it says what is missing. The only time it is
+             disabled is while a submission is outstanding. -->
+        <button class="auth-btn auth-btn--primary" type="submit" data-submit="" aria-busy="false">
+          <span data-submit-label="">Sign In</span>
+        </button>
+      </form>
+
+      <div class="auth-or">OR</div>
+
+      <a class="auth-btn auth-btn--google" href="#google">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"></path>
+          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"></path>
+          <path fill="#FBBC05" d="M3.96 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l3-2.33z"></path>
+          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"></path>
+        </svg>
+        Continue with Google
+      </a>
+
+      <p class="auth-switch">
+        New to Nucleux? <a href="signup.html">Create an account</a>
+      </p>
+
+    </div></div><p class="sb-sub">Email wrong</p><div class="sb-screen"><p class="auth-alert" id="signin-alert" role="alert" aria-live="polite">
+    <span class="auth-alert__dot" aria-hidden="true"></span>
+    <!-- The sentence is written by the outcome: invalid email, invalid
+         password, or both. -->
+    <span data-alert-text="">Invalid email. Try again.</span>
+  </p><div class="auth-card">
+
+      <h1 class="auth-title">Welcome back. Continue building better <em>agentic</em> experiences.</h1>
+      <p class="auth-sub">Sign in to continue.</p>
+
+      <!-- Email, then password, then the primary action. The
+           third-party route sits BELOW the rule: the form is the path
+           most people on a sign-in screen are taking, and putting the
+           alternative first makes them read past it every time. -->
+      <form class="auth-fields" action="#signin" method="post" novalidate="">
+        <div>
+          <label class="auth-label" for="signin-email">Email</label>
+          <span class="auth-input-shell">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="2.5" y="4.5" width="19" height="15" rx="3" stroke="currentColor" stroke-width="1.7"></rect>
+              <path d="m3.5 6.5 8.5 6 8.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <!-- autocomplete="username" rather than "email": it tells a password
+                 manager this is the identifier on a SIGN-IN form, so it offers a
+                 saved account instead of a fresh address. -->
+            <input class="auth-input" id="signin-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required="" aria-describedby="signin-email-msg" value="alex@other.com">
           </span>
           <p class="auth-msg" id="signin-email-msg" hidden=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><span></span></p>
         </div>
@@ -841,8 +921,85 @@
         New to Nucleux? <a href="signup.html">Create an account</a>
       </p>
 
+    </div></div><p class="sb-sub">Both wrong</p><div class="sb-screen"><p class="auth-alert" id="signin-alert" role="alert" aria-live="polite">
+    <span class="auth-alert__dot" aria-hidden="true"></span>
+    <!-- The sentence is written by the outcome: invalid email, invalid
+         password, or both. -->
+    <span data-alert-text="">Invalid email and password. Try again.</span>
+  </p><div class="auth-card">
+
+      <h1 class="auth-title">Welcome back. Continue building better <em>agentic</em> experiences.</h1>
+      <p class="auth-sub">Sign in to continue.</p>
+
+      <!-- Email, then password, then the primary action. The
+           third-party route sits BELOW the rule: the form is the path
+           most people on a sign-in screen are taking, and putting the
+           alternative first makes them read past it every time. -->
+      <form class="auth-fields" action="#signin" method="post" novalidate="">
+        <div>
+          <label class="auth-label" for="signin-email">Email</label>
+          <span class="auth-input-shell">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="2.5" y="4.5" width="19" height="15" rx="3" stroke="currentColor" stroke-width="1.7"></rect>
+              <path d="m3.5 6.5 8.5 6 8.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <!-- autocomplete="username" rather than "email": it tells a password
+                 manager this is the identifier on a SIGN-IN form, so it offers a
+                 saved account instead of a fresh address. -->
+            <input class="auth-input" id="signin-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required="" aria-describedby="signin-email-msg" value="alex@other.com">
+          </span>
+          <p class="auth-msg" id="signin-email-msg" hidden=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><span></span></p>
+        </div>
+
+        <div>
+          <!-- The recovery link rides the label's baseline rather than
+               sitting under the field, where it would push the primary
+               button down and read as a second action of equal weight. -->
+          <div class="auth-label-row">
+            <label class="auth-label" for="signin-password">Password</label>
+            <a class="auth-mini" href="reset-password.html">Forgot password?</a>
+          </div>
+          <span class="auth-input-shell">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.6" stroke="currentColor" stroke-width="1.7"></rect>
+              <path d="M8.2 10.5V7.8a3.8 3.8 0 0 1 7.6 0v2.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+            </svg>
+            <input class="auth-input auth-input--reveal" id="signin-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required="" aria-describedby="signin-password-msg" value="hunter2">
+            <!-- Masked by default; the control says what it will DO, not
+                 what the field currently is. -->
+            <button class="auth-reveal" type="button" data-reveal="" aria-controls="signin-password" aria-pressed="false">Show</button>
+          </span>
+          <p class="auth-msg" id="signin-password-msg" hidden=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><span></span></p>
+        </div>
+
+        <!-- Live from the start. A disabled primary action leaves a reader
+             who has missed a field with nothing to press and no reason
+             given; pressing this one always produces an answer — either it
+             submits, or it says what is missing. The only time it is
+             disabled is while a submission is outstanding. -->
+        <button class="auth-btn auth-btn--primary" type="submit" data-submit="" aria-busy="false">
+          <span data-submit-label="">Sign In</span>
+        </button>
+      </form>
+
+      <div class="auth-or">OR</div>
+
+      <a class="auth-btn auth-btn--google" href="#google">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"></path>
+          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"></path>
+          <path fill="#FBBC05" d="M3.96 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l3-2.33z"></path>
+          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"></path>
+        </svg>
+        Continue with Google
+      </a>
+
+      <p class="auth-switch">
+        New to Nucleux? <a href="signup.html">Create an account</a>
+      </p>
+
     </div></div>
-        <p class="sb-note">The pair was not accepted, so no single field is marked — marking the email would tell the reader to fix something that may be right. Plain words, no status codes. Email kept, password ready to re-enter, Forgot password still there.</p>
+        <p class="sb-note">Three refusals, three sentences: “invalid email” and “invalid password” send the reader to different places, so they are never collapsed into one message. Still nothing marked inline — these faults were found by the server, not by reading the form — but the caret lands in the first field the sentence names, with its value selected. Both values stay, and Forgot password stays reachable.</p>
       </figure>
 <svg class="sb-arrow" viewBox="0 0 48 24" aria-hidden="true"><path d="M2 12h40M34 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <figure class="sb-frame" id="state-09">

@@ -13,10 +13,13 @@
    working towards and it should clear the moment they hit it.
 
    WHERE THE MESSAGE GOES follows the fault. Empty or malformed
-   belongs to a field, and is said under that field. A pair of
-   credentials that was not accepted belongs to the attempt: no
-   field is at fault, so nothing is marked and the message sits
-   with the form.
+   belongs to a field, and is said under that field. Credentials
+   that were not accepted belong to the attempt: the form could
+   not have known, the server did, so nothing is marked and the
+   message sits at the top of the window. There are three of
+   those — the email, the password, or both — and they are
+   separate messages because "invalid email" and "invalid
+   password" send the reader to different places.
 
    WHAT THE BUTTON DOES. It is live from the start. Disabling a
    primary action is tempting — it looks like it prevents an
@@ -47,6 +50,22 @@
      alex@company — a typo the reader can see — and nothing else. */
   var SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+  /* The account this demo knows about. A real screen has a server here;
+     the point of the fixture is that the three authentication outcomes
+     below are REACHABLE by typing, so the states can be inspected
+     rather than described. */
+  var ACCOUNT = { email: 'alex@company.com', password: 'correct-horse' };
+
+  /* The three ways an attempt can be refused, in the words the product
+     uses. Each names what to fix — which is the whole reason to
+     distinguish them — and none of them says anything about tokens,
+     status codes or servers. */
+  var REFUSED = {
+    email:    'Invalid email. Try again.',
+    password: 'Invalid password. Try again.',
+    both:     'Invalid email and password. Try again.'
+  };
+
   var touched = { email: false, password: false };
   var busy = false;
 
@@ -59,12 +78,29 @@
   }
   var E = field(email), P = field(pass);
 
+  /* One shake, on arrival. Restarting the animation needs the class off
+     and a reflow read in between, or a second call inside the same frame
+     does nothing; `animationend` takes it off again so the next fault
+     can play. */
+  function shake(shell) {
+    shell.classList.remove('is-shake');
+    void shell.offsetWidth;
+    shell.classList.add('is-shake');
+  }
+  document.addEventListener('animationend', function (ev) {
+    if (ev.animationName === 'auth-shake') ev.target.classList.remove('is-shake');
+  }, true);
+
   function mark(f, text) {
+    /* Was it already marked? Then this is a re-check while the reader
+       types, and the field must not judder under them. */
+    var arriving = !f.input.classList.contains('auth-input--error');
     f.input.classList.add('auth-input--error');
     f.input.setAttribute('aria-invalid', 'true');
     f.shell.classList.add('auth-input-shell--error');
     f.msg.querySelector('span').textContent = text;
     f.msg.hidden = false;
+    if (arriving) shake(f.shell);
   }
   function clear(f) {
     f.input.classList.remove('auth-input--error');
@@ -104,6 +140,20 @@
      correction is already wrong. */
   function dismissAlert() {
     if (!alert_.hidden) alert_.hidden = true;
+  }
+  function showAlert(text) {
+    alert_.querySelector('[data-alert-text]').textContent = text;
+    alert_.hidden = false;
+  }
+
+  /* Which of the two the server refused. Both wrong is its own answer
+     rather than two messages stacked: one sentence, both nouns. */
+  function refusal() {
+    var emailOk = email.value.trim().toLowerCase() === ACCOUNT.email;
+    var passOk  = pass.value === ACCOUNT.password;
+    if (emailOk && passOk) return '';
+    if (!emailOk && !passOk) return 'both';
+    return emailOk ? 'password' : 'email';
   }
 
   [email, pass].forEach(function (el) {
@@ -154,18 +204,36 @@
     dismissAlert();
     setBusy(true);
 
-    /* Stands in for the request. The three outcomes a sign-in screen has
-       to be able to show are success, wrong credentials, and a failure
-       that is nobody's fault; this playground demonstrates the second,
-       because it is the one with a UI. */
+    /* Stands in for the request. */
     window.setTimeout(function () {
+      var refused = refusal();
+
+      if (!refused) {
+        /* Nothing to navigate to in a pattern library, so the button
+           holds the outcome rather than pretending to move on. */
+        btn.disabled = true;
+        label.textContent = 'Signed in';
+        busy = false;
+        return;
+      }
+
       setBusy(false);
-      alert_.hidden = false;
-      /* Nothing is marked: the fault belongs to the pair, not to either
-         field, and the password is the one they are most likely to be
-         correcting — so it gets the caret, with its value selected. */
-      pass.focus({ preventScroll: true });
-      pass.select();
+      showAlert(REFUSED[refused]);
+
+      /* Still no field markings: these faults were found by the server,
+         not by reading the form, and an inline message under a field
+         means "this value is malformed". What the message DOES do is
+         name what to fix, so the caret goes to the first thing named —
+         with its value selected, ready to be typed over. */
+      /* The named field shakes even though it is not marked: the shake is
+         a pointer to where the sentence is looking, and it leaves nothing
+         behind when it stops. Both, when both were named. */
+      if (refused !== 'password') shake(E.shell);
+      if (refused !== 'email')    shake(P.shell);
+
+      var first = refused === 'password' ? pass : email;
+      first.focus({ preventScroll: true });
+      first.select();
     }, 1600);
   });
 

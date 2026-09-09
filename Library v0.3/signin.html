@@ -77,10 +77,11 @@
 
        `role="alert"` announces it on arrival without moving focus away
        from what the reader is editing. -->
-  <p class="auth-alert" id="signin-alert" role="alert" aria-live="polite" hidden>
+  <p class="auth-alert" id="auth-alert" role="alert" aria-live="polite" hidden>
     <span class="auth-alert__dot" aria-hidden="true"></span>
-    <span>We couldn&rsquo;t sign you in with that email and password.
-          Check your details and try again.</span>
+    <!-- The sentence is written by the outcome: invalid email, invalid
+         password, or both. -->
+    <span data-alert-text>Invalid email and password. Try again.</span>
   </p>
 
   <main class="auth-main">
@@ -93,7 +94,7 @@
            third-party route sits BELOW the rule: the form is the path
            most people on a sign-in screen are taking, and putting the
            alternative first makes them read past it every time. -->
-      <form class="auth-fields" action="#signin" method="post" novalidate>
+      <form class="auth-fields" data-auth="signin" action="#signin" method="post" novalidate>
         <div>
           <label class="auth-label" for="signin-email">Email</label>
           <span class="auth-input-shell">
@@ -176,7 +177,7 @@
     <a href="#privacy">Privacy</a>
   </footer>
 
-  <script src="auth-signin.js"></script>
+  <script src="auth-form.js"></script>
 
 </body>
 </html>

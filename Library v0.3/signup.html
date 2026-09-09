@@ -69,6 +69,19 @@
     </div>
   </header>
 
+  <!-- Form-level, and only ever for a form-level fault. It rides at the
+       top of the window rather than inside the card because it belongs
+       to the ATTEMPT, not to any field — putting it between the fields
+       would push the form down and read as a problem with whatever it
+       happened to land above.
+
+       `role="alert"` announces it on arrival without moving focus away
+       from what the reader is editing. -->
+  <p class="auth-alert" id="auth-alert" role="alert" aria-live="polite" hidden>
+    <span class="auth-alert__dot" aria-hidden="true"></span>
+    <span data-alert-text>Email already in use. Sign in instead.</span>
+  </p>
+
   <main class="auth-main">
     <div class="auth-card">
 
@@ -84,7 +97,7 @@
            The third-party route sits BELOW the rule, as it does on
            sign-in: the form is the path most people take, and putting
            the alternative first makes them read past it every time. -->
-      <form class="auth-fields" action="#signup" method="post" novalidate>
+      <form class="auth-fields" data-auth="signup" action="#signup" method="post" novalidate>
         <div>
           <label class="auth-label" for="signup-name">Name</label>
           <span class="auth-input-shell">
@@ -92,9 +105,11 @@
               <circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/>
               <path d="M4.5 20c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
             </svg>
-            <input class="auth-input" id="signup-name" name="name" type="text"
+            <input class="auth-input" id="signup-name" name="name"
+                   aria-describedby="signup-name-msg" type="text"
                    autocomplete="name" placeholder="Your name" required />
           </span>
+          <p class="auth-msg" id="signup-name-msg" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span></span></p>
         </div>
 
         <div>
@@ -104,9 +119,11 @@
               <rect x="2.5" y="4.5" width="19" height="15" rx="3" stroke="currentColor" stroke-width="1.7"/>
               <path d="m3.5 6.5 8.5 6 8.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <input class="auth-input" id="signup-email" name="email" type="email"
+            <input class="auth-input" id="signup-email" name="email"
+                   aria-describedby="signup-email-msg" type="email"
                    autocomplete="email" placeholder="you@example.com" required />
           </span>
+          <p class="auth-msg" id="signup-email-msg" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span></span></p>
         </div>
 
         <div>
@@ -119,13 +136,23 @@
             <!-- autocomplete="new-password" is what tells a password manager to
                  OFFER one rather than fill the saved one, and minlength states
                  the rule the placeholder is already claiming. -->
-            <input class="auth-input" id="signup-password" name="password" type="password"
-                   autocomplete="new-password" minlength="8"
-                   placeholder="At least 8 characters" required />
+            <input class="auth-input auth-input--reveal" id="signup-password" name="password"
+                   type="password" autocomplete="new-password" minlength="8"
+                   placeholder="At least 8 characters" required
+                   aria-describedby="signup-password-msg" />
+            <!-- Masked by default; the control says what it will DO, not
+                 what the field currently is. -->
+            <button class="auth-reveal" type="button" data-reveal
+                    aria-controls="signup-password" aria-pressed="false">Show</button>
           </span>
+          <p class="auth-msg" id="signup-password-msg" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.6v5m0 3.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span></span></p>
         </div>
 
-        <button class="auth-btn auth-btn--primary" type="submit">Create Account</button>
+        <!-- Live from the start: pressing it always produces an answer,
+             either a submission or a note of what is missing. -->
+        <button class="auth-btn auth-btn--primary" type="submit" data-submit>
+          <span data-submit-label>Create Account</span>
+        </button>
       </form>
 
       <div class="auth-or">OR</div>
@@ -156,6 +183,8 @@
     <a href="#terms">Terms</a>
     <a href="#privacy">Privacy</a>
   </footer>
+
+  <script src="auth-form.js"></script>
 
 </body>
 </html>
