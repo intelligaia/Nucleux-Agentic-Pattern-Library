@@ -28,9 +28,7 @@
                'initial-cta', 'open-input', 'suggested-prompts', 'ai-icons',
                'search-filter', 'autocomplete', 'proactive', 'randomize',
                /* Initially · Expressive Input */
-               'voice-input', 'visual-input', 'handwriting', 'gesture', 'structured-input',
-               /* Initially · Context Expansion */
-               'attachments', 'connectors', 'mcp', 'knowledge-base', 'model-selection'];
+               'voice-input', 'visual-input', 'handwriting', 'gesture', 'structured-input'];
 
   var STAGES = [
   { id: "onboarding", num: "01", label: "Onboarding",

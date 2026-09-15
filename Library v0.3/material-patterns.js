@@ -1208,15 +1208,15 @@
       subId: 'capability',
       oneline: 'A first-impression clarification of what the AI is, isn’t, and what it doesn’t know.',
       intent: 'What the agent can do, will not do, and cannot see — stated before anyone relies on it, and kept reachable after.',
-      what: 'A standing statement of scope and limits, given in full once and reachable ever after from a compact line beside the agent.',
+      what: 'A standing statement of scope and limits, given in full once and reachable ever after from a compact line sitting beneath the composer.',
       why: 'The other three patterns in this category sell capability. This one is the half that keeps the sale honest: a user who knows the edges trusts what is inside them, and a user who discovers a limit by being burned by it stops trusting all of it. It is also what makes over-reliance a choice rather than an accident.',
       when: 'At first run, before the first request. Then permanently reachable — next to the composer, in the agent’s own card, wherever someone would go to ask "can it do this?".',
-      how: 'Write it as three rows a person can act on: what it can do, what it will not do, and what it does not know. Name the actual gaps — which sources it cannot see, what it is not qualified for. Show it once at full size, then keep one short line that reopens the full statement when tapped; a limit stated once and then hidden is a limit nobody has. Do not confuse it with Caveat, which qualifies one answer, or Disclosure, which marks one piece of content.',
+      how: 'Write it as three rows a person can act on: what it can do, what it will not do, and what it does not know. Name the actual gaps — which sources it cannot see, what it is not qualified for. Show it once at full size, then keep one short line that reopens the full statement when tapped; a limit stated once and then hidden is a limit nobody has. Do not confuse it with Caveat, which qualifies one answer, or Disclosure, which marks one piece of content. Put the standing line beneath the composer, never above it: above an input it reads as a label for that input, and below it is the last thing somebody passes before they commit.',
       expressive: 'The full form is the M3 basic dialog — centred icon, headline-small, supporting text — on surface-container-high at elevation 3, because this is a moment the product is asking for a beat of attention. The compact form is a corner-full line at body-small, containing a real button rather than a link: reopening the statement is an action, and it must survive the reader forgetting where it was.',
       composed: ['Dialog', 'List', 'Button', 'Icon'],
       related: [['disclosure', 'Disclosure'], ['caveat', 'Caveat'], ['example-gallery', 'Example Gallery']],
       pkg: 'nucleux-m3-disclaimer',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/disclaimer.css\" />\n\n<!-- once, at first run -->\n<section class=\"md-disclaim\" role=\"dialog\" aria-labelledby=\"dc-t\">\n  <h2 class=\"md-disclaim__t\" id=\"dc-t\">What Aria can and cannot do</h2>\n  <ul class=\"md-disclaim__list\">\n    <li><span class=\"md-disclaim__k\">Can</span><span>…</span></li>\n    <li><span class=\"md-disclaim__k\">Will not</span><span>…</span></li>\n    <li><span class=\"md-disclaim__k\">Cannot see</span><span>…</span></li>\n  </ul>\n</section>\n\n<!-- afterwards, beside the composer: the line IS the way back -->\n<button class=\"md-disclaim-line\" aria-label=\"What Aria can and cannot do\">\n  Aria can be wrong. Check anything before you send it.\n</button>",
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/disclaimer.css\" />\n\n<!-- once, at first run -->\n<section class=\"md-disclaim\" role=\"dialog\" aria-labelledby=\"dc-t\">\n  <h2 class=\"md-disclaim__t\" id=\"dc-t\">What Aria can and cannot do</h2>\n  <ul class=\"md-disclaim__list\">\n    <li><span class=\"md-disclaim__k\">Can</span><span>…</span></li>\n    <li><span class=\"md-disclaim__k\">Will not</span><span>…</span></li>\n    <li><span class=\"md-disclaim__k\">Cannot see</span><span>…</span></li>\n  </ul>\n</section>\n\n<!-- afterwards, BENEATH the composer: a footnote to what you are\n     about to send, and the line itself is the way back -->\n<button class=\"md-disclaim-line\" aria-label=\"What Aria can and cannot do\">\n  Aria can be wrong. Check anything before you send it.\n</button>",
       examples: [
         {
           id: 'disclaimer-full',
@@ -1257,7 +1257,7 @@
         {
           id: 'disclaimer-line',
           title: 'The standing line',
-          note: 'What is left after the dialog is dismissed. The line itself is the control — one short reminder that reopens the full statement, rather than a second label competing with it.',
+          note: 'What is left after the dialog is dismissed, sitting beneath the composer rather than above it — above an input a caption reads as a label for the input, which this is not. The line itself is the control: one short reminder that reopens the full statement, rather than a second label competing with it.',
           code:
 '<button class="md-disclaim-line md-body-small" type="button"\n' +
 '        aria-label="What Aria can and cannot do">\n' +
@@ -1267,6 +1267,1717 @@
 '  </svg>\n' +
 '  Aria can be wrong. Check anything before you send it.\n' +
 '</button>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       INITIALLY · ENTRY POINTS
+
+       Everything above this line is about the agent BEFORE anyone
+       asks it for anything: what it is, who it is, what it can do.
+       These eight are the doors. They are the first place the
+       expressive language has to do real work, because an entry
+       point is read at a glance and pressed on instinct — colour,
+       shape and motion arrive before the label does.
+
+       The rules they all obey:
+
+         · Capsule is the human's action. The agent's own output is
+           never capsule-shaped, so a person can tell at a glance
+           what is theirs to press.
+         · A user-initiated move springs; a system-initiated one
+           arrives on emphasized easing. Confusing the two makes
+           the product feel like it is acting on its own.
+         · Nothing the agent produced is boxed while it is still
+           being produced. The edge hardens as the answer settles.
+         · One expressive moment per view. Eight doors on one
+           screen, all animating, is a carnival.
+       ══════════════════════════════════════════════════════════ */
+    'initial-cta': {
+      id: 'initial-cta',
+      name: 'Initial CTA',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'The large, inviting input that anchors the empty state.',
+      intent: 'The one obvious way in on a screen that has nothing on it yet — large enough to answer &ldquo;what now?&rdquo;, and specific enough to be worth pressing.',
+      what: 'The primary invitation on an empty or first-run surface: a single oversized entry point that says what the agent will do <em>on this screen</em>, rather than announcing that an agent exists.',
+      why: 'The empty state is the most expensive screen in an agentic product, because it is where most people decide the thing is not for them. A generic “Ask me anything” hands the hardest problem — knowing what to ask — straight back to the user. A call to action written against the material already on screen answers it for them, and costs one press.',
+      when: 'On any surface where the agent has produced nothing yet, and only while that is true. Retire it the moment there is real work on the screen: an invitation competing with content is noise, and a permanent one reads as an advertisement.',
+      how: 'One per screen, and make it the largest interactive thing on it. Write the label as a verb applied to what the reader is looking at — “Summarise this thread”, not “Get started”. Carry the disclosure on it, because this is first contact. Give it a secondary way in for people who already know what they want, and let the primary action be pressed with the keyboard.',
+      expressive: 'Capsule, because it is the human&rsquo;s action and nothing the agent produces is capsule-shaped &mdash; that one rule lets a reader tell what is theirs to press without reading anything. Primary at tone 60 with the reserved glyph, on a neutral ground: this is the single saturated element in an otherwise empty view, which is what makes an empty state read as an invitation rather than a failure. The press springs on <code>cubic-bezier(.34, 1.56, .64, 1)</code> because the user caused it; the answer that follows arrives on emphasized easing from below, because the agent did. Idle carries a very slow ambient breath on the glyph only &mdash; 18s, stopped entirely under reduced motion &mdash; so the surface reads as awake without asking for attention.',
+      composed: ['Button', 'Text Field', 'Icon', 'Card'],
+      related: [['open-input', 'Open Input'], ['suggested-prompts', 'Suggested Prompts'], ['example-gallery', 'Example Gallery']],
+      pkg: 'nucleux-m3-initial-cta',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<section class=\"md-cta\" aria-labelledby=\"cta-t\">\n  <svg class=\"md-cta__ico\"><!-- reserved glyph --></svg>\n  <h2 class=\"md-cta__t\" id=\"cta-t\">Summarise this thread</h2>\n  <p class=\"md-cta__d\">Aria reads the ticket and gives you the disagreement in two lines.</p>\n  <div class=\"md-cta__foot\">\n    <button class=\"md-button md-button--filled\">Summarise it</button>\n    <button class=\"md-button md-button--text\">Ask something else</button>\n  </div>\n</section>",
+      examples: [
+        {
+          id: 'cta-anchored',
+          title: 'The invitation, written against the screen',
+          note: 'The label names what happens to the thing the reader is already looking at. A second, quieter way in sits beside it for people who arrived knowing what they wanted.',
+          code:
+'<section class="md-cta" aria-labelledby="cta-t">\n' +
+'  <svg class="md-cta__ico" viewBox="0 0 24 24" aria-hidden="true">\n' +
+'    <path d="M12 3.2 13.9 8.6 19.3 10.5 13.9 12.4 12 17.8 10.1 12.4 4.7 10.5 10.1 8.6Z"/>\n' +
+'  </svg>\n' +
+'  <h2 class="md-cta__t md-headline-small" id="cta-t">Summarise this thread</h2>\n' +
+'  <p class="md-cta__d md-body-medium">\n' +
+'    Aria reads ticket #4821 and gives you the disagreement in two lines.\n' +
+'  </p>\n' +
+'  <div class="md-cta__foot">\n' +
+'    <button class="md-button md-button--filled" type="button">Summarise it</button>\n' +
+'    <button class="md-button md-button--text" type="button">Ask something else</button>\n' +
+'  </div>\n' +
+'</section>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       OPEN INPUT
+       ══════════════════════════════════════════════════════════ */
+    'open-input': {
+      id: 'open-input',
+      name: 'Open Input',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'Free-form text box for any natural-language ask.',
+      intent: 'The one field that accepts anything, and is honest about what it will do with it — including while it is busy, and when the ask is one it cannot take.',
+      what: 'The composer: a free-form field where a request is typed in the user’s own words, with the controls that belong to sending one — submit, stop, and whatever the product attaches to a request.',
+      why: 'It is the most-used control in the product and the one most often shipped in one state. A composer that looks identical while idle, while sending and while the model is mid-answer teaches people to press again, and a composer that goes disabled during a wait takes away the draft they were writing. The states are the pattern.',
+      when: 'Wherever a request can be made. It is the fallback behind every other entry point in this category — a suggestion, a template or a dice roll should all end up here, editable, rather than firing straight off.',
+      how: 'Keep the field editable while the agent works; put the busy state on the send control, which becomes stop. Swap send in only when there is something to send. Never clear what somebody typed without giving it back. Say what the field accepts in the placeholder, in the product’s own nouns, and keep Enter to send with Shift-Enter for a newline — reversing those is the most reliable way to send half a sentence.',
+      expressive: 'The field is a capsule with a 1px outline-variant edge that takes primary at tone 60 on focus &mdash; one property, one state, no glow. Send is the only filled element in the row, so the primary action is unmistakable when the field has content and absent when it does not. While a reply is in flight the send control becomes stop and the field stays live: the busy state belongs to the action, never to the reader&rsquo;s text. Focus and colour move on standard easing at 180ms; the reply that comes back rises from below on emphasized easing, so what the user did and what the system did never share a curve.',
+      composed: ['Text Field', 'Button', 'Icon', 'Progress'],
+      related: [['initial-cta', 'Initial CTA'], ['autocomplete', 'Autocomplete'], ['suggested-prompts', 'Suggested Prompts']],
+      pkg: 'nucleux-m3-open-input',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<form class=\"md-entry\">\n  <svg class=\"md-entry__glyph\"><!-- reserved glyph --></svg>\n  <input class=\"md-entry__input\" placeholder=\"Ask Aria about #4821\" />\n  <!-- send is present only when there is something to send;\n       while a reply is in flight it becomes stop -->\n  <button class=\"md-entry__send\" aria-label=\"Send\"><!-- ▶ --></button>\n</form>",
+      examples: [
+        {
+          id: 'composer-rest',
+          title: 'The composer, ready',
+          note: 'The placeholder names what this particular field is for. Send is absent until there is something to send, so an empty press is impossible rather than merely ignored.',
+          code:
+'<form class="md-entry">\n' +
+'  <svg class="md-entry__glyph" viewBox="0 0 24 24" aria-hidden="true">\n' +
+'    <path d="M12 3.2 13.9 8.6 19.3 10.5 13.9 12.4 12 17.8 10.1 12.4 4.7 10.5 10.1 8.6Z"/>\n' +
+'  </svg>\n' +
+'  <input class="md-entry__input md-body-medium" type="text"\n' +
+'         placeholder="Ask Aria about #4821" aria-label="Ask Aria" />\n' +
+'</form>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       SUGGESTED PROMPTS
+       ══════════════════════════════════════════════════════════ */
+    'suggested-prompts': {
+      id: 'suggested-prompts',
+      name: 'Suggested Prompts',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'Smart, context-aware preset actions to jumpstart engagement.',
+      intent: 'A short row of things worth asking about what is actually on screen — pressed to fill the composer, not to fire.',
+      what: 'A small set of ready-made requests offered beside the composer, derived from the current surface rather than from a fixed list.',
+      why: 'Most people do not fail to use an agent because they cannot type; they fail because they do not know what it is good for. Suggestions answer that in the only way that scales — by example, on the reader’s own material. A static row of three generic prompts answers nothing and becomes furniture within a week.',
+      when: 'When the composer is empty, and after an answer where an obvious next step exists. Not while the user is typing: the ideas they are offered should never compete with the sentence they are already writing.',
+      how: 'Derive them from what is on screen and say so in their wording. Cap at three or four — a wall of chips is a menu, and a menu is what this pattern exists to replace. Land the chosen one in the composer, editable, so it teaches phrasing rather than hiding it. Offer a refresh only if the set genuinely changes. Retire suggestions a user never takes.',
+      expressive: 'Outlined capsules on the neutral ground, deliberately NOT filled: they are offers, and the filled weight in this row belongs to send. They stagger in on emphasized easing at 40ms intervals when the system raises them, and the one that is pressed springs, because that transition is the reader&rsquo;s. Choosing a chip moves its text into the composer rather than replacing the view &mdash; one surface becoming another, which is the whole reason the set is anchored to the field it fills.',
+      composed: ['Chip', 'Button', 'Icon'],
+      related: [['open-input', 'Open Input'], ['templates', 'Templates'], ['example-gallery', 'Example Gallery']],
+      pkg: 'nucleux-m3-suggested-prompts',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<div class=\"md-suggests\" role=\"group\" aria-label=\"Suggested questions\">\n  <button class=\"md-suggest\">What is this ticket about?</button>\n  <button class=\"md-suggest\">Where did Q2 renewals land?</button>\n  <button class=\"md-suggest\">Draft a reply to Dana</button>\n</div>\n<!-- pressing one fills the composer; it does not send -->",
+      examples: [
+        {
+          id: 'suggests-row',
+          title: 'Three, about what is on screen',
+          note: 'Each one names the ticket’s own material. Pressing one fills the composer rather than firing it, so the reader can see and change the request they are about to make.',
+          code:
+'<div class="md-suggests" role="group" aria-label="Suggested questions">\n' +
+'  <button class="md-suggest md-body-small" type="button">What is this ticket about?</button>\n' +
+'  <button class="md-suggest md-body-small" type="button">Where did Q2 renewals land?</button>\n' +
+'  <button class="md-suggest md-body-small" type="button">Draft a reply to Dana</button>\n' +
+'</div>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       ICONS
+       ══════════════════════════════════════════════════════════ */
+    'ai-icons': {
+      id: 'ai-icons',
+      name: 'Icons',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'Visual symbols that signal the AI’s presence on a screen.',
+      intent: 'The reserved glyph used as a door: the smallest possible entry point, placed where the work is, and never used for anything that is not the agent.',
+      what: 'The agent’s glyph deployed as an affordance — in a toolbar, at the end of a field, on a row in a menu — marking the places on an existing screen where the agent can be reached.',
+      why: 'Most agentic capability is added to a product that already exists, and it cannot all live in one composer. The glyph is how a person finds it in situ. That only works while the mark means exactly one thing: the moment it is spent on “new” or “premium”, every genuine use stops being legible, and the cost is paid on every screen at once.',
+      when: 'Wherever the agent can act on something specific — a field it can fill, a thread it can summarise, a record it can explain. Not as decoration on a feature that happens to be recent.',
+      how: 'One glyph, one meaning, no variants. Pair it with a word anywhere a person might press it by mistake; icon-only is for dense surfaces where the neighbours are also icon-only. Give it an accessible name that says what it does, not what it is. Audit the whole screen periodically — if the mark appears somewhere no model runs, the system is already broken.',
+      expressive: 'The glyph is the one shape the product reserves, and it carries primary at tone 60 wherever it is genuinely the agent &mdash; which makes an audit trivial: anything violet that is not the agent is a bug. It never spins. A hover lifts the state layer only; a press springs the container by 4%; while the agent is working the glyph rotates its hue toward tertiary rather than rotating in space, because a spinner says &ldquo;wait&rdquo; and a hue shift says &ldquo;thinking&rdquo;. In an icon-only row the label is carried by a tooltip, never by the glyph doing extra work.',
+      composed: ['Icon', 'Icon Button', 'Tooltip', 'Menu'],
+      related: [['iconography', 'Iconography'], ['color', 'Color'], ['proactive', 'Proactive Suggestions']],
+      pkg: 'nucleux-m3-ai-icons',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<!-- in a toolbar, with its word -->\n<button class=\"md-button md-button--filled md-button--sm\">\n  <svg class=\"md-glyph\"><!-- reserved glyph --></svg>\n  Draft with Aria\n</button>\n\n<!-- at the end of a field, where the agent can fill it -->\n<button class=\"md-field-glyph\" aria-label=\"Draft this with Aria\">\n  <svg class=\"md-glyph\"><!-- reserved glyph --></svg>\n</button>",
+      examples: [
+        {
+          id: 'icons-inline',
+          title: 'The glyph where the work is',
+          note: 'At the end of the field it can fill, with an accessible name that says what pressing it does. The word is carried by the label in dense rows and by a tooltip where there is no room for one.',
+          code:
+'<label class="md-field">\n' +
+'  <span class="md-field__label md-body-small">Reply to Dana</span>\n' +
+'  <span class="md-field__row">\n' +
+'    <input class="md-field__input md-body-medium" type="text" />\n' +
+'    <button class="md-field-glyph" type="button" aria-label="Draft this with Aria">\n' +
+'      <svg class="md-glyph" viewBox="0 0 24 24" aria-hidden="true">\n' +
+'        <path d="M12 3.2 13.9 8.6 19.3 10.5 13.9 12.4 12 17.8 10.1 12.4 4.7 10.5 10.1 8.6Z"/>\n' +
+'      </svg>\n' +
+'    </button>\n' +
+'  </span>\n' +
+'</label>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       SEARCHING & FILTERING
+       ══════════════════════════════════════════════════════════ */
+    'search-filter': {
+      id: 'search-filter',
+      name: 'Searching & Filtering',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'Natural-language search replacing click-driven filters.',
+      intent: 'Ask for the set you want in words, and see the filters it was understood as — as controls you can correct, not a sentence you have to trust.',
+      what: 'A search field that takes a plain-language description of a set and turns it into the product’s own filters, shown afterwards as removable chips over the result.',
+      why: 'Filter panels are precise and unusable; natural language is usable and imprecise. The pattern is not one replacing the other — it is the translation being made visible. A result list with no statement of what was applied cannot be trusted or corrected, and the first wrong answer costs the feature its user.',
+      when: 'On any list, table or library big enough that people give up on the filter panel. Especially where the useful query spans two or three dimensions at once, which is exactly where click-driven filtering collapses.',
+      how: 'Show the interpretation as real filter chips, each removable, and let a wrong one be deleted without retyping the sentence. Say what was ignored — an unparsed clause silently dropped is the failure mode people never forgive. Keep the manual controls reachable; this is an addition, not a replacement. Show the result count before the results, so a mistake is obvious in one glance.',
+      expressive: 'The query field is a capsule; the chips it produces are 8px &mdash; sharp, because they are data the reader can verify, and the shape rule says data is not capsule-shaped. Nothing else on the surface is 8px, which is what makes the shape do the work: in this palette Material&rsquo;s tertiary is already spent on Caveat&rsquo;s caution tone, and a second meaning on the same hue is precisely the failure the Iconography page argues against &mdash; so evidence is carried by edge and corner rather than by colour. They arrive on emphasized easing, staggered, since the system produced them; removing one springs, since the reader did. The result count updates in place rather than the list flashing, so a correction reads as a refinement rather than a new search.',
+      composed: ['Text Field', 'Chip', 'List', 'Badge'],
+      related: [['open-input', 'Open Input'], ['autocomplete', 'Autocomplete'], ['proactive', 'Proactive Suggestions']],
+      pkg: 'nucleux-m3-search-filter',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<form class=\"md-nlsearch\">\n  <input class=\"md-nlsearch__input\"\n         placeholder=\"Open enterprise tickets from this week\" />\n</form>\n\n<!-- what it was understood as, as controls -->\n<div class=\"md-applied\" role=\"group\" aria-label=\"Filters applied\">\n  <span class=\"md-applied__k\">Understood as</span>\n  <span class=\"md-fchip\">status: open<button aria-label=\"Remove\">&times;</button></span>\n  <span class=\"md-fchip\">tier: enterprise<button aria-label=\"Remove\">&times;</button></span>\n  <span class=\"md-fchip\">opened: last 7 days<button aria-label=\"Remove\">&times;</button></span>\n</div>",
+      examples: [
+        {
+          id: 'nlsearch-applied',
+          title: 'The interpretation, as controls',
+          note: 'Three chips instead of a sentence explaining itself. Each one can be removed without retyping the query, which is the difference between a translation the reader can correct and one they have to trust.',
+          code:
+'<div class="md-applied" role="group" aria-label="Filters applied">\n' +
+'  <span class="md-applied__k md-body-small">Understood as</span>\n' +
+'  <span class="md-fchip md-body-small">status: open\n' +
+'    <button type="button" aria-label="Remove status filter">&times;</button>\n' +
+'  </span>\n' +
+'  <span class="md-fchip md-body-small">tier: enterprise\n' +
+'    <button type="button" aria-label="Remove tier filter">&times;</button>\n' +
+'  </span>\n' +
+'  <span class="md-fchip md-body-small">opened: last 7 days\n' +
+'    <button type="button" aria-label="Remove date filter">&times;</button>\n' +
+'  </span>\n' +
+'  <span class="md-applied__n md-body-small">7 tickets</span>\n' +
+'</div>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       AUTOCOMPLETE
+       ══════════════════════════════════════════════════════════ */
+    autocomplete: {
+      id: 'autocomplete',
+      name: 'Autocomplete',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'Ghost text that anticipates and completes user actions.',
+      intent: 'A continuation offered inside the field the user is already typing in — visibly not theirs until they take it, and never committed by accident.',
+      what: 'An inline prediction rendered ahead of the caret in the same field, accepted with one key and dismissed by simply continuing to type.',
+      why: 'It is the lowest-friction help in the product and the easiest to make hostile. Text the user did not write, in the same colour as text they did, is a trap: it gets sent, signed and filed as theirs. The pattern is entirely about keeping the offer visually and mechanically separate from the sentence until the moment it is accepted.',
+      when: 'In fields where the next few words are genuinely predictable from what has been typed and what is on screen. Never in a field where a wrong value is expensive and hard to notice — amounts, addresses, identifiers.',
+      how: 'Render the suggestion at reduced emphasis so a glance separates it from typed text. Accept on Tab or right-arrow only; Enter must send what the user wrote, never what was offered. Any other keystroke retires it silently. Offer one continuation, not a list. Say once, near the field, which key accepts it — and never re-offer the same completion the user has just typed past.',
+      expressive: 'The ghost is the same face and size as the typed text at on-surface-variant, so it aligns to the pixel and separates purely by weight of colour &mdash; a different size would shift the caret, which is worse than no suggestion at all. It does not fade in; it is either there or not, because a fading completion invites a press mid-fade. Accepting it is the one moment with motion: the ghost hardens to on-surface in 180ms on standard easing, the visual form of the fluidity rule &mdash; the boundary of certainty resolving as the text stops being the agent&rsquo;s and starts being the reader&rsquo;s.',
+      composed: ['Text Field', 'Keyboard Hint', 'Icon'],
+      related: [['open-input', 'Open Input'], ['suggested-prompts', 'Suggested Prompts'], ['caveat', 'Caveat']],
+      pkg: 'nucleux-m3-autocomplete',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<div class=\"md-ghostfield\">\n  <p class=\"md-ghostfield__line\">\n    <span class=\"md-ghostfield__typed\">Thanks Dana — Q2 closed at</span>\n    <span class=\"md-ghostfield__caret\"></span>\n    <span class=\"md-ghostfield__ghost\">£4.1m, 6% ahead of plan.</span>\n  </p>\n  <p class=\"md-ghostfield__hint\">Tab to accept</p>\n</div>",
+      examples: [
+        {
+          id: 'ghost-offered',
+          title: 'Offered, not committed',
+          note: 'The continuation sits in the field at lower emphasis, aligned to the same baseline. Enter still sends what was typed; only Tab takes the offer.',
+          code:
+'<div class="md-ghostfield">\n' +
+'  <p class="md-ghostfield__line md-body-medium">\n' +
+'    <span class="md-ghostfield__typed">Thanks Dana — Q2 closed at</span>\n' +
+'    <span class="md-ghostfield__caret" aria-hidden="true"></span>\n' +
+'    <span class="md-ghostfield__ghost">£4.1m, 6% ahead of plan.</span>\n' +
+'  </p>\n' +
+'  <p class="md-ghostfield__hint md-body-small">\n' +
+'    <kbd class="md-kbd">Tab</kbd> to accept\n' +
+'  </p>\n' +
+'</div>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       PROACTIVE SUGGESTIONS
+       ══════════════════════════════════════════════════════════ */
+    proactive: {
+      id: 'proactive',
+      name: 'Proactive Suggestions',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'Invisible AI moments that arrive exactly when needed.',
+      intent: 'The agent opening the conversation, on evidence, in a form that costs nothing to ignore — and says what it noticed, not just what it wants.',
+      what: 'An offer raised by the product rather than requested by the user, triggered by something that actually changed in their data and stating that trigger as part of the offer.',
+      why: 'This is the only pattern in the category where the agent speaks first, which makes it the one with the highest cost of being wrong. Done on evidence it is the most valuable thing an agent does — it catches what a person would have missed. Done on a timer it is an advertisement inside a tool the user is paying for, and it trains people to dismiss without reading, which disables the mechanism permanently.',
+      when: 'When something changed that the user would want to know about, and when acting on it is cheap. Never during an error, a payment, or a task requiring concentration — and never more than one at a time.',
+      how: 'Lead with the observation, not the offer: “two renewals closed since you looked” earns the sentence that follows. Make ignoring it free and dismissing it permanent for that class of suggestion. Anchor it near what it is about. Keep an honest frequency cap and show the user where to turn the category off — a proactive agent with no off switch is a notification system.',
+      expressive: 'It arrives on emphasized easing from below, never with a spring: the reader did not cause this, and a spring on a system-initiated event is what makes proactivity feel like an interruption. The container is a low-tone primary surface at 18px &mdash; rounded, not capsule, because it is the agent speaking rather than an action of the reader&rsquo;s. The observation carries tertiary as evidence; the action beside it is the only capsule in the card. It holds still once it has landed: no pulse, no repeat entrance, nothing that asks twice.',
+      composed: ['Card', 'Chip', 'Button', 'Icon'],
+      related: [['nudges', 'Nudges'], ['ai-icons', 'Icons'], ['suggested-prompts', 'Suggested Prompts']],
+      pkg: 'nucleux-m3-proactive',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<aside class=\"md-proactive\" role=\"status\">\n  <p class=\"md-proactive__obs\">Two renewals closed since you last looked.</p>\n  <p class=\"md-proactive__offer\">The figure in your draft to Dana is now out of date.</p>\n  <div class=\"md-proactive__foot\">\n    <button class=\"md-button md-button--filled md-button--sm\">Update the figure</button>\n    <button class=\"md-button md-button--text md-button--sm\">Dismiss</button>\n  </div>\n</aside>",
+      examples: [
+        {
+          id: 'proactive-observed',
+          title: 'Observation first, offer second',
+          note: 'The first line is something that happened in the user’s data; the second is what it means for what they are doing. Reverse them and the card is an advertisement.',
+          code:
+'<aside class="md-proactive" role="status">\n' +
+'  <div class="md-proactive__head">\n' +
+'    <svg class="md-proactive__ico" viewBox="0 0 24 24" aria-hidden="true">\n' +
+'      <path d="M12 3.2 13.9 8.6 19.3 10.5 13.9 12.4 12 17.8 10.1 12.4 4.7 10.5 10.1 8.6Z"/>\n' +
+'    </svg>\n' +
+'    <p class="md-proactive__obs md-body-medium">\n' +
+'      Two renewals closed since you last looked.\n' +
+'    </p>\n' +
+'  </div>\n' +
+'  <p class="md-proactive__offer md-body-small">\n' +
+'    The £4.1m in your draft to Dana is now out of date.\n' +
+'  </p>\n' +
+'  <div class="md-proactive__foot">\n' +
+'    <button class="md-button md-button--filled md-button--sm" type="button">\n' +
+'      Update the figure\n' +
+'    </button>\n' +
+'    <button class="md-button md-button--text md-button--sm" type="button">Dismiss</button>\n' +
+'  </div>\n' +
+'</aside>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       RANDOMIZE
+       ══════════════════════════════════════════════════════════ */
+    randomize: {
+      id: 'randomize',
+      name: 'Randomize',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Entry Points',
+      subId: 'entry-points',
+      oneline: 'A “dice” that kickstarts the experience with a fun result.',
+      intent: 'A way in for someone with no intent at all — cheap to press, cheap to re-roll, and incapable of destroying anything the user already had.',
+      what: 'A single control that produces a complete, valid starting point at random, so the reader has something concrete to react to instead of a blank field.',
+      why: 'Reacting is far easier than originating. For a whole class of user the fastest route to a good request is a bad one they can correct, and a dice gives them that in one press with no fear of getting it wrong. It is also the only entry point that works when someone genuinely does not know what the product is for.',
+      when: 'On empty and exploratory surfaces, and in creative work where the space is large and taste is the real input. Never as the primary path on a surface where the user arrived with a specific job.',
+      how: 'Produce something complete and plausible, never a fragment. Make re-rolling one press and make it obvious. Never overwrite existing work — if the field has content, the roll goes somewhere the user can compare it. Show what was rolled in editable form, so the result teaches the shape of a good request. Keep a way back to the previous roll.',
+      expressive: 'The dice is the one place in the system where motion is allowed to be playful, and the restraint rule is what keeps that from spreading: it springs and rotates once on press, 180ms, and nothing else on the screen moves. The result arrives on emphasized easing as the agent&rsquo;s output. While it is settling it sits on a tinted ground with a soft, undefined edge, and the container resolves to a defined 18px boundary as it lands &mdash; the fluidity rule made literal: a roll is uncertain until it is a result.',
+      composed: ['Button', 'Icon', 'Card', 'Text Field'],
+      related: [['suggested-prompts', 'Suggested Prompts'], ['example-gallery', 'Example Gallery'], ['initial-cta', 'Initial CTA']],
+      pkg: 'nucleux-m3-randomize',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<button class=\"md-dice\" type=\"button\" aria-label=\"Surprise me\">\n  <svg class=\"md-dice__ico\"><!-- dice --></svg>\n  Surprise me\n</button>\n\n<!-- the roll lands editable, and can be rolled again -->\n<div class=\"md-roll\">\n  <p class=\"md-roll__v\">Which renewals are at risk this quarter, and why?</p>\n  <div class=\"md-roll__foot\">\n    <button class=\"md-button md-button--filled md-button--sm\">Use this</button>\n    <button class=\"md-button md-button--text md-button--sm\">Roll again</button>\n  </div>\n</div>",
+      examples: [
+        {
+          id: 'dice-rolled',
+          title: 'A complete result, editable',
+          note: 'Not a fragment and not a category — a whole request the reader can send, change or roll past. Re-rolling is one press, and nothing they had is overwritten.',
+          code:
+'<div class="md-roll">\n' +
+'  <p class="md-roll__k md-body-small">Rolled for you</p>\n' +
+'  <p class="md-roll__v md-body-large">\n' +
+'    Which renewals are at risk this quarter, and why?\n' +
+'  </p>\n' +
+'  <div class="md-roll__foot">\n' +
+'    <button class="md-button md-button--filled md-button--sm" type="button">Use this</button>\n' +
+'    <button class="md-button md-button--text md-button--sm" type="button">Roll again</button>\n' +
+'  </div>\n' +
+'</div>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       INITIALLY · EXPRESSIVE INPUT
+
+       Entry Points are about finding the door. These five are
+       about what you can carry through it — your voice, a photo,
+       your handwriting, your hands, or a shape the product
+       understands.
+
+       They share one problem the typed composer does not have:
+       every one of them is a GUESS about what the person meant.
+       Speech is transcribed, an image is interpreted, ink is
+       recognised, a gesture is classified. So the rule running
+       through all five is the same:
+
+         show the interpretation before you act on it, make it
+         correctable in one move, and never let a guess commit
+         itself.
+
+       The second rule is about giving up. Each of these can fail
+       in a way typing cannot — no speech heard, a photo too dark
+       to read, ink nobody could parse, a gesture that was a
+       scroll. Saying so plainly, and leaving the original intact,
+       is most of the design.
+       ══════════════════════════════════════════════════════════ */
+    'model-selection': {
+      id: 'model-selection',
+      name: 'Model Selection',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Context Expansion',
+      subId: 'context-expansion',
+      oneline: 'Choose which model answers, and know what changes when you do.',
+      intent: 'Capability as a deliberate choice &mdash; or a router that is honest about what it optimises for.',
+      what: 'A small control in the shared composer carrying two values &mdash; which model, and how hard to think &mdash; and a menu behind it where every option says what it is <b>for</b> rather than what it is. There is no second control and no settings page: a choice that only matters at the moment of asking belongs where the asking happens.',
+      why: 'Every question somebody actually has about a model is comparative, and a list of names answers none of them: what is this one for, what does it cost me, what happens to this conversation if I switch, and do I have to decide at all. The failures are specific and they are all shipping today. Products bundle a spec sheet into a dropdown nobody reads. They ship a router that claims to pick for your task while it is really balancing capacity. They let a rate-limited request fall back to a model that does not appear in the picker at all, and tell nobody. And almost none of them says whether switching mid-conversation rewrites what was already said &mdash; a question with an obvious answer that is nevertheless never given.',
+      when: 'Where models differ in ways a person can act on &mdash; speed, depth, what the request costs them &mdash; and where the person, not the product, owns the prompt. It belongs in professional and enterprise tools where explicit control is a requirement, and it belongs wherever somebody is choosing to wait longer for a better answer.',
+      whenNot: 'Where the product owns the prompt. If the prompt has been engineered against one model, letting people change it silently degrades a thing they cannot debug. And where routing is genuinely better than choosing, the honest move is a router that names its objective rather than a picker nobody understands. Note the cautionary history: removing a picker people have bonded to is its own failure &mdash; one major product pulled its legacy models and reversed within days.',
+      how: 'Use the control the composer already has. Keep the resting state small and let it carry both values, because the industry converged on two axes and setting them separately is what makes each legible. Write every option as a task rather than a specification. Say what a change does to the conversation, in the menu, before the change. Where an allowance runs out, keep the row and say what answers instead. Where an organisation has narrowed the list, render that as absence with one line of explanation. And if you substitute a model for any reason, say so on the answer.',
+      expressive: 'The smallest expressive budget of the five, deliberately: this is a control somebody touches for two seconds on their way to asking something. The resting chip does not move at all. The menu is the only moment with any motion in it, and what it spends that on is hierarchy rather than spectacle &mdash; the selected row takes a tonal wash and a tick, the recommendation and the router take tags rather than colour, and the option being chosen is never animated on selection because the thing that should change is the label, immediately. Selection state is carried by a tick as well as a background, so it survives being read without colour. The one place an accent is used at strength is a substituted answer, where the error container marks that you did not get what you asked for.',
+
+      precedent: [
+        { name: 'Claude',
+          url: 'https://support.claude.com/en/articles/8664678-change-the-model-effort-and-thinking-settings',
+          what: 'The resting control carries <b>two values</b> &mdash; model and effort &mdash; and the effort copy is written in terms of the person&rsquo;s budget: lower levels &ldquo;stretch your usage further&rdquo;. It is also the only product that answers the switch question: &ldquo;<b>Changes apply starting with Claude&rsquo;s next response.</b>&rdquo;' },
+        { name: 'Claude for organisations',
+          url: 'https://support.claude.com/en/articles/15694740-manage-model-access-for-your-organization',
+          what: 'Restriction as <b>absence</b>: &ldquo;the model picker shows only the models the member has access to,&rdquo; and capped effort levels &ldquo;don&rsquo;t appear in the effort menu.&rdquo; No locked rows, no upsell. Also documents what happens when access is revoked mid-conversation.' },
+        { name: 'GitHub Copilot',
+          url: 'https://docs.github.com/en/copilot/reference/ai-models/model-comparison',
+          what: 'The comparison documentation is <b>indexed by task</b> &mdash; general-purpose development, speed-focused work, complex analysis, visual tasks &mdash; and names models second. That inversion is the single most useful move in this pattern. Its <b>Auto</b> is the default and carries a usage discount.' },
+        { name: 'Cursor',
+          url: 'https://cursor.com/docs/models-and-pricing',
+          what: 'The only router that <b>names its objective</b>: Auto runs in Cost, Balance or Intelligence mode. You steer the policy rather than the pick, which is the only thing that makes an automatic choice auditable.' },
+        { name: 'Microsoft Copilot',
+          url: 'https://support.microsoft.com/en-us/microsoft-copilot/conversation-modes-in-microsoft-copilot',
+          what: 'The counter-example, and a good one: no models at all, only <b>conversation modes</b> &mdash; Quick response, Think Deeper, Study and learn. Differentiated by behaviour and output shape rather than by model attributes. Proof that this pattern is a choice and not a requirement.' },
+        { name: 'Why not to expose it',
+          url: 'https://www.coderabbit.ai/blog/why-users-shouldnt-choose-their-own-llm-models-choice-is-not-always-good',
+          what: 'The argument against: choosing a model &ldquo;isn&rsquo;t a matter of personal taste &mdash; it&rsquo;s a systems-level optimization problem,&rdquo; and a prompt tuned for one model can derail on another. Worth reading before adding this control to a product that owns its prompts.' }
+      ],
+
+      anatomy: [
+        { part: 'The chip',
+          role: 'The composer&rsquo;s existing mode slot, carrying which model and how hard to think. Two values, because that is what the industry converged on and because they are genuinely different questions.' },
+        { part: 'Option',
+          role: 'A name, what it is FOR, and one line of consequence. Never a specification: nobody chooses a model by its context window, and a dropdown is a bad place to compare numbers.' },
+        { part: 'Recommendation',
+          role: 'One option marked as the default choice, so somebody who does not want to decide has a way not to.' },
+        { part: 'Router',
+          role: 'An automatic option that names its objective &mdash; cost, balance or capability. A router whose stated objective is not its real one has spent its credibility for good.' },
+        { part: 'Effort',
+          role: 'A second, separate axis. How hard to think is a different question from which model thinks, and collapsing them makes both harder to reason about.' },
+        { part: 'The switch sentence',
+          role: '&ldquo;Takes effect from your next message. Nothing already said is changed.&rdquo; Shown in the menu, before the change, because afterwards it is a reassurance rather than information.' },
+        { part: 'Cap notice',
+          role: 'On the row of a model whose allowance is spent, saying what answers instead. A model that silently becomes another model is the failure this exists to prevent.' },
+        { part: 'Restriction line',
+          role: 'One sentence explaining a list that has been narrowed by an organisation. The models themselves are absent, not disabled.' },
+        { part: 'Attribution',
+          role: 'Which model produced an answer, and whether it was the one that was asked for. Ahead of current practice, and the direct answer to substitution that is already shipping.' }
+      ],
+
+      flow: [
+        'The composer carries a small chip naming the current model and effort. Nothing else about it is different from any other scenario.',
+        'Pressing it opens a menu where each option says what it is for.',
+        'One option is recommended, so not deciding is a supported choice.',
+        'One option is a router, and it says what it optimises for rather than claiming to read your mind.',
+        'Effort is set separately, because it is a separate question.',
+        'The menu says what a change will do to the conversation before the change is made.',
+        'Choosing updates the label immediately and closes the menu. The next request uses it.',
+        'If an allowance is spent, the row says so and says what answers instead.',
+        'If the answer came from a different model than the one selected, the answer says so.'
+      ],
+
+      statesList: [
+        { name: 'Resting', desc: 'One small chip carrying two values: which model, and how hard to think. It is the composer&rsquo;s own mode slot, not a control added beside it.' },
+        { name: 'Open', desc: 'Every row says what the model is FOR and what choosing it costs. No context windows, no parameter counts &mdash; nobody chooses a model by its context window.' },
+        { name: 'Automatic', desc: 'The router, naming what it is optimising for. The credibility of an automatic choice rests entirely on whether its stated objective is its real one.' },
+        { name: 'Changed', desc: 'The label updates and the menu has already said what happens to the conversation: the change applies from the next message, and nothing already said is rewritten.' },
+        { name: 'At your cap', desc: 'The row stays and says what answers instead. A model that silently becomes a different model is the failure this state exists to prevent &mdash; and it is shipping today.' },
+        { name: 'Restricted', desc: 'An organisation has narrowed the list, so the model is absent with one line saying why. Not a locked row: a row you can see and never press is an advertisement for a thing you cannot have.' },
+        { name: 'Retiring', desc: 'A model with a sunset date, still selectable and dated. The alternative is the disappearance people notice by the answer getting worse.' },
+        { name: 'Attributed', desc: 'An answer saying which model produced it, and whether that was the one asked for. Ahead of current practice, and the direct answer to substitution that already happens silently.' }
+      ],
+
+      variants: [
+        { name: 'Two axes', desc: 'Model and effort, set separately. The default here and where the industry landed: a capability tier and a reasoning depth are different decisions, and one control asking both is one control doing neither well.' },
+        { name: 'Modes, not models', desc: 'Expose behaviour &mdash; quick, thorough, teaching, searching &mdash; and never name a model. Strong where the product owns the prompt, and it survives the model line-up changing underneath it, which it will.' },
+        { name: 'Router only', desc: 'No choice, one honest sentence about how the pick is made. Legitimate, and only as good as that sentence: a router marketed as task-aware while it balances capacity is worse than no router.' },
+        { name: 'Per-answer attribution', desc: 'Every response says which model produced it. <b>No mainstream product ships this</b> &mdash; included because silent substitution does, and an answer you cannot attribute is an answer you cannot reproduce. Marked as ahead of practice rather than drawn from it.' },
+        { name: 'Administered', desc: 'The organisation sets which models may be used and often a default. The important detail is that the allow-list must constrain the router too, or automatic selection quietly routes around the policy.' }
+      ],
+
+      content: [
+        'Write each option as a task, not a specification: &ldquo;Long analysis and hard reasoning&rdquo;, not &ldquo;200K context, 64K output&rdquo;.',
+        'Say what it costs in the person&rsquo;s own currency &mdash; their allowance, their waiting time &mdash; not in tokens.',
+        'Answer the switch question in the menu: &ldquo;Takes effect from your next message. Nothing already said is changed.&rdquo;',
+        'Name the router&rsquo;s objective. &ldquo;Automatic&rdquo; alone asks for trust; &ldquo;picks the cheapest model that can do it&rdquo; earns it.',
+        'At a cap, say what answers instead. &ldquo;You have used this week&rsquo;s allowance&rdquo; is half a sentence.',
+        'When a model is retired, give the date and the successor. People notice a disappearance by the answers getting worse.'
+      ],
+
+      a11y: [
+        'The chip is a button with an accessible name carrying both values and what pressing it does &mdash; not just the model&rsquo;s name, which is an identifier rather than a description.',
+        'The menu is a real menu and the options are radio items reporting their checked state, so &ldquo;which one is selected&rdquo; survives having no colour perception at all.',
+        'Selection is a tick as well as a tonal background. One of those is invisible to some people and the other is not.',
+        'Where a model is unavailable because of an allowance, the row is disabled and still readable, because the sentence about what answers instead is the useful part.',
+        'Where a model is unavailable because of an organisation&rsquo;s policy, it is absent rather than disabled, and one line explains the shorter list &mdash; a control nobody may operate should not be reachable at all.',
+        'Opening and closing the menu is announced, and the label change after a selection is the confirmation &mdash; no separate toast is needed and none should be added.'
+      ],
+
+      donts: [
+        'Don&rsquo;t show a list of names. It answers none of the questions somebody actually has and it makes the choice feel like trivia.',
+        'Don&rsquo;t put a specification sheet in a dropdown. Context windows and parameter counts belong where somebody is comparing on purpose.',
+        'Don&rsquo;t build a second control. The composer already has a slot for this, and a settings page is the wrong place for a per-request decision.',
+        'Don&rsquo;t leave the switch question unanswered. People assume switching is retroactive until told otherwise, and they are wrong.',
+        'Don&rsquo;t substitute silently. A rate-limited request answered by a different model &mdash; sometimes one not even in the picker &mdash; is the single most common dishonesty in this pattern.',
+        'Don&rsquo;t grey out what an organisation has forbidden. Absence with an explanation beats a permanent advertisement for something unavailable.',
+        'Don&rsquo;t claim a router optimises for your task if it is really balancing capacity. The claim is checkable and being caught costs the feature.',
+        'Don&rsquo;t expose this at all where the product owns the prompt. A prompt engineered against one model will derail on another, and the person cannot debug what they cannot see.',
+        'Don&rsquo;t remove a model people rely on without a migration story. One major product pulled its legacy line-up and reversed within days.'
+      ],
+
+      metrics: [
+        'How often the selector is opened and closed without a change, which measures whether the menu is answering the question or just being read.',
+        'The share of requests on the recommended option and on the router. A product where nobody uses either has made the default untrustworthy.',
+        'How often a switch is followed immediately by a re-ask of the same question &mdash; the signal that people expect switching to be retroactive.',
+        'Substitution rate, and whether attribution is noticed. If nobody reacts to being substituted, the notice is not visible enough.',
+        'For administered deployments: how often people ask for a model they cannot see. Rising means the absence needs its explanation strengthened.'
+      ],
+
+      composed: ['Menu', 'Chip', 'Button', 'Badge', 'Tooltip'],
+      related: [['modes', 'Modes'], ['caveat', 'Caveat'], ['voice-input', 'Voice Input']],
+      pkg: 'nucleux-m3-model-selection',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- The composer's OWN mode slot. There is no second control:\n     a choice that only matters at the moment of asking belongs\n     where the asking happens. Two values, set separately. -->\n<button class=\"ax__mode ax__mode--model\" data-act=\"ax:mode\"\n        aria-haspopup=\"menu\" aria-expanded=\"true\"\n        aria-label=\"Model: Balanced, effort: Standard. Choose a different one.\">\n  <span class=\"ax__mode__m\">Balanced</span>\n  <span class=\"ax__mode__e\"> &middot; Standard</span>\n</button>\n\n<div class=\"ax__menu ax__menu--model md-ml\" role=\"menu\" aria-label=\"Choose a model\">\n  <p class=\"md-ml__h\">Model</p>\n\n  <!-- Every row says what it is FOR, then what it costs.\n       Names are neutral on purpose: real line-ups turn over every\n       few months, and a component with names baked in is wrong\n       by Christmas. -->\n  <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"true\"\n          data-act=\"model:pick:balanced\">\n    <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- tick --></span>\n    <span class=\"md-ml__t\">\n      <span class=\"md-ml__n\">Balanced<span class=\"md-ml__tag\">Recommended</span></span>\n      <span class=\"md-ml__f\">Most everyday work</span>\n      <span class=\"md-ml__w\">The best trade of quality against speed.</span>\n    </span>\n  </button>\n\n  <!-- At a cap: the row STAYS and says what answers instead -->\n  <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n          data-act=\"model:pick:deep\" disabled>\n    <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n    <span class=\"md-ml__t\">\n      <span class=\"md-ml__n\">Deep</span>\n      <span class=\"md-ml__f\">Long analysis and hard reasoning</span>\n      <span class=\"md-ml__w\">You have used this week\\u2019s allowance.\n        Swift is answering instead until Monday.</span>\n    </span>\n  </button>\n\n  <!-- A router that names its objective -->\n  <div class=\"md-ml__sub\">\n    <p class=\"md-ml__h\">Automatic picks for</p>\n    <button class=\"md-ml__row\" role=\"menuitemradio\" aria-checked=\"true\"\n            data-act=\"model:aim:even\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- tick --></span>\n      <span><b>Balance</b><span class=\"md-ml__dash\"> &mdash; </span>Weighs quality against cost</span>\n    </button>\n  </div>\n\n  <!-- The question exactly one shipping product answers -->\n  <p class=\"md-ml__note md-ml__note--when\">\n    Takes effect from your next message. Nothing already said is changed.\n  </p>\n</div>\n\n<!-- On an answer: which model produced it, and whether it was the\n     one you asked for. Ahead of practice \\u2014 but silent\n     substitution is not. -->\n<span class=\"md-ml__credit is-sub\">Swift &mdash; substituted</span>"
+    },
+
+    'knowledge-base': {
+      id: 'knowledge-base',
+      name: 'Knowledge Bases',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Context Expansion',
+      subId: 'context-expansion',
+      oneline: 'Curated material that stays available to the agent across conversations.',
+      intent: 'Persistent scope &mdash; sources that outlive every conversation that reads them.',
+      what: 'A named set of sources an agent can read whenever it is working in that scope. The panel shows what is in it, what state each source is in, and which of them a given answer actually used. The control that carries the pattern is a checkbox on every source: including and excluding for one question, <b>without deleting anything</b>.',
+      why: 'Some material is relevant every time, and re-attaching it every time is both tedious and unreliable &mdash; people forget, and the answer quietly gets worse. But a persistent scope raises two questions an attachment never does. It was assembled over weeks, possibly by other people, so an answer has to say which sources it read. And because it is shared and durable, the ability to narrow it for one question has to exist without destroying it for everyone else. A knowledge base with no citation and no way to exclude is a box you have to take on faith.',
+      when: 'Where the same material informs many conversations &mdash; a research corpus, a policy set, a product&rsquo;s own documentation, a team&rsquo;s accumulated notes. The test is lifetime: if somebody would be annoyed to re-upload it tomorrow, it wants to be a knowledge base. If they would be alarmed to find it still there tomorrow, it wants to be an attachment.',
+      how: 'Make the active scope visible at the composer, from the first frame, because the material was there before the conversation started and nothing in the conversation will otherwise say so. Keep state per source rather than per base &mdash; one file failing says nothing about the others. Let a source be left out without being removed, and say so in as many words next to the control that does it. Cite what an answer read, and cite what it could not: the second list is what makes the first one checkable. And keep the vocabulary human &mdash; whether a source is readable yet and whether it is still current are the two facts that change what somebody does.',
+      expressive: 'The panel is quiet by design, because it is furniture that somebody returns to rather than a moment they are being taken through. Motion is confined to two places that earn it: the panel arriving, and the small pulse on a source still being read &mdash; deliberately not a progress bar, because there is no honest percentage for reading a document. Exclusion is drawn as reduced emphasis rather than removal, so the reversibility of the act is visible in the act itself: the row is still there, still legible, simply not in play. Colour follows the standing convention &mdash; primary for ready, error container for a source that cannot be read &mdash; and in both cases the word is already in the row above it. The knowledge chip in the composer takes the primary tone rather than a connector&rsquo;s neutral one, because this is the agent&rsquo;s own standing material rather than somebody else&rsquo;s system.',
+
+      precedent: [
+        { name: 'Gemini Notebook',
+          url: 'https://support.google.com/notebooklm/answer/16269187',
+          what: 'The richest source-attribution UI shipping: inline citations that <b>hover to show the quoted text</b> and <b>click through to the location in the source</b>. And a <b>checkbox on every source</b> to include or exclude it from an answer &mdash; the affordance this pattern is built around. Its chat &ldquo;only uses data from your sources&rdquo; and says so when you ask past them.' },
+        { name: 'Claude Projects',
+          url: 'https://support.claude.com/en/articles/11473015-retrieval-augmented-generation-rag-for-projects',
+          what: 'The clearest statement of why knowledge is a different mechanism: &ldquo;context is not shared across chats within a project <em>unless the information is added into the project knowledge base</em>.&rdquo; Also switches automatically between loading everything and searching when a project outgrows the window, with a visible indicator &mdash; a rare case of an implementation detail that is worth surfacing.' },
+        { name: 'Perplexity Projects',
+          url: 'https://www.perplexity.ai/help-center/en/articles/12009761-enterprise-file-limits',
+          what: 'Draws the line as a <b>lifecycle class</b>: files attached to a session are deleted after 30 days, while project files are &ldquo;retained until deleted&rdquo;. Same file, different rules &mdash; the cleanest articulation of attachment versus knowledge in any product&rsquo;s own words.' },
+        { name: 'ChatGPT Projects',
+          url: 'https://help.openai.com/en/articles/10169521-projects-in-chatgpt',
+          what: 'Project files &ldquo;persist across multiple conversations within that workspace, whereas files attached to individual chats remain isolated&rdquo;. Adds a memory dimension &mdash; a project can be isolated from everything outside it &mdash; and documents the one reversibility guarantee I found anywhere: in a shared project a deleted file can be re-added.' },
+        { name: 'Gemini Gems knowledge',
+          url: 'https://support.google.com/gemini/answer/15146780',
+          what: 'Cloud sources &ldquo;use the most recent version of the file&rdquo; &mdash; live rather than a snapshot, which is what creates the out-of-date state this pattern has to draw. Also ships a setting to <em>disable</em> knowledge citations, which implies they are on by default.' }
+      ],
+
+      anatomy: [
+        { part: 'The base',
+          role: 'A name, a count and when it last changed. Enough to know which scope you are in without opening anything, which is the question people actually have most of the time.' },
+        { part: 'Source',
+          role: 'One piece of material, with what kind it is, when it was added, and by implication who by. A source added six weeks ago by somebody else is a different thing from one added this morning.' },
+        { part: 'The checkbox',
+          role: 'Include or exclude for answering, without deleting. This is the pattern: it is what makes a scope real rather than decorative, and the only control here that cannot be mistaken for file management.' },
+        { part: 'Source state',
+          role: 'Reading, Ready, Out of date, Could not be read, No access &mdash; per source, never per base. One file failing says nothing about the others.' },
+        { part: 'Scope note',
+          role: 'One sentence saying that turning a source off leaves it out of answers and leaves it in the base. Said next to the control that raises the question.' },
+        { part: 'Composer chip',
+          role: 'The active scope, present from the first frame, because the knowledge was here before this conversation. Primary tone rather than a connector&rsquo;s neutral one: this is the agent&rsquo;s own material.' },
+        { part: 'Citation',
+          role: 'Which sources the answer read, each one inspectable &mdash; and which it could not. The second list is what makes the first one checkable.' },
+        { part: 'Refresh',
+          role: 'On the row of a source that has changed since it was read. An answer from a stale source is right about a version that no longer exists.' }
+      ],
+
+      flow: [
+        'The scope is already in the composer when the conversation opens. Nobody attached anything.',
+        'A question arrives and the agent reads what it is permitted to read.',
+        'Sources still being read, or that this person cannot open, are simply not in the answer.',
+        'The answer cites the sources it used, each one inspectable.',
+        'It also names what it could not read, so the citation can be checked rather than trusted.',
+        'Opening the sources shows every one with its own state, and a checkbox that is not a delete.',
+        'Turning a source off changes the count in the composer and changes the next answer.',
+        'Turning it back on restores both, because nothing was removed.',
+        'A source that has changed since it was read says so, and can be read again from its own row.'
+      ],
+
+      statesList: [
+        { name: 'Ready', desc: 'The scope, its size and when it last changed. This existed before the conversation and will outlive it &mdash; which is the entire difference from an attachment.' },
+        { name: 'Left out', desc: 'A source turned off for answering. It stays in the list at reduced emphasis and the count moves. Nothing was deleted, and the act is reversible in one press.' },
+        { name: 'Partly ready', desc: 'A source is still being read. Asking still makes sense &mdash; most of the material is there, and the answer will say what it could not see.' },
+        { name: 'Out of date', desc: 'A synced source changed after it was read, so an answer would be right about a version that no longer exists. Reading it again is one press, on the row.' },
+        { name: 'Source failed', desc: 'One source, not the base. A knowledge base that calls itself broken because one file would not open has told you the wrong thing.' },
+        { name: 'No access', desc: 'Somebody else added a source you cannot read. Named but not readable, with no checkbox, because the choice is not yours to make &mdash; and the base does not leak its contents.' },
+        { name: 'Cited', desc: 'An answer, with the sources it read and the ones it was left without. The second list is what makes the first one checkable.' },
+        { name: 'Empty', desc: 'Says what a source is for rather than showing an empty list. The distinction from attaching a file is exactly the thing somebody needs at this moment.' }
+      ],
+
+      variants: [
+        { name: 'Personal', desc: 'One person&rsquo;s standing material. Simplest, and the citation still earns its place &mdash; you will not remember in a month what you put in it.' },
+        { name: 'Shared', desc: 'A team adds to one base. Now &ldquo;added by&rdquo; and &ldquo;no access&rdquo; are load-bearing: an answer may rest on a source the reader has never seen, and a scope may legitimately differ between two people asking the same question.' },
+        { name: 'Grounded only', desc: 'The agent answers from the sources and nothing else, and says so when a question falls outside them. Much stronger guarantees, much narrower use &mdash; and the refusal has to be well written or it reads as failure.' },
+        { name: 'Synced', desc: 'Sources follow a live file rather than a copy. Removes the staleness problem and introduces a subtler one: the material can change without anybody in this product doing anything, so &ldquo;last read&rdquo; becomes the honest timestamp rather than &ldquo;added&rdquo;.' }
+      ],
+
+      content: [
+        'Name the scope at the composer, always. &ldquo;Product research &middot; 12 sources&rdquo; is what tells somebody why an answer knows things they did not just say.',
+        'Say what an answer could not read, not only what it did. &ldquo;Left out: Pricing research&rdquo; is the difference between a citation and a decoration.',
+        'Write the scope note next to the control it explains: turning a source off leaves it out of answers and leaves it in the base.',
+        'Keep source state human &mdash; Reading, Ready, Out of date. Never chunk counts, index status or embedding anything; that is real, and it belongs in developer documentation.',
+        'For an unreadable source, say whose decision it was: &ldquo;You no longer have access&rdquo; sends somebody to a person, &ldquo;Failed&rdquo; sends them to a retry that cannot work.'
+      ],
+
+      a11y: [
+        'Each source&rsquo;s include control is a real checkbox with an accessible name that carries the source and what toggling it will do &mdash; a row of identical &ldquo;Include&rdquo; labels is a row of identical labels.',
+        'Source state is a word in the row, not a colour on it. Reading, Ready, Out of date and Could not be read are all readable with no colour perception at all.',
+        'A source nobody can open has no checkbox rather than a disabled one, and the space is held so the rows still line up &mdash; a control that cannot be operated should not be reachable.',
+        'The citation list is a list of buttons, so the provenance of an answer can be walked and inspected from the keyboard.',
+        'Changing the scope changes the count in the composer chip, and that chip is a labelled button, so the change is perceivable without watching the list.',
+        'Under prefers-reduced-motion the reading pulse stops and holds at partial opacity. The word &ldquo;Reading&rdquo; was carrying that state the whole time.'
+      ],
+
+      donts: [
+        'Don&rsquo;t make this a file manager. Browsing, renaming and foldering belong to wherever the files actually live; this surface exists to say what the agent may read.',
+        'Don&rsquo;t answer without saying what you read. A knowledge base you cannot audit is a knowledge base you have to take on faith, and it will eventually be wrong.',
+        'Don&rsquo;t omit what was left out. A citation list that names only the sources used tells somebody where an answer came from while hiding where it was not allowed to look.',
+        'Don&rsquo;t make exclusion destructive. If the only way to narrow an answer is to delete something shared, people will narrow nothing.',
+        'Don&rsquo;t report base-level failure for a source-level problem. One protected PDF does not break a knowledge base.',
+        'Don&rsquo;t show RAG vocabulary to a person using the product. Chunk sizes and index status are real and they are not the user&rsquo;s problem.',
+        'Don&rsquo;t leave a stale source looking current. An answer drawn from a version that no longer exists is wrong in the most expensive way: confidently, and with a citation.',
+        'Don&rsquo;t let an attachment quietly become knowledge. The moment a file outlives its conversation the rules about lifetime have changed, and somebody should have agreed to that.'
+      ],
+
+      metrics: [
+        'How often sources are excluded and re-included. Zero usually means the control is not findable, not that the scope is always right.',
+        'How often a citation is opened. It measures whether provenance is being used or merely displayed.',
+        'The share of answers produced with a source in the &ldquo;out of date&rdquo; state, which is the direct measure of how much stale material is reaching people.',
+        'How often the same file is attached to a conversation that already has a knowledge base covering it &mdash; the signal that the scope is not visible enough.',
+        'Sources added and never read, which is the sign of a base that has become a dumping ground rather than a corpus.'
+      ],
+
+      composed: ['Card', 'List', 'Checkbox', 'Chip', 'Button', 'Progress'],
+      related: [['attachments', 'Attachments'], ['connectors', 'Connectors'], ['citation', 'Citation']],
+      pkg: 'nucleux-m3-knowledge-base',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/knowledge.css\" />\n\n<!-- The panel. State is per SOURCE, never per base. -->\n<div class=\"md-kb\" data-state=\"trouble\">\n  <div class=\"md-kb__head\">\n    <span class=\"md-kb__mark\" aria-hidden=\"true\">P</span>\n    <span class=\"md-kb__id\">\n      <span class=\"md-kb__name\">Product research</span>\n      <span class=\"md-kb__meta\">\n        <span class=\"md-kb__state\">Some sources need attention</span>\n        <span class=\"md-kb__dash\"> &middot; </span>3 of 4 in use\n        <span class=\"md-kb__dash\"> &middot; </span>updated today\n      </span>\n    </span>\n  </div>\n\n  <ul class=\"md-kb__srcs\">\n    <!-- The checkbox IS the pattern: include or exclude for\n         answering, without deleting. -->\n    <li class=\"md-kb__src\" data-state=\"ready\" data-on=\"true\">\n      <button class=\"md-kb__box is-on\" role=\"checkbox\" aria-checked=\"true\"\n              aria-label=\"Onboarding interviews, Aug. Used when answering.\n                          Turn off to leave it out.\"><!-- tick --></button>\n      <span class=\"md-kb__sico\" aria-hidden=\"true\"><!-- doc --></span>\n      <span class=\"md-kb__st\">\n        <span class=\"md-kb__sn\">Onboarding interviews, Aug</span>\n        <span class=\"md-kb__sm\">\n          <span class=\"md-kb__ss\">Ready</span>\n          <span class=\"md-kb__dash\"> &middot; </span>Document\n        </span>\n      </span>\n    </li>\n\n    <!-- Excluded: still listed, at reduced emphasis, reversible -->\n    <li class=\"md-kb__src\" data-state=\"ready\" data-on=\"false\">\n      <button class=\"md-kb__box\" role=\"checkbox\" aria-checked=\"false\"\n              aria-label=\"Support tickets Q3. Left out of answers.\n                          Turn on to include it.\"><!-- tick --></button>\n      <span class=\"md-kb__sico\" aria-hidden=\"true\"><!-- sheet --></span>\n      <span class=\"md-kb__st\">\n        <span class=\"md-kb__sn\">Support tickets Q3</span>\n        <span class=\"md-kb__sm\"><span class=\"md-kb__ss\">Ready</span></span>\n      </span>\n    </li>\n\n    <!-- No checkbox at all: the choice is not this person's -->\n    <li class=\"md-kb__src\" data-state=\"denied\" data-on=\"true\">\n      <span class=\"md-kb__box md-kb__box--void\" aria-hidden=\"true\"></span>\n      <span class=\"md-kb__sico\" aria-hidden=\"true\"><!-- doc --></span>\n      <span class=\"md-kb__st\">\n        <span class=\"md-kb__sn\">Pricing research</span>\n        <span class=\"md-kb__sm\">\n          <span class=\"md-kb__ss\">You no longer have access</span>\n          <span class=\"md-kb__dash\"> &middot; </span>added by Dana\n        </span>\n      </span>\n    </li>\n  </ul>\n\n  <p class=\"md-kb__note\">\n    Turning a source off leaves it out of answers. It stays in the\n    knowledge base and can be turned back on at any time &mdash; nothing\n    is deleted.\n  </p>\n</div>\n\n<!-- Provenance, under an answer. Both halves. -->\n<div class=\"md-kb__cite\">\n  <p class=\"md-kb__ct\">Read from 2 sources</p>\n  <ul class=\"md-kb__clist\">\n    <li><button class=\"md-kb__cbtn\">Onboarding interviews, Aug</button></li>\n    <li><button class=\"md-kb__cbtn\">First-run funnel</button></li>\n  </ul>\n  <p class=\"md-kb__cleft\">Left out: Support tickets Q3, Pricing research</p>\n</div>"
+    },
+
+    mcp: {
+      id: 'mcp',
+      name: 'MCP Connectors',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Context Expansion',
+      subId: 'context-expansion',
+      oneline: 'Connect a server whose capabilities have to be discovered, then decide which to allow.',
+      intent: 'A standardised connection whose tool surface is self-declared, changeable, and not taken on trust.',
+      what: 'A panel for connecting to a Model Context Protocol server and reviewing what it turns out to expose. The protocol&rsquo;s live primitives are <b>tools</b>, <b>resources</b> and <b>prompts</b>; the panel validates the server, discovers the surface, groups the tools by what they can do, lets each be switched off, and gates the destructive ones behind an approval at the moment they are called.',
+      why: 'Anthropic is explicit that there is no technical difference between a reviewed app connector and a custom MCP server &mdash; &ldquo;the runtime, transport, authentication, and tool-calling code paths are identical.&rdquo; So the difference this pattern carries is not protocol, it is <b>epistemic</b>. A first-party connector has a fixed, vendor-reviewed tool surface that is known before you press anything. An MCP server has a self-declared surface that the client must go and enumerate, that can change underneath you, and whose descriptions of itself &mdash; including its own account of how dangerous each tool is &mdash; the specification says clients &ldquo;MUST consider untrusted unless they come from trusted servers.&rdquo; A panel that hides any of that has quietly turned a stranger&rsquo;s claims into the product&rsquo;s assurances.',
+      when: 'Where an agent needs to act in a system through a standard interface rather than a bespoke integration &mdash; internal tooling, developer workflows, anything a team runs itself. It is the right pattern when the set of capabilities is genuinely not knowable in advance. It is the wrong pattern when it is: if the integration is fixed and reviewed, use a connector and spare people a capability audit they did not ask for.',
+      how: 'Validate and discover as separate, named steps, because reaching a server and understanding it are different problems with different fixes. Show the counts first and the surface on request: &ldquo;Forge &mdash; Ready, 9 tools&rdquo; is what most people need, and the full list is what somebody auditing it needs. Group the tools by what they can do, least dangerous first, so reading down the list is reading up a risk ladder. Make every tool switchable, because connecting is not consent to everything a server happens to expose. Gate destructive calls at invocation, show the arguments, and do not offer &ldquo;always allow&rdquo; on something that deletes. Say who wrote the capability descriptions. And show the call in the transcript when it happens, with what was sent and what came back.',
+      expressive: 'Restraint, because this is a security surface and a security surface that performs is a security surface nobody reads. The only motion is the panel arriving and the discovery steps resolving one at a time &mdash; and those are not decoration: the sequence is what tells somebody which step failed when one does. Risk is carried by grouping and by words before it is carried by colour: the bands are labelled &ldquo;Reads only&rdquo;, &ldquo;Changes things&rdquo;, &ldquo;Destructive&rdquo;, and a gated tool wears &ldquo;Asks every time&rdquo; as text, because that is a promise about behaviour and it has to survive being read aloud. A disabled tool fades rather than vanishing, so the shape of what was declined stays visible. The approval gate is the one place the error container is used at full strength, and it is used once.',
+
+      precedent: [
+        { name: 'MCP specification',
+          url: 'https://modelcontextprotocol.io/specification/2026-07-28/server/tools',
+          what: 'The source for everything here. Tools, resources and prompts are the live primitives &mdash; <b>Roots, Sampling and Logging were deprecated</b> in the 2026-07-28 revision. Tool annotations carry deliberately pessimistic defaults: <code>readOnlyHint</code> false, <code>destructiveHint</code> <b>true</b>, so an unannotated tool is treated as destructive. And the standing requirement: there &ldquo;SHOULD always be a human in the loop with the ability to deny tool invocations.&rdquo;' },
+        { name: 'Claude Code',
+          url: 'https://code.claude.com/docs/en/mcp',
+          what: 'The best-documented status vocabulary in the industry: <b>Connected · Needs authentication · Failed to connect · Pending approval · cached 2h ago</b>. That last one is the whole pattern in three words &mdash; a tool surface that can change underneath you has to say when it was last confirmed.' },
+        { name: 'ChatGPT developer mode',
+          url: 'https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta',
+          what: 'Discovery as an explicit user action: a <b>Scan Tools</b> button, then a per-action enable/disable screen before publishing. Published apps then run against a <b>frozen snapshot</b> of tools and inputs &mdash; an admission that a live surface is a moving target.' },
+        { name: 'VS Code',
+          url: 'https://code.visualstudio.com/docs/agent-customization/mcp-servers',
+          what: 'The most complete treatment of the three primitives as separate things: tools with a <b>Configure Tools</b> toggle, resources attachable as context, prompts invoked as slash commands. Also a trust dialog on first run, and sandboxed servers that are auto-approved &mdash; capability-based safety rather than annotation-based.' },
+        { name: 'Tool annotations as risk vocabulary',
+          url: 'https://blog.modelcontextprotocol.io/posts/2026-03-16-tool-annotations/',
+          what: 'Why the hints exist and why they are not enough: adoption &ldquo;remains uneven across MCP clients&rdquo;, and an Interest Group chartered in 2026 is still working on whether four flags can describe risk at all. Useful as the honest caveat &mdash; this pattern is built on a vocabulary that is still being argued about.' }
+      ],
+
+      anatomy: [
+        { part: 'Server address',
+          role: 'What you start with, and often all you have. The panel exists because everything after this has to be asked for rather than assumed.' },
+        { part: 'Validation steps',
+          role: 'Reached it, agreed a protocol version, read what it offers &mdash; named separately so that a failure says which one failed. A spinner cannot do that.' },
+        { part: 'Counts',
+          role: 'Tools, resources and prompts. The summary view, and enough for somebody who is not auditing anything. Zero is shown rather than hidden: &ldquo;0 resources&rdquo; is information, an absent row is a question.' },
+        { part: 'Capability surface',
+          role: 'The discovered tools, grouped by what they can do, least dangerous first. Progressive disclosure: closed by default, one press away.' },
+        { part: 'Per-tool switch',
+          role: 'Because connecting is not consent to everything a server happens to expose, and the header says how many were declined.' },
+        { part: 'Risk band',
+          role: 'Reads only, Changes things, Destructive &mdash; derived from the tool annotations rather than from the name, and written as words before it is drawn as colour.' },
+        { part: 'The gate',
+          role: '&ldquo;Asks every time&rdquo;, on the tool, as a label. A promise about behaviour that has to survive being read aloud.' },
+        { part: 'Approval',
+          role: 'At call time, naming the tool and showing the arguments, with no &ldquo;always allow&rdquo;. The specification asks clients to show tool inputs before calling, and an approval that hides what is being sent has approved nothing in particular.' },
+        { part: 'Provenance note',
+          role: 'One sentence saying the capability names and risk labels were written by the server and are not verified here. Without it, the risk bands read as the product&rsquo;s verdict rather than a stranger&rsquo;s claim.' },
+        { part: 'The call, in the transcript',
+          role: 'What was invoked, with what arguments, and what came back &mdash; including refusals. A tool that runs silently is a tool nobody can audit afterwards.' }
+      ],
+
+      flow: [
+        'An address is entered. Nothing about the server is known yet, and the panel does not pretend otherwise.',
+        'Validation runs as named steps: reached, version agreed, surface read.',
+        'Discovery returns the capability surface. Until it does, nobody &mdash; including the product &mdash; knows what this connection can do.',
+        'Tools arrive grouped by risk, with the destructive ones already switched off.',
+        'The person reviews and switches off anything they do not recognise. The header records how many were declined.',
+        'The agent invokes a permitted read tool, and the call appears in the transcript with its arguments and result.',
+        'A destructive call stops and asks, at the moment it wants to run, showing exactly what it would send.',
+        'Approval runs it once. Refusal is recorded in the transcript too, because a refusal is part of what happened.',
+        'When the server stops answering, the surface says it is showing a cached list rather than pretending it is current.'
+      ],
+
+      statesList: [
+        { name: 'Not configured', desc: 'A server address and nothing else. This is the whole difference from an app connector &mdash; there the tool surface is fixed and reviewed before you press anything; here nothing is known until the client asks.' },
+        { name: 'Validating', desc: 'Three named steps rather than a spinner. Reaching a server and understanding it are different problems with different fixes, and a failure has to say which.' },
+        { name: 'Discovering', desc: 'The client enumerates what the server exposes. Until this returns, nobody &mdash; including the product &mdash; knows what this connection can do.' },
+        { name: 'Ready', desc: 'Tools, resources and prompts, counted. Destructive tools arrive disabled, because the protocol&rsquo;s own defaults are pessimistic and so is this.' },
+        { name: 'Partly enabled', desc: 'Per-tool, not per-server. Connecting is not consent to everything a server happens to expose, and the count in the header says how many were declined.' },
+        { name: 'Needs approval', desc: 'At call time, with the arguments visible, and no &ldquo;always allow&rdquo;. A blanket yes to something that deletes is the failure this gate exists to prevent.' },
+        { name: 'Stale', desc: 'The server has stopped answering and the list on screen is what it said earlier. A tool surface that can change underneath you has to say when it was last confirmed.' },
+        { name: 'Unreachable', desc: 'The address answered with something this client cannot speak. Names which step failed and says nothing was enabled, because a half-configured server is worse than none.' }
+      ],
+
+      variants: [
+        { name: 'Reviewed catalogue', desc: 'The organisation curates which servers may be added, and people pick from a list. The tool surface is still discovered, but the trust question has been answered once, centrally, by somebody qualified to answer it.' },
+        { name: 'Frozen snapshot', desc: 'The capability surface is captured when the connection is approved and does not change until it is re-approved. Trades freshness for the guarantee that what was audited is what runs.' },
+        { name: 'Read-only', desc: 'Only non-mutating tools are ever enabled. Often the right answer, and it should be one switch rather than a careful pass down a list.' },
+        { name: 'Sandboxed', desc: 'The server runs with restricted filesystem and network access, and its calls are auto-approved because the sandbox rather than the annotation is doing the safety work. The strongest version where it is available.' }
+      ],
+
+      content: [
+        'Say what failed, not that something failed: &ldquo;answered, but not with a protocol version this client speaks&rdquo; sends somebody to the right fix.',
+        'Name the risk bands in plain words. &ldquo;Destructive&rdquo; means something to everybody; <code>destructiveHint: true</code> means something to almost nobody.',
+        'Write the gate as a promise about behaviour: &ldquo;Asks every time&rdquo;, not a warning triangle.',
+        'Say who wrote the descriptions. &ldquo;Written by the server, not verified by this product&rdquo; is the sentence that keeps the list honest.',
+        'When a connection goes stale, say when it was last confirmed rather than showing the old list as though it were current.',
+        'Never write &ldquo;always allow&rdquo; next to a tool that deletes.'
+      ],
+
+      a11y: [
+        'Each capability is a real switch with an accessible name that carries the tool, its risk band and its current state &mdash; the row is unreadable otherwise, because the name alone is an identifier and not a description.',
+        'Risk is grouped and labelled, never carried by colour. The bands have headings; the gate is a word.',
+        'Validation is a live region, because it resolves on its own and the person may have looked away.',
+        'The approval gate is a labelled group and its arguments are a definition list, so the thing being approved can be read item by item rather than as one run-on sentence.',
+        'Tool calls in the transcript are text, and a refusal is recorded as text too. The audit trail has to be readable by the same means as everything else.',
+        'Under prefers-reduced-motion nothing animates. The discovery sequence still reads, because it was always the order of the steps and not their movement that carried it.'
+      ],
+
+      donts: [
+        'Don&rsquo;t present a discovered surface as a verified one. The server wrote those descriptions, including the risk labels, and the specification says to treat them as untrusted.',
+        'Don&rsquo;t reduce this to &ldquo;[ MCP ] Connect&rdquo;. Connecting is the least interesting thing that happens; what it turns out you have allowed is the pattern.',
+        'Don&rsquo;t grant per server. Per-tool switches exist because a server that offers nine things has not been consented to by somebody who wanted three.',
+        'Don&rsquo;t approve destructive calls at connect time. The decision belongs at invocation, where the arguments exist.',
+        'Don&rsquo;t hide the arguments in the approval. What is being sent is the thing being approved.',
+        'Don&rsquo;t offer &ldquo;always allow&rdquo; on a destructive tool. A blanket yes to something that deletes is the failure the gate exists to prevent.',
+        'Don&rsquo;t let a call run invisibly. The protocol asks for clear indicators when tools are invoked, and a silent call cannot be audited afterwards.',
+        'Don&rsquo;t show a cached capability list as though it were live. It is a claim with a timestamp, and the timestamp is load-bearing.',
+        'Don&rsquo;t build this vocabulary for a fixed, reviewed integration. If the surface is knowable in advance, a connector is the honest pattern and this one is ceremony.'
+      ],
+
+      metrics: [
+        'How often the capability surface is opened before a server is enabled. Near-zero means the summary is doing all the work and nobody is auditing anything.',
+        'How many tools are switched off, and which. A server whose destructive tools are switched off by nearly everybody is a server asking for too much.',
+        'Approval versus refusal rate on gated calls, and how long the decision takes. Instant approval every time means the gate has become a speed bump.',
+        'How often a stale list is refreshed rather than acted on.',
+        'Failures at each validation step, separately. Reach failures and version failures have nothing to do with each other and pooling them hides both.'
+      ],
+
+      composed: ['Card', 'Switch', 'List', 'Chip', 'Dialog', 'Tooltip'],
+      related: [['connectors', 'Connectors'], ['action-plan', 'Action Plan'], ['consent', 'Consent']],
+      pkg: 'nucleux-m3-mcp',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/mcp.css\" />\n\n<!-- Summary first. The surface is progressive disclosure: this is\n     what a non-technical person needs, and the audit is one press\n     away for whoever needs that instead. -->\n<div class=\"md-mcp\" data-state=\"partial\">\n  <div class=\"md-mcp__head\">\n    <span class=\"md-mcp__mark\" aria-hidden=\"true\">MCP</span>\n    <span class=\"md-mcp__id\">\n      <span class=\"md-mcp__name\">Forge</span>\n      <span class=\"md-mcp__meta\">\n        <span class=\"md-mcp__state\">Some capabilities off</span>\n        <span class=\"md-mcp__dash\"> &middot; </span>2 turned off\n      </span>\n    </span>\n    <span class=\"md-mcp__dot\" aria-hidden=\"true\"></span>\n  </div>\n\n  <div class=\"md-mcp__counts\">\n    <span class=\"md-mcp__count\"><b>9</b>Tools</span>\n    <span class=\"md-mcp__count\"><b>4</b>Resources</span>\n    <span class=\"md-mcp__count\"><b>2</b>Prompts</span>\n  </div>\n\n  <div class=\"md-mcp__disc\">\n    <!-- Grouped least dangerous first: reading DOWN the list is\n         reading UP a risk ladder. -->\n    <div class=\"md-mcp__band\" data-risk=\"destroy\">\n      <p class=\"md-mcp__bt\">Destructive\n        <span class=\"md-mcp__bn\">Removes or overwrites &mdash; asks every time</span></p>\n      <ul class=\"md-mcp__tools\">\n        <li class=\"md-mcp__tool\" data-risk=\"destroy\" data-on=\"false\">\n          <button class=\"pvc-switch\" role=\"switch\" aria-checked=\"false\"\n                  aria-label=\"cut_release \\u2014 Destructive. Disabled.\">\n            <span class=\"pvc-switch__track\"><span class=\"pvc-switch__knob\"></span></span>\n          </button>\n          <span class=\"md-mcp__tt\">\n            <span class=\"md-mcp__tn\">\n              <code>cut_release</code>\n              <span class=\"md-mcp__gate\">Asks every time</span>\n            </span>\n            <span class=\"md-mcp__td\">Tag a release and start the pipeline</span>\n          </span>\n        </li>\n      </ul>\n    </div>\n\n    <!-- The sentence that keeps the list honest -->\n    <p class=\"md-mcp__trust\">\n      Capability names and risk labels are written by the server, not\n      verified by this product. Enable only what you recognise.\n    </p>\n  </div>\n</div>\n\n<!-- The gate: at CALL time, with the arguments, and no \"always allow\" -->\n<div class=\"md-mcp__ask\" role=\"group\" aria-label=\"Approve this call\">\n  <p class=\"md-mcp__askt\">Forge wants to run <code>cut_release</code></p>\n  <p class=\"md-mcp__askd\">Tags the release and starts the deploy pipeline.</p>\n  <dl class=\"md-mcp__args\">\n    <dt>tag</dt><dd>v4.12.0</dd>\n    <dt>branch</dt><dd>release/4.12</dd>\n  </dl>\n  <div class=\"md-mcp__askf\">\n    <button class=\"md-button md-button--filled md-button--sm\">Run it</button>\n    <button class=\"md-button md-button--text md-button--sm\">Don\\u2019t</button>\n    <span class=\"md-mcp__askn\">This one asks every time.</span>\n  </div>\n</div>"
+    },
+
+    connectors: {
+      id: 'connectors',
+      name: 'Connectors',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Context Expansion',
+      subId: 'context-expansion',
+      oneline: 'Grant the agent standing access to a service it needs.',
+      intent: 'An account, not a file &mdash; access that outlives the conversation and can be withdrawn.',
+      what: 'A card that names one external service, says what the agent will be able to do with it, and opens the door. It appears in two places: a settings list, and &mdash; far more usefully &mdash; inside a conversation, at the moment the agent finds a wall. Nobody uploaded anything: what is being granted is standing access to an account, which will still be there tomorrow and can be revoked.',
+      why: 'Most of what people want an agent to do requires a system the agent has never been given, and the alternative to this pattern is an agent that says &ldquo;I don&rsquo;t have access to that&rdquo; and stops &mdash; describing the problem and leaving the person to solve it. The risk runs the other way too. The provider&rsquo;s authorisation screen is written by the party that benefits from the grant and arrives after the decision is effectively made, so the only scope list a person can act on is the one the product writes, in its own words, before the handoff.',
+      when: 'When the answer depends on a live system the person already has an account for, and the access is worth keeping &mdash; a tracker, a calendar, a drive, a code host. It is worth offering contextually the first time a request needs it, and worth surfacing in settings afterwards so that what was granted can be re-read months later.',
+      how: 'Offer it where the wall is, not in a gallery of logos nobody browses. Name the service and say why it is needed, in one sentence. Write the scope list yourself, in plain verbs, and show it BEFORE the handoff. Ask for read and search by default and make write a separate, visible question. Say who the sign-in is with and that access can be withdrawn. Keep the connection visible in the composer afterwards, because standing access nobody can see is standing access nobody remembers granting. And design the expired sign-in properly: it is the state people meet most often and the one most connector designs forget.',
+      expressive: 'The card arrives on a spring, because a door opening is a user-initiated event and should read as one; everything after that is restraint. Colour is state and never the whole of it &mdash; a connected service gets a dot, but the dot sits beside the word rather than instead of it, and the error tone reinforces a sentence that was already explicit. The scope list uses one shape change to carry its most important distinction: what is already granted takes a tick in the primary accent, what is only being asked for takes a chevron at reduced emphasis, so somebody re-reading an old connection can see which is which without reading either. The whole card inverts tonally when it appears inside a conversation, because there it is the agent speaking rather than a settings row, and it should belong to the turn it interrupts.',
+
+      precedent: [
+        { name: 'Claude connectors',
+          url: 'https://support.claude.com/en/articles/11176164-use-connectors-to-extend-claude-s-capabilities',
+          what: 'Contextual connection has a product name here: <b>Suggested Connectors</b> &mdash; directory connectors can be recommended <em>in-chat when relevant to the task</em>, and custom ones never are. Team and Enterprise owners set per-action policy: <b>Always allow / Needs approval / Blocked</b>.' },
+        { name: 'ChatGPT apps',
+          url: 'https://help.openai.com/en/articles/20001494-connecting-and-managing-app-accounts-in-chatgpt',
+          what: 'The clearest permission ladder in shipping software: <b>Always ask / Allow read actions / Allow low-risk actions / Allow all actions</b>, settable as a default, overridable per app, and changeable after connecting. Also documents the first-use prompt &mdash; you are told what data may be shared before the app runs.' },
+        { name: 'Microsoft 365 Copilot connectors',
+          url: 'https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/manage-connector',
+          what: 'The richest status model: <b>Syncing, Ready, Paused, Failed, Delete Failed</b>, with last-sync time and item counts. Also the strongest provenance &mdash; citations carry the connector&rsquo;s logo, so the answer says which system it came from.' },
+        { name: 'Gemini connected apps',
+          url: 'https://support.google.com/gemini/answer/13695044',
+          what: 'The counter-example on granularity: access is granted per app, not per action, and the way in is an <b>@-mention</b> &mdash; if the app is not connected, permission is asked at that moment. Contextual authorisation without contextual suggestion.' },
+        { name: 'Perplexity connectors',
+          url: 'https://www.perplexity.ai/help-center/en/articles/12870620-connecting-perplexity-with-google-drive',
+          what: 'Documents the disconnect decision most products duck: on removing a connector you choose whether to <b>keep or delete already-synced files</b>, and kept files simply stop updating.' }
+      ],
+
+      anatomy: [
+        { part: 'The reason',
+          role: 'One sentence saying what the agent cannot reach and why it stopped. Only present on the contextual card, and it is what makes the card an answer rather than an advertisement.' },
+        { part: 'Service identity',
+          role: 'Mark and name. Enough to recognise, not a logo wall &mdash; the person already knows what the service is, they are deciding about access to it.' },
+        { part: 'Status, in words',
+          role: 'Not connected, Connected, Read only, Sign-in expired, Blocked by your organisation. First thing after the name, because it decides whether anything else on the card is actionable.' },
+        { part: 'Account',
+          role: '&ldquo;Connected as whom&rdquo; is the real question about a connection somebody set up months ago, especially where people hold two.' },
+        { part: 'Scope list',
+          role: 'What the agent will be able to do, in the product&rsquo;s own verbs, before the handoff. Marked to distinguish what is already granted from what is being asked for.' },
+        { part: 'The handoff sentence',
+          role: '&ldquo;You sign in with X. Access can be withdrawn at any time.&rdquo; Not fine print &mdash; it is the difference between granting access and being asked to trust a logo.' },
+        { part: 'Primary action',
+          role: 'Named for what pressing it does next: Connect, Allow, Sign in again, Try again. Absent entirely where no press could work, which is what Blocked means.' },
+        { part: 'Standing-context chip',
+          role: 'What the connector becomes once it is live: a tonal chip in the composer carrying the service and its access level. Tonal with a chevron, deliberately unlike an attachment&rsquo;s outlined card with a cross &mdash; one is a thing you took out of your machine, the other is a door you left open.' }
+      ],
+
+      flow: [
+        'A request arrives that cannot be answered from what the agent has.',
+        'The agent says so, names the service, and shows the card in the conversation rather than apologising and stopping.',
+        'The card states what connecting would allow, in the product&rsquo;s own words, and who the sign-in is with.',
+        'Connect does not sign anybody in. It surfaces the decision &mdash; this is what you are about to grant &mdash; and waits.',
+        'On approval the product waits visibly for the service and does not impersonate it.',
+        'Connected says so in words, names the account, and the composer picks up a standing-context chip.',
+        'The agent does the thing it was blocked on, and the answer names where it looked.',
+        'The access persists across the conversation and across later ones, and the chip is the reminder that it does.',
+        'When the sign-in expires the agent stops rather than guessing, and the way back is one press.'
+      ],
+
+      statesList: [
+        { name: 'Available', desc: 'Names the service, says what connecting would allow, and says who you will be signing in with &mdash; all before anything leaves the product.' },
+        { name: 'Needs your approval', desc: 'The decision point, in the product&rsquo;s own words. This is the step products skip, and then wonder why nobody reads the provider&rsquo;s scope screen.' },
+        { name: 'Connecting', desc: 'The product does not impersonate the sign-in. It waits, says it is waiting, and leaves a way out.' },
+        { name: 'Connected', desc: 'The word, the account, and a dot &mdash; in that order. A green dot on its own is nothing to anyone who cannot see it.' },
+        { name: 'Read only', desc: 'Connected is not a permission. This state exists so that &ldquo;it is connected but it cannot do that&rdquo; is visible before somebody asks it to.' },
+        { name: 'Needs reauth', desc: 'The sign-in expired, the agent stopped rather than guessing, and the way back is one press. The state most connector designs forget and people meet most often.' },
+        { name: 'Error', desc: 'The service could not be reached. Distinct from an expired sign-in, because the remedies are different, and it says nothing was changed.' },
+        { name: 'Blocked by admin', desc: 'Turned off for everyone. It says who decided and offers a person rather than a retry, and has no Connect button, because pressing it could never work.' }
+      ],
+
+      variants: [
+        { name: 'Contextual', desc: 'The card appears mid-conversation because a request needed it. The strongest version: the person is deciding about a connection at the one moment they can see what it is for. This is what the simulator shows.' },
+        { name: 'Managed list', desc: 'A settings surface listing everything connected, with scopes and accounts re-readable months later. Necessary, and useless on its own &mdash; nobody browses a connector gallery speculatively.' },
+        { name: 'Suggested', desc: 'The product recommends a connector it thinks the task needs, before being blocked. Powerful and easy to abuse: a suggestion that is really a placement will be read as one, and the currency is spent for good.' },
+        { name: 'Administered', desc: 'The organisation decides what may be connected and at what level, and the person sees only what is permitted. Restriction is best rendered as absence rather than a locked row &mdash; a row you can see and never press is an advertisement for a thing you cannot have.' }
+      ],
+
+      content: [
+        'Say what you cannot reach before you say what to connect. &ldquo;Your backlog lives in Beacon and I have never been given it&rdquo; is an explanation; &ldquo;Connect Beacon&rdquo; is a demand.',
+        'Write scopes as verbs the person can picture: &ldquo;See items you can already see&rdquo;, not &ldquo;read:issues&rdquo;.',
+        'Name the sign-in and the exit in the same breath: &ldquo;You sign in with Beacon. Access can be withdrawn at any time.&rdquo;',
+        'Distinguish an expired sign-in from an unreachable service. They read identically as failure and they have different remedies.',
+        'For an admin-blocked connector, name the decision-maker and drop the button. A Connect that cannot work is worse than no Connect.'
+      ],
+
+      a11y: [
+        'Connection status is a word before it is a colour or a dot. A green dot is nothing to somebody who cannot see it and ambiguous to everybody else.',
+        'The scope list is a real list, and the distinction between granted and requested carries a different icon as well as a different colour.',
+        'Every action names its outcome: &ldquo;Connect Beacon&rdquo;, &ldquo;Sign in to Beacon again&rdquo; &mdash; not &ldquo;Connect&rdquo; repeated down a settings page.',
+        'The waiting state is announced, because it resolves without anybody pressing anything and the person may have switched to the provider&rsquo;s window.',
+        'The standing-context chip is a button with a label that says what it does, so the connection can be inspected and withdrawn from the keyboard.',
+        'Under prefers-reduced-motion the card arrives instantly. It was never the motion that carried the meaning.'
+      ],
+
+      donts: [
+        'Don&rsquo;t answer &ldquo;I don&rsquo;t have access to that&rdquo; and stop. Naming the door costs one card and turns a dead end into a decision.',
+        'Don&rsquo;t rely on the provider&rsquo;s consent screen to explain the grant. It is written by the party that benefits from it and arrives after the decision is effectively made.',
+        'Don&rsquo;t bundle write into read. A summarising assistant that can close somebody&rsquo;s tickets was granted that by a design decision, not by a user.',
+        'Don&rsquo;t reduce a connection to a green dot. Connected is not a permission, and &ldquo;connected but it cannot do that&rdquo; needs to be visible before somebody asks it to.',
+        'Don&rsquo;t treat an expired sign-in as an error. The remedies are different and conflating them sends people to the wrong one.',
+        'Don&rsquo;t hide a live connection. Standing access nobody can see is standing access nobody remembers granting.',
+        'Don&rsquo;t show a Connect button on a connector the organisation has blocked. Restriction is better rendered as absence than as a button that cannot work.',
+        'Don&rsquo;t simulate the provider&rsquo;s sign-in inside your own interface. That shape is what every credential-phishing page imitates, and teaching people to accept it is a harm that outlives the feature.'
+      ],
+
+      metrics: [
+        'How often a connector is granted at the moment it is offered contextually, against how often it is granted from the settings list. The gap is the value of offering it where the wall is.',
+        'How often write is granted when it was asked for alongside read &mdash; a high rate usually means nobody read the list, not that everybody agreed.',
+        'Time spent on the approval step. Near-zero means the scope list is decoration.',
+        'How often an expired sign-in is repaired versus abandoned, which measures whether that state is legible at all.',
+        'Requests that fail for want of a connector that was never offered. This is the number that says the wall is not being named.'
+      ],
+
+      composed: ['Card', 'Button', 'List', 'Chip', 'Badge'],
+      related: [['mcp', 'MCP Connectors'], ['knowledge-base', 'Knowledge Bases'], ['consent', 'Consent']],
+      pkg: 'nucleux-m3-connectors',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/connectors.css\" />\n\n<!-- The SAME card in both places. `md-conn--inline` is the version\n     that appears inside a conversation, where the agent has just\n     found a wall; without it, this is a settings row. -->\n<div class=\"md-conn md-conn--inline\" data-state=\"authorise\">\n\n  <!-- why the card is on screen at all -->\n  <p class=\"md-conn__because\">\n    Your design backlog lives in Beacon, and I have never been given it.\n    Here is what connecting would let me do.\n  </p>\n\n  <div class=\"md-conn__head\">\n    <span class=\"md-conn__mark\" aria-hidden=\"true\">Bn</span>\n    <span class=\"md-conn__id\">\n      <span class=\"md-conn__name\">Beacon</span>\n      <!-- status is a WORD, and it comes before the account -->\n      <span class=\"md-conn__meta\">\n        <span class=\"md-conn__state\">Needs your approval</span>\n      </span>\n    </span>\n  </div>\n\n  <!-- The product's own sentences, BEFORE the handoff. A tick is\n       already granted; a chevron is being asked for. -->\n  <ul class=\"md-conn__scope\">\n    <li class=\"md-conn__s\" data-has=\"false\">\n      <span class=\"md-conn__sic\" aria-hidden=\"true\"><!-- chevron --></span>\n      <span><b>Read</b> &mdash; See items you can already see</span>\n    </li>\n    <li class=\"md-conn__s\" data-has=\"false\">\n      <span class=\"md-conn__sic\" aria-hidden=\"true\"><!-- chevron --></span>\n      <span><b>Search</b> &mdash; Find items across the workspace</span>\n    </li>\n  </ul>\n\n  <div class=\"md-conn__foot\">\n    <button class=\"md-button md-button--filled md-button--sm\"\n            data-act=\"conn:allow\">Allow</button>\n    <button class=\"md-button md-button--text md-button--sm\"\n            data-act=\"conn:cancel\">Not now</button>\n    <span class=\"md-conn__fine\">\n      You sign in with Beacon. Access can be withdrawn at any time.\n    </span>\n  </div>\n</div>\n\n<!-- Once live, it becomes standing context in the shared composer:\n     TONAL with a chevron, deliberately unlike an attachment's\n     OUTLINED card with a cross. -->\n<span class=\"ax__scopes\" role=\"group\" aria-label=\"Available to the agent\">\n  <button class=\"md-scope\" data-kind=\"connector\"\n          aria-label=\"Beacon, read and search. Manage what the agent can reach.\">\n    <span class=\"md-scope__mark\" aria-hidden=\"true\">Bn</span>\n    <span class=\"md-scope__t\">Beacon</span>\n    <span class=\"md-scope__d\"> &middot; read &middot; search</span>\n  </button>\n</span>"
+    },
+
+    attachments: {
+      id: 'attachments',
+      name: 'Attachments',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Context Expansion',
+      subId: 'context-expansion',
+      oneline: 'Hand the agent the material this request depends on.',
+      intent: 'Temporary context &mdash; a file that belongs to this conversation and dies with it.',
+      what: 'A file, image or pasted block that joins the message you are about to send. It is the shallowest of the five ways to widen what an agent knows, and the only one that requires no account, no permission and no curation: you pick something, it joins the composer as an object, and the request goes out carrying it. Nobody connected anything and nothing was indexed.',
+      why: 'Most of what a person wants an agent to work on is sitting on their machine, and typing it out is not an option. The failure modes are all about state rather than transfer: a file that has uploaded but has not been read looks identical to one the agent can already see, so requests get fired at documents nothing has opened; a refusal that arrives after a two-minute upload was knowable before it started; and a remove control implies an undo that no product actually performs.',
+      when: 'Whenever the material is specific to one question &mdash; this contract, this screenshot, this export. It is the right default for anything a person would not want to keep: the cost of attaching is one press and the cost of it being wrong is nothing, because it goes away with the conversation.',
+      how: 'Put the source menu on a control that is already in the composer, and offer sources rather than labels. Let the object join the composer immediately, so the person can see they picked the right thing before anything finishes. Keep uploading and reading as two separate states with different indicators &mdash; determinate while there is a real number, and honestly indeterminate when there is not. Refuse before the upload rather than after, and put the limit in the refusal. Keep the failed file listed, with a retry on it, so recovering costs one press rather than a second trip to the file picker. And say what removal does, because the person is entitled to know it is forward-only before they press it.',
+      expressive: 'The object arriving is the one moment worth animating, and it gets a spring &mdash; a file joining a message is a user-initiated arrival and should read as one. Everything after that is restraint: the progress bar is a hairline along the bottom edge of the object it belongs to, so it reads as that file&rsquo;s progress rather than the composer&rsquo;s, and it is the only thing moving. Colour is state and never decoration: the primary accent marks readiness, the error container marks a refusal, and in both cases the word is already in the meta line above &mdash; the colour is reinforcement, not the message. Under prefers-reduced-motion the arrival is instant and the indeterminate bar becomes a static half-filled track, because a bar that travels to nowhere is decoration, and the word was carrying the state all along.',
+
+      precedent: [
+        { name: 'Claude',
+          url: 'https://support.claude.com/en/articles/8241126-upload-files-to-claude',
+          what: 'The <b>+ in the composer</b> rather than a paperclip, plus drag-and-drop and clipboard paste. Documents the limits that actually shape the interaction: 500&nbsp;MB, 20 files per chat, and a PDF read for <em>text and visual elements</em> up to 100 pages but <em>text only</em> from 101 to 1000 &mdash; a partial-read state most designs do not have.' },
+        { name: 'Perplexity',
+          url: 'https://www.perplexity.ai/help-center/en/articles/10354807-file-uploads',
+          what: 'The only product that documents what <b>removal</b> means, and the semantics are precise: the file &ldquo;will then be deleted as context for the follow-up question, and <em>all previously generated responses will retain the context</em>.&rdquo; Forward-only. This pattern is built on that sentence.' },
+        { name: 'Microsoft Copilot',
+          url: 'https://support.microsoft.com/en-us/microsoft-copilot/file-upload-in-microsoft-copilot',
+          what: 'The clearest statement of <b>lifetime</b>: ask follow-up questions about the file &ldquo;within the same conversation,&rdquo; with files retained no longer than 18 months. Conversation-scoped, said out loud.' },
+        { name: 'Gemini',
+          url: 'https://support.google.com/gemini/answer/14903178',
+          what: 'Rare published <b>error copy</b> &mdash; &ldquo;Delete data to upload file,&rdquo; &ldquo;You&rsquo;ve reached your limit for chats with files,&rdquo; &ldquo;Your uploads may be too large for the best results.&rdquo; Also the widest source menu: device, camera, cloud, code folders, and a notebook attached as a source.' },
+        { name: 'ChatGPT',
+          url: 'https://help.openai.com/en/articles/20001052-file-storage-and-library-in-chatgpt',
+          what: 'The counter-example worth knowing: uploads are auto-saved to a <b>Library</b> and reusable across chats, against a per-plan storage quota. Useful as the boundary &mdash; the moment a file outlives its conversation, it has stopped being an attachment and become knowledge.' }
+      ],
+
+      anatomy: [
+        { part: 'Source control',
+          role: 'The + already in the shared composer. It offers SOURCES &mdash; upload, photo, paste &mdash; not labels. Nothing separate, because an attachment is part of the message, not a place you go.' },
+        { part: 'Attachment object',
+          role: 'One compact card per attached thing, on its own row above the input, inside the same composer. Where it sits is the claim about how long it lasts.' },
+        { part: 'Identity',
+          role: 'Name, and a type that predicts whether the agent can read it. Images get a real thumbnail because it identifies the file faster than its name; documents deliberately do not, because an invented page preview is a claim about content nobody has read.' },
+        { part: 'State, in words',
+          role: 'Uploading, Reading, Ready, Too large, Failed &mdash; written in the meta line, where a person reads anyway. Colour reinforces it and never replaces it.' },
+        { part: 'Progress',
+          role: 'A hairline along the bottom edge of the object, so it reads as that file&rsquo;s progress. Determinate while there is a real number; indeterminate rather than invented when there is not.' },
+        { part: 'Retry',
+          role: 'On the failed object itself. Recovering from a dropped connection should cost one press, not a second trip to the file picker.' },
+        { part: 'Remove',
+          role: 'On every object. It is the control that raises the lifetime question, which is why it is also the control that owes the answer.' },
+        { part: 'Lifetime statement',
+          role: 'One sentence under the composer saying how long attached files last and that removal is forward-only. It is not boilerplate &mdash; it is the only place the person learns that taking a file back cannot unwrite what it already produced.' }
+      ],
+
+      flow: [
+        'The + in the composer opens a menu of sources. Nothing is uploaded before a choice is made.',
+        'The object joins the composer immediately, so the person can see they picked the right file before anything finishes.',
+        'Uploading shows a determinate bar, because there is a real number to show.',
+        'Reading is a separate state with a separate indicator. A file that has arrived has not been read, and the agent cannot use it yet.',
+        'Ready says so in words. Only now does sending make sense.',
+        'A file over the limit is refused before a byte moves, with the limit named, and stays listed so it can be swapped.',
+        'A failed upload keeps a retry on the object. The file does not have to be found again.',
+        'The request goes out carrying the attachment, and the answer names what it read.',
+        'Removing a file takes it out of everything that follows and leaves the answers it already shaped intact &mdash; which the interface said before the person pressed it.'
+      ],
+
+      statesList: [
+        { name: 'Nothing attached', desc: 'The ordinary composer. Attaching is one control away and does not go anywhere else &mdash; the row appears above the input, inside the same bar.' },
+        { name: 'Uploading', desc: 'The object is already in the composer, carrying a determinate bar. Showing the file before the upload finishes is what lets somebody catch the wrong one early.' },
+        { name: 'Reading', desc: 'Uploaded is not readable. The bar stops claiming a percentage it no longer has and the word changes &mdash; collapsing these two states is why requests get fired at documents nothing has opened.' },
+        { name: 'Ready', desc: 'Name, type, and the word Ready. The composer has grown by exactly one row and nothing else has moved.' },
+        { name: 'Several', desc: 'They wrap within the row, each keeping its own state, because one file failing has nothing to do with the others.' },
+        { name: 'Too large', desc: 'Refused before a byte moves, with the limit in the message, and still listed so it can be swapped rather than hunted for again.' },
+        { name: 'Failed', desc: 'A retry on the object itself. A dropped connection should cost one press, not a second trip to the file picker.' },
+        { name: 'Image', desc: 'A real thumbnail, because for a picture it identifies the file faster than the filename does. This is the one attachment type where a preview is honest.' }
+      ],
+
+      variants: [
+        { name: 'Request-scoped', desc: 'The file goes with one message and is gone afterwards. The most honest version where the material is genuinely a one-off, and the cheapest to reason about &mdash; but it means re-attaching for every follow-up, which people read as the product forgetting.' },
+        { name: 'Conversation-scoped', desc: 'The default, and what most products actually do: the file stays available for follow-ups in this conversation and dies with it. Requires the lifetime statement, because the boundary is invisible.' },
+        { name: 'Held for correction', desc: 'The attachment lands but the request does not send itself, so a mis-picked file costs a press rather than an answer. Correct wherever the request commits something.' },
+        { name: 'Promoted to knowledge', desc: 'An attachment that turns out to matter repeatedly gets offered a way into a knowledge base. The right escape hatch &mdash; and the moment it is taken, it has stopped being an attachment and the rules about lifetime change.' }
+      ],
+
+      content: [
+        'Name the state in words: &ldquo;Uploading&rdquo;, &ldquo;Reading&rdquo;, &ldquo;Ready&rdquo;. A bar is not a label, and it is nothing at all under reduced motion.',
+        'Put the limit in the refusal. &ldquo;Too large&rdquo; sends somebody to the documentation; &ldquo;Too large &mdash; 500&nbsp;MB is the limit&rdquo; sends them to a smaller file.',
+        'Say what removal does before it is pressed, not after: removing takes the file out of what comes next and cannot unwrite an answer it already shaped.',
+        'Describe what the agent can read, not what the file is. &ldquo;Read as text only past page 100&rdquo; changes what somebody asks; &ldquo;PDF&rdquo; does not.',
+        'Never write &ldquo;Ready&rdquo; while the file is still being read. It is a small lie that costs somebody a confidently wrong answer.'
+      ],
+
+      a11y: [
+        'Every state is written, not only drawn. Uploading, reading, ready, refused and failed each carry a word in the meta line, because colour and a moving bar are the two cues most likely to be unavailable.',
+        'The attachment row is a live region: uploads finish on their own schedule, and somebody who has looked away has to be told rather than having to look.',
+        'Remove and retry are real buttons with labels that name the file &mdash; &ldquo;Remove Northwind-proposal.pdf&rdquo;, not &ldquo;Remove&rdquo; six times in a row.',
+        'Progress carries a role and, where the number is real, the value. An indeterminate bar says it is indeterminate rather than inventing a position.',
+        'The file picker is never the only route. Paste and drag-and-drop are alternatives, not conveniences, for anyone who cannot work a file dialog comfortably.',
+        'Under prefers-reduced-motion the object arrives instantly and the indeterminate bar becomes a static track. The state was in the word the whole time.'
+      ],
+
+      donts: [
+        'Don&rsquo;t collapse uploading and reading into one bar. They are different states with different consequences, and the second is the one that decides whether the request will work.',
+        'Don&rsquo;t refuse a file after uploading it when the limit was knowable before. Size and type are known at selection.',
+        'Don&rsquo;t remove a failed file from the list. The list is where the retry lives.',
+        'Don&rsquo;t generate a thumbnail for a document. A fabricated page preview is a claim about content nobody has read, and people trust pictures more than they trust filenames.',
+        'Don&rsquo;t offer a remove control without saying what removal does. It reads as an undo, and it is not one.',
+        'Don&rsquo;t build a file manager. Browsing, renaming, foldering and sorting belong to the place the files live; this is a composer.',
+        'Don&rsquo;t let an attachment quietly persist beyond the conversation. The moment it outlives its chat it has become knowledge, and knowledge has different rules and a different surface.',
+        'Don&rsquo;t open an oversized upload zone over the whole workspace unless drag-and-drop is genuinely the primary route.'
+      ],
+
+      metrics: [
+        'How often a request is sent while a file is still being read &mdash; the direct measure of whether uploading and reading are distinguishable.',
+        'How often a file is removed within a few seconds of attaching, which measures whether the object appears early enough to catch the wrong one.',
+        'Retry rate after a failure, and whether the retry succeeds. A retry nobody presses means the control is not findable on the object.',
+        'How often the same file is attached again in a later conversation. Rising, it is the signal that this material wanted to be a knowledge base.'
+      ],
+
+      composed: ['Icon Button', 'Menu', 'Progress', 'Card', 'Chip'],
+      related: [['knowledge-base', 'Knowledge Bases'], ['connectors', 'Connectors'], ['visual-input', 'Visual Input']],
+      pkg: 'nucleux-m3-attachments',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- Attachments are a ROW INSIDE the shared composer, not a\n     second component beside it. There is no AttachmentComposer. -->\n<form class=\"ax__composer\" data-mode=\"text\">\n\n  <span class=\"ax__atts\" role=\"group\" aria-label=\"Attached to this message\">\n\n    <!-- ready -->\n    <span class=\"md-att\" data-state=\"ready\">\n      <span class=\"md-att__ico\" aria-hidden=\"true\"><!-- doc --></span>\n      <span class=\"md-att__txt\">\n        <span class=\"md-att__name\">Northwind-proposal.pdf</span>\n        <span class=\"md-att__meta\">\n          <!-- the state is TEXT, first -->\n          <span class=\"md-att__state\">Ready</span>\n          <span class=\"md-att__sep\"> &middot; </span>PDF &middot; 34 pages\n        </span>\n      </span>\n      <button class=\"md-att__btn md-att__btn--x\"\n              aria-label=\"Remove Northwind-proposal.pdf\"><!-- x --></button>\n    </span>\n\n    <!-- reading: uploaded is not readable, so the bar stops\n         claiming a percentage it no longer has -->\n    <span class=\"md-att\" data-state=\"processing\">\n      <span class=\"md-att__ico\" aria-hidden=\"true\"><!-- doc --></span>\n      <span class=\"md-att__txt\">\n        <span class=\"md-att__name\">security-review.docx</span>\n        <span class=\"md-att__meta\"><span class=\"md-att__state\">Reading</span></span>\n      </span>\n      <span class=\"md-att__bar\" role=\"progressbar\" aria-label=\"Reading\">\n        <i class=\"md-att__bar--wait\"></i>\n      </span>\n      <button class=\"md-att__btn md-att__btn--x\"\n              aria-label=\"Remove security-review.docx\"><!-- x --></button>\n    </span>\n\n    <!-- uploads finish on their own schedule -->\n    <span class=\"md-att__live\" role=\"status\" aria-live=\"polite\">\n      2 files attached, 1 still being read\n    </span>\n  </span>\n\n  <button class=\"ax__cbtn\" data-act=\"ax:plus\" aria-label=\"Add context\"><!-- + --></button>\n  <input class=\"ax__field\" placeholder=\"Ask about the proposal\\u2026\" />\n  <button class=\"ax__cbtn ax__cbtn--send\" type=\"submit\" aria-label=\"Send\"></button>\n</form>\n\n<!-- The sentence the remove control owes the person -->\n<p class=\"ax__cnote\">\n  Attached files stay with this conversation. Removing one takes it out\n  of what comes next; it cannot unwrite an answer it has already shaped.\n</p>"
+    },
+
+    'voice-input': {
+      id: 'voice-input',
+      name: 'Voice Input',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Expressive Input',
+      subId: 'expressive-input',
+      oneline: 'Speak the request from the same composer you would type it in.',
+      intent: 'Voice as a MODE of the shared prompt composer &mdash; same bar, same place, about a line taller.',
+      what: 'One composer with two modes. In <b>text</b> it is the ordinary bar with a microphone in it; press that, and the middle of the same bar swaps the field for a small activity indicator and a line of status. The width, the place, the radius system and the 34px controls do not change. What was said arrives in the workspace as text, and the bar goes back to being a text bar.',
+      why: 'Voice is the input people reach for when typing is slow, awkward or impractical &mdash; which is exactly when a silent mistake is most expensive. Nearly everything that goes wrong here is either a state that was never designed or a decision to build too much: the microphone that is open and does not look it, the animation that runs whether or not anything is heard, the failure that takes the keyboard away with it, and the voice mode that becomes a screen of its own and throws away the work the question was about.',
+      when: 'Wherever a request is quicker said than typed, and the product already has a composer to say it into. Not as a novelty alternative to a keyboard that is there and working, and not at all where the request commits something that a misheard word would commit wrongly &mdash; there, hold the text for correction first.',
+      how: 'Build it as a mode of the composer you already have, not as a second component and never as a screen. Start only on a deliberate action. Grow the container by about a line and no more &mdash; a bar that triples in height has navigated, whatever the code says. Drive the indicator from the real signal so silence looks like silence, and keep it small enough that it reads as part of the bar rather than as the subject of the page. Say every state in words, in a live region. Leave the keyboard route inside the same bar when voice fails. And put the result in the workspace, because the durable artefact of a spoken request is text.',
+      expressive: 'The restraint is the expression. One bar changes mode, and the measure of how well it is done is how little moves: the width holds, the place holds, the controls stay at 34px, and the container gains about a line and one step of shape. Colour is state and never decoration &mdash; the strokes keep the primary hue while the microphone is open, because a hue change there would claim something changed about the microphone, and drain to outline when it is muted, because something did. Length carries amplitude, and it is a smoothed value rather than a random one: the easing constant is the whole difference between a voice and a flicker. The ambient gradient behind the composer is untouched &mdash; it keeps drifting on its own twenty-second cycles off the agent&rsquo;s phase. The indicator communicates audio, the gradient communicates atmosphere, and a voice mode that speeds the gradient up has confused the two.',
+
+      precedent: [
+        { name: 'Gemini, on the web',
+          what: 'The clearest argument for <b>restraint</b> in this pattern. The composer is the same bar whether you are typing or speaking, the voice feedback is small and local to it, and the interface around it does not react at all. Worth taking the proportions and the calm and none of the execution &mdash; the shape, palette and motion here are the Nucleux Material system&rsquo;s.' },
+        { name: 'System dictation &mdash; iOS, Android, Windows',
+          what: 'The older half of the pattern, and the reason a microphone glyph needs no explanation. Speech into an ordinary text field, held as editable text, sent by the person. Worth copying exactly: <b>the field does not send itself</b>.' },
+        { name: 'Gemini Live, Copilot Voice',
+          what: 'The other end of the same idea: a full spoken session, a large surface, and a voice that talks back. Useful mainly for knowing where the line is &mdash; this pattern sits deliberately on the other side of it, because a research workspace does not need a voice-only assistant in order to answer one question.' }
+      ],
+
+      anatomy: [
+        { part: 'Shared prompt composer',
+          role: 'The component. Not a voice composer beside a text composer &mdash; one bar with a text mode and a voice mode, used by every simulator in the library. Forking it is the failure this pattern is written against.' },
+        { part: 'Microphone control',
+          role: 'Inside the bar, where a send button is, because speaking is a way of sending. Shown only where the scenario actually supports it. Pressing it is the one deliberate action that opens the microphone, and pressing it again is the way back.' },
+        { part: 'Voice activity indicator',
+          role: 'Five capsules, about as tall as a line of text, in the space the field occupied. Length is a smoothed amplitude; the middle strokes take more of it than the outer ones, which is what stops the row reading as a bar chart.' },
+        { part: 'Status line',
+          role: 'The text equivalent of the indicator, in a live region, because these states change without anybody pressing anything.' },
+        { part: 'Heard line',
+          role: 'One line, clipped. Enough to prove it is hearing this particular person; not a transcript panel, and never something that grows the bar while somebody is talking into it.' },
+        { part: 'Mute and Cancel',
+          role: 'The only two controls that mean anything while the microphone is open, at the same 34px as every other control in the bar. Muting and backing out are different intentions and never one button.' },
+        { part: 'Workspace',
+          role: 'Where the answer lands. The durable artefact of a spoken request is text, and it belongs in the same place a typed request would have put it.' },
+        { part: 'Ambient gradient',
+          role: 'The simulator\u2019s existing atmosphere, unchanged. It moves on the agent\u2019s phase over tens of seconds. The indicator carries audio; the gradient carries atmosphere; swapping those roles is what makes a calm interface loud.' }
+      ],
+
+      flow: [
+        'The ordinary composer, with a microphone in it. Nothing is listening before it is pressed.',
+        'Pressing it changes the mode of that same bar: same width, same place, about a line taller, with a spring rather than a jump.',
+        'Open and visibly not hearing anything &mdash; the strokes sit at rest, because an open microphone drawn like a heard one is the commonest lie here.',
+        'Speech arrives and the strokes follow amplitude with smooth interpolation, gaps included. One clipped line shows what is being heard.',
+        'The utterance ends and the same strokes shorten and slow. Processing is the indicator doing less, not a spinner dropped where the voice used to be.',
+        'The answer appears in the workspace, as text, exactly where a typed request would have put it.',
+        'The bar returns to text mode. Nothing navigated, and nothing about the rest of the screen moved.',
+        'Where voice fails &mdash; no permission, microphone taken &mdash; the bar says so and keeps the keyboard route inside itself.'
+      ],
+
+      /* SIX states, and the same six the component preview
+         offers &mdash; a documented list that does not match the list
+         you can actually click through is a list nobody trusts
+         twice. The first is the composer at rest, because the
+         claim of the pattern is that voice is a mode of THAT. */
+      statesList: [
+        { name: 'Default', desc: 'The ordinary composer, with a microphone in it where the scenario supports speaking. Nothing else about it is special, and that is the whole argument.' },
+        { name: 'Listening', desc: 'Same bar, about a line taller. The strokes sit at rest because nothing is being said &mdash; the distinction between an open microphone and a heard one is the one this pattern exists to draw.' },
+        { name: 'Speaking', desc: 'The strokes follow real amplitude with smooth interpolation, gaps included, and one clipped line shows what is being heard. No colour change: nothing about the microphone changed.' },
+        { name: 'Processing', desc: 'The same strokes, shorter and slower. Containment rather than a spinner, and visibly LESS than listening, or the indicator goes on implying something is still being heard.' },
+        { name: 'Muted', desc: 'Colour drains and the strokes stop moving with speech. An indicator that still moves while muted is claiming to hear you.' },
+        { name: 'Error', desc: 'The semantic error accent, no motion, and a sentence saying what happened &mdash; with the keyboard route still inside the same bar, because voice failing is not a reason to lose the composer.' }
+      ],
+
+      variants: [
+        { name: 'Voice as a composer mode', desc: 'The default, and this pattern. A microphone in the shared bar; the bar changes mode and changes back. Almost always the right first version, and the only one that costs a product nothing to keep.' },
+        { name: 'Press and hold', desc: 'Capture lasts exactly as long as the finger does. The safest form on touch: nothing can be left open, and the state is carried by the hand rather than by the screen.' },
+        { name: 'Hold the transcript for correction', desc: 'The spoken text lands in the field, editable, and the person presses send. Slower, and correct wherever the request commits something &mdash; the field does not send itself.' },
+        { name: 'Full spoken session', desc: 'Two-way, with the agent talking back, barge-in and an end control. A different pattern with a different surface, and worth building only where the reply is genuinely conversational. A session wrapped around a one-shot answer is a slower composer.' }
+      ],
+
+      content: [
+        'Name the state in words as well as in motion: \u201cListening\u2026\u201d, \u201cThinking\u2026\u201d, \u201cMicrophone muted\u201d. Five small strokes are not a label, and they are nothing at all under reduced motion.',
+        'Keep the heard line to one line. A transcript that grows the composer as somebody speaks is a composer that moves under their hand.',
+        'Answer silence with a sentence, not a spinner: \u201cI didn\u2019t hear anything, so nothing was sent.\u201d',
+        'When voice fails, say what happened and leave the keyboard route in the same bar. \u201cAnother application is using the microphone. Type instead, or try again.\u201d',
+        'Never write \u201cListening\u2026\u201d while the microphone is still arming. It is a small lie that costs the first three words.'
+      ],
+
+      a11y: [
+        'Every spoken request produces text in the workspace. That is what makes the pattern usable without hearing, and reviewable afterwards by anybody.',
+        'Everything reachable by voice is reachable without it. The microphone is an additional control in a bar that still has a field in it; it is never the only route.',
+        'Listening, speaking, processing, muted and error are announced through a live region and labelled in text, so the state never depends on seeing five small strokes move.',
+        'The microphone control carries aria-pressed and a label that names what pressing it will do next, not what it is doing now.',
+        'The indicator is aria-hidden. The status beside it is the accessible equivalent, and two announcements of one fact is one too many.',
+        'Every control in voice mode is reachable and operable from the keyboard, and pressing one does not throw focus back to the top of the document.',
+        'No time limits that punish slow or disfluent speech, and no automatic send on a pause. A stammer is not the end of a sentence.',
+        'Under prefers-reduced-motion the sway stops and the amplitude driver never starts. Length, colour and the words carry the whole state set &mdash; and if they cannot, the states were never carrying it.'
+      ],
+
+      donts: [
+        'Don\u2019t build a second composer for voice. One component with a voice mode, or the two will drift and the product will have two ways to ask for the same thing.',
+        'Don\u2019t take over the screen. A bar that becomes a full-height surface has navigated, whatever the code says, and it throws away the context the question was about.',
+        'Don\u2019t let the indicator get big. It is feedback attached to a control, not the subject of the page; the moment it dominates, the composer has stopped being the thing you are using.',
+        'Don\u2019t animate it on a timer. A loop that runs whether or not anything is being heard is worse than no feedback: it makes a hung microphone look healthy.',
+        'Don\u2019t draw it as equaliser bars. Stepped rectangles read as playback; capsules with a smoothed length and a resting dot read as listening.',
+        'Don\u2019t make the background react to amplitude. The gradient is atmosphere and moves on the agent\u2019s phase; coupling it to the voice is how a calm interface becomes a loud one.',
+        'Don\u2019t use one control for \u201cmute my microphone\u201d and \u201cclose voice mode\u201d. They are different intentions.',
+        'Don\u2019t leave the microphone open silently, ever \u2014 and don\u2019t open it without a deliberate action.',
+        'Don\u2019t lose the keyboard when voice fails. The field is in the same bar; put it back.'
+      ],
+
+      metrics: [
+        'How often the microphone is pressed and then cancelled without anything being said, which measures whether people can tell the bar is listening.',
+        'How often a voice request is followed immediately by the same request typed \u2014 the signal that recognition is failing quietly.',
+        'Requests sent with an empty or near-empty result, which measures whether silence is being answered or forwarded.',
+        'Whether voice is used at all on the scenarios that offer it. A microphone nobody presses is a control to remove, not a control to make louder.'
+      ],
+
+      composed: ['Icon Button', 'Text Field', 'Chip', 'Menu', 'Tooltip'],
+      related: [['open-input', 'Open Input'], ['handwriting', 'Handwriting Input'], ['caveat', 'Caveat']],
+      pkg: 'nucleux-m3-voice-input',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- ONE component. mode switches it; voiceState says what it is doing.\n     There is no VoiceComposer, and adding one is the bug. -->\n\n<!-- text -->\n<form class=\"ax__composer\" data-mode=\"text\">\n  <button class=\"ax__cbtn\" aria-label=\"Add context\"><!-- + --></button>\n  <input class=\"ax__field\" placeholder=\"Ask Aria about the feedback\u2026\" />\n  <button class=\"ax__cbtn ax__cbtn--mic\" aria-label=\"Speak instead of typing\">\n    <!-- mic -->\n  </button>\n  <button class=\"ax__cbtn ax__cbtn--send\" type=\"submit\" aria-label=\"Send\"></button>\n</form>\n\n<!-- voice: the SAME bar. Same width, same place, one line taller. -->\n<form class=\"ax__composer\" data-mode=\"voice\" data-voice=\"speaking\">\n  <button class=\"ax__cbtn ax__cbtn--mic is-on\" aria-pressed=\"true\"\n          aria-label=\"Stop voice input\"><!-- mic --></button>\n\n  <span class=\"ax__voice\">\n    <!-- five capsules; --amp is written per frame, --w is each\n         stroke\u2019s share of it. Nothing else animates. -->\n    <span class=\"md-va\" data-state=\"speaking\" data-vx-live=\"user\" aria-hidden=\"true\">\n      <i style=\"--w:.52\"><b></b></i><i style=\"--w:.86\"><b></b></i>\n      <i style=\"--w:1\"><b></b></i><i style=\"--w:.80\"><b></b></i>\n      <i style=\"--w:.48\"><b></b></i>\n    </span>\n    <span class=\"ax__vtext\">\n      <span class=\"ax__vstatus\" role=\"status\" aria-live=\"polite\">Listening\u2026</span>\n      <span class=\"ax__vline\">\u201cCompare the onboarding feedback\u2026</span>\n    </span>\n  </span>\n\n  <button class=\"ax__cbtn\" aria-pressed=\"false\" aria-label=\"Mute the microphone\"></button>\n  <button class=\"ax__cbtn\" aria-label=\"Cancel voice input\"></button>\n</form>",
+
+      examples: [
+        {
+          id: 'voice-session',
+          title: 'Two stops, because they are two intentions',
+          note: 'Hold turns your microphone off and the agent waits. Mute turns your microphone off and the agent carries on. One control for both is the commonest bug in a voice session.',
+          code:
+'<div class="md-vsess" data-floor="agent">\n' +
+'  <div class="md-vsess__orb" aria-hidden="true"><i></i></div>\n' +
+'  <p class="md-vsess__who md-body-medium" role="status">Aria is speaking</p>\n' +
+'  <p class="md-vsess__line md-body-small">\n' +
+'    I can move you to the 18:40 &mdash;\n' +
+'  </p>\n' +
+'  <div class="md-vsess__ctrls" role="group" aria-label="Session controls">\n' +
+'    <button class="md-vsess__btn" type="button">Hold</button>\n' +
+'    <button class="md-vsess__btn" type="button">Mute</button>\n' +
+'    <button class="md-vsess__btn md-vsess__btn--end" type="button">End</button>\n' +
+'  </div>\n' +
+'</div>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       VISUAL INPUT
+       ══════════════════════════════════════════════════════════ */
+    'visual-input': {
+      id: 'visual-input',
+      name: 'Visual Input',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Expressive Input',
+      subId: 'expressive-input',
+      oneline: 'Attach an image, say what you want from it, get an answer that points at it.',
+      intent: 'An image as the evidence: attach it, say what you want from it, and get an answer that points back at it.',
+      what: 'An attachment surface where a picture is the evidence and the question is asked against it. Three moves, deliberately not collapsed into one: <b>attach</b> (drag, paste, camera, screenshot), <b>instruct</b> (what to do with it, in words), <b>analyse</b> (the reading, marked on the image rather than written beside it as prose).',
+      why: 'Two things go wrong here and they are opposites. The first is answering too early: an image on its own is not a question, and a product that responds the moment one lands is guessing at intent &mdash; the same screenshot could mean &ldquo;what is this error?&rdquo;, &ldquo;is this the same bug as last week?&rdquo; or &ldquo;write me the fix&rdquo;. The second is answering too vaguely: a photograph carries far more than the model reliably reads, and an answer that does not say which part it used, or what was too dark or out of frame to judge, cannot be checked at all.',
+      when: 'Where the evidence is visual and describing it in words is slower or less accurate: error screens and stack traces, damage and defects, whiteboards, receipts, labels, charts in somebody else&rsquo;s document, field and medical photographs.',
+      how: 'Keep attaching and instructing as two acts, and do not answer between them. Accept the image however it arrives &mdash; paste, drag, file, camera &mdash; and show it at a size the reader can actually judge. Mark the region the answer used. Name what could not be read rather than answering around it, and when a second image would settle it, ask for the <em>specific</em> one, not &ldquo;a clearer photo&rdquo;. Keep the original reachable and never crop it away. Say what happens to the image afterwards: a photo is the most personal thing most people will ever hand an agent.',
+      expressive: 'The region the answer came from is outlined in primary at tone 60 and nothing else on the image is tinted, so &ldquo;where it looked&rdquo; needs no legend. While it is reading, the outline is soft-edged and unresolved and hardens as the reading settles &mdash; the fluidity rule applied to a bounding box rather than to text. Confidence is carried by the same edge: a region it is unsure of stays dashed rather than acquiring a second colour, because a second hue would have to mean something on every other surface too. An attached image that has not yet been asked about is visibly waiting, not visibly working: no spinner, no shimmer, nothing that suggests an answer is on its way, because none is until somebody says what they want.',
+
+      precedent: [
+        { name: 'Paste a screenshot &mdash; ChatGPT, Claude, Copilot',
+          what: 'The image attaches to the message and sits there. The instruction is typed alongside it and the request is sent as one thing. Attaching and asking are two acts in that order, and the reply refers to what is in the image &mdash; which is exactly the contract this pattern formalises.' },
+        { name: 'Point the camera and ask',
+          what: 'Live camera in assistant apps: the image is a stream and the question is asked about what is in front of the lens now. It makes the hardest part obvious &mdash; saying which frame the answer was actually about.' },
+        { name: 'Circle to Search &mdash; Android',
+          what: 'The crossover with contextual selection: a region of what is already on screen becomes the visual query without an image ever being attached by hand. Worth knowing about here, because it is the version with no attachment step at all.' }
+      ],
+
+      anatomy: [
+        { part: 'Attach surface',
+          role: 'Paste, drag, file picker, camera, screenshot. All four produce the same thing, and none of them is a question yet.' },
+        { part: 'Attached image',
+          role: 'Shown at a size the reader can judge, with the original always reachable. Visibly waiting rather than visibly working.' },
+        { part: 'Instruction',
+          role: 'What is wanted from the image, in words. This is the half that turns an attachment into a request, and it is the half products drop.' },
+        { part: 'Region',
+          role: 'The part of the image the answer came from, outlined on it. Soft while reading, hard once the reading settles.' },
+        { part: 'Gap statement',
+          role: 'What could not be read, named specifically. &ldquo;The top of the trace is cut off&rdquo;, not &ldquo;low quality image&rdquo;.' },
+        { part: 'Re-shoot request',
+          role: 'The one specific further image that would settle it. Never &ldquo;a clearer photo&rdquo;.' },
+        { part: 'Retention line',
+          role: 'What happens to the image afterwards, said at the point of attaching rather than in a policy.' }
+      ],
+
+      flow: [
+        'An image arrives &mdash; pasted, dragged, picked or captured. It attaches and nothing else happens.',
+        'The product says what it can see it is (a screenshot, a photo, a document scan) without saying what it thinks you want.',
+        'The instruction is typed alongside it. Until there is one, there is no request: the same screenshot supports three different questions.',
+        'Both go together. The image and the words are one message, not an image followed by a question about it.',
+        'Reading begins. The candidate region appears soft-edged while it is still being decided.',
+        'The reading settles: the region hardens, and the answer names it before it states a conclusion.',
+        'Anything unreadable is stated specifically, with the one further image that would fix it.',
+        'The image, the region and the reading stay attached to whatever the answer produced, so the next person can see what the decision was made on.'
+      ],
+
+      /* FIVE states, one per act plus the two that carry the
+         argument: an image sitting there doing nothing, and an
+         answer that admits what the crop removed. Formats, limits,
+         multiple images and retention are documented above rather
+         than listed as separate things to look at. */
+      statesList: [
+        { name: 'Empty', desc: 'No image. The attach affordance names the four ways in — paste, drag, file, camera — and the drop target is the whole composer, not a 24px paperclip.' },
+        { name: 'Attached', desc: 'The image is here and nothing is happening. Visibly waiting, not visibly working: no spinner, because no answer is coming until somebody says what they want.' },
+        { name: 'Instructing', desc: 'The question typed against the image, sent as one message. This is the state most implementations do not have, because they answered two states ago.' },
+        { name: 'Region found', desc: 'The reading has settled: the edge hardens, the part it used reads hotter than the rest, and the answer names the region before it states a conclusion.' },
+        { name: 'Needs another shot', desc: 'Something specific could not be read, said out loud, with the one further image that would settle it — described precisely enough to take.' }
+      ],
+
+      variants: [
+        { name: 'Screenshot triage', desc: 'The commonest real use and the one worth designing for first: paste a screen, ask what is wrong with it. Text-heavy, so the region is usually a few lines rather than an object.' },
+        { name: 'Photograph as evidence', desc: 'Damage, defects, field conditions. Here the re-shoot request matters most, because a second photo is cheap and a wrong assessment is not.' },
+        { name: 'Live camera', desc: 'A stream rather than a file. Everything above still applies plus one thing: the answer has to say which frame it was about, or it cannot be checked at all.' },
+        { name: 'Region of the current screen', desc: 'No attachment step — the image is what is already on screen, selected in place. Documented under Gesture Input, and usually faster than attaching anything.' }
+      ],
+
+      content: [
+        'Say what the image is, never what the person wants: “Screenshot, 1440 × 900” — not “Looks like you need help with an error”.',
+        'Name the region in the answer before the conclusion: “In the highlighted lines: …”.',
+        'Describe gaps specifically. “The first three lines of the trace are above the crop” beats “image unclear”.',
+        'Ask for exactly one further image and say how to take it: “Scroll up three lines and screenshot again.”',
+        'State retention where the image is attached: “Kept with this ticket. Not used for training.”'
+      ],
+
+      a11y: [
+        'Every attached image needs a text alternative, and the product should draft one from what it read rather than leaving an empty alt attribute.',
+        'The reading is the accessible version of the image. It is produced and exposed as text, not hidden behind a hover on the region.',
+        'The region is announced in words as well as drawn: “Region used: lines 4 to 9 of the stack trace.” An outline alone is not available to everyone.',
+        'Confidence is never colour alone — it is the edge, and it is also stated in the sentence.',
+        'Attaching works from the keyboard end to end: a real file input, a labelled button, and paste into a focused composer.',
+        'Drop targets are large; nothing depends on landing a drag inside a small icon.',
+        'Nothing auto-submits on attach, which is also an accessibility property: it gives everyone time to say what they actually wanted.',
+        'Images can be removed with a labelled control, and removing one does not clear the typed instruction.'
+      ],
+
+      donts: [
+        'Don’t answer the moment an image lands. An image is not a question, and guessing which of three questions it was is how a confident irrelevant answer gets produced.',
+        'Don’t shrink the image below the size at which a person could check the reading against it.',
+        'Don’t crop the original away. The crop is a view; the original is the evidence.',
+        'Don’t answer around a part you could not read. Say which part.',
+        'Don’t ask for “a better photo”. Ask for the specific one.',
+        'Don’t tint the whole image or add a second colour for confidence. One outline, and let the edge carry certainty.',
+        'Don’t make the attachment silently permanent. Say what happens to it, at the moment it is handed over.',
+        'Don’t treat multiple images as one blob. Each one is referenced separately or none of them can be checked.'
+      ],
+
+      metrics: [
+        'How often an image is sent with no instruction — high numbers mean the composer is not asking for one clearly enough.',
+        'How often the answer names a region, and how often a person disagrees with the region it named.',
+        'Re-shoot requests that actually produce a second image. A low rate usually means the request was not specific enough to act on.',
+        'Answers produced from an image where something was stated as unreadable, which is where wrong conclusions cluster.'
+      ],
+
+      composed: ['Card', 'Chip', 'Button', 'Progress', 'Text Field'],
+      related: [['attachments', 'Attachments'], ['gesture', 'Gesture Input'], ['caveat', 'Caveat']],
+      pkg: 'nucleux-m3-visual-input',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- Attached, and deliberately NOT working yet: nothing is being\n     asked until the instruction beneath it says what to ask. -->\n<figure class=\"md-vis\">\n  <div class=\"md-vis__frame\">\n    <img src=\"trace.png\" alt=\"Screenshot of a stack trace\" />\n    <!-- the region the reading came from, once there is one -->\n    <span class=\"md-vis__region\" style=\"--x:8%;--y:34%;--w:84%;--h:30%\"></span>\n  </div>\n  <p class=\"md-vis__meta\">Screenshot &middot; 1440 &times; 900 &middot; kept with this ticket</p>\n\n  <figcaption class=\"md-vis__read\">\n    <p class=\"md-vis__t\">In the highlighted lines: a null map key in\n      <code>ScheduleResolver</code>.</p>\n    <p class=\"md-vis__gap\">The first three frames are above the crop &mdash;\n      scroll up three lines and screenshot again if you need the origin.</p>\n  </figcaption>\n</figure>",
+
+      examples: [
+        {
+          id: 'visual-region',
+          title: 'The reading, marked on the image',
+          note: 'One outlined region and a plain sentence about what could not be seen. An answer that does not say where it looked is an answer nobody can check.',
+          code:
+'<figure class="md-vis">\n' +
+'  <div class="md-vis__frame">\n' +
+'    <div class="md-vis__shot" role="img"\n' +
+'         aria-label="Screenshot of a stack trace">\n' +
+'      <b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b>\n' +
+'    </div>\n' +
+'    <span class="md-vis__region" style="--x:6%;--y:36%;--w:86%;--h:30%"></span>\n' +
+'  </div>\n' +
+'  <figcaption class="md-vis__read">\n' +
+'    <p class="md-vis__t md-body-medium">\n' +
+'      In the highlighted lines: a null map key in ScheduleResolver.\n' +
+'    </p>\n' +
+'    <p class="md-vis__gap md-body-small">\n' +
+'      The first three frames are above the crop &mdash; I cannot see where it started.\n' +
+'    </p>\n' +
+'  </figcaption>\n' +
+'</figure>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       HANDWRITING INPUT
+       ══════════════════════════════════════════════════════════ */
+    handwriting: {
+      id: 'handwriting',
+      name: 'Handwriting Input',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Expressive Input',
+      subId: 'expressive-input',
+      oneline: 'Write with a pen; the product takes it as input.',
+      intent: 'Writing with a pen into an ordinary field, or keeping the ink itself as the record. A platform input method, not an AI feature.',
+      what: 'Two related things that are routinely confused. <b>Writing into a field</b>: the pen goes straight into an ordinary text field, the strokes convert as you write, and the ink is transient &mdash; the text is the artefact. <b>Writing as ink</b>: notes, annotation, working out a problem, where the strokes <em>are</em> the record and recognition is an overlay produced on request.',
+      why: 'Getting these two backwards is the usual failure. Products build a special &ldquo;handwriting mode&rdquo; with a button, a canvas and an Insert action, when the platform already lets a pen write into any field with no mode at all &mdash; and then they throw the ink away in the one place it mattered, which is a page of working that a person needs to be able to appeal to. The agent is downstream of all of this: it receives text and should never be able to tell how the text arrived.',
+      when: 'On any pen-capable surface. Field writing wherever there is a field &mdash; which is everywhere, and needs no feature work beyond respecting the platform. Ink as the record where the mark carries meaning a keystroke would lose: maths, diagrams, annotation, signatures, anything drawn in front of somebody.',
+      how: 'Do not add a handwriting button. Let the pen write into the fields that already exist, accept strokes that start slightly outside them, and let a collapsed control expand into the real field when someone starts writing on it. Support the correction gestures people already know &mdash; scratch out to delete, a vertical stroke to split, a circle to select &mdash; because the alternative is a keyboard appearing in the middle of a pen interaction. Where the ink is the record, keep it exactly as drawn, put the reading beneath it rather than over it, and mark the words the recogniser was unsure of. Then hand the agent text, and say nothing about the pen.',
+      expressive: 'Ink is never smoothed or beautified: the original has to stay the thing a reader can appeal to, and a stroke corrected into a shape it never had is a quiet lie about what somebody wrote. Recognised text arrives beneath it on emphasized easing, word by word in stroke order, so the correspondence between mark and reading needs no leader line. Low-confidence words carry a dotted underline in the agent&rsquo;s own primary and never a second hue &mdash; doubt is a state of the reading, and the system already has a colour for the agent&rsquo;s readings. A correction springs, because a person made it. The one piece of chrome this pattern is allowed is the handwriting bounds, and only while a pen is near: a surface that shows where it will accept ink, then gets out of the way.',
+
+      precedent: [
+        { name: 'Stylus input in text fields &mdash; Android',
+          url: 'https://developer.android.com/develop/ui/views/touch-and-input/stylus-input/stylus-input-in-text-fields',
+          what: 'On Android 14 and later, text fields accept stylus handwriting <b>by default</b> &mdash; there is no handwriting button and no mode. The handwriting bounds extend beyond the field itself (40dp vertically, 10dp horizontally), so a stroke that starts slightly outside still lands in it, and a handwriting delegator lets a collapsed control &mdash; a search bar, say &mdash; expand into the real field the moment someone writes on it.' },
+        { name: 'Scribble &mdash; iPadOS',
+          what: 'The same contract with a published gesture vocabulary: write anywhere a keyboard would go, scratch a word out to delete it, draw a vertical line to insert a space, circle a word to select it. The gestures matter more than the recognition: they are what stop a pen interaction from ending at a keyboard.' },
+        { name: 'Ink kept as ink &mdash; note-taking apps',
+          what: 'The other half. Strokes are the document, searchable as ink, with recognition available on demand rather than applied in place. The reason the two halves must not be merged: here, converting is destructive.' }
+      ],
+
+      anatomy: [
+        { part: 'The field',
+          role: 'An ordinary text field. Not a canvas, not a modal, not a special surface &mdash; the thing that already exists, which now happens to accept a pen.' },
+        { part: 'Handwriting bounds',
+          role: 'The area around the field where a stroke still counts as writing into it. Larger than the field, because people do not aim at a 40dp target with a pen.' },
+        { part: 'Delegator',
+          role: 'A collapsed control that expands into the real field when writing starts on it. Without one, every compact search bar is a pen dead-end.' },
+        { part: 'Correction gestures',
+          role: 'Scratch out to delete, vertical stroke to insert, circle to select. The vocabulary that keeps the pen in hand.' },
+        { part: 'Ink layer',
+          role: 'Ink-as-record mode only: the strokes exactly as drawn, kept as the document.' },
+        { part: 'Reading',
+          role: 'The recognised text, beneath the ink rather than over it, with low-confidence words marked.' },
+        { part: 'Handoff',
+          role: 'What the agent actually receives: text. It should be unable to tell a written request from a typed one.' }
+      ],
+
+      flow: [
+        'A pen approaches a field. Nothing is switched on, because nothing was switched off.',
+        'Strokes land in the field &mdash; including strokes that start just outside it &mdash; and convert as they are written. A collapsed control expands into its real field rather than refusing the pen.',
+        'Mistakes are fixed with the pen: scratch a word out, draw a line to insert, circle to select. The keyboard does not appear.',
+        'Where the ink is the record instead, the strokes stay and the reading is produced beneath them on request.',
+        'Words the recogniser was unsure of are marked, and correcting one costs a tap rather than a re-read.',
+        'The corrected text &mdash; never the raw reading &mdash; is what goes to the agent.',
+        'The agent answers in text, against text. Nothing in its reply refers to the pen, because the pen was an input method and not a topic.'
+      ],
+
+      /* FIVE states, spanning the two modes this pattern covers:
+         an ordinary field a pen can write into, and ink that is
+         itself the record. Bounds, delegation and the correction
+         gestures are properties of those states rather than states
+         of their own, and they are documented above. */
+      statesList: [
+        { name: 'No pen', desc: 'A touch or mouse session. An ordinary text field and nothing at all about handwriting on screen — which is most of the time.' },
+        { name: 'Writing', desc: 'A pen writing straight into that same field: strokes at one-to-one, unsmoothed, converting behind the nib. No mode was entered, because none exists.' },
+        { name: 'Ink kept', desc: 'The other mode. The strokes are the document — maths, annotation, anything drawn in front of somebody — and they are a usable record before anything has read them.' },
+        { name: 'Low confidence', desc: 'A reading the recogniser could not settle, marked in place in the agent’s own colour. In an equation this is not a typo; it is a different equation.' },
+        { name: 'Corrected', desc: 'Settled with one tap. The mark comes off and the ink is untouched, because the ink was always the original.' }
+      ],
+
+      variants: [
+        { name: 'Write into the field', desc: 'The default and the one that needs no feature: the platform already does it. Ink is transient, text is the record, and there is no button.' },
+        { name: 'Ink as the record', desc: 'For maths, diagrams, annotation and anything drawn in front of somebody. Strokes are the document; recognition is an overlay, produced on request, that never replaces them.' },
+        { name: 'Annotate an existing document', desc: 'Ink over somebody else’s page. The mark and the thing it marks are both kept, and the agent is told which is which.' },
+        { name: 'Signature and mark', desc: 'Where the stroke is the evidence and recognition is beside the point. Worth naming because it is the case where “convert to text” is actively wrong.' }
+      ],
+
+      content: [
+        'Never label a control “Handwriting” or “Ink mode”. If a button is needed, the platform integration is missing.',
+        'Say what could not be read, and where: “I can’t read the exponent on the third line.” Not “recognition failed”.',
+        'When the reading changes the meaning, quote both: “x² or x2 — these are different questions.”',
+        'Never present a reading as the thing that was written. It is a reading of it, and the wording should say so.',
+        'Nothing in the agent’s reply should mention the pen. The input method is not a topic.'
+      ],
+
+      a11y: [
+        'A pen is an additional input, never a required one. Everything writable is typable, and the field is an ordinary field with an ordinary keyboard path.',
+        'Ink alone is not accessible content. Where the ink is the record, the recognised text is what makes it readable by a screen reader — so it is produced and exposed, not hidden behind a “convert” button.',
+        'Where recognition genuinely cannot read something, the product says so in text rather than leaving a silent image.',
+        'Low-confidence words are focusable, labelled (“Low confidence, tap to correct: unit 4”) and correctable from the keyboard.',
+        'Correction gestures each have a non-gesture equivalent: a word can be deleted, split or selected without drawing anything.',
+        'Handwriting bounds are generous by design, which is also a motor-accessibility property: nothing requires a precise stroke start.',
+        'Recognised text is never the only copy of a name, number or amount without a way to see the original.',
+        'The word-by-word arrival animation stops under prefers-reduced-motion; the reading simply appears.'
+      ],
+
+      donts: [
+        'Don’t build a handwriting mode with a button, a canvas and an Insert action. The platform already writes into every field; a mode is a worse version of something you already have.',
+        'Don’t smooth or beautify the ink. A stroke corrected into a shape it never had is a quiet lie about what somebody wrote.',
+        'Don’t replace the ink with the reading where the ink is the record. That is the one destructive operation in this pattern.',
+        'Don’t open a keyboard in the middle of a pen interaction to fix one word.',
+        'Don’t hide low-confidence words. An unmarked wrong word is the one that gets acted on — and in an equation it is a different equation.',
+        'Don’t present handwriting as an AI capability. Recognition is decades old; the agent is downstream of it and receives ordinary text.',
+        'Don’t require a precise stroke start. The bounds exist because people miss.'
+      ],
+
+      metrics: [
+        'How often the keyboard appears during a pen session. Every occurrence is a gesture that was missing.',
+        'How often a marked word is corrected versus how often it is ignored — the second number tells you whether the mark is visible enough.',
+        'Strokes that started outside the bounds and were lost.',
+        'Requests sent with an uncorrected low-confidence word in them, which is the error this pattern exists to catch.'
+      ],
+
+      composed: ['Text Field', 'Card', 'Chip', 'Icon Button', 'Menu'],
+      related: [['voice-input', 'Voice Input'], ['gesture', 'Gesture Input'], ['visual-input', 'Visual Input']],
+      pkg: 'nucleux-m3-handwriting',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- There is no handwriting button. This is an ordinary field that\n     the platform already lets a pen write into; the bounds around it\n     are why a stroke starting slightly outside still lands in it. -->\n<label class=\"md-ink__field\">\n  <span class=\"md-ink__bounds\" aria-hidden=\"true\"></span>\n  <input type=\"text\" value=\"is this working right?\" />\n</label>\n\n<!-- Ink as the record: the strokes stay, the reading sits beneath -->\n<div class=\"md-ink\">\n  <svg class=\"md-ink__strokes\" viewBox=\"0 0 420 64\" aria-label=\"Handwritten working\">\n    <!-- exactly as drawn: no smoothing, no beautification -->\n  </svg>\n  <p class=\"md-ink__read\">\n    x\n    <button class=\"md-ink__doubt\" aria-label=\"Low confidence, tap to correct: squared\">\n      squared\n    </button>\n    + 3x &minus; 4\n  </p>\n</div>",
+
+      examples: [
+        {
+          id: 'ink-field',
+          title: 'An ordinary field, with no handwriting button',
+          note: 'The platform already accepts a pen here. The only chrome the pattern adds is the bounds — larger than the field, because nobody aims a stylus at a 40dp target.',
+          code:
+'<label class="md-ink__field">\n' +
+'  <span class="md-ink__bounds" aria-hidden="true"></span>\n' +
+'  <span class="md-ink__value md-body-medium">is this working right?</span>\n' +
+'  <span class="md-ink__caret" aria-hidden="true"></span>\n' +
+'</label>\n' +
+'<p class="md-ink__hint md-body-small">\n' +
+'  Handwriting bounds — a stroke starting here still lands in the field.\n' +
+'</p>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       GESTURE INPUT
+       ══════════════════════════════════════════════════════════ */
+    gesture: {
+      id: 'gesture',
+      name: 'Gesture Input',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Expressive Input',
+      subId: 'expressive-input',
+      oneline: 'Point at something on screen and ask about that.',
+      intent: 'Marking a region of what is already on screen so the next question can be about that, rather than a paragraph describing which part you mean.',
+      what: 'A selection layer summoned over whatever is currently displayed. A circle, a highlight, a scribble or a tap marks a region; the region resolves to something the product can name; it travels to the composer as a piece of context; the question is then typed or spoken against it.',
+      why: 'The expensive part of asking an agent about what you are looking at is not the question, it is the pointing. &ldquo;This spike&rdquo;, &ldquo;that column&rdquo;, &ldquo;the bit in the corner&rdquo; &mdash; written out, it costs a paragraph and still leaves the agent guessing; marked on screen, it costs one stroke and is unambiguous. And because the reference is a region rather than a description, the answer can be checked against it: you can see what it looked at.',
+      when: 'Wherever the subject of the question is already on screen and naming it in words is slower or less exact than pointing at it &mdash; charts and dashboards, dense tables, documents, maps, error screens, photographs. Not on surfaces where everything is already a named object with its own controls: there the control is faster than the gesture.',
+      how: 'Put the layer behind a deliberate invocation, so a stroke can never be made by accident inside the product. Accept all four marks and resolve them to one thing: a region. Snap to objects the product already knows about, and show the snapped bounds rather than asserting a label. Make the selection adjustable before anything is sent, and let it travel to the composer as a chip that can be removed without losing the typed question. Ship the keyboard path in the same release, not the next one.',
+      expressive: 'The region is one object in two positions, not two objects: it leaves the screen and arrives on the composer along a single path, which is why the chip needs no caption explaining where it came from. Everything under the layer dims exactly one surface step &mdash; enough to say the product is frozen, not so much that the content being selected becomes hard to read. The stroke follows the pointer one-to-one with no smoothing while it is being drawn and springs only when it is released, because motion that leads the input reads as the product guessing. Certainty is carried by the edge: while the region is being classified its boundary is soft and dashed, and it hardens to a solid primary outline the moment the snap resolves. A region the product cannot identify never hardens &mdash; which is how &ldquo;I do not know what this is&rdquo; gets said without introducing a second colour.',
+
+      precedent: [
+        { name: 'Circle to Search &mdash; Android',
+          what: 'Long-press the navigation handle to freeze the current screen, then <b>circle, highlight, scribble over or tap</b> anything on it. Results open beneath. The borders of the selection can be dragged to adjust it, and words typed into the search field refine the request without redrawing the mark. Four marks, one meaning: a region.' },
+        { name: 'Screenshot, then ask &mdash; ChatGPT, Claude, Copilot',
+          what: 'The same structure at a coarser grain: an image is attached and the region of interest is indicated by cropping or drawing on it before the question is typed. It proves the demand and shows the cost of doing it destructively &mdash; the crop throws the rest of the screen away, and the selection cannot be adjusted afterwards.' },
+        { name: 'Select, then act &mdash; every desktop OS',
+          what: 'The ancestor: select something, and a small set of things that can be done with <em>that</em> appears. This pattern is that same contract extended from characters to pixels, with an agent as the thing on the other end of it.' }
+      ],
+
+      anatomy: [
+        { part: 'Entry point',
+          role: 'The visible, nameable way in &mdash; a control, a shortcut, or the platform&rsquo;s own long-press. There is always one, because a capability reachable only by a stroke nobody was taught is not a capability.' },
+        { part: 'Selection layer',
+          role: 'A modal surface over the frozen screen. It is what makes the stroke safe: inside it a drag is a selection, outside it a drag is still scrolling.' },
+        { part: 'Mark',
+          role: 'The stroke as drawn &mdash; circle, highlight, scribble, or a tap. Rendered at one-to-one while the pointer is down, then discarded once it has become a region.' },
+        { part: 'Region',
+          role: 'The resolved selection: bounds, plus the product&rsquo;s own name for what is inside them where it has one. Draggable handles make it correctable.' },
+        { part: 'Context chip',
+          role: 'The region as it appears on the composer. Carries the label and a remove control, and is the only record of what will actually be sent.' },
+        { part: 'Composer',
+          role: 'Where the question is written against the chip. Free text, not a menu &mdash; the selection fixes the subject, not the question.' },
+        { part: 'Keyboard path',
+          role: 'Tab through the regions the product already knows about, Enter to select. Produces the identical chip, with no stroke anywhere in it.' }
+      ],
+
+      flow: [
+        'The layer is invoked deliberately &mdash; long-press, shortcut, or a visible control. The screen freezes and dims one step, so nothing underneath can be pressed by mistake.',
+        'A mark is made: circle, highlight, scribble, or tap. The stroke tracks the pointer exactly and nothing is interpreted while it is down.',
+        'On release the mark closes into a region and snaps to the nearest object the product knows &mdash; a chart series, a paragraph, a table column. Where it knows nothing, the region stays raw pixels and says so.',
+        'The snapped bounds are shown with handles. The selection can be corrected here, and nothing has been sent yet.',
+        'The region travels to the composer and becomes a context chip. The layer closes; the product is usable again.',
+        'The question is typed or spoken against the chip. Removing the chip changes what is asked; it does not clear the sentence.',
+        'The answer names the region it used before it states a conclusion, and the chip stays so the same region can be asked about again.'
+      ],
+
+      /* FIVE states, not fifteen. This is the spine of the
+         interaction — nothing, the mark, the region it resolved to,
+         the region as a term in the request, the answer. Adjustment,
+         multiple regions, failure and the keyboard route are real
+         and are documented above and below; they are not separate
+         things to look at. */
+      statesList: [
+        { name: 'Inactive', desc: 'No layer, no hidden stroke. One visible, nameable entry point — the only thing on screen that says this capability exists.' },
+        { name: 'Selecting', desc: 'The layer is up, the screen beneath is frozen and dimmed one step, and the stroke follows the pointer one-to-one. Nothing is interpreted while it is down.' },
+        { name: 'Selection confirmed', desc: 'The mark has closed and snapped to the nearest known object. The edge hardens, handles appear, and nothing has been sent — a selection that acts the moment it is drawn cannot be corrected, only undone.' },
+        { name: 'Context attached', desc: 'The region travels to the composer and becomes a chip. One object in a second position, which is why the chip needs no caption saying where it came from.' },
+        { name: 'Result', desc: 'The answer names the region it used before it states a conclusion, and the chip stays — so the same region can be asked about again without drawing it twice.' }
+      ],
+
+      variants: [
+        { name: 'Tap to select', desc: 'For anything that is already an object &mdash; a chart series, a table cell, a photo in a grid. One tap, no stroke, and the fastest form of the pattern. Where it is available it should be the default.' },
+        { name: 'Highlight over text', desc: 'A stroke along a line selects the words rather than a rectangle. The context stays text, which makes the answer quotable and the selection copyable.' },
+        { name: 'Scribble to select', desc: 'A scratch over the region, for people who do not reliably draw closed loops. Resolves to exactly the same region as a circle.' },
+        { name: 'Pinned region', desc: 'The region stays beside the answer as a thumbnail after the fact, for work that will be read later by somebody who did not make the selection.' }
+      ],
+
+      content: [
+        'Name the region in the product&rsquo;s own nouns &mdash; &ldquo;Revenue &middot; 12&ndash;19 Sept&rdquo;, never &ldquo;Selection 1&rdquo;. A chip nobody can read is a chip nobody checks.',
+        'Teach the marks in one line inside the layer, once: &ldquo;Circle, highlight, scribble or tap anything.&rdquo; Not a tour, not a coach mark on second launch.',
+        'When the snap is uncertain, say what it matched and offer the raw region: &ldquo;Looks like the Revenue series &mdash; use the area I drew instead.&rdquo;',
+        'The answer states the region it used before it states its conclusion.',
+        'Failure describes what was under the mark, not that the mark was wrong. &ldquo;Nothing selectable here&rdquo; blames the surface; &ldquo;try again&rdquo; blames the person.'
+      ],
+
+      a11y: [
+        'A visible control does everything the stroke does. The gesture is an accelerator over a capability, never the capability itself &mdash; which is why the keyboard path is in the state list above rather than in a footnote.',
+        'Every region the product can identify is reachable by Tab in reading order and selectable with Enter or Space. Selecting by keyboard produces the same chip as selecting by stroke.',
+        'The layer is a focus trap with a named exit. Escape closes it and returns focus to the control that opened it.',
+        'The context chip has an accessible name and a real remove button &mdash; &ldquo;Remove Revenue &middot; 12&ndash;19 Sept&rdquo; &mdash; not an unlabelled glyph.',
+        'Selection changes are announced in a polite live region, because a stroke produces no text of its own for a screen reader to read.',
+        'Handles are drawn small and hit large: at least 48dp of touch target regardless of the visual size.',
+        'Dimming is never the only signal that the layer is open &mdash; it also has a visible title and its own control bar, so the state survives high-contrast and low-vision settings.',
+        'Nothing depends on drawing accuracy. Snapping, adjustable bounds and the tap variant all exist so that an imprecise or shaky stroke still lands on the right object.'
+      ],
+
+      donts: [
+        'Don&rsquo;t make the stroke the only way to reach the context. That is the single failure that turns this pattern into an accessibility problem rather than an accelerator.',
+        'Don&rsquo;t interpret marks made in the product without the layer. The freeze is what lets a drag mean &ldquo;select&rdquo; here and &ldquo;scroll&rdquo; everywhere else.',
+        'Don&rsquo;t send anything while the selection is still being adjusted.',
+        'Don&rsquo;t clear the typed question when the chip is removed.',
+        'Don&rsquo;t fabricate a snap. A region the product cannot identify stays raw pixels and says so &mdash; a confident wrong label is worse than no label.',
+        'Don&rsquo;t implement this with hand tracking, air gestures or camera-based motion. The mark belongs on the surface the content is on; anything else is a different pattern with a worse hit rate.',
+        'Don&rsquo;t animate the region into the chip as a decorative flourish. It is one object moving; if it teleports, the reader has to work out the relationship for themselves.'
+      ],
+
+      metrics: [
+        'The share of questions that arrive with a region attached rather than described in prose.',
+        'How often a selection is adjusted after the snap. A high number means the snapping is wrong, not that people are fussy.',
+        'How often the keyboard path is taken. Zero usually means it is broken, not unwanted &mdash; it is the route assistive technology takes.',
+        'Selections abandoned after the layer opened, which measures whether the marks the layer accepts match the marks people actually make.'
+      ],
+
+      composed: ['Icon Button', 'Chip', 'Text Field', 'Scrim', 'Snackbar'],
+      related: [['visual-input', 'Visual Input'], ['search-filter', 'Searching &amp; Filtering'], ['open-input', 'Open Input']],
+      pkg: 'nucleux-m3-selection',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<div class=\"md-sel\" data-state=\"confirmed\">\n  <div class=\"md-sel__stage\">\n  <!-- whatever was already on screen, frozen -->\n  <div class=\"md-sel__screen\"><!-- the dashboard --></div>\n\n  <div class=\"md-sel__layer\" role=\"dialog\" aria-label=\"Select something to ask about\">\n    <!-- the resolved region, snapped and adjustable -->\n    <div class=\"md-sel__region\" style=\"--x:46%;--y:18%;--w:26%;--h:52%\">\n      <span class=\"md-sel__label\">Revenue &middot; 12&ndash;19 Sept</span>\n      <span class=\"md-sel__h md-sel__h--nw\"></span>\n      <span class=\"md-sel__h md-sel__h--se\"></span>\n    </div>\n    <p class=\"md-sel__teach\">Circle, highlight, scribble or tap anything.</p>\n  </div>\n  </div>\n\n  <!-- the region, arrived on the composer as a term in the request -->\n  <div class=\"md-sel__bar\">\n    <button class=\"md-sel__chip\" aria-label=\"Remove Revenue, 12 to 19 September\">\n      Revenue &middot; 12&ndash;19 Sept\n    </button>\n    <input class=\"md-sel__q\" placeholder=\"Ask about this\" />\n  </div>\n</div>",
+
+      examples: [
+        {
+          id: 'sel-chip',
+          title: 'The region, arrived on the composer',
+          note: 'The chip is the whole argument: the selection is a term in the request, it can be read, and it can be removed without losing the sentence it belongs to.',
+          code:
+'<div class="md-sel__bar">\n' +
+'  <button class="md-sel__chip" type="button"\n' +
+'          aria-label="Remove Revenue, 12 to 19 September">\n' +
+'    <svg class="md-sel__chip-i" viewBox="0 0 24 24" aria-hidden="true">\n' +
+'      <rect x="4" y="4" width="16" height="16" rx="3"/>\n' +
+'    </svg>\n' +
+'    Revenue &middot; 12&ndash;19 Sept\n' +
+'    <span class="md-sel__x" aria-hidden="true">&times;</span>\n' +
+'  </button>\n' +
+'  <span class="md-sel__q md-body-medium">why did this happen?</span>\n' +
+'</div>'
+        }
+      ]
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       STRUCTURED INPUT
+       ══════════════════════════════════════════════════════════ */
+    'structured-input': {
+      id: 'structured-input',
+      name: 'Structured Input',
+      stage: 'Initially',
+      stageId: 'initially',
+      sub: 'Expressive Input',
+      subId: 'expressive-input',
+      oneline: 'Prose first; structure only where it changes the answer.',
+      intent: 'Asking in your own words, then being asked back only for the two or three constraints that would change the answer.',
+      what: 'Progressive disclosure of structure. The request is typed as a sentence. The agent works out which parameters it is missing, asks only for those, says what each one changes, states the default it will use if you skip one, and keeps the answers afterwards as a small set of named values that can be edited and re-run.',
+      why: 'A form in front of an agent asks for everything and teaches nothing: most fields do not change the answer, and the person filling them in cannot tell which ones do. Free prose is the opposite problem &mdash; expressive, and silently ambiguous in exactly the two or three places that decide the result. Asking afterwards, and only for what matters, gets both: the request stays a sentence, and the parts that would otherwise be guessed become values somebody chose.',
+      when: 'Wherever a request has a small number of parameters that materially change the output and getting one wrong is expensive or invisible: research and reporting, analytics, scheduling, search over structured records, anything that will be re-run later and compared.',
+      how: 'Take the sentence first. Work out what is genuinely missing &mdash; not everything the API accepts &mdash; and ask for at most a handful, with a line on each saying what it changes. Offer a default and let it be skipped; a question that cannot be skipped is a form field with a friendlier voice. Show the answers afterwards as a small visible set rather than burying them in the transcript, and let one be changed and the request re-run without retyping it. Where the product has its own nouns, let typing resolve them inline against real data so an invalid value is impossible rather than merely wrong.',
+      expressive: 'A settled constraint is a filled chip at 8dp &mdash; sharp, because it is data, and the same corner the Searching page gives a filter it wants you to check. The request itself stays prose at full emphasis, so the eye can see at a glance which parts of the ask are decided and which are still a sentence. A constraint springs as it settles, because a person chose it; a default the agent supplied arrives on emphasized easing and sits at lower emphasis until somebody touches it, which is the whole distinction between a value and an assumption. Questions arrive one group at a time rather than as a wall, and the group collapses into its answers as it is completed &mdash; the same surface transforming, not a panel closing and a summary appearing somewhere else.',
+
+      precedent: [
+        { name: 'Clarifying questions before deep research &mdash; ChatGPT, Claude, Gemini',
+          what: 'A broad research request is met with a short set of questions &mdash; scope, sources, what the output is for &mdash; and only then does the work start. This is the pattern in its purest shipped form: the prose comes first, and the structure is asked for afterwards and briefly.' },
+        { name: 'Slash commands and command palettes &mdash; Linear, Slack, Notion',
+          what: 'Typing a trigger reveals a small set of named parameters inline, resolved against real objects. It proves the second half: structure can appear inside a sentence without becoming a dialog.' },
+        { name: '@-mentions and typed chips',
+          what: 'Mentioning a person, file, channel or metric resolves against real data, so an invalid value is impossible rather than merely wrong &mdash; and the resulting chip carries its type, which is how a metric is never mistaken for a segment.' }
+      ],
+
+      anatomy: [
+        { part: 'The request',
+          role: 'An ordinary sentence. It stays prose throughout and is never rewritten into fields.' },
+        { part: 'Gap analysis',
+          role: 'What the agent decides it is missing. The design work is restraint: everything the API accepts is not what is missing.' },
+        { part: 'Question',
+          role: 'One constraint, with a line saying what it changes. A question that cannot explain its own effect should not be asked.' },
+        { part: 'Default',
+          role: 'What will be used if this is skipped, stated before it is skipped. Lower emphasis than a chosen value, because it is an assumption.' },
+        { part: 'Constraint set',
+          role: 'The answers as a small visible group of named values, editable in place after the fact.' },
+        { part: 'Typed entity',
+          role: 'The inline variant: a word in the sentence resolved against the product’s own schema, carrying its type.' },
+        { part: 'Re-run',
+          role: 'Change one value, ask the same question again, get a comparable answer. This is what makes the structure worth having.' }
+      ],
+
+      flow: [
+        'The request is typed as a sentence. Nothing is asked for in front of it.',
+        'The agent reads it and works out which parameters are actually missing — the ones that would change the answer, not the ones the API happens to accept.',
+        'It asks for those, in one short group, each with a line on what it changes.',
+        'Each question offers a default and can be skipped. Skipping states the assumption rather than silently making it.',
+        'As each is answered the question collapses into the value it produced — the same surface transforming, not a panel closing somewhere else.',
+        'The work runs, with the constraint set visible beside the result rather than buried in the transcript.',
+        'Any constraint can be changed afterwards and the request re-run. The sentence never has to be retyped.',
+        'Where the product has its own nouns, typing can resolve one inline instead — the same structure, reached from inside the sentence.'
+      ],
+
+      /* FIVE states: prose, the questions, the skip that states its
+         assumption, the answer carrying its constraints, and the
+         inline variant. Editing, re-running and ambiguity are real
+         and documented above; they are not five more things to
+         click through. */
+      statesList: [
+        { name: 'Free request', desc: 'A sentence, and nothing else. No fields, no dropdowns, no form standing between the person and the ask.' },
+        { name: 'Asking', desc: 'A short group of questions — three, not eight — each carrying a line saying what it changes. A question that cannot explain its own effect should not be asked.' },
+        { name: 'Skipped', desc: 'A question declined, with the default it will use stated in the same breath. A question that cannot be skipped is a required field in a friendlier voice.' },
+        { name: 'Answered', desc: 'The result with its constraints beside it as a small visible set — which is what lets one value be changed and the question re-run into a comparable number.' },
+        { name: 'Typed entity', desc: 'The inline variant: a word in the sentence resolved against the product’s own schema, carrying its type. Structure without a dialog.' }
+      ],
+
+      variants: [
+        { name: 'Ask afterwards', desc: 'The default and the one this page argues for. Prose first, a short group of questions second, a constraint set third.' },
+        { name: 'Typed entities', desc: 'Structure inside the sentence: certain words resolve against the schema and become chips carrying their type. Right where the product has strong nouns and people know them.' },
+        { name: 'Remembered constraints', desc: 'Values carried from the last similar request, shown as defaults rather than applied silently. Cheap, and dangerous if it is not visible.' },
+        { name: 'Template with slots', desc: 'A known task with named blanks. Faster than either, and only correct where the task really is the same every time — otherwise it is a form again.' }
+      ],
+
+      content: [
+        'Ask at most three things. If there are eight, the product has not decided which ones matter.',
+        'Every question carries a line on what it changes: “Sources — public filings only, or include analyst notes?” with “this changes what I can cite”.',
+        'State the default in the skip, not after it: “Skip and I’ll use the last 12 months.”',
+        'Name a settled value in the product’s own nouns, with its type: “Segment · self-serve”.',
+        'When nothing is missing, say so in one line and start. A clarifying step that always fires is a toll booth.'
+      ],
+
+      a11y: [
+        'Questions are real form controls with real labels, not chips that only respond to a pointer. The whole group is reachable and answerable from the keyboard.',
+        'Each question’s “what this changes” line is associated with its control by aria-describedby, not left as adjacent text.',
+        'Skipping is a control, not an absence. There is always a labelled way to decline that states what will happen.',
+        'A settled constraint announces its name, type and value, and can be reopened for editing from the keyboard.',
+        'A default is distinguishable from a chosen value by more than its emphasis — the word “default” is in its accessible name.',
+        'The typed-entity variant is never the only route: the same values are reachable from a visible list.',
+        'Questions arriving after the request are announced politely, because they appear below where focus currently is.',
+        'Nothing times out. A question left unanswered stays a question.'
+      ],
+
+      donts: [
+        'Don’t put a form in front of the request. That is the pattern this one replaces.',
+        'Don’t ask for everything the API accepts. Ask for what changes the answer.',
+        'Don’t ask a question you cannot explain the effect of.',
+        'Don’t make a question unskippable. If it truly cannot be skipped, it is not a clarification — it is a required field, and it should be stated as one.',
+        'Don’t apply a remembered or inferred value silently. A default nobody saw is a guess with a good reputation.',
+        'Don’t bury the constraints in the transcript. They have to be visible next to the result or the result cannot be reproduced.',
+        'Don’t require retyping the request to change one value.',
+        'Don’t turn the sentence into fields. The prose is the part a person is good at.'
+      ],
+
+      metrics: [
+        'How often a question is skipped. A question skipped almost every time is one the product should be defaulting instead of asking.',
+        'How often a constraint is edited after the answer, which tells you the question was asked badly rather than answered badly.',
+        'Requests re-run with one value changed — the behaviour the whole pattern exists to enable.',
+        'Abandonment between the request and the first answer, which is what a clarifying step costs when it asks for too much.'
+      ],
+
+      composed: ['Text Field', 'Chip', 'Menu', 'Badge', 'Button'],
+      related: [['templates', 'Templates'], ['search-filter', 'Searching &amp; Filtering'], ['open-input', 'Open Input']],
+      pkg: 'nucleux-m3-structured-input',
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- The request stays prose. The structure is asked for AFTER it,\n     and only for the things that change the answer. -->\n<p class=\"md-struct__req\">Create a customer research report on mid-market churn.</p>\n\n<div class=\"md-struct__ask\" role=\"group\" aria-label=\"Three things I need\">\n  <div class=\"md-struct__q\">\n    <p class=\"md-struct__qt\" id=\"q-aud\">Who is it for?</p>\n    <p class=\"md-struct__qw\">Changes how much background I include.</p>\n    <button class=\"md-echip\" aria-describedby=\"q-aud\">The exec team</button>\n    <button class=\"md-echip md-echip--unresolved\">Skip &mdash; I&rsquo;ll assume the product team</button>\n  </div>\n</div>\n\n<!-- Settled, and editable afterwards without retyping the sentence -->\n<div class=\"md-struct__set\">\n  <button class=\"md-echip\"><span class=\"md-echip__k\">audience</span>exec team</button>\n  <button class=\"md-echip md-echip--default\">\n    <span class=\"md-echip__k\">range</span>last 12 months &middot; default\n  </button>\n</div>",
+
+      examples: [
+        {
+          id: 'struct-ask',
+          title: 'One question, with what it changes',
+          note: 'A question that cannot explain its own effect on the answer should not be asked. The skip states the assumption rather than silently making it.',
+          code:
+'<div class="md-struct__q">\n' +
+'  <p class="md-struct__qt md-body-medium" id="q-src">Which sources?</p>\n' +
+'  <p class="md-struct__qw md-body-small">Changes what I am able to cite.</p>\n' +
+'  <div class="md-struct__opts">\n' +
+'    <button class="md-echip" type="button" aria-describedby="q-src">\n' +
+'      Public filings only\n' +
+'    </button>\n' +
+'    <button class="md-echip" type="button" aria-describedby="q-src">\n' +
+'      Include analyst notes\n' +
+'    </button>\n' +
+'    <button class="md-echip md-echip--unresolved" type="button">\n' +
+'      Skip &mdash; I&rsquo;ll use public filings\n' +
+'    </button>\n' +
+'  </div>\n' +
+'</div>'
         }
       ]
     }

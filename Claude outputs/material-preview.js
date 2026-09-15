@@ -686,19 +686,18 @@
 '<div class="pv-composer">\n' +
 '  <p class="pv-composer__label md-body-small">Ask Aria</p>\n' +
 '  <p class="pv-composer__value md-body-large">How did renewals land in Q2?</p>\n' +
-'</div>\n' +
-'\n' +
-'<!-- beneath the composer, outside it: a footnote to what you are\n' +
-'     about to send, not a label on the field -->\n' +
-'<button class="md-disclaim-line md-body-small" type="button" data-act="show"\n' +
-'        aria-label="What Aria can and cannot do">\n' +
+'  <div class="pv-composer__foot">\n' +
+'    <button class="md-disclaim-line md-body-small" type="button" data-act="show"\n' +
+'            aria-label="What Aria can and cannot do">\n' +
    (c.lineIcon
-? '  <svg class="md-disclaim-line__ico" viewBox="0 0 24 24" aria-hidden="true">\n' +
-  '    <path d="M12 2.6a9.4 9.4 0 1 0 0 18.8 9.4 9.4 0 0 0 0-18.8Zm.1 4.2v5.6m0 3.1v.1"\n' +
-  '          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>\n' +
-  '  </svg>\n' : '') +
-'  ' + esc(c.lineText) + '\n' +
-'</button>';
+? '      <svg class="md-disclaim-line__ico" viewBox="0 0 24 24" aria-hidden="true">\n' +
+  '        <path d="M12 2.6a9.4 9.4 0 1 0 0 18.8 9.4 9.4 0 0 0 0-18.8Zm.1 4.2v5.6m0 3.1v.1"\n' +
+  '              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>\n' +
+  '      </svg>\n' : '') +
+'      ' + esc(c.lineText) + '\n' +
+'    </button>\n' +
+'  </div>\n' +
+'</div>';
         }
         return '' +
 '<section class="md-disclaim" role="dialog" aria-labelledby="dc-t" aria-modal="true">\n' +
@@ -2965,1868 +2964,496 @@ card + '>\n' + head +
          structured-input  can you tell a pinned value from prose
        ══════════════════════════════════════════════════════════ */
 
-    /* ── Model selection ────────────────────────────────────
-       Eight states of the composer's own chip and the menu behind
-       it. There is no second control and no settings page: a
-       choice that only matters at the moment of asking belongs
-       where the asking happens.
-
-       Two states earn the most room. "Open" is where the whole
-       argument lives — every row says what the model is FOR
-       rather than what it is — and "Restricted" is where the
-       library takes a position: an unavailable model is ABSENT,
-       not greyed out, because a row you can see and never press
-       is an advertisement for a thing you cannot have. */
-    'model-selection': {
-      initial: 'resting',
-
-      customize: {
-        groups: [
-          { id: 'menu', label: 'The menu',
-            states: ['open', 'automatic', 'changed', 'at-cap', 'restricted', 'retiring'],
-            note: 'What a person is given to decide with. None of these is a specification.',
-            controls: [
-              { id: 'why', label: 'Say what each is for', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Off, this is a list of names, and a list of names answers none of the ' +
-                      'questions somebody actually has.' },
-              { id: 'effort', label: 'Offer an effort level', type: 'toggle', value: true,
-                hint: 'The second axis the industry converged on. How hard to think is a ' +
-                      'different question from which model thinks, and they are set ' +
-                      'separately.' },
-              { id: 'when', label: 'Say when a change takes effect', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Exactly one shipping product answers this, in one sentence. Everybody ' +
-                      'else leaves people guessing whether switching rewrites what was ' +
-                      'already said.' }
-            ] },
-
-          { id: 'after', label: 'Afterwards',
-            states: ['resting', 'changed', 'attributed', 'at-cap'],
-            note: 'What the product says about a choice once it has been made.',
-            controls: [
-              { id: 'credit', label: 'Say which model answered', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Ahead of current practice &mdash; no mainstream product ships this. ' +
-                      'But silent substitution does, which is what makes the absence worth ' +
-                      'designing against.' }
-            ] }
-        ]
-      },
-
-      states: {
-        resting:    { label: 'Resting',
-                      trigger: 'The product at rest.',
-                      behaviour: 'One small chip carrying two values: which model, and how ' +
-                                 'hard to think. It is the composer&rsquo;s own mode slot, ' +
-                                 'not a control added beside it.',
-                      action: 'Open it' },
-        open:       { label: 'Open',
-                      trigger: 'The chip is pressed.',
-                      behaviour: 'Every row says what the model is FOR and what choosing it ' +
-                                 'costs. No context windows, no parameter counts &mdash; ' +
-                                 'nobody chooses a model by its context window.',
-                      action: 'Choose Automatic' },
-        automatic:  { label: 'Automatic',
-                      trigger: 'The router is selected.',
-                      behaviour: 'And it names what it is optimising for. The credibility of ' +
-                                 'a router rests entirely on whether its stated objective is ' +
-                                 'its real one.',
-                      action: 'Change the model' },
-        changed:    { label: 'Changed',
-                      trigger: 'A different model is chosen.',
-                      behaviour: 'The label updates and the menu has already said what happens ' +
-                                 'to the conversation: the change applies from the next ' +
-                                 'message, and nothing already said is rewritten.',
-                      action: 'Run out of allowance' },
-        'at-cap':   { label: 'At your cap',
-                      trigger: 'The week&rsquo;s allowance for a model is used up.',
-                      behaviour: 'The row stays and says what answers instead. A model that ' +
-                                 'silently becomes a different model is the failure this ' +
-                                 'state exists to prevent &mdash; and it is shipping today.',
-                      action: 'Let the organisation limit it' },
-        restricted: { label: 'Restricted',
-                      trigger: 'An organisation narrows what may be used.',
-                      behaviour: 'The model is ABSENT, with one line saying why. Not a locked ' +
-                                 'row: a row you can see and never press is an advertisement ' +
-                                 'for a thing you cannot have.',
-                      action: 'See one retiring' },
-        retiring:   { label: 'Retiring',
-                      trigger: 'A model has a sunset date.',
-                      behaviour: 'Still selectable, and dated. The alternative is the ' +
-                                 'disappearance people notice by the answer getting worse.',
-                      action: 'See an answer attributed' },
-        attributed: { label: 'Attributed',
-                      trigger: 'An answer arrives.',
-                      behaviour: 'Which model produced it &mdash; and whether it was the one ' +
-                                 'you asked for. No mainstream product does this, and silent ' +
-                                 'fallback is already normal.',
-                      action: 'Back to resting' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var M = window.MaterialModel, S = window.MaterialSim;
-        if (!M || !S || !S.composer) return '';
-
-        var models = M.MODELS.map(function (m) {
-          var o = Object.assign({}, m);
-          if (c.why === false) { o.for = ''; o.note = ''; }
-          return o;
-        });
-
-        if (st === 'at-cap') {
-          models.forEach(function (m) {
-            if (m.id === 'deep') {
-              m.state = 'capped';
-              m.note = c.why === false ? ''
-                : 'You have used this week’s allowance. Swift is answering instead ' +
-                  'until Monday.';
-            }
-          });
-        }
-        if (st === 'retiring') {
-          models.forEach(function (m) {
-            if (m.id === 'swift') { m.state = 'retiring'; m.until = 'in March'; }
-          });
-        }
-        /* Absence, not a locked row. */
-        if (st === 'restricted') {
-          models = models.filter(function (m) { return m.id !== 'deep'; });
-        }
-
-        var cur = st === 'automatic' ? 'auto'
-                : st === 'changed'   ? 'deep'
-                : 'balanced';
-        var open = st !== 'resting' && st !== 'attributed';
-
-        var html = S.composer({
-          agent: 'Aria',
-          ask: 'Ask about the quarter…',
-          plus: ['Attach a file', 'Add a source'],
-          models: models, model: cur,
-          effort: c.effort === false ? null : 'standard',
-          aim: 'even',
-          modesOpen: open,
-          restricted: st === 'restricted'
-            ? 'Your organisation has limited which models are available here.' : null
-        });
-
-        if (c.effort === false) {
-          html = html.replace(/<div class="md-ml__sub">(?:(?!<\/div>)[\s\S])*?How hard to think[\s\S]*?<\/div>/, '');
-        }
-        if (c.when === false) {
-          html = html.replace(/<p class="md-ml__note md-ml__note--when">[\s\S]*?<\/p>/, '');
-        }
-
-        /* Attribution belongs on an answer, so the state that
-           shows it shows an answer. */
-        if (st === 'attributed' && c.credit !== false) {
-          html = '<div class="pv-mlturn">' +
-              '<p class="pv-mlq">Compare this quarter against the last four.</p>' +
-              '<p class="pv-mla">Up 8%, carried by mid-market at 21% against a flat ' +
-                'enterprise.</p>' +
-              M.credit('Swift', true) +
-            '</div>' + html;
-        }
-        return html;
-      },
-
-      act: function (a, ctx) {
-        var ORDER = ['resting', 'open', 'automatic', 'changed',
-                     'at-cap', 'restricted', 'retiring', 'attributed'];
-        var S = ctx.s;
-        if (a.indexOf('go:') === 0) { S.state = a.slice(3); }
-        /* The real control does the real thing. */
-        else if (a === 'ax:mode') { S.state = S.state === 'open' ? 'resting' : 'open'; }
-        else if (a.indexOf('model:pick:') === 0) {
-          var id = a.slice(11);
-          S.state = id === 'auto' ? 'automatic' : id === 'deep' ? 'changed' : 'resting';
-        }
-        else if (a.indexOf('model:aim:') === 0)    { return; }
-        else if (a.indexOf('model:effort:') === 0) { return; }
-        else return;
-        ctx.paint();
-        ctx.announce(S.state === 'resting' ? 'Model menu closed' : 'Model menu open');
-        return ORDER;
-      }
-    },
-
-    /* ── Knowledge bases ────────────────────────────────────
-       Eight states of one panel. The control that carries the
-       pattern is the CHECKBOX on each source: including and
-       excluding without deleting is what makes a persistent scope
-       real rather than decorative, and it is the one affordance
-       here that cannot be mistaken for file management.
-
-       "Left out" earns the most room, because it is the state
-       that proves the difference from an attachment — the source
-       is still there, still listed, and simply not being read. */
-    'knowledge-base': {
-      initial: 'ready',
-
-      customize: {
-        groups: [
-          { id: 'scope', label: 'The scope',
-            states: ['ready', 'left-out', 'partial', 'out-of-date', 'failed', 'no-access'],
-            note: 'What the agent may read, and how visible that is. Nothing here deletes ' +
-                  'anything.',
-            controls: [
-              { id: 'open', label: 'Show the sources', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Closed is right most of the time: the question is usually &ldquo;what ' +
-                      'scope am I in&rdquo;, not &ldquo;what is in it&rdquo;. Open is one ' +
-                      'press away.' },
-              { id: 'choose', label: 'Let sources be left out', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Off, the only way to narrow an answer is to delete something. That is ' +
-                      'the difference between a scope and a folder.' },
-              { id: 'added', label: 'Say when each was added', type: 'toggle', value: true,
-                hint: 'A source added six weeks ago by somebody else is a different thing ' +
-                      'from one added this morning, and the answer may depend on which.' },
-              { id: 'name', label: 'Knowledge base', type: 'text', value: 'Product research' }
-            ] },
-
-          { id: 'prov', label: 'Provenance',
-            /* Including `cited` — the one state where these
-               controls have anything to act on. Leaving it out
-               put the settings on every state except the one
-               they were written for. */
-            states: ['cited', 'ready', 'left-out', 'partial'],
-            note: 'What an answer says about where it came from.',
-            controls: [
-              { id: 'cite', label: 'Say which sources it read', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Without this the answer is just as fluent and there is no way to tell ' +
-                      'which of six sources it came from.' },
-              { id: 'left', label: 'And which it could not', type: 'toggle', value: true,
-                visibleWhen: function (c) { return c.cite !== false; },
-                hint: 'The half that matters more. A citation list that omits it tells you ' +
-                      'where the answer came from while hiding where it was not allowed ' +
-                      'to look.' }
-            ] }
-        ]
-      },
-
-      states: {
-        ready:       { label: 'Ready',
-                       trigger: 'Every source has been read.',
-                       behaviour: 'The scope, its size and when it last changed. This existed ' +
-                                  'before the conversation and will outlive it &mdash; which ' +
-                                  'is the entire difference from an attachment.',
-                       action: 'Leave one out' },
-        'left-out':  { label: 'Left out',
-                       trigger: 'A source is turned off for answering.',
-                       behaviour: 'It stays in the list at reduced emphasis, and the count ' +
-                                  'moves. Nothing was deleted, and the act is reversible in ' +
-                                  'one press.',
-                       action: 'See one still reading' },
-        partial:     { label: 'Partly ready',
-                       trigger: 'A source has just been added.',
-                       behaviour: 'Asking still makes sense &mdash; most of the material is ' +
-                                  'there, and the answer will say what it could not see. ' +
-                                  'Per source, never per base.',
-                       action: 'See one go out of date' },
-        'out-of-date': { label: 'Out of date',
-                       trigger: 'A synced source changed after it was read.',
-                       behaviour: 'The answer would be right about a version that no longer ' +
-                                  'exists. Reading it again is one press, on the row.',
-                       action: 'See one fail' },
-        failed:      { label: 'Source failed',
-                       trigger: 'A source could not be read.',
-                       behaviour: 'One source, not the base. A knowledge base that calls ' +
-                                  'itself broken because one PDF would not open has told you ' +
-                                  'the wrong thing.',
-                       action: 'See one you cannot open' },
-        'no-access': { label: 'No access',
-                       trigger: 'Somebody else added a source you cannot read.',
-                       behaviour: 'Named but not readable, and with no checkbox to tick, ' +
-                                  'because the choice is not yours to make. The knowledge ' +
-                                  'base does not leak its contents.',
-                       action: 'See it cited' },
-        cited:       { label: 'Cited',
-                       trigger: 'An answer arrives.',
-                       behaviour: 'Which sources were read, and which were left out. The ' +
-                                  'second list is what makes the first one checkable.',
-                       action: 'See it empty' },
-        empty:       { label: 'Empty',
-                       trigger: 'A knowledge base with nothing in it.',
-                       behaviour: 'Says what a source is for rather than showing an empty ' +
-                                  'list &mdash; the distinction from attaching a file is the ' +
-                                  'thing somebody needs at this moment.',
-                       action: 'Back to ready' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var K = window.MaterialKB;
-        if (!K) return '';
-
-        function base(over) {
-          return [
-            { name: 'Onboarding interviews, Aug', kind: 'doc', state: 'ready',
-              added: 'added 3 weeks ago' },
-            { name: 'Support tickets Q3', kind: 'sheet', state: 'ready',
-              added: 'added 3 weeks ago' },
-            { name: 'First-run funnel', kind: 'sheet', state: 'ready',
-              added: 'added 12 days ago' },
-            { name: 'Competitor teardown', kind: 'url', state: 'ready',
-              added: 'added 6 weeks ago' }
-          ].map(function (x, i) {
-            var o = Object.assign({}, x, over[i] || {});
-            if (c.added === false) delete o.added;
-            if (c.choose === false) delete o.on;
-            return o;
-          });
-        }
-
-        var SETS = {
-          ready:        base([]),
-          'left-out':   base([{}, { on: false }]),
-          partial:      base([{}, {}, {}, { name: 'Usability session 4', kind: 'audio',
-                                            state: 'reading', added: 'added today' }]),
-          'out-of-date': base([{}, {}, {}, { state: 'stale',
-                                             note: 'Changed since it was read' }]),
-          failed:       base([{}, {}, {}, { name: 'Market sizing.pdf', kind: 'doc',
-                                            state: 'failed',
-                                            note: 'Could not be read — the file is protected' }]),
-          'no-access':  base([{}, {}, {}, { name: 'Pricing research', kind: 'doc',
-                                            state: 'denied', added: 'added by Dana' }]),
-          cited:        base([{}, { on: false }]),
-          empty:        []
-        };
-        var srcs = SETS[st] || [];
-
-        var state = st === 'empty' ? 'empty'
-                  : st === 'partial' ? 'partial'
-                  : (st === 'failed' || st === 'no-access' || st === 'out-of-date')
-                      ? 'trouble' : 'ready';
-
-        var html = K.panel({
-          name: c.name || 'Product research',
-          sources: srcs,
-          state: state,
-          updated: 'updated today',
-          open: st !== 'empty' && c.open !== false
-        });
-
-        /* The cited state shows the panel AND the provenance under
-           an answer, because the two only make sense together. */
-        if (st === 'cited' && c.cite !== false) {
-          var used = srcs.filter(function (x) { return x.on !== false; })
-                         .map(function (x) { return { name: x.name }; });
-          var left = srcs.filter(function (x) { return x.on === false; })
-                         .map(function (x) { return { name: x.name }; });
-          html += K.cited(used, c.left === false ? [] : left);
-        }
-        if (c.choose === false) {
-          html = html.replace(/<button class="md-kb__box[\s\S]*?<\/button>/g,
-            '<span class="md-kb__box md-kb__box--void" aria-hidden="true"></span>');
-        }
-        return html;
-      },
-
-      act: function (a, ctx) {
-        var ORDER = ['ready', 'left-out', 'partial', 'out-of-date',
-                     'failed', 'no-access', 'cited', 'empty'];
-        var S = ctx.s;
-        if (a.indexOf('go:') === 0) { S.state = a.slice(3); }
-        /* The real controls do the real thing: ticking a box in
-           the preview includes and excludes, exactly as it does in
-           a product. */
-        else if (a.indexOf('kb:use:') === 0) {
-          S.state = S.state === 'left-out' ? 'ready' : 'left-out';
-        }
-        else if (a === 'kb:open')  { S.cfg.open = true; }
-        else if (a === 'kb:close') { S.cfg.open = false; }
-        else if (a === 'kb:add')   { S.state = S.state === 'empty' ? 'partial' : 'partial'; }
-        else if (a.indexOf('kb:refresh:') === 0) { S.state = 'ready'; }
-        else if (a.indexOf('kb:drop:') === 0)    { S.state = 'ready'; }
-        else if (a.indexOf('kb:peek:') === 0)    { return; }
-        else return;
-        ctx.paint();
-        ctx.announce((window.MaterialKB.STATES[
-          S.state === 'left-out' ? 'ready' : S.state] || {}).say || '');
-        return ORDER;
-      }
-    },
-
-    /* ── MCP connectors ─────────────────────────────────────
-       Eight states of one panel. The panel has to carry four
-       things a connector card does not, and each of them is a
-       state or a control here rather than a paragraph in the
-       documentation: a discovery step, a per-tool switch, an
-       approval gate at call time, and a sentence saying who wrote
-       the capability descriptions.
-
-       "Needs approval" is the state that earns the most room,
-       because it is the one the protocol asks for by name and the
-       one clients most often reduce to a yes/no with the
-       arguments hidden. */
-    mcp: {
-      initial: 'unset',
-
-      customize: {
-        groups: [
-          { id: 'surface', label: 'The capability surface',
-            states: ['ready', 'partial', 'approval', 'stale'],
-            note: 'What the server says it offers. Everything here changes how much of that ' +
-                  'is taken at face value.',
-            controls: [
-              { id: 'open', label: 'Show the capabilities', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Closed is the right default for most people: &ldquo;Forge &mdash; ' +
-                      'Ready, 9 tools&rdquo; is the summary. Open is what somebody auditing ' +
-                      'it needs, and it must be one press away.' },
-              { id: 'destructive', label: 'Offer destructive tools', type: 'toggle', value: true,
-                hint: 'Off, the server&rsquo;s riskiest capabilities are simply not available. ' +
-                      'A real option, and often the right one.' },
-              { id: 'trust', label: 'Say who wrote the labels', type: 'toggle', value: true,
-                capability: true,
-                hint: 'The protocol says clients MUST treat tool annotations as untrusted ' +
-                      'unless the server is trusted. Without this line the risk bands look ' +
-                      'like the product&rsquo;s verdict rather than the server&rsquo;s claim.' },
-              { id: 'name', label: 'Server', type: 'text', value: 'Forge' }
-            ] },
-
-          { id: 'gate', label: 'The approval gate',
-            states: ['approval'],
-            note: 'What a person is actually agreeing to when they approve a call.',
-            controls: [
-              { id: 'args', label: 'Show the arguments', type: 'toggle', value: true,
-                capability: true,
-                hint: 'The spec asks clients to show tool inputs before calling the server. ' +
-                      'An approval that hides what is being sent has approved nothing in ' +
-                      'particular.' }
-            ] }
-        ]
-      },
-
-      states: {
-        unset:      { label: 'Not configured',
-                      trigger: 'A server address and nothing else.',
-                      behaviour: 'This is the whole difference from an app connector: there ' +
-                                 'the tool surface is fixed and reviewed before you press ' +
-                                 'anything; here nothing is known until the client asks.',
-                      action: 'Validate it' },
-        validating: { label: 'Validating',
-                      trigger: 'The address is submitted.',
-                      behaviour: 'Three named steps rather than a spinner. Reaching a server ' +
-                                 'and understanding it are different problems with different ' +
-                                 'fixes, and a failure has to say which.',
-                      action: 'Start discovery' },
-        discovering:{ label: 'Discovering',
-                      trigger: 'The protocol version is agreed.',
-                      behaviour: 'The client enumerates what the server exposes. Until this ' +
-                                 'returns, nobody &mdash; including the product &mdash; knows ' +
-                                 'what this connection can do.',
-                      action: 'See what it offers' },
-        ready:      { label: 'Ready',
-                      trigger: 'Discovery completes.',
-                      behaviour: 'Tools, resources and prompts, counted. Destructive tools ' +
-                                 'arrive disabled, because the protocol&rsquo;s own defaults ' +
-                                 'are pessimistic and so is this.',
-                      action: 'Turn some off' },
-        partial:    { label: 'Partly enabled',
-                      trigger: 'Individual capabilities are switched off.',
-                      behaviour: 'Per-tool, not per-server. Connecting is not consent to ' +
-                                 'everything a server happens to expose, and the count in the ' +
-                                 'header says how many were declined.',
-                      action: 'See a call asking' },
-        approval:   { label: 'Needs approval',
-                      trigger: 'The agent tries to invoke a destructive tool.',
-                      behaviour: 'At call time, with the arguments visible, and no ' +
-                                 '&ldquo;always allow&rdquo;. A blanket yes to something that ' +
-                                 'deletes is the failure this gate exists to prevent.',
-                      action: 'See a stale list' },
-        stale:      { label: 'Stale',
-                      trigger: 'The server stops answering.',
-                      behaviour: 'The list on screen is what it said earlier. A tool surface ' +
-                                 'that can change underneath you has to say when it was last ' +
-                                 'confirmed.',
-                      action: 'See it fail' },
-        unreachable:{ label: 'Unreachable',
-                      trigger: 'The address answers with something this client cannot speak.',
-                      behaviour: 'Names which step failed and says nothing was enabled, ' +
-                                 'because a half-configured server is worse than none.',
-                      action: 'Back to the start' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var M = window.MaterialMCP;
-        if (!M) return '';
-
-        var TOOLS = [
-          { name: 'search_issues', what: 'Find issues by text, label or milestone', risk: 'read' },
-          { name: 'get_issue',     what: 'Read one issue and its comments',         risk: 'read' },
-          { name: 'list_releases', what: 'Read the release history',                risk: 'read' },
-          { name: 'create_issue',  what: 'Open a new issue',                        risk: 'write' },
-          { name: 'update_issue',  what: 'Change title, labels or assignee',        risk: 'write' },
-          { name: 'cut_release',   what: 'Tag a release and start the pipeline',    risk: 'destroy' },
-          { name: 'delete_branch', what: 'Remove a branch and its history',         risk: 'destroy' }
-        ];
-        var tools = TOOLS
-          .filter(function (t) { return c.destructive !== false || t.risk !== 'destroy'; })
-          .map(function (t) {
-            return Object.assign({}, t, {
-              on: st === 'partial' ? t.risk === 'read' : t.risk !== 'destroy'
-            });
-          });
-
-        var has = st !== 'unset' && st !== 'validating' && st !== 'discovering' &&
-                  st !== 'unreachable';
-
-        var html = M.panel({
-          name: c.name || 'Forge',
-          url: st === 'unset' ? '' : 'https://forge.internal/mcp',
-          state: st === 'approval' ? (c.destructive === false ? 'ready' : 'partial') : st,
-          note: st === 'approval' ? 'Waiting for you' : '',
-          why: st === 'unreachable'
-            ? 'The address answered, but not with a protocol version this client speaks. ' +
-              'Nothing was enabled.'
-            : '',
-          cached: '2 hours ago',
-          tools: has ? tools : [],
-          resources: has ? 4 : undefined,
-          prompts: has ? 2 : undefined,
-          open: has && c.open !== false,
-          ask: st === 'approval'
-            ? { server: c.name || 'Forge', tool: 'cut_release',
-                what: 'Tags the release and starts the deploy pipeline. This cannot be undone ' +
-                      'from here.',
-                args: c.args === false ? null
-                    : { tag: 'v4.12.0', branch: 'release/4.12', deploy: 'production' } }
-            : null
-        });
-
-        if (c.trust === false) {
-          html = html.replace(/<p class="md-mcp__trust">[\s\S]*?<\/p>/, '');
-        }
-        return html;
-      },
-
-      act: function (a, ctx) {
-        var ORDER = ['unset', 'validating', 'discovering', 'ready',
-                     'partial', 'approval', 'stale', 'unreachable'];
-        var S = ctx.s;
-        if (a.indexOf('go:') === 0) { S.state = a.slice(3); }
-        /* The real controls do the real thing. */
-        else if (a === 'mcp:add')    { S.state = S.state === 'unset' ? 'validating' : 'ready'; }
-        else if (a === 'mcp:cancel' || a === 'mcp:remove') { S.state = 'unset'; }
-        /* Show/hide is a SETTING, not a state — it is the same
-           panel either way — so it writes to the config the
-           Customize panel also writes to. */
-        else if (a === 'mcp:open')   { S.cfg.open = true; }
-        else if (a === 'mcp:close')  { S.cfg.open = false; }
-        else if (a.indexOf('mcp:tool:') === 0) {
-          S.state = S.state === 'partial' ? 'ready' : 'partial';
-        }
-        else if (a === 'mcp:approve' || a === 'mcp:deny') { S.state = 'ready'; }
-        else return;
-        ctx.paint();
-        ctx.announce((window.MaterialMCP.STATES[S.state] || {}).say || '');
-        return ORDER;
-      }
-    },
-
-    /* ── Connectors ─────────────────────────────────────────
-       Eight states of one card. The card appears in two places —
-       a settings list and, more importantly, inside a
-       conversation where the agent has just found a wall — and
-       the "Inside a conversation" switch is the one that matters:
-       it is the same component, and only the sentence above it
-       changes.
-
-       The state that earns the most room is "Needs your approval",
-       because that is where the scope list is doing the work. The
-       provider's consent screen is written by the party that
-       benefits from it; this one is written by the product, and
-       it arrives early enough to refuse cheaply. */
-    connectors: {
-      initial: 'available',
-
-      customize: {
-        groups: [
-          { id: 'ask', label: 'What it asks for',
-            states: ['available', 'authorise', 'connected', 'limited',
-                     'stale', 'error', 'blocked', 'connecting'],
-            note: 'Access is a ladder, not a switch. Everything here changes what the card ' +
-                  'promises the agent will be able to do.',
-            controls: [
-              { id: 'write', label: 'Ask to write', type: 'toggle', value: false,
-                hint: 'A different question from reading, and it should be asked as one. ' +
-                      'Bundled, a summarising assistant ends up able to close tickets.' },
-              { id: 'admin', label: 'Ask to manage settings', type: 'toggle', value: false,
-                hint: 'Almost never needed to answer a question. Leave it on and watch the ' +
-                      'list make the over-reach visible &mdash; which is the argument for ' +
-                      'writing the list.' },
-              { id: 'scopes', label: 'Show what access means', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Off, the person is approving a logo. The provider&rsquo;s consent ' +
-                      'screen is not a substitute: it is written by the other party and it ' +
-                      'arrives after the decision has been made.' },
-              { id: 'name', label: 'Service', type: 'text', value: 'Beacon' }
-            ] },
-
-          { id: 'where', label: 'Where it appears',
-            states: ['available', 'authorise', 'connected', 'limited',
-                     'stale', 'error', 'blocked', 'connecting'],
-            note: 'The same card, in the two places a connector is genuinely encountered.',
-            controls: [
-              { id: 'inline', label: 'Inside a conversation', type: 'toggle', value: true,
-                capability: true,
-                hint: 'On, the agent has hit a wall and is naming the door. Off, this is a ' +
-                      'row in a settings list that somebody went looking for.' },
-              { id: 'account', label: 'Name the account', type: 'toggle', value: true,
-                visibleWhen: function (c, st) {
-                  return st === 'connected' || st === 'limited' || st === 'stale';
-                },
-                hint: '&ldquo;Connected as whom&rdquo; is the question people actually have ' +
-                      'about a connection they set up months ago.' }
-            ] }
-        ]
-      },
-
-      states: {
-        available:  { label: 'Available',
-                      trigger: 'The agent needs something it has not been given.',
-                      behaviour: 'Names the service, says what connecting would allow, and ' +
-                                 'says who you will be signing in with &mdash; all before ' +
-                                 'anything leaves the product.',
-                      action: 'Press Connect' },
-        authorise:  { label: 'Needs your approval',
-                      trigger: 'Connect is pressed.',
-                      behaviour: 'The decision point, in the product&rsquo;s own words. This ' +
-                                 'is the step products skip, and then wonder why nobody reads ' +
-                                 'the provider&rsquo;s scope screen.',
-                      action: 'Allow it' },
-        connecting: { label: 'Connecting',
-                      trigger: 'Approval is given.',
-                      behaviour: 'The product does not impersonate the sign-in. It waits, says ' +
-                                 'it is waiting, and leaves a way out.',
-                      action: 'See it connected' },
-        connected:  { label: 'Connected',
-                      trigger: 'The service confirms.',
-                      behaviour: 'The word, the account, and a dot &mdash; in that order. A ' +
-                                 'green dot on its own is nothing to anyone who cannot see it.',
-                      action: 'See a narrower grant' },
-        limited:    { label: 'Read only',
-                      trigger: 'Some of what was asked for was refused, or never asked for.',
-                      behaviour: 'Connected is not a permission. This state exists so that ' +
-                                 '&ldquo;it is connected but it cannot do that&rdquo; is ' +
-                                 'visible before somebody asks it to.',
-                      action: 'Let the sign-in expire' },
-        stale:      { label: 'Needs reauth',
-                      trigger: 'The sign-in expires.',
-                      behaviour: 'The agent stops rather than guessing, and the way back is ' +
-                                 'one press. The state most connector designs forget, and the ' +
-                                 'one people meet most often.',
-                      action: 'See it fail' },
-        error:      { label: 'Error',
-                      trigger: 'The service cannot be reached.',
-                      behaviour: 'Says what happened rather than what failed internally, and ' +
-                                 'keeps a retry. Distinct from an expired sign-in, because ' +
-                                 'the remedies are different.',
-                      action: 'See it blocked' },
-        blocked:    { label: 'Blocked by admin',
-                      trigger: 'The organisation has turned this connector off.',
-                      behaviour: 'Says who decided and offers the only real way forward, which ' +
-                                 'is a person rather than a retry. No Connect button, because ' +
-                                 'pressing it could never work.',
-                      action: 'Back to available' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var C = window.MaterialConnect;
-        if (!C) return '';
-
-        var asking = ['read', 'search']
-          .concat(c.write ? ['write'] : [])
-          .concat(c.admin ? ['admin'] : []);
-        var granted = st === 'connected' ? asking
-                    : st === 'limited'   ? ['read']
-                    : st === 'stale'     ? asking : [];
-
-        var BECAUSE = {
-          available: 'Your design backlog lives in ' + (c.name || 'Beacon') + ', and I have ' +
-                     'never been given it. Here is what connecting would let me do.',
-          authorise: 'Before I hand you over: this is what I will be able to do once you ' +
-                     'sign in.',
-          connecting: 'Waiting for you to finish signing in.',
-          connected: 'Connected. I can search this from now on without being asked again.',
-          limited: 'Connected, but read only — I can find things here and I cannot change them.',
-          stale: 'The sign-in has expired, so I stopped rather than guessing. Signing in again ' +
-                 'picks up exactly where this left off.',
-          error: 'I could not reach it just now. Nothing was changed.',
-          blocked: 'Your organisation has turned this connector off for everyone.'
-        };
-
-        return C.card({
-          inline: c.inline !== false,
-          name: c.name || 'Beacon',
-          mark: (c.name || 'Beacon').slice(0, 2),
-          state: st,
-          because: c.inline !== false ? BECAUSE[st] : '',
-          blurb: 'Issue tracking for the design and platform teams.',
-          account: (c.account !== false &&
-                    (st === 'connected' || st === 'limited' || st === 'stale'))
-                    ? 'p.singh@intelligaia.com' : '',
-          asking: asking,
-          granted: granted,
-          scopes: c.scopes !== false
-        });
-      },
-
-      act: function (a, ctx) {
-        var ORDER = ['available', 'authorise', 'connecting', 'connected',
-                     'limited', 'stale', 'error', 'blocked'];
-        var S = ctx.s;
-        if (a.indexOf('go:') === 0) { S.state = a.slice(3); }
-        /* The controls on the card are the real ones, so they do
-           the real thing. */
-        else if (a === 'conn:connect') {
-          S.state = S.state === 'stale' || S.state === 'error' ? 'connected' : 'authorise';
-        }
-        else if (a === 'conn:allow')   { S.state = 'connecting'; }
-        else if (a === 'conn:cancel')  { S.state = 'available'; }
-        else if (a === 'conn:off')     { S.state = 'available'; }
-        else if (a === 'conn:manage')  { S.state = S.state === 'connected' ? 'limited' : 'connected'; }
-        else if (a === 'conn:ask')     { return; }
-        else return;
-        ctx.paint();
-        ctx.announce((window.MaterialConnect.STATES[S.state] || {}).say || '');
-        return ORDER;
-      }
-    },
-
-    /* ── Attachments ────────────────────────────────────────
-       Eight states of the SHARED composer carrying context. The
-       first is the composer with nothing on it, because the claim
-       of this pattern is that an attachment is a thing that joins
-       a message rather than a place you go.
-
-       Two of the eight earn most of the room. "Uploading" and
-       "Reading" have to be unmistakably different — a file that
-       has arrived has not been read, and collapsing the two is
-       why people fire a request at a document nothing has opened.
-       And a refusal has to name its limit, or it is a dead end
-       with a red border. */
-    attachments: {
-      initial: 'empty',
-
-      customize: {
-        groups: [
-          { id: 'object', label: 'The object',
-            states: ['one', 'uploading', 'processing', 'several', 'toobig', 'failed', 'image'],
-            note: 'One component per attached thing, inside the composer. Everything here ' +
-                  'changes what the object says — never which composer it sits in.',
-            controls: [
-              { id: 'meta', label: 'Show type and size', type: 'toggle', value: true,
-                hint: 'Type earns its place because it predicts whether the agent can read ' +
-                      'it. Size earns its place only next to a limit.' },
-              { id: 'thumb', label: 'Preview images', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'image'; },
-                capability: true,
-                hint: 'Images get a thumbnail because it identifies the file faster than its ' +
-                      'name. Documents deliberately do not — an invented page preview is a ' +
-                      'claim about content nobody has read.' },
-              { id: 'name', label: 'File', type: 'text', value: 'Northwind-proposal.pdf' }
-            ] },
-
-          { id: 'lifetime', label: 'Lifetime',
-            states: ['empty', 'one', 'processing', 'several', 'toobig', 'failed', 'image'],
-            note: 'The question a remove control raises, and the answer it owes.',
-            controls: [
-              { id: 'lifetime', label: 'Say how long it lasts', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Removal is forward-only in every product that documents it. Offering ' +
-                      'the control without the sentence implies an undo the product cannot ' +
-                      'perform.' },
-              { id: 'remove', label: 'Allow removing', type: 'toggle', value: true,
-                hint: 'Off, the only way to correct a mis-attached file is to start the ' +
-                      'conversation again.' }
-            ] }
-        ]
-      },
-
-      states: {
-        empty:      { label: 'Nothing attached',
-                      trigger: 'The product at rest.',
-                      behaviour: 'The ordinary composer. Attaching is one control away and it ' +
-                                 'does not go anywhere else — the row appears above the input, ' +
-                                 'inside the same bar.',
-                      action: 'Attach one' },
-        uploading:  { label: 'Uploading',
-                      trigger: 'A file is chosen.',
-                      behaviour: 'The object joins the composer immediately, carrying a ' +
-                                 'determinate bar because there is a real number to show.',
-                      action: 'Finish the upload' },
-        processing: { label: 'Reading',
-                      trigger: 'The bytes have arrived.',
-                      behaviour: 'Uploaded is not readable. The bar stops claiming a ' +
-                                 'percentage it no longer has, and the word changes.',
-                      action: 'Finish reading' },
-        one:        { label: 'Ready',
-                      trigger: 'The agent can read it.',
-                      behaviour: 'Name, type, and the word Ready. The composer has grown by ' +
-                                 'exactly one row and nothing else has moved.',
-                      action: 'Attach a second' },
-        several:    { label: 'Several',
-                      trigger: 'More context is added.',
-                      behaviour: 'They wrap within the row. Each keeps its own state, because ' +
-                                 'one failing has nothing to do with the others.',
-                      action: 'See one refused' },
-        toobig:     { label: 'Too large',
-                      trigger: 'The file is over the limit.',
-                      behaviour: 'Refused before a byte moves, with the limit in the message, ' +
-                                 'and still listed so it can be swapped rather than hunted for.',
-                      action: 'See an upload fail' },
-        failed:     { label: 'Failed',
-                      trigger: 'The upload does not complete.',
-                      behaviour: 'A retry control on the object itself, so recovering costs ' +
-                                 'one press rather than finding the file again.',
-                      action: 'See an image' },
-        image:      { label: 'Image',
-                      trigger: 'The attachment is a picture.',
-                      behaviour: 'A real thumbnail, because for an image it identifies the ' +
-                                 'file faster than the filename does.',
-                      action: 'Back to empty' }
-      },
-
-      /* THE COMPOSER ITSELF, carrying attachments — not a drawing
-         of it. `MaterialSim.composer` is the same function the
-         twenty-six simulators render through. */
-      view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var M = window.MaterialSim, A = window.MaterialAttach;
-        if (!M || !M.composer || !A) return '';
-
-        var nm = c.name || 'Northwind-proposal.pdf';
-        function f(o) {
-          if (!c.meta) { delete o.type; delete o.size; }
-          if (c.remove === false) o.fixed = true;
-          return o;
-        }
-
-        var SETS = {
-          empty:      [],
-          uploading:  [f({ name: nm, kind: 'doc', type: 'PDF', size: '2.4 MB',
-                           state: 'uploading', pct: 71 })],
-          processing: [f({ name: nm, kind: 'doc', type: 'PDF · 34 pages', size: '2.4 MB',
-                           state: 'processing' })],
-          one:        [f({ name: nm, kind: 'doc', type: 'PDF · 34 pages', size: '2.4 MB',
-                           state: 'ready' })],
-          several:    [f({ name: nm, kind: 'doc', type: 'PDF · 34 pages', size: '2.4 MB',
-                           state: 'ready' }),
-                       f({ name: 'rate-card.xlsx', kind: 'sheet', type: 'Spreadsheet',
-                           size: '88 KB', state: 'ready' }),
-                       f({ name: 'security-review.docx', kind: 'doc', type: 'Document',
-                           size: '340 KB', state: 'processing' })],
-          toobig:     [f({ name: 'full-tender-pack.zip', kind: 'doc', type: 'Archive',
-                           size: '840 MB', state: 'toobig',
-                           note: 'Too large — 500 MB is the limit' })],
-          failed:     [f({ name: nm, kind: 'doc', type: 'PDF', size: '2.4 MB',
-                           state: 'failed', note: 'Upload failed — connection lost' })],
-          image:      [f({ name: 'pricing-table.png', kind: 'image',
-                           thumb: c.thumb === false ? '' :
-                             'linear-gradient(135deg,#d7d2e6,#eee8f4)',
-                           type: 'PNG', size: '1.2 MB', state: 'ready' })]
-        };
-        var list = SETS[st] || [];
-
-        var html = M.composer({
-          agent: 'Aria',
-          ask: 'Ask about the proposal…',
-          plus: ['Upload a file', 'Upload a photo', 'Paste text'],
-          atts: list
-        });
-
-        /* The remove control is what raises the lifetime question,
-           so the answer is rendered with it and disappears with it. */
-        if (c.remove === false) {
-          html = html.replace(/<button class="md-att__btn md-att__btn--x"[\s\S]*?<\/button>/g, '');
-        }
-        if (c.lifetime && list.length) {
-          html += '<p class="ax__cnote ax__cnote--life">' + A.LIFETIME + '</p>';
-        }
-        return html;
-      },
-
-      act: function (a, ctx) {
-        var ORDER = ['empty', 'uploading', 'processing', 'one', 'several',
-                     'toobig', 'failed', 'image'];
-        if (a.indexOf('go:') === 0) { ctx.s.state = a.slice(3); }
-        /* The controls in the preview are the real ones, so they
-           carry the real actions: removing in the preview removes. */
-        else if (a.indexOf('att:rm:') === 0) { ctx.s.state = 'empty'; }
-        else if (a.indexOf('att:retry:') === 0) { ctx.s.state = 'uploading'; }
-        else if (a === 'ax:plus') {
-          ctx.s.state = ctx.s.state === 'empty' ? 'uploading' : ctx.s.state;
-        } else return;
-        ctx.paint();
-        ctx.announce(window.MaterialAttach
-          ? window.MaterialAttach.summary(ctx.s.state === 'empty' ? [] : [{ state: 'ready' }])
-          : '');
-        return ORDER;
-      }
-    },
-
-    /* ── Voice input ────────────────────────────────────────
-       Six states of ONE component — the shared prompt composer —
-       and the first of them is that composer doing nothing
-       special at all. A preview that never shows the resting
-       state cannot make this pattern's argument, which is that
-       voice is a mode of the bar you were already using.
-
-       Two of the six earn most of the room. "Listening" and
-       "Speaking" have to be unmistakably different, or an open
-       microphone looks identical to a heard one. And "Processing"
-       has to be visibly less than either, or the strokes go on
-       implying that something is still being heard.
-
-       The selector is a documentation affordance: in a product
-       these states arrive because somebody pressed a microphone
-       and started talking, which is what the simulator shows. */
+    /* ── Voice ──────────────────────────────────────────────
+       The state worth reaching is `heard`: a transcript held for
+       correction rather than fired. A voice input that sends on
+       silence is the one that loses trust. */
     'voice-input': {
-      initial: 'default',
+      initial: 'idle',
 
       customize: {
         groups: [
-          { id: 'composer', label: 'The composer',
-            states: ['default', 'listening', 'speaking', 'processing', 'muted', 'error'],
-            note: 'One component. Voice is a mode of it, and everything below changes what ' +
-                  'the bar contains — never which bar it is.',
+          { id: 'capture', label: 'Capture', states: ['idle', 'listening'],
             controls: [
-              { id: 'amp', label: 'Respond to the voice', type: 'toggle', value: true,
+              { id: 'idleLabel', label: 'Resting label', type: 'text',
+                value: 'Hold to speak' },
+              { id: 'meter', label: 'Show a live level meter', type: 'toggle', value: true,
                 capability: true,
-                hint: 'Off, the strokes run a loop instead — which is what makes a hung ' +
-                      'microphone look healthy.' },
-              { id: 'mode', label: 'Offer a mode chip', type: 'toggle', value: false,
-                visibleWhen: function (c, st) { return st === 'default'; },
-                hint: 'Only where a scenario actually has two modes. A control with no use ' +
-                      'in the screen it is standing in is furniture.' },
-              { id: 'agentName', label: 'Agent', type: 'text', value: 'Aria' }
+                hint: 'Without it a speaker cannot tell listening from frozen.' },
+              { id: 'partial', label: 'Show text as it arrives', type: 'toggle', value: true,
+                visibleWhen: function (c) { return !!c.meter; } }
             ] },
 
-          { id: 'words', label: 'In words',
-            states: ['listening', 'speaking', 'processing', 'muted', 'error'],
-            note: 'Every state has a text equivalent, in a live region. None of the motion ' +
-                  'is allowed to be the only way to know what is going on.',
+          { id: 'heard', label: 'What it heard', states: ['heard'],
+            note: 'Held for correction, not fired. The gap between hearing and acting is the pattern.',
             controls: [
-              { id: 'status', label: 'Say the state in words', type: 'toggle', value: true,
+              { id: 'text', label: 'Transcript', type: 'text',
+                value: 'Replaced the pump seal on unit four, reorder a gasket.' },
+              { id: 'confirm', label: 'Confirm before acting', type: 'toggle', value: true,
                 capability: true,
-                hint: 'Turn this off and the pattern depends entirely on five small moving ' +
-                      'strokes, which rules out anybody who cannot see them or has asked ' +
-                      'for less movement.' },
-              { id: 'transcript', label: 'Show the line being heard', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'speaking'; },
-                hint: 'One line, clipped. A transcript that grows the composer as you speak ' +
-                      'is a composer that moves under your hand.' }
+                hint: 'Off, the transcript is the command. That is how voice sends the wrong thing.' },
+              { id: 'actLabel', label: 'Action', type: 'text', value: 'Log it',
+                visibleWhen: function (c) { return !!c.confirm; } },
+              { id: 'editLabel', label: 'Correct it', type: 'text', value: 'Edit',
+                visibleWhen: function (c) { return !!c.confirm; } }
+            ] },
+
+          { id: 'none', label: 'Nothing heard', states: ['none'],
+            note: 'Saying so plainly beats sending an empty request and answering it.',
+            controls: [
+              { id: 'noneText', label: 'What it says', type: 'text',
+                value: 'I did not hear anything. The microphone is off again.' }
             ] }
         ]
       },
 
       states: {
-        default:    { label: 'Default',
-                      trigger: 'The product at rest.',
-                      behaviour: 'The ordinary composer, with a microphone in it where the ' +
-                                 'scenario supports speaking. Nothing else about it is ' +
-                                 'special, and that is the whole claim of the pattern.',
-                      action: 'Press the microphone' },
-        listening:  { label: 'Listening',
-                      trigger: 'The microphone control is pressed.',
-                      behaviour: 'Same bar, same width, about a line taller. The strokes sit ' +
-                                 'at rest because nothing is being said — an open microphone ' +
-                                 'drawn like a heard one is the commonest lie here.',
-                      action: 'Say something' },
-        speaking:   { label: 'Speaking',
-                      trigger: 'Speech is detected.',
-                      behaviour: 'The strokes follow amplitude with smooth interpolation, ' +
-                                 'gaps included. Middle strokes take more of it than outer ' +
-                                 'ones, which is what stops the row reading as a bar chart.',
-                      action: 'Stop, and let it think' },
-        processing: { label: 'Processing',
-                      trigger: 'The utterance completes.',
-                      behaviour: 'The same strokes, shorter and slower, rather than a spinner ' +
-                                 'dropped where the voice used to be. Nothing about the bar ' +
-                                 'moves except what is inside it.',
-                      action: 'Mute the microphone' },
-        muted:      { label: 'Muted',
-                      trigger: 'Mute is pressed.',
-                      behaviour: 'Colour drains and the strokes stop moving with speech. An ' +
-                                 'indicator that still moves while muted is claiming to hear ' +
-                                 'you.',
-                      action: 'See it fail' },
-        error:      { label: 'Error',
-                      trigger: 'The microphone is taken, or permission is refused.',
-                      behaviour: 'The semantic error accent, no motion, a sentence saying what ' +
-                                 'happened — and the keyboard route still in the same bar, ' +
-                                 'because voice failing is not a reason to lose the composer.',
-                      action: 'Back to the composer' }
+        idle:      { label: 'Idle',
+                     trigger: 'Nothing has been pressed.',
+                     behaviour: 'The microphone is off and looks off. A capture control that ' +
+                                'cannot be told from a live one is the worst state in the pattern.',
+                     action: 'Start listening' },
+        listening: { label: 'Listening',
+                     trigger: 'The speaker presses and holds, or taps to arm.',
+                     behaviour: 'The control takes the human colour, the meter moves with the ' +
+                                'voice, and partial text arrives at lower emphasis because it ' +
+                                'is still a guess.',
+                     action: 'Stop' },
+        heard:     { label: 'Heard',
+                     trigger: 'The speaker stops.',
+                     behaviour: 'The final transcript is held at full emphasis, editable, with ' +
+                                'the action beside it. Nothing has happened yet.',
+                     action: 'See what silence does' },
+        none:      { label: 'Nothing heard',
+                     trigger: 'Silence, or noise the recogniser could not use.',
+                     behaviour: 'It says so and turns itself off, rather than sending an empty ' +
+                                'request or leaving the microphone open.',
+                     action: 'Reset' }
       },
 
-      /* THE COMPOSER ITSELF. Not a drawing of it, not a copy kept
-         in step by hand: `MaterialSim.composer` is the function the
-         twenty-five simulators render through, called here with an
-         options object instead of a scenario. If the preview and
-         the product ever disagree, it will be because somebody
-         deleted this call. */
       view: function (s) {
         var c = s.cfg;
-        var st = s.state;
-        var agent = c.agentName || 'Aria';
-        var M = window.MaterialSim;
-        if (!M || !M.composer) return '';
-
-        var STATUS = {
-          listening: 'Listening…', speaking: 'Listening…', processing: 'Thinking…',
-          muted: 'Microphone muted', error: 'Microphone unavailable'
-        };
-        var LINE = {
-          speaking: '“Compare the onboarding feedback from this quarter with the previous one…',
-          muted: agent + ' is still here; it just cannot hear you.',
-          error: 'Another application is using it. Type instead, or try again.'
-        };
-
-        var html = M.composer({
-          agent: agent,
-          ask: 'Ask ' + agent + ' about the feedback…',
-          plus: ['Attach a file', 'Add a source'],
-          modes: c.mode ? ['Balanced', 'Thorough'] : null,
-          mic: true,
-          mode: st === 'default' ? 'text' : 'voice',
-          voice: st,
-          status: c.status ? STATUS[st] : '',
-          /* Muted and error say their piece in the second line
-             whether or not the transcript is on: they are not a
-             transcript, they are the reason. */
-          line: (st === 'speaking' ? (c.transcript ? LINE.speaking : '') : (LINE[st] || ''))
-        });
-
-        /* With the response turned off the indicator loses its live
-           hook and falls back to the sway alone — which is exactly
-           the failure the toggle exists to show. */
-        if (!c.amp) html = html.replace(/ data-vx-live="[a-z]+"/, '');
-        if (!c.status) html = html.replace(/<span class="ax__vstatus"[^>]*><\/span>/, '');
-        return html;
-      },
-
-      /* The driver is started after every paint, because a repaint
-         replaces the element the previous loop was writing to. */
-      mounted: function (root) {
-        if (window.MaterialVoice) window.MaterialVoice.drive(root);
+        if (s.state === 'none') {
+          return '' +
+'<div class="md-voice" data-state="idle">\n' +
+'  <button class="md-voice__mic" type="button" data-act="start" aria-label="Start listening">\n' +
+'    ' + MIC + '\n' +
+'  </button>\n' +
+'  <p class="md-voice__none md-body-medium">' + esc(c.noneText) + '</p>\n' +
+'</div>';
+        }
+        if (s.state === 'heard') {
+          return '' +
+'<div class="md-voice__final">\n' +
+'  <p class="md-voice__text md-body-medium">' + esc(c.text) + '</p>\n' +
+   (c.confirm
+? '  <div class="md-voice__foot">\n' +
+  '    <button class="md-button md-button--filled md-button--sm" type="button">' +
+     esc(c.actLabel) + '</button>\n' +
+  '    <button class="md-button md-button--text md-button--sm" type="button">' +
+     esc(c.editLabel) + '</button>\n' +
+  '  </div>\n'
+: '  <p class="md-voice__none md-body-small">Sent as soon as you stopped speaking.</p>\n') +
+'</div>';
+        }
+        var live = s.state === 'listening';
+        return '' +
+'<div class="md-voice" data-state="' + (live ? 'listening' : 'idle') + '">\n' +
+'  <button class="md-voice__mic' + (live ? ' is-live' : '') + '" type="button"\n' +
+'          data-act="' + (live ? 'stop' : 'start') + '" aria-pressed="' + live + '"\n' +
+'          aria-label="' + (live ? 'Stop listening' : 'Start listening') + '">\n' +
+'    ' + MIC + '\n' +
+'  </button>\n' +
+   (live && c.meter
+? '  <div class="md-voice__meter" aria-hidden="true">\n' +
+  '    <span></span><span></span><span></span><span></span><span></span>\n' +
+  '  </div>\n' : '') +
+'  <p class="md-voice__partial md-body-medium">' +
+   (live
+     ? (c.meter && c.partial ? 'replaced the pump seal on unit four' : 'Listening&hellip;')
+     : esc(c.idleLabel)) + '</p>\n' +
+'</div>';
       },
 
       act: function (a, ctx) {
-        if (a.indexOf('go:') === 0) { ctx.s.state = a.slice(3); }
-        /* The controls in the preview are the real ones, so they
-           carry the real actions. Pressing Mute in the preview has
-           to do what pressing Mute does. */
-        else if (a === 'voice:start')  { ctx.s.state = 'listening'; }
-        else if (a === 'voice:stop')   { ctx.s.state = 'default'; }
-        else if (a === 'voice:cancel') { ctx.s.state = 'default'; }
-        else if (a === 'voice:retry')  { ctx.s.state = 'listening'; }
-        else if (a === 'voice:mute')   {
-          ctx.s.state = ctx.s.state === 'muted' ? 'listening' : 'muted';
-        } else return;
-        ctx.paint();
-        ctx.announce(({
-          default: 'Text composer', listening: 'Listening',
-          speaking: 'Listening', processing: 'Thinking',
-          muted: 'Microphone muted', error: 'Microphone unavailable'
-        })[ctx.s.state] || '');
+        if (a === 'start') { ctx.s.state = 'listening'; ctx.paint();
+                             ctx.announce('Listening'); return; }
+        if (a === 'stop')  { ctx.s.state = 'heard'; ctx.paint();
+                             ctx.announce('Transcript ready to check'); }
       }
     },
 
-    /* ── Visual input ───────────────────────────────────────
-       Five states, one per act plus the two that carry the
-       argument: an image sitting there doing nothing, and an
-       answer that admits what the crop removed. */
+    /* ── Visual ─────────────────────────────────────────────
+       The argument is the region. An answer that does not say
+       where it looked cannot be checked by the person who took
+       the photograph. */
     'visual-input': {
-      initial: 'empty',
+      initial: 'read',
 
       customize: {
         groups: [
-          { id: 'attach', label: 'Attaching',
-            states: ['empty', 'attached'],
+          { id: 'reading', label: 'The reading', states: ['read', 'unsure'],
             controls: [
-              { id: 'ways', label: 'What the empty state offers', type: 'text',
-                value: 'Paste, drag, choose a file, or use the camera' },
-              { id: 'kind', label: 'What it says the image is', type: 'text',
-                value: 'Screenshot · 1440 × 900' },
-              { id: 'retain', label: 'Say what happens to the image', type: 'toggle',
-                value: true, capability: true,
-                hint: 'A photo is the most personal thing most people will ever hand an ' +
-                      'agent. Say it where they hand it over, not in a policy.' },
-              { id: 'retainText', label: 'The line', type: 'text',
-                value: 'Kept with this ticket · not used for training' }
-            ] },
-
-          { id: 'ask', label: 'Instructing',
-            states: ['instructing'],
-            note: 'The half products drop. An image is not a question.',
-            controls: [
-              { id: 'wait', label: 'Wait for an instruction', type: 'toggle', value: true,
+              { id: 'region', label: 'Mark the region it used', type: 'toggle', value: true,
                 capability: true,
-                hint: 'Turn this off to see the failure: the same screenshot supports three ' +
-                      'different questions, and it will answer one of them.' },
-              { id: 'question', label: 'The question', type: 'text',
-                value: 'is this the same bug as #4412?' }
+                hint: 'Without it, the reader has to take the answer on faith.' },
+              { id: 'text', label: 'What it saw', type: 'text',
+                value: 'Cracked housing, lower left of the casing.' },
+              { id: 'gap', label: 'Name what it could not see', type: 'toggle', value: true },
+              { id: 'gapText', label: 'The gap', type: 'text',
+                value: 'The serial plate is out of frame — I cannot confirm the model.',
+                visibleWhen: function (c) { return !!c.gap; } }
             ] },
 
-          { id: 'read', label: 'Analysing',
-            states: ['region', 'reshoot'],
+          { id: 'unsure', label: 'Unsure', states: ['unsure'],
+            note: 'Doubt is carried by the edge, not by a second colour — the system already has one colour for the agent.',
             controls: [
-              { id: 'region', label: 'Mark the region the answer used', type: 'toggle',
-                value: true, capability: true,
-                hint: 'An answer that does not say where it looked cannot be checked.' },
-              { id: 'answer', label: 'The reading', type: 'text',
-                value: 'a null map key in ScheduleResolver.' },
-              { id: 'reshoot', label: 'The specific shot that would settle it', type: 'text',
-                value: 'Scroll up three lines and screenshot again.' }
+              { id: 'askFor', label: 'What would fix it', type: 'text',
+                value: 'A second photo of the plate on the side of the unit would settle it.' }
+            ] },
+
+          { id: 'reading2', label: 'Still reading', states: ['reading'],
+            controls: [
+              { id: 'readLabel', label: 'While it works', type: 'text',
+                value: 'Reading the photograph…' }
             ] }
         ]
       },
 
       states: {
-        empty:       { label: 'Empty',
-                       trigger: 'No image yet.',
-                       behaviour: 'The four ways in are named, because people reach for ' +
-                                  'different ones — and the drop target is the whole surface, ' +
-                                  'not a 24px paperclip.',
-                       action: 'Attach one' },
-        attached:    { label: 'Attached',
-                       trigger: 'The image is here.',
-                       behaviour: 'And nothing is happening. Visibly waiting, not visibly ' +
-                                  'working — no spinner, because no answer is coming until ' +
-                                  'somebody says what they want. This is the state most ' +
-                                  'implementations skip.',
-                       action: 'Write the question' },
-        instructing: { label: 'Instructing',
-                       trigger: 'The question is typed against the image.',
-                       behaviour: 'Image and words go together as one message. This is what ' +
-                                  'turns an attachment into a request — and the same ' +
-                                  'screenshot would have supported three different ones.',
-                       action: 'Send it' },
-        region:      { label: 'Region found',
-                       trigger: 'The reading settles.',
-                       behaviour: 'The edge hardens, the lines it used read hotter than the ' +
-                                  'rest, and the answer names the region before it states a ' +
-                                  'conclusion.',
-                       action: 'See what it could not read' },
-        reshoot:     { label: 'Needs another shot',
-                       trigger: 'Part of the image could not be read.',
-                       behaviour: 'The crop is shown as a crop, the gap is named, and it asks ' +
-                                  'for one specific further image. “A clearer photo” is not a ' +
-                                  'request anybody can act on.',
-                       action: 'Back to empty' }
+        reading: { label: 'Reading',
+                   trigger: 'A photograph has just been attached.',
+                   behaviour: 'The outline is soft and unresolved while it works, and hardens ' +
+                              'as the reading settles — certainty expressed as edge definition.',
+                   action: 'See the reading' },
+        read:    { label: 'Read',
+                   trigger: 'It has something it is confident about.',
+                   behaviour: 'One outlined region, one sentence about what it shows, and a ' +
+                              'plain statement of what the frame did not contain.',
+                   action: 'See it unsure' },
+        unsure:  { label: 'Unsure',
+                   trigger: 'The image is not good enough to judge.',
+                   behaviour: 'The region stays dashed and it asks for the specific second ' +
+                              'photograph that would settle it, rather than answering around ' +
+                              'the problem.',
+                   action: 'Reset' }
       },
 
       view: function (s) {
         var c = s.cfg;
-        var st = s.state;
-
-        function shot(mode) {
-          var lines = '';
-          for (var i = 0; i < 8; i++) {
-            var cls = '';
-            if (mode === 'hot' && i >= 3 && i <= 5) cls = ' class="is-hot"';
-            if (mode === 'cut' && i === 0)          cls = ' class="is-cut"';
-            if (mode === 'cut' && i >= 3 && i <= 5) cls = ' class="is-hot"';
-            lines += '      <b' + cls + '></b>\n';
-          }
-          return '' +
-'    <div class="md-vis__shot" role="img"\n' +
-'         aria-label="Screenshot of a stack trace, eight lines">\n' + lines +
-'    </div>\n';
-        }
-
-        /* `false` means no region at all — the correct state for
-           everything before analysis has run. A marked region on an
-           image nobody has asked about yet is the exact failure
-           this pattern is about. */
-        function region(kind) {
-          return (kind !== false && c.region)
-? '    <span class="md-vis__region' + (kind ? ' md-vis__region--' + kind : '') +
-  '"\n          style="--x:6%;--y:36%;--w:86%;--h:30%"></span>\n' : '';
-        }
-
-        function figure(mode, kind, caption) {
-          return '' +
+        var soft = s.state !== 'read';
+        return '' +
 '<figure class="md-vis">\n' +
-'  <div class="md-vis__frame">\n' + shot(mode) + region(kind) +
+'  <div class="md-vis__frame">\n' +
+'    <div class="md-vis__img" role="img"\n' +
+'         aria-label="Photograph of a cracked pump housing"></div>\n' +
+   (c.region
+? '    <span class="md-vis__region' + (soft ? ' md-vis__region--soft' : '') + '"\n' +
+  '          style="--x:32%;--y:40%;--w:30%;--h:24%"></span>\n' : '') +
 '  </div>\n' +
-'  <p class="md-vis__meta">' + esc(c.kind) +
-   (c.retain ? ' <span>·</span> ' + esc(c.retainText) : '') + '</p>\n' +
-   (caption || '') +
+'  <figcaption class="md-vis__read">\n' +
+   (s.state === 'reading'
+? '    <p class="md-vis__t md-body-medium">' + esc(c.readLabel) + '</p>\n'
+: '    <p class="md-vis__t md-body-medium">' + esc(c.text) + '</p>\n') +
+   (s.state === 'unsure'
+? '    <p class="md-vis__gap md-body-small">' + esc(c.askFor) + '</p>\n'
+: (c.gap && s.state === 'read'
+? '    <p class="md-vis__gap md-body-small">' + esc(c.gapText) + '</p>\n' : '')) +
+'  </figcaption>\n' +
 '</figure>';
-        }
-
-        if (st === 'empty') return '' +
-'<div class="md-vis__drop" role="button" tabindex="0" data-act="attach">\n' +
-'  <strong>Add an image</strong>\n' +
-'  <span>' + esc(c.ways) + '</span>\n' +
-'</div>';
-
-        if (st === 'attached') return figure('', false,
-'  <p class="md-vis__wait">Attached, and nothing is being asked. This same screenshot ' +
-'supports at least three different questions — what the error is, whether it matches a known ' +
-'bug, or how to fix it — and they have three different answers.</p>\n' +
-'  <div class="md-vis__read">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'            data-act="instruct">Write the question</button>\n' +
-'  </div>\n');
-
-        if (st === 'instructing') return c.wait
-? figure('', false,
-  '  <div class="md-sel__bar" style="margin-top:12px">\n' +
-  '    <span class="md-sel__q md-body-medium">' + esc(c.question) +
-  '<span class="pv-caretbar"></span></span>\n' +
-  '    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-  '            data-act="read">Send</button>\n' +
-  '  </div>\n')
-: figure('hot', '',
-  '  <div class="md-vis__read">\n' +
-  '    <p class="md-vis__t md-body-medium">This is a NullPointerException in ' +
-  'ScheduleResolver — here is how to fix it.</p>\n' +
-  '    <p class="md-vis__gap md-body-small">Nobody asked for a fix. It answered the moment ' +
-  'the image landed, and the question the person actually had is now three paragraphs ' +
-  'away.</p>\n' +
-  '  </div>\n');
-
-        if (st === 'region') return figure('hot', '',
-'  <div class="md-vis__read">\n' +
-'    <p class="md-vis__t md-body-medium">In the highlighted lines: ' + esc(c.answer) + '</p>\n' +
-   (c.region ? ''
-: '    <p class="md-vis__gap md-body-small">No region marked. “The highlighted lines” refers ' +
-  'to nothing, and nobody can check this against the image.</p>\n') +
-'  </div>\n');
-
-        /* reshoot */
-        return figure('cut', '',
-'  <div class="md-vis__read">\n' +
-'    <p class="md-vis__t md-body-medium">In the highlighted lines: ' + esc(c.answer) + '</p>\n' +
-'    <p class="md-vis__gap md-body-small">The first three frames are above the crop, so I ' +
-'cannot see where it started. <b>' + esc(c.reshoot) + '</b></p>\n' +
-'  </div>\n');
       },
 
-      act: function (a, ctx) {
-        var go = function (st, say) { ctx.s.state = st; ctx.paint(); if (say) ctx.announce(say); };
-        if (a === 'attach')   return go('attached', 'Image attached. Nothing is being asked yet');
-        if (a === 'instruct') return go('instructing');
-        if (a === 'read')     return go('region', 'Region used: lines 4 to 6');
-      }
+      act: function () {}
     },
 
     /* ── Handwriting ────────────────────────────────────────
-       Five states across the two modes this pattern covers: an
-       ordinary field a pen writes into, where the ink is
-       transient — and ink that is itself the record, where
-       converting is destructive. Merging those two is the failure
-       the page is about. */
+       The ink is the original. Everything here follows from
+       refusing to throw it away. */
     handwriting: {
-      initial: 'nopen',
+      initial: 'read',
 
       customize: {
         groups: [
-          { id: 'field', label: 'Writing into a field',
-            states: ['nopen', 'writing'],
-            note: 'There is no handwriting button here, and there should not be one: the ' +
-                  'platform already lets a pen write into any field.',
-            controls: [
-              { id: 'text', label: 'What was written', type: 'text',
-                value: 'is this working right?' },
-              { id: 'bounds', label: 'Show the handwriting bounds', type: 'toggle',
-                value: true, capability: true,
-                hint: 'Android’s are 40dp above and below, 10dp either side. Without them a ' +
-                      'stroke has to start inside a 52px target, and every one that misses ' +
-                      'is silently lost.' }
-            ] },
-
-          { id: 'ink', label: 'Ink as the record',
-            states: ['ink', 'lowconf', 'corrected'],
-            note: 'Maths, annotation, anything drawn in front of somebody. Here converting ' +
-                  'is destructive.',
+          { id: 'ink', label: 'The ink', states: ['pending', 'read', 'fixed'],
             controls: [
               { id: 'keep', label: 'Keep the strokes', type: 'toggle', value: true,
                 capability: true,
-                hint: 'Replacing ink with the reading throws away the only thing a reader ' +
-                      'can appeal to.' },
-              { id: 'doubt', label: 'The part it was unsure of', type: 'text',
-                value: 'squared' },
-              { id: 'mark', label: 'Mark low-confidence readings', type: 'toggle', value: true,
-                hint: 'Off, a wrong exponent is indistinguishable from a right one — and it ' +
-                      'is a different equation.' }
+                hint: 'Replacing ink with text throws away the only thing the reader can appeal to.' }
+            ] },
+
+          { id: 'read', label: 'The reading', states: ['read', 'fixed'],
+            controls: [
+              { id: 'before', label: 'Before the doubtful word', type: 'text',
+                value: 'Seal replaced on' },
+              { id: 'doubt', label: 'Doubtful word', type: 'text', value: 'unit 4' },
+              { id: 'after', label: 'After it', type: 'text', value: '— reorder gasket' },
+              { id: 'mark', label: 'Mark low-confidence words', type: 'toggle', value: true,
+                hint: 'Off, a wrong word is indistinguishable from a right one.' }
+            ] },
+
+          { id: 'fixed', label: 'Corrected', states: ['fixed'],
+            note: 'One tap, in place. Retyping the line is the failure this pattern exists to avoid.',
+            controls: [
+              { id: 'fixedWord', label: 'Corrected to', type: 'text', value: 'unit 9' }
             ] }
         ]
       },
 
       states: {
-        nopen:     { label: 'No pen',
-                     trigger: 'A touch or mouse session.',
-                     behaviour: 'An ordinary text field, and nothing at all about handwriting ' +
-                                'on screen. This is most of the time, and it is why there is ' +
-                                'no button.',
-                     action: 'Write into it with a pen' },
-        writing:   { label: 'Writing',
-                     trigger: 'A pen writes into that same field.',
-                     behaviour: 'Strokes at one-to-one, unsmoothed, converting behind the nib ' +
-                                '— and the handwriting bounds around the field are why a ' +
-                                'stroke starting slightly outside still lands in it.',
-                     action: 'Switch to ink as the record' },
-        ink:       { label: 'Ink kept',
-                     trigger: 'A page of working, written by hand.',
-                     behaviour: 'The strokes are the document. No conversion has happened and ' +
-                                'none needs to: the ink is already a usable record.',
-                     action: 'Recognise it' },
-        lowconf:   { label: 'Low confidence',
-                     trigger: 'The recogniser could not settle the exponent.',
-                     behaviour: 'The reading sits beneath the ink, never over it, with the ' +
-                                'doubtful part marked in the agent’s own primary. In an ' +
-                                'equation this is not a typo — it is a different equation.',
-                     action: 'Correct it' },
-        corrected: { label: 'Corrected',
-                     trigger: 'The marked reading is tapped and settled.',
-                     behaviour: 'Replaced in place, the mark comes off, and the ink is ' +
-                                'untouched. It was always the original.',
-                     action: 'Back to the start' }
+        pending: { label: 'Just written',
+                   trigger: 'The pen has come off the surface.',
+                   behaviour: 'The strokes are there and the reading has not arrived. The ink ' +
+                              'is already a usable record on its own.',
+                   action: 'Recognise it' },
+        read:    { label: 'Recognised',
+                   trigger: 'The recogniser has produced a line.',
+                   behaviour: 'Text beneath the ink, not instead of it, with the one word it ' +
+                              'was unsure of marked so a fix costs a tap.',
+                   action: 'Correct the marked word' },
+        fixed:   { label: 'Corrected',
+                   trigger: 'The reader taps the marked word and picks the right one.',
+                   behaviour: 'The word is replaced in place, the mark comes off, and the ink ' +
+                              'is untouched — it was always the original.',
+                   action: 'Reset' }
       },
 
       view: function (s) {
         var c = s.cfg;
-        var st = s.state;
-
-        /* The un-converted tail: one joined stroke on the same line
-           as the words that have already resolved. Joined, because
-           separated glyph shapes read as a strange font rather than
-           as somebody's hand still moving. */
-        var LINE =
-'  <svg class="md-ink__live" viewBox="0 0 130 26" aria-hidden="true">\n' +
-'    <path d="M3 19c2-9 4-11 5-4s2 9 5 3 5-9 6-3 2 7 5 2 4-9 5-3 1 7 4 5\n' +
-'             c4-3 3-12 1-16-2-4-3 1-3 5 0 6 2 10 6 10 3 0 5-3 6-7\n' +
-'             s2 5 5 5 5-4 6-8 1 6 4 7c3 1 5-2 6-6s2 4 5 4\n' +
-'             c3 0 4-3 5-6 1 4 2 8 5 8 2 0 4-2 5-5"/>\n' +
-'    <path d="M120 8c1-4 8-4 8 0s-7 4-7 8m-1 5v1"/>\n' +
+        var STROKES =
+'  <svg class="md-ink__strokes" viewBox="0 0 420 64" aria-label="Handwritten note">\n' +
+'    <path d="M14 44c8-18 14-20 18-6s8 14 14 2 10-16 14-2 8 12 14 0"/>\n' +
+'    <path d="M96 20v24M96 20c10-4 16 2 10 8-5 5-10 4-10 4"/>\n' +
+'    <path d="M134 44V22m0 22c0-12 4-18 10-18s8 6 8 18"/>\n' +
+'    <path d="M186 22c-10 0-14 6-14 12s5 10 12 10 12-4 12-10h-12"/>\n' +
+'    <path d="M232 44V20m0 10h16m0 14V20"/>\n' +
+'    <path d="M286 44c-8 0-12-5-12-11s5-11 12-11 12 5 12 11-4 11-12 11Z"/>\n' +
+'    <path d="M330 20v24m0-24c12 0 12 10 0 10m0 0 12 14"/>\n' +
 '  </svg>\n';
-
-        /* The page of working. Drawn once, unsmoothed, with the
-           exponent small and raised — because misreading it has to
-           be believable rather than a contrivance. */
-        var EQ =
-'  <svg class="md-ink__strokes md-ink__strokes--eq" viewBox="0 0 400 190"\n' +
-'       aria-label="Handwritten working. Line one: x squared plus three x minus four equals\n' +
-'                   zero. Line two: open bracket x plus four close bracket, open bracket x\n' +
-'                   plus one close bracket, equals zero.">\n' +
-'    <g transform="rotate(-1.1 200 95)">\n' +
-'      <path d="M22 48c9 8 19 20 27 27M50 47c-9 9-19 20-27 28"/>\n' +
-'      <path d="M60 34c1-7 15-9 15-1 0 7-15 9-16 17l18-1"/>\n' +
-'      <path d="M94 63h27M107 48v27"/>\n' +
-'      <path d="M141 50c12-8 23 0 15 7-5 4-10 3-10 3m-1 1c15-3 23 5 15 12-7 6-17 0-19-3"/>\n' +
-'      <path d="M178 52c8 8 17 17 25 24M203 50c-8 9-17 18-25 26"/>\n' +
-'      <path d="M222 64h28"/>\n' +
-'      <path d="M291 41v38M291 41l-24 28h32"/>\n' +
-'      <path d="M315 56h29M313 68h30"/>\n' +
-'      <path d="M375 44c-12-1-19 8-19 17s7 18 18 17 17-8 17-18-5-16-16-16Z"/>\n' +
-'      <path d="M22 122c-8 13-8 33-1 45"/>\n' +
-'      <path d="M38 132c8 8 16 17 23 23M60 131c-8 8-16 17-23 24"/>\n' +
-'      <path d="M74 144h23M85 133v23"/>\n' +
-'      <path d="M128 126v35M128 126l-21 25h29"/>\n' +
-'      <path d="M144 122c8 13 8 33 1 45"/>\n' +
-'      <path d="M162 122c-8 13-8 33-1 45"/>\n' +
-'      <path d="M178 132c8 8 16 17 23 23M200 131c-8 8-16 17-23 24"/>\n' +
-'      <path d="M214 144h23M225 133v23"/>\n' +
-'      <path d="M262 124v37M262 124l-9 8"/>\n' +
-'      <path d="M280 122c8 13 8 33 1 45"/>\n' +
-'      <path d="M300 138h27M299 150h28"/>\n' +
-'      <path d="M356 126c-11-1-18 7-18 16s6 17 16 17 17-7 17-16-5-16-15-17Z"/>\n' +
-'    </g>\n' +
-'  </svg>\n';
-
-        /* ── Writing into a field ─────────────────────────── */
-        if (st === 'nopen') return '' +
-'<label class="md-ink__field">\n' +
-'  <span class="md-ink__value md-ink__value--ghost md-body-medium">Ask about this working' +
-   '</span>\n' +
-'</label>\n' +
-'<p class="md-ink__hint md-body-small" style="margin-top:14px">An ordinary text field. No ' +
-'handwriting button, because the platform already accepts a pen here.</p>';
-
-        if (st === 'writing') return '' +
-'<label class="md-ink__field md-ink__field--focus">\n' +
-   (c.bounds ? '  <span class="md-ink__bounds" aria-hidden="true"></span>\n' : '') +
-'  <span class="md-ink__value md-body-medium">is this wor</span>\n' +
-   LINE +
-'  <span class="md-ink__caret" aria-hidden="true"></span>\n' +
-'</label>\n' +
-'<p class="md-ink__hint md-body-small">' +
-   (c.bounds
-     ? 'The handwriting area is bigger than the field — 40dp above and below, 10dp either ' +
-       'side — so a stroke starting anywhere in here lands in it.'
-     : 'No bounds. A stroke has to start inside a 52px-high target, and every one that ' +
-       'misses is silently lost.') + '</p>';
-
-        /* ── Ink as the record ────────────────────────────── */
-        if (st === 'ink') return '' +
-'<div class="md-ink">\n' + (c.keep ? EQ : '') +
-'  <p class="md-ink__read md-ink__read--pending md-body-medium">Not recognised yet — the ink ' +
-'is already the record.</p>\n' +
+        if (s.state === 'pending') {
+          return '' +
+'<div class="md-ink">\n' +
+   (c.keep ? STROKES : '') +
+'  <p class="md-ink__read md-ink__read--pending md-body-medium">Not recognised yet ' +
+   '&mdash; the ink is already the record.</p>\n' +
 '</div>';
-
-        var fixed = st === 'corrected';
-        var body =
-'    <span class="md-ink__word">x</span>\n' +
+        }
+        var fixed = s.state === 'fixed';
+        return '' +
+'<div class="md-ink">\n' +
+   (c.keep ? STROKES : '') +
+'  <p class="md-ink__read md-body-medium">\n' +
+'    <span class="md-ink__word">' + esc(c.before) + '</span>\n' +
    (c.mark && !fixed
 ? '    <button class="md-ink__doubt md-ink__word" type="button" data-act="fix"\n' +
   '            aria-label="Low confidence, tap to correct: ' + esc(c.doubt) + '">' +
   esc(c.doubt) + '</button>\n'
 : '    <span class="md-ink__word' + (fixed ? ' md-ink__doubt is-fixed' : '') + '">' +
-  esc(c.doubt) + '</span>\n') +
-'    <span class="md-ink__word">+ 3x − 4 = 0</span>\n';
-
-        return '' +
-'<div class="md-ink">\n' + (c.keep ? EQ : '') +
-'  <p class="md-ink__read md-body-medium">\n' + body +
+  esc(fixed ? c.fixedWord : c.doubt) + '</span>\n') +
+'    <span class="md-ink__word">' + esc(c.after) + '</span>\n' +
 '  </p>\n' +
-'</div>' +
-  (!c.keep
-? '\n<p class="md-ink__hint md-body-small" style="margin-top:14px">The ink is gone, so the ' +
-  'reading is now the only version of the working. If the exponent is wrong there is nothing ' +
-  'left to check it against.</p>'
-: (st === 'lowconf'
-? '\n<p class="md-ink__hint md-body-small" style="margin-top:14px">x&nbsp;squared and ' +
-  'x&nbsp;times&nbsp;2 are different equations. This is why the mark is not cosmetic.</p>'
-: '\n<p class="md-ink__hint md-body-small" style="margin-top:14px">Corrected in one tap, and ' +
-  'the strokes above are exactly as they were.</p>'));
+'</div>';
       },
 
       act: function (a, ctx) {
-        if (a === 'fix') { ctx.s.state = 'corrected'; ctx.paint();
+        if (a === 'fix') { ctx.s.state = 'fixed'; ctx.paint();
                            ctx.announce('Corrected in place; the ink is unchanged'); }
       }
     },
 
-    /* ── Gesture input · contextual selection ───────────────
-       Five states, which is the whole interaction: nothing, the
-       mark, the region it resolved to, the region as a term in
-       the request, and the answer. Everything else this pattern
-       does — failure, adjustment, multiple regions, the keyboard
-       route — is documented in Reference and demonstrated in the
-       simulator, because a state list nobody reads to the end is
-       a specification rather than a page. */
+    /* ── Gesture ────────────────────────────────────────────
+       The playground's whole job is to show the visible control
+       and the gesture doing the same thing — and what is left
+       when the control is taken away. */
     gesture: {
-      initial: 'inactive',
+      initial: 'paired',
 
       customize: {
         groups: [
-          { id: 'layer', label: 'The layer',
-            states: ['inactive', 'selecting'],
-            note: 'The layer is what makes a stroke safe: inside it a drag selects, ' +
-                  'outside it a drag still scrolls.',
+          { id: 'pair', label: 'The pairing', states: ['paired', 'fired', 'hidden'],
             controls: [
-              { id: 'entry', label: 'Entry point', type: 'text',
-                value: 'Ask about this screen' },
-              { id: 'teach', label: 'Teach the marks in place', type: 'toggle', value: true,
+              { id: 'controls', label: 'Show the visible controls', type: 'toggle', value: true,
                 capability: true,
-                hint: 'One line, once, in the layer. Not a tour on second launch.' },
-              { id: 'teachText', label: 'The line', type: 'text',
-                value: 'Circle, highlight, scribble or tap anything.',
-                visibleWhen: function (c) { return !!c.teach; } }
+                hint: 'The gesture is an accelerator over these, never instead of them.' },
+              { id: 'learn', label: 'Teach it in place', type: 'toggle', value: true,
+                visibleWhen: function (c) { return !!c.controls; } },
+              { id: 'learnText', label: 'The line', type: 'text',
+                value: 'Swipe sideways to move between takes — the arrows do the same thing.',
+                visibleWhen: function (c) { return !!c.controls && !!c.learn; } }
             ] },
 
-          { id: 'region', label: 'The region',
-            states: ['confirmed'],
-            note: 'Snapping is what lets an imprecise stroke land on the right object. ' +
-                  'Turn it off to see what the raw mark alone is worth.',
+          { id: 'fired', label: 'After the gesture', states: ['fired'],
+            note: 'A change with no visible trace cannot be checked or undone.',
             controls: [
-              { id: 'snap', label: 'Snap to objects the product knows', type: 'toggle',
-                value: true, capability: true },
-              { id: 'label', label: 'What the region is called', type: 'text',
-                value: 'Revenue · 12–19 Sept',
-                visibleWhen: function (c) { return !!c.snap; } },
-              { id: 'handles', label: 'Adjustable before it is sent', type: 'toggle',
-                value: true, capability: true,
-                hint: 'Without handles a wrong snap can only be undone by starting again.' }
-            ] },
-
-          { id: 'chip', label: 'On the composer',
-            states: ['attached', 'result'],
-            note: 'The chip is a term in the request, not a badge on it.',
-            controls: [
-              { id: 'placeholder', label: 'Placeholder', type: 'text',
-                value: 'Ask about this' },
-              { id: 'question', label: 'The question', type: 'text',
-                value: 'why did this happen?' },
-              { id: 'removable', label: 'The chip can be removed', type: 'toggle',
-                value: true, capability: true,
-                hint: 'And removing it must not take the typed sentence with it.' }
+              { id: 'undo', label: 'Offer an undo', type: 'toggle', value: true,
+                capability: true },
+              { id: 'undoText', label: 'What it says', type: 'text', value: 'Moved to take 3',
+                visibleWhen: function (c) { return !!c.undo; } },
+              { id: 'undoLabel', label: 'Undo', type: 'text', value: 'Undo',
+                visibleWhen: function (c) { return !!c.undo; } }
             ] }
         ]
       },
 
       states: {
-        inactive:  { label: 'Inactive',
-                     trigger: 'The product at rest.',
-                     behaviour: 'No layer, no hidden stroke. One visible, nameable entry ' +
-                                'point — which is also the only thing on screen that says ' +
-                                'this capability exists.',
-                     action: 'Invoke the layer and draw' },
-        selecting: { label: 'Selecting',
-                     trigger: 'The layer is up and the pointer is down.',
-                     behaviour: 'The screen beneath is frozen and dimmed one step, and the ' +
-                                'stroke follows the pointer one-to-one with no smoothing. ' +
-                                'Nothing is interpreted yet.',
-                     action: 'Release, and let it snap' },
-        confirmed: { label: 'Selection confirmed',
-                     trigger: 'The mark closes and the snap resolves.',
-                     behaviour: 'The edge hardens and handles appear. The region is now an ' +
-                                'object that can be corrected rather than a mark that has ' +
-                                'already been acted on — and nothing has been sent.',
-                     action: 'Use this region' },
-        attached:  { label: 'Context attached',
-                     trigger: 'The selection is accepted.',
-                     behaviour: 'The region travels to the composer and becomes a chip. One ' +
-                                'object in a second position — which is why the chip needs ' +
-                                'no caption saying where it came from.',
-                     action: 'Ask the question' },
-        result:    { label: 'Result',
-                     trigger: 'The agent answers.',
-                     behaviour: 'It names the region it used before it states a conclusion, ' +
-                                'and the chip is still there — so the same region can be ' +
-                                'asked about again without drawing it twice.',
-                     action: 'Back to the start' }
+        paired: { label: 'Paired',
+                  trigger: 'The surface is at rest.',
+                  behaviour: 'The controls are the capability; the gesture is the shortcut. ' +
+                             'One line teaches the shortcut at the place it would be used.',
+                  action: 'Fire the gesture' },
+        fired:  { label: 'Fired',
+                  trigger: 'A swipe, or the equivalent button.',
+                  behaviour: 'The control lights with the same colour, so the gesture teaches ' +
+                             'itself — and what happened is stated with an undo beside it.',
+                  action: 'Take the controls away' },
+        hidden: { label: 'Gesture only',
+                  trigger: 'The visible controls are removed.',
+                  behaviour: 'The capability is now invisible and undiscoverable. This is the ' +
+                             'state most gesture features actually ship in.',
+                  action: 'Reset' }
       },
 
       view: function (s) {
         var c = s.cfg;
-        var st = s.state;
-
-        /* One screen, drawn once. The pattern is the layer over it,
-           so the chart under it stays deliberately quiet. */
-        var COLS = [['3', 34], ['5', 41], ['7', 36], ['9', 45], ['11', 38],
-                    ['13', 74], ['15', 88], ['17', 96], ['19', 90]];
-        function screen(mark) {
-          return '' +
-'  <div class="md-sel__screen">\n' +
-'    <p class="md-sel__head">Weekly revenue</p>\n' +
-'    <p class="md-sel__sub">Self-serve · September</p>\n' +
-'    <div class="md-sel__chart" role="img"\n' +
-'         aria-label="Weekly revenue, flat until 12 September then rising sharply">\n' +
-   COLS.map(function (col, i) {
-     var hot = mark && i >= 5;
-     return '      <span class="md-sel__col' + (hot ? ' md-sel__col--hot' : '') +
-            '" style="--h:' + col[1] + '%"><i></i><b>' + col[0] + '</b></span>\n';
-   }).join('') +
-'    </div>\n' +
-'  </div>\n';
-        }
-
-        var REGION = '--x:55%;--y:12%;--w:41%;--h:70%';
-        var name = c.snap ? c.label : 'Region · 240 × 96';
-
-        function chipEl(label, act) {
-          return '' +
-'    <button class="md-sel__chip" type="button" data-act="' + act + '"\n' +
-'            aria-label="Remove ' + esc(label) + '">\n' +
-'      <svg class="md-sel__chip-i" viewBox="0 0 24 24" aria-hidden="true">\n' +
-'        <rect x="4" y="4" width="16" height="16" rx="3"/>\n' +
-'      </svg>\n' +
-'      ' + esc(label) + '\n' +
-   (c.removable ? '      <span class="md-sel__x" aria-hidden="true">×</span>\n' : '') +
-'    </button>\n';
-        }
-
-        /* ── Inactive ─────────────────────────────────────── */
-        if (st === 'inactive') {
-          return '' +
-'<div class="md-sel">\n' +
-'  <div class="md-sel__stage">\n' + screen(false) +
-'  </div>\n' +
-'  <div class="md-sel__bar">\n' +
-'    <button class="md-button md-button--outlined md-button--sm" type="button"\n' +
-'            data-act="select">' + esc(c.entry) + '</button>\n' +
-'    <span class="md-sel__q md-body-medium" style="opacity:.6">' +
-       esc(c.placeholder) + '</span>\n' +
-'  </div>\n' +
-'</div>';
-        }
-
-        /* ── Inside the layer ─────────────────────────────── */
-        if (st === 'selecting' || st === 'confirmed') {
-          var inner = st === 'selecting'
-            ? '    <svg class="md-sel__ink" viewBox="0 0 400 200" aria-hidden="true">\n' +
-              '      <path d="M232 26c58-8 132 6 148 54 14 42-6 96-54 108-46 12-104 6-122-28' +
-              '-14-26-10-58 2-78"/>\n' +
-              '    </svg>\n'
-            : '    <div class="md-sel__region" style="' + REGION + '">\n' +
-              '      <span class="md-sel__label">' + esc(name) + '</span>\n' +
-              (c.handles
-                ? '      <span class="md-sel__h md-sel__h--nw"></span>\n' +
-                  '      <span class="md-sel__h md-sel__h--se"></span>\n' : '') +
-              '    </div>\n';
-
-          return '' +
-'<div class="md-sel">\n' +
-'  <div class="md-sel__stage">\n' + screen(st === 'confirmed') +
-'  <div class="md-sel__layer" role="dialog" aria-modal="true"\n' +
-'       aria-label="Select something to ask about">\n' + inner +
-   (c.teach
-? '    <p class="md-sel__teach md-body-small">' + esc(c.teachText) + '</p>\n' : '') +
-'  </div>\n' +
-'  </div>\n' +
-   (st === 'confirmed'
-? '  <div class="md-sel__bar">\n' +
-  '    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-  '            data-act="attach">Use this</button>\n' +
-  '    <span class="md-sel__q md-body-small" style="opacity:.6">Nothing is sent while ' +
-  'the selection is still being adjusted.</span>\n' +
-  '  </div>\n' : '') +
-'</div>';
-        }
-
-        /* ── On the composer ──────────────────────────────── */
-        var bar = '' +
-'  <div class="md-sel__bar">\n' + chipEl(name, 'clear') +
-'    <span class="md-sel__q md-body-medium">' +
-   (st === 'result' ? esc(c.question) : esc(c.placeholder)) + '</span>\n' +
-'  </div>\n';
-
+        var fired = s.state === 'fired';
+        var show = c.controls && s.state !== 'hidden';
         return '' +
-'<div class="md-sel">\n' +
-'  <div class="md-sel__stage">\n' + screen(true) + '  </div>\n' + bar +
-  (st === 'result'
-? '  <p class="md-sel__miss md-body-small">In <b>' + esc(name) + '</b>: the rise starts on ' +
-  '12 September, the day the self-serve trial length changed from 7 days to 14. Nothing ' +
-  'else shipped that week.</p>\n' : '') +
+'<div class="md-gest">\n' +
+'  <div class="md-gest__stage">\n' +
+'    <span class="md-gest__take md-body-medium">Take ' + (fired ? '3' : '2') +
+     ' of 6</span>\n' +
+'  </div>\n' +
+   (show
+? '  <div class="md-gest__controls" role="group" aria-label="Take controls">\n' +
+  '    <button class="md-gest__btn" type="button" aria-label="Previous take">\n' +
+  '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>\n' +
+  '    </button>\n' +
+  '    <button class="md-gest__btn' + (fired ? ' is-fired' : '') + '" type="button"\n' +
+  '            data-act="next" aria-label="Next take">\n' +
+  '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>\n' +
+  '    </button>\n' +
+  '  </div>\n'
+: '  <!-- no visible control: the capability is now invisible -->\n') +
+   (show && c.learn
+? '  <p class="md-gest__learn md-body-small">' + esc(c.learnText) + '</p>\n' : '') +
+   (fired && c.undo
+? '  <span class="md-gest__undo md-body-small">' + esc(c.undoText) +
+  '    <button class="md-button md-button--text md-button--sm" type="button"\n' +
+  '            data-act="undo">' + esc(c.undoLabel) + '</button>\n' +
+  '  </span>\n' : '') +
 '</div>';
       },
 
       act: function (a, ctx) {
-        var go = function (st, say) { ctx.s.state = st; ctx.paint(); if (say) ctx.announce(say); };
-        if (a === 'select') return go('selecting', 'Selection layer open');
-        if (a === 'attach') return go('attached', 'Region attached to the composer');
-        if (a === 'clear')  return go('inactive', 'Region removed');
+        if (a === 'next') { ctx.s.state = 'fired'; ctx.paint();
+                            ctx.announce('Moved to take 3'); return; }
+        if (a === 'undo') { ctx.s.state = 'paired'; ctx.paint();
+                            ctx.announce('Back to take 2'); }
       }
     },
 
     /* ── Structured input ───────────────────────────────────
-       Five states: the prose, the questions, the skip that states
-       its own assumption, the answer carrying its constraints,
-       and the inline variant. */
+       Two words in this sentence are values; the rest is prose.
+       The playground is about being able to tell which. */
     'structured-input': {
-      initial: 'request',
+      initial: 'resolved',
 
       customize: {
         groups: [
-          { id: 'ask', label: 'What it asks for',
-            states: ['request', 'asking', 'skipped'],
-            note: 'Ask for what changes the answer, not for everything the API accepts.',
+          { id: 'sentence', label: 'The request', states: ['typing', 'resolved', 'plain'],
             controls: [
-              { id: 'req', label: 'The request', type: 'text',
-                value: 'Create a customer research report on mid-market churn.' },
-              { id: 'restraint', label: 'Ask only for what changes the answer',
-                type: 'toggle', value: true, capability: true,
-                hint: 'Turn this off to see the same moment as a form: eight questions, and ' +
-                      'no way to tell which two matter.' },
-              { id: 'why', label: 'Say what each question changes', type: 'toggle',
-                value: true, capability: true,
-                hint: 'A question that cannot explain its own effect on the answer should ' +
-                      'not be asked.' },
-              { id: 'skippable', label: 'Every question can be skipped', type: 'toggle',
-                value: true, capability: true,
-                hint: 'A question that cannot be skipped is a required field in a friendlier ' +
-                      'voice — and should be labelled as one.' }
+              { id: 'metric', label: 'Metric', type: 'text', value: 'activation rate' },
+              { id: 'segment', label: 'Segment', type: 'text', value: 'self-serve' },
+              { id: 'tail', label: 'Rest of the sentence', type: 'text',
+                value: 'since 12 September' }
             ] },
 
-          { id: 'result', label: 'After the answer',
-            states: ['answered'],
-            controls: [
-              { id: 'showSet', label: 'Keep the constraints beside the result',
-                type: 'toggle', value: true, capability: true,
-                hint: 'Buried in the transcript, the result cannot be reproduced.' }
-            ] },
-
-          { id: 'inline', label: 'Typed entities',
-            states: ['typed'],
-            note: 'The other way to reach the same structure: from inside the sentence.',
+          { id: 'chips', label: 'How values read', states: ['typing', 'resolved'],
             controls: [
               { id: 'kinds', label: 'Show the type on the chip', type: 'toggle', value: true,
-                hint: 'Without it, a metric and a segment are the same lozenge.' }
+                hint: 'Without it a metric and a segment are the same lozenge.' },
+              { id: 'escape', label: 'Can be typed as plain text', type: 'toggle', value: true,
+                capability: true,
+                hint: 'A composer you cannot type a sentence into is a form with a cursor.' }
+            ] },
+
+          { id: 'typing', label: 'Mid-resolution', states: ['typing'],
+            note: 'The menu comes from the product’s own schema, so an invalid value is impossible rather than merely wrong.',
+            controls: [
+              { id: 'query', label: 'What is typed', type: 'text', value: 'activ' }
+            ] },
+
+          { id: 'plain', label: 'Plain text', states: ['plain'],
+            requires: 'escape',
+            note: 'The whole thing degrades to a sentence. Nothing is trapped in the structure.',
+            controls: [
+              { id: 'plainText', label: 'As typed', type: 'text',
+                value: 'Show activation rate for self-serve since 12 September' }
             ] }
         ]
       },
 
       states: {
-        request:  { label: 'Free request',
-                    trigger: 'Somebody types what they want.',
-                    behaviour: 'A sentence, and nothing else. No fields, no dropdowns, no form ' +
-                               'standing between the person and the ask.',
-                    action: 'Send it, and see what it asks back' },
-        asking:   { label: 'Asking',
-                    trigger: 'Three parameters would change the answer.',
-                    behaviour: 'Three, not eight — and each one names what it changes. The ' +
-                               'whole group arrives at once, so the size of the ask is never ' +
-                               'a surprise.',
-                    action: 'Skip one' },
-        skipped:  { label: 'Skipped',
-                    trigger: 'A question is declined.',
-                    behaviour: 'The default is stated in the same breath, and it settles as an ' +
-                               'assumption rather than a choice: lower emphasis, with the word ' +
-                               '“default” in its accessible name.',
-                    action: 'Run it' },
-        answered: { label: 'Answered',
-                    trigger: 'The work finishes.',
-                    behaviour: 'The result with its constraints beside it — which is what lets ' +
-                               'one value be changed and the same question re-run into a ' +
-                               'comparable number.',
-                    action: 'See the inline variant' },
-        typed:    { label: 'Typed entity',
-                    trigger: 'Typing inside the sentence.',
-                    behaviour: 'The other route to the same structure: a word resolves from ' +
-                               'the product’s own schema and becomes a chip carrying its type.',
-                    action: 'Back to the request' }
+        typing:   { label: 'Resolving',
+                    trigger: 'Somebody types the first letters of something the product knows.',
+                    behaviour: 'A menu of real values from the schema, so an invalid one cannot ' +
+                               'be entered — the resolution happens in the sentence, not in a panel.',
+                    action: 'Resolve it' },
+        resolved: { label: 'Resolved',
+                    trigger: 'A value is chosen.',
+                    behaviour: 'It snaps to a filled 8dp chip carrying its type. The rest of ' +
+                               'the line stays prose, so the pinned words are obvious.',
+                    action: 'Type it as plain text instead' },
+        plain:    { label: 'Plain text',
+                    trigger: 'Somebody ignores the structure and writes a sentence.',
+                    behaviour: 'It still works. The values are parsed rather than pinned, which ' +
+                               'is less precise and entirely the reader’s choice.',
+                    action: 'Reset' }
       },
 
       view: function (s) {
         var c = s.cfg;
-        var st = s.state;
-        var REQ = '<p class="md-struct__req">' + esc(c.req) + '</p>\n';
-
-        function chipEl(kind, value, cls, act) {
-          return '<button class="md-echip' + (cls ? ' ' + cls : '') + '" type="button"' +
-                 (act ? ' data-act="' + act + '"' : '') + '>' +
-                 (kind && c.kinds ? '<span class="md-echip__k">' + kind + '</span>' : '') +
-                 value + '</button>';
-        }
-
-        function question(id, title, why, opts, skip, act) {
+        if (s.state === 'plain') {
           return '' +
-'  <div class="md-struct__q">\n' +
-'    <p class="md-struct__qt md-body-medium" id="' + id + '">' + title + '</p>\n' +
-   (c.why ? '    <p class="md-struct__qw md-body-small">' + why + '</p>\n' : '') +
-'    <div class="md-struct__opts">\n' +
-     opts.map(function (o) {
-       return '      <button class="md-echip" type="button" aria-describedby="' + id + '"' +
-              (act ? ' data-act="' + act + '"' : '') + '>' + o + '</button>\n';
-     }).join('') +
-   (c.skippable && skip
-? '      <button class="md-echip md-echip--unresolved" type="button" data-act="skip">' +
-  skip + '</button>\n' : '') +
-'    </div>\n' +
-'  </div>\n';
-        }
-
-        var Q_AUD = question('q-aud', 'Who is it for?',
-          'Changes how much background I include.',
-          ['The exec team', 'The product team'],
-          'Skip &mdash; I&rsquo;ll assume the product team', 'skip');
-        var Q_RANGE = question('q-range', 'Over what period?',
-          'Changes which cohorts are complete enough to compare.',
-          ['Last 12 months', 'Since the pricing change'],
-          'Skip &mdash; I&rsquo;ll use the last 12 months', 'skip');
-        var Q_SRC = question('q-src', 'Which sources?',
-          'Changes what I am able to cite.',
-          ['Product data', 'Product data and support tickets'],
-          'Skip &mdash; I&rsquo;ll use product data', 'run');
-
-        /* The failure, reachable on purpose: everything the report
-           accepts as a parameter, asked at once, with no way to
-           tell which two of them decide the answer. */
-        var FORM = ['Who is it for?', 'Over what period?', 'Which sources?', 'Output format?',
-                    'Length?', 'Tone?', 'Include appendices?', 'Chart style?']
-          .map(function (t) {
-            return '  <div class="md-struct__q">\n' +
-                   '    <p class="md-struct__qt md-body-medium">' + t + '</p>\n' +
-                   '    <div class="md-struct__opts">' +
-                   '<button class="md-echip md-echip--unresolved" type="button">Choose' +
-                   '</button></div>\n  </div>\n';
-          }).join('');
-
-        function set(rows) {
-          return '<div class="md-struct__set">' +
-            '<span class="md-struct__setk">Using</span>' + rows.join('') + '</div>';
-        }
-        var AUD = chipEl('audience', 'exec team', '', '');
-        var SRC = chipEl('sources', 'product data', '', '');
-        var RANGE_D = '<button class="md-echip md-echip--default" type="button" ' +
-          'aria-label="Period, default: last 12 months">' +
-          (c.kinds ? '<span class="md-echip__k">period</span>' : '') +
-          'last 12 months &middot; default</button>';
-
-        if (st === 'request') return '' +
-'<div class="md-struct" role="textbox" aria-label="Ask for anything">\n' +
-'  <span>' + esc(c.req) + '</span>\n' +
-'</div>\n' +
-'<p class="md-struct__note">A sentence, and nothing else. No form stands between the person ' +
-'and the ask.</p>\n' +
-'<div class="md-struct__opts" style="margin-top:12px">\n' +
-'  <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'          data-act="ask">Send the request</button>\n' +
+'<div class="md-struct" role="textbox" aria-label="Ask a question">\n' +
+'  <span>' + esc(c.plainText) + '</span>\n' +
 '</div>';
-
-        if (st === 'asking') return REQ +
-   (c.restraint
-? '<div class="md-struct__ask" role="group" aria-label="Three things I need">\n' +
-  Q_AUD + Q_RANGE + Q_SRC + '</div>\n' +
-  '<p class="md-struct__note">' +
-  (c.skippable
-    ? 'Three questions, each naming what it changes. Everything else this report accepts as ' +
-      'a parameter, it has a sensible answer for already.'
-    : 'Nothing here can be declined, which makes these required fields. Calling them ' +
-      'questions does not change that — and a required field should be labelled as one.') +
-  '</p>'
-: '<div class="md-struct__ask" role="group" aria-label="Eight things I need">\n' + FORM +
-  '</div>\n' +
-  '<p class="md-struct__note">Eight questions and no way to tell which two of them decide ' +
-  'the answer. This is a form with a friendlier voice.</p>');
-
-        if (st === 'skipped') return REQ +
-'<div class="md-struct__ask" role="group" aria-label="One thing I still need">\n' + Q_SRC +
-'</div>\n' + set([AUD, RANGE_D]) +
-'<p class="md-struct__note">Skipped, and the assumption was stated in the same breath rather ' +
-'than made quietly. The middle value sits at lower emphasis because it is an assumption, not ' +
-'a choice.</p>';
-
-        if (st === 'answered') return REQ +
-   (c.showSet ? set([AUD, RANGE_D, SRC]) : '') +
-'<p class="md-struct__note">Mid-market churn at <b>3.4%</b>, concentrated in accounts under ' +
-'nine seats. The period is my assumption, not your choice.</p>' +
-   (c.showSet
-? '<p class="md-struct__note">Change one value and ask again: the two numbers are comparable ' +
-  'because the difference between them is a value, not a differently-worded question.</p>'
-: '<p class="md-struct__note">The constraints are somewhere in the transcript. Nobody can ' +
-  'reproduce this number next month, including the person who asked for it.</p>');
-
-        /* typed */
+        }
+        var K = function (k) {
+          return c.kinds ? '<span class="md-echip__k">' + k + '</span>' : '';
+        };
+        if (s.state === 'typing') {
+          return '' +
+'<div class="md-struct" role="textbox" aria-label="Ask a question">\n' +
+'  <span>Show</span>\n' +
+'  <span class="md-echip md-echip--unresolved">' + esc(c.query) + '</span>\n' +
+'</div>\n' +
+'<div class="md-struct__menu" role="listbox">\n' +
+'  <button class="md-struct__opt" type="button" role="option" data-act="resolve">\n' +
+'    ' + esc(c.metric) + '<span class="md-struct__opt-k">metric</span>\n' +
+'  </button>\n' +
+'  <button class="md-struct__opt" type="button" role="option">\n' +
+'    active accounts<span class="md-struct__opt-k">metric</span>\n' +
+'  </button>\n' +
+'  <button class="md-struct__opt" type="button" role="option">\n' +
+'    activation funnel<span class="md-struct__opt-k">report</span>\n' +
+'  </button>\n' +
+'</div>';
+        }
         return '' +
 '<div class="md-struct" role="textbox" aria-label="Ask a question">\n' +
 '  <span>Show</span>\n' +
-'  ' + chipEl('metric', 'activation rate', '', '') + '\n' +
+'  <button class="md-echip" type="button" data-kind="metric">' + K('metric') +
+   esc(c.metric) + '</button>\n' +
 '  <span>for</span>\n' +
-'  ' + chipEl('segment', 'self-serve', '', '') + '\n' +
-'  <span>since 12 September</span>\n' +
-'</div>\n' +
-'<p class="md-struct__note">' +
-   (c.kinds
-     ? 'Two words pinned to real values, the rest still prose. The type sits on the chip, so a ' +
-       'metric is never mistaken for a segment — and four metrics here have “activation” in ' +
-       'the name.'
-     : 'Without the type, a metric and a segment are the same lozenge — and picking the wrong ' +
-       'one still returns a perfectly plausible number.') + '</p>';
+'  <button class="md-echip" type="button" data-kind="segment">' + K('segment') +
+   esc(c.segment) + '</button>\n' +
+'  <span>' + esc(c.tail) + '</span>\n' +
+'</div>';
       },
 
       act: function (a, ctx) {
-        var go = function (st, say) { ctx.s.state = st; ctx.paint(); if (say) ctx.announce(say); };
-        if (a === 'ask')  return go('asking');
-        if (a === 'skip') return go('skipped', 'Skipped. Using the last 12 months');
-        if (a === 'run')  return go('answered');
+        if (a === 'resolve') { ctx.s.state = 'resolved'; ctx.paint();
+                               ctx.announce('Resolved to a metric'); }
       }
     }
   };
@@ -5223,11 +3850,6 @@ card + '>\n' + head +
 
           '<p class="pv-live" role="status" aria-live="polite">' + (s.said || '') + '</p>' +
         '</div>';
-
-      /* A repaint replaces the element any running animation loop
-         was writing to, so anything script-driven has to be
-         re-attached to the new one. */
-      if (def.mounted) def.mounted(root, s);
     }
 
     function row(k, v) {
@@ -5284,7 +3906,6 @@ card + '>\n' + head +
         stage.innerHTML = code;
       }
       if (pre)   pre.innerHTML = highlight(code);
-      if (def.mounted) def.mounted(root, s);
       var dot = root.querySelector('.pv-edit__dot');
       var dirty = anyDirty(def, s.cfg);
       if (dirty && !dot) {

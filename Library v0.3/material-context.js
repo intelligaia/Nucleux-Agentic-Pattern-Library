@@ -220,9 +220,7 @@
        realise you cannot tell who wrote them. */
     disclosure: [{
       title: 'A generated reply in a shared inbox',
-      note: 'Send the reply, then turn the markers off and read exactly the same words again. ' +
-            'That second reading is the whole case for disclosure — nothing else on the screen ' +
-            'changes, and suddenly a colleague wrote it.',
+      note: 'Send it, then turn the markers off and read the same words again: suddenly a colleague wrote them.',
       init: { on: true, phase: 'idle', text: '' },
       view: function (s) {
         var body = human('Dana Khoury', 'DK',
@@ -271,9 +269,7 @@
        Asking for more asks again. */
     consent: [{
       title: 'The ask, at the moment it is needed',
-      note: 'Turn scopes off before you allow, or decline outright, then watch what the answer ' +
-            'becomes. Afterwards, ask it to do something you did not grant and it comes back for ' +
-            'that one permission only — never for the bundle again.',
+      note: 'Decline, or allow less than it asked for. Then ask for something ungranted &mdash; it comes back for that one permission, not the bundle.',
       init: {
         phase: 'ask',
         scopes: { crm: true, cal: true, mail: false },
@@ -457,9 +453,7 @@
          ship the dialog and never build this screen, which is
          why users cannot answer "what can it see" a week later. */
       title: 'The standing view consent leaves behind',
-      note: 'The half nobody builds. Switch a source off and the loss is stated before it happens; ' +
-            'switch one back on and it asks properly rather than silently reconnecting. Revoke ' +
-            'everything and the agent says what it can still do, which is not nothing.',
+      note: 'Switch a source off and the loss is stated before it happens. Revoke everything and it says what it can still do.',
       init: {
         srcs: { crm: true, drive: true, cal: true, mail: false },
         confirm: null,
@@ -623,10 +617,7 @@
        it and watch where the line is (and is not). */
     caveat: [{
       title: 'The two seconds before something is sent',
-      note: 'Generate a reply, then send it. The reminder greets you under the composer and ' +
-            'repeats under the draft that is about to leave — the only placement worth ' +
-            'repeating. Switch it off and send the same draft again: nothing on screen asks ' +
-            'you to check it.',
+      note: 'Generate a reply and send it: the reminder repeats where the risk is. Switch it off and send again.',
       init: { on: true, phase: 'idle', text: '', sent: false },
       view: function (s) {
         var ICO = '<svg class="md-caveat__ico" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -713,9 +704,7 @@
 
     'example-gallery': [{
       title: 'The empty surface',
-      note: 'A research agent with nothing in it. Filter to the job you are actually doing, open ' +
-            'an example, and watch where it ends up: in the composer, editable, not on a ' +
-            'clipboard. Then run it and see the result the tile promised.',
+      note: 'Filter to the job you are actually doing, then open an example and watch where it lands: in the composer, editable.',
       init: { filter: 'All', open: null, phase: 'browse', text: '' },
       view: function (s) {
         var EX = [
@@ -829,9 +818,7 @@
 
     templates: [{
       title: 'The report someone writes every Friday',
-      note: 'Fill the slots and watch the request assemble. Leave one empty and the run control ' +
-            'stays out of reach &mdash; the template will not guess on your behalf. Then break ' +
-            'out to plain text, because the person always knows the exception the scaffold does not.',
+      note: 'Fill the slots and watch the request assemble. Leave one empty and Run stays out of reach; break out to plain text at any point.',
       init: { picked: null, slots: {}, phase: 'list', text: '' },
       view: function (s) {
         var TPL = {
@@ -958,10 +945,7 @@
 
     nudges: [{
       title: 'The fourth time by hand',
-      note: 'Reply to a few tickets manually. Nothing happens until the product has actual ' +
-            'evidence the offer would land &mdash; then one nudge appears, anchored to the ' +
-            'control it is about. Dismiss it and it does not come back, which is the whole ' +
-            'difference between a hint and a nag.',
+      note: 'Reply to a few tickets by hand. The nudge appears only once there is evidence &mdash; dismiss it and it stays gone.',
       init: { manual: 0, nudge: false, dismissed: false, drafted: false },
       view: function (s) {
         var body = human('Dana Khoury', 'DK', 'Can you confirm the Q2 renewal figure?');
@@ -1041,10 +1025,7 @@
 
     disclaimer: [{
       title: 'The first session, and every one after it',
-      note: 'Start a session and the limits are stated once, in full. Acknowledge them and watch ' +
-            'what is left behind: a compact line that reopens the whole statement. Then ask for ' +
-            'something outside the stated scope and see the limit hold in practice rather than ' +
-            'only on the notice.',
+      note: 'Start a session: the limits are stated once in full, then compact to a line that reopens them.',
       init: { phase: 'first', asked: false, text: '' },
       view: function (s) {
         var body = '';
@@ -1140,9 +1121,7 @@
        thread at once. This scene does both. */
     avatar: [{
       title: 'Two authors in one thread',
-      note: 'Ask it something and watch the mark rather than the words: the ring runs only while ' +
-            'work is actually happening. Then hand the ticket to a colleague and see the two marks ' +
-            'together, where the whole question is whether you can tell them apart at a glance.',
+      note: 'Ask it something and watch the mark, not the words. Then hand over: two marks, one glance to tell them apart.',
       init: { phase: 'idle', handed: false, off: false, text: '' },
       view: function (s) {
         var body = human('Dana Khoury', 'DK', 'Where did Q2 renewals actually land?');
@@ -1195,9 +1174,7 @@
        three surfaces. Switching between them is the test. */
     name: [{
       title: 'The same name, three surfaces',
-      note: 'Move between the conversation, the audit trail and a notification. The name and the ' +
-            'role line are identical in all three &mdash; that consistency is what lets someone ' +
-            'file a bug about “Aria” instead of “the AI thing in the sidebar”.',
+      note: 'Move between the conversation, the audit trail and a notification. Same name, same role line, all three.',
       init: { surface: 'chat', open: false },
       view: function (s) {
         var body;
@@ -1256,9 +1233,7 @@
        across bad news, so the scene crosses the two. */
     personality: [{
       title: 'Register moves, voice holds',
-      note: 'Switch register and the length changes. Break the data source and the news changes. ' +
-            'What should not change in any of the four combinations is the voice: answer first, ' +
-            'no apologising for existing, no “great question”.',
+      note: 'Switch register, then break the data source. Length changes and the news changes; the voice does not.',
       init: { register: 'brief', broken: false, flatter: false },
       view: function (s) {
         var text;
@@ -1306,9 +1281,7 @@
        gives you a whole screen and a way to audit it. */
     iconography: [{
       title: 'One glyph, audited across a screen',
-      note: 'Open the menu and run something. Then switch the audit on: every use of the reserved ' +
-            'glyph is outlined at once, and you can see in a second whether it appears anywhere ' +
-            'that is not generation. That audit is how the rule survives contact with a roadmap.',
+      note: 'Run something, then switch the audit on: every use of the reserved glyph outlined at once.',
       init: { menu: false, phase: 'idle', text: '', audit: false },
       view: function (s) {
         var menuItems = [
@@ -1407,9 +1380,7 @@
        to use it. */
     color: [{
       title: 'Presence in a document someone else owns',
-      note: 'Start a draft and the accent appears &mdash; it marks that a model is working inside ' +
-            'a surface a person owns, and it leaves when the work does. Then switch the whole ' +
-            'scene to greyscale: everything still reads, because no signal here is colour alone.',
+      note: 'Start a draft and the accent appears, then leaves with the work. Switch to greyscale: everything still reads.',
       init: { phase: 'idle', text: '', grey: false, accepted: false },
       view: function (s) {
         var present = s.phase === 'working' || s.phase === 'live' || s.phase === 'done';

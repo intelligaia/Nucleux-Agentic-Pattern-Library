@@ -86,8 +86,7 @@
   var SCRIPTS = {
 
     disclosure: {
-      lede: 'Send a prompt and watch where the label lands — before the first word of the reply, ' +
-            'not after it. Then turn disclosure off and read the same answer again.',
+      lede: 'Send a prompt and watch where the label lands: before the reply, not after it.',
       /* Only this script's switch touches the turn head. On the other
          two pages the label must stay put: their switch is about
          THEIR pattern, and silently removing disclosure as a side
@@ -105,8 +104,7 @@
     },
 
     consent: {
-      lede: 'Ask something the agent has not been given the data for. It stops and asks &mdash; ' +
-            'scoped, with the reason attached &mdash; instead of reaching or guessing.',
+      lede: 'Ask for something it has no data for. It stops and asks &mdash; scoped, with the reason attached.',
       prompts: [
         'How did renewals land in Q2?',
         'Summarise the board pack',
@@ -133,8 +131,7 @@
     },
 
     caveat: {
-      lede: 'The same reminder in its strongest form: rather than a general warning, the reply ' +
-            'names what it could not see. A gap with a name is something a reader can act on.',
+      lede: 'The strongest form of the reminder: the reply names what it could not see.',
       prompts: [
         'How did renewals land in Q2?',
         'Are we ahead of plan?',
@@ -155,9 +152,7 @@
        whatever they typed. */
 
     avatar: {
-      lede: 'Send a prompt and watch the mark rather than the words. It rings while Aria works, ' +
-            'settles when the answer lands, and stays visibly not-a-person when a colleague ' +
-            'joins the thread.',
+      lede: 'Watch the mark, not the words. It rings while Aria works and settles when the answer lands.',
       prompts: [
         'How did renewals land in Q2?',
         'Hand this to Dana',
@@ -181,8 +176,7 @@
     },
 
     name: {
-      lede: 'Ask who you are talking to. The name is said once with its role attached &mdash; ' +
-            'so every later turn can be a bare name without implying a colleague.',
+      lede: 'Ask who you are talking to: the name is said once, with its role attached.',
       prompts: [
         'Who am I talking to?',
         'How did renewals land in Q2?',
@@ -215,8 +209,7 @@
     },
 
     personality: {
-      lede: 'Ask for the same thing twice, once short. The register moves; the voice does not &mdash; ' +
-            'same directness, same refusal to pad, including when the answer is bad news.',
+      lede: 'Ask for the same thing twice, once short. The register moves; the voice does not.',
       prompts: [
         'How did renewals land in Q2?',
         'Say that in one line',
@@ -238,8 +231,7 @@
     },
 
     iconography: {
-      lede: 'Send a prompt, then look at what comes back with it. Every control that runs the ' +
-            'model carries the same glyph &mdash; and nothing that does not run the model has it.',
+      lede: 'Send a prompt, then look at what came back with it: one glyph, only where a model ran.',
       prompts: [
         'How did renewals land in Q2?',
         'Draft a reply to Dana',
@@ -261,8 +253,7 @@
     },
 
     color: {
-      lede: 'Send a prompt and read the grounds, not the words: the agent answers on its own ' +
-            'reserved role, and the accent only appears where a model is genuinely at work.',
+      lede: 'Read the grounds, not the words. The accent appears only where a model is at work.',
       prompts: [
         'How did renewals land in Q2?',
         'Draft the reply in the doc',

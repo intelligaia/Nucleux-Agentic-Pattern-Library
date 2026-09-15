@@ -140,6 +140,119 @@
       '</div>';
   }
 
+  /* ══════════════════════════════════════════════════════════
+     REFERENCE
+
+     Six optional sub-blocks, each rendered only if the pattern
+     declares it. Three shapes are enough for all of them:
+
+       pairs  a keyed definition row   — anatomy, states, variants
+       steps  an ordered sequence      — the interaction itself
+       rules  a flat list of sentences — content, a11y, don'ts
+
+     Nothing here is prose-with-headings: a reader comparing two
+     patterns should be able to put the two pages side by side and
+     read across.
+     ══════════════════════════════════════════════════════════ */
+  function refPairs(rows) {
+    return '<div class="qa-list ref-pairs">' + rows.map(function (r) {
+      return '<div class="qa-row"><div class="qa-row__k">' + r[0] + '</div>' +
+             '<div class="qa-row__v">' + r[1] + '</div></div>';
+    }).join('') + '</div>';
+  }
+  function refSteps(items) {
+    return '<ol class="ref-steps">' + items.map(function (t) {
+      return '<li>' + t + '</li>';
+    }).join('') + '</ol>';
+  }
+  function refRules(items, kind) {
+    return '<ul class="ref-rules' + (kind ? ' ref-rules--' + kind : '') + '">' +
+      items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>';
+  }
+  function refSub(title, note, body) {
+    return '<h3 class="mp-sub">' + title + '</h3>' +
+           (note ? '<p class="ref-note">' + note + '</p>' : '') + body;
+  }
+
+  function referenceHTML(p) {
+    var out = '';
+
+    /* Precedent comes FIRST and carries links, because the claim the
+       rest of the page rests on is that this interaction exists in
+       shipping software. A pattern with no precedent says so. */
+    if (p.precedent && p.precedent.length) {
+      out += refSub('Precedent',
+        'Shipping products this pattern is drawn from. Behaviour only &mdash; none of their ' +
+        'visual design is copied here.',
+        refPairs(p.precedent.map(function (r) {
+          return [r.url ? '<a href="' + r.url + '" target="_blank" rel="noopener">' +
+                          r.name + '</a>' : r.name, r.what];
+        })));
+    }
+
+    if (p.anatomy && p.anatomy.length) {
+      out += refSub('Anatomy', '', refPairs(p.anatomy.map(function (r) {
+        return [r.part, r.role];
+      })));
+    }
+
+    if (p.flow && p.flow.length) {
+      out += refSub('The interaction', '', refSteps(p.flow));
+    }
+
+    if (p.statesList && p.statesList.length) {
+      out += refSub('States',
+        'Every one of these is reachable in the Live preview above.',
+        refPairs(p.statesList.map(function (r) { return [r.name, r.desc]; })));
+    }
+
+    if (p.variants && p.variants.length) {
+      out += refSub('Variants', '', refPairs(p.variants.map(function (r) {
+        return [r.name, r.desc];
+      })));
+    }
+
+    if (p.expressive) {
+      out += refSub('Expressive behaviour', '',
+        '<p class="ref-prose">' + p.expressive + '</p>');
+    }
+
+    if (p.content && p.content.length) {
+      out += refSub('Content', '', refRules(p.content));
+    }
+
+    if (p.a11y && p.a11y.length) {
+      out += refSub('Accessibility',
+        'Not a checklist bolted on afterwards &mdash; each of these changes what the pattern is.',
+        refRules(p.a11y));
+    }
+
+    if (p.donts && p.donts.length) {
+      out += refSub('Don&rsquo;t', '', refRules(p.donts, 'dont'));
+    }
+
+    if (p.metrics && p.metrics.length) {
+      out += refSub('How to tell it is working', '', refRules(p.metrics));
+    }
+
+    if (p.composed && p.composed.length) {
+      out += refSub('Composed from', '',
+        '<div class="ref-tags">' + p.composed.map(function (c) {
+          return '<span class="ref-tag">' + esc(c) + '</span>';
+        }).join('') + '</div>');
+    }
+
+    if (p.related && p.related.length) {
+      out += refSub('Related patterns', '',
+        '<div class="ref-tags">' + p.related.map(function (r) {
+          return '<a class="ref-tag ref-tag--link" href="material-pattern.html?id=' +
+                 encodeURIComponent(r[0]) + '">' + r[1] + '</a>';
+        }).join('') + '</div>');
+    }
+
+    return out;
+  }
+
   function block(id, title, lede, body, count) {
     return '' +
       '<section class="section-block" id="' + id + '">' +
@@ -187,6 +300,11 @@
        description: it opens with what the pattern IS and finishes
        with what it is for. The short `oneline` still exists for the
        places that need a single line — the sidebar and the cards. */
+    /* Name, then one sentence. A kicker line between the two was
+       tried and removed: where the category-facing name is broader
+       than the pattern (Gesture Input really means contextual
+       selection), the sentence says so, which is one thing to read
+       instead of two. */
     var hero =
       '<header class="detail__hero">' +
         '<h1 class="detail__name">' + esc(p.name) + '</h1>' +
@@ -227,24 +345,33 @@
 
     /* ── 3 · Simulator ───────────────────────────────────────
        Where Live Preview isolates the pattern, this puts it back
-       into a product and makes something happen TO it: a workflow
-       runs, the pattern appears because the workflow produced it,
-       and the reader can push it into every outcome including the
-       ones a demo usually hides. */
-    var live = window.MaterialContext && window.MaterialContext.has(p.id);
-    var demoable = window.MaterialDemo && window.MaterialDemo.has(p.id);
+       into a product and makes something happen TO it.
+
+       ONE simulator. It used to be two: a workspace scene and a
+       conversational one, stacked under the same heading with
+       nothing passing between them — which quietly taught the
+       wrong thing, that an agent is a chat window parked next to
+       the work rather than a participant in it. Now there is a
+       single Helpdesk with Aria docked in the same frame, one
+       state object behind both halves, and one continuous arc:
+       read the ticket, ask the agent, let it draft into the
+       ticket's own composer, then send. The pattern appears at
+       the point in that arc where the workflow produces it. */
+    /* The simulator is chosen by the PATTERN, not by a template.
+       Every built pattern now declares its own scenario, archetype
+       and interactions in MaterialSim; the static `context` scenes
+       remain only as a fallback for anything added to the data
+       before it has a simulator of its own. */
+    var bespoke = window.MaterialSim && window.MaterialSim.has(p.id);
     var simBody = '';
 
-    if (live) {
-      simBody += window.MaterialContext.scenes(p.id).map(function (c, i) {
-        return '<div class="mp-scene">' +
-                 '<h3 class="mp-scene__t">' + esc(c.title) + '</h3>' +
-                 '<p class="mp-scene__note">' + c.note + '</p>' +
-                 '<div data-scene="' + i + '"></div>' +
-               '</div>';
-      }).join('');
+    if (bespoke) {
+      simBody = '<div class="mp-scene">' +
+                  '<p class="mp-scene__note">' + window.MaterialSim.note(p.id) + '</p>' +
+                  '<div data-sim-root></div>' +
+                '</div>';
     } else if (p.context && p.context.length) {
-      simBody += p.context.map(function (c) {
+      simBody = p.context.map(function (c) {
         return '<div class="mp-scene">' +
                  '<h3 class="mp-scene__t">' + esc(c.title) + '</h3>' +
                  '<p class="mp-scene__note">' + c.note + '</p>' + c.scene +
@@ -252,21 +379,12 @@
       }).join('');
     }
 
-    /* The assistant surface is a second scenario, not a second
-       section: same question — how does this pattern behave in a
-       real tool — asked of a conversational product rather than a
-       workspace one. */
-    if (demoable) {
-      simBody += '<div class="mp-scene">' +
-                   '<h3 class="mp-scene__t">In a conversational assistant</h3>' +
-                   '<p class="mp-scene__note">' + window.MaterialDemo.lede(p.id) + '</p>' +
-                   '<div data-demo-root data-pattern="' + p.id + '"></div>' +
-                 '</div>';
-    }
-
+    /* The lede no longer promises one product, because there is no
+       longer one product: each pattern gets the smallest believable
+       environment its own workflow needs. */
     var simulator = simBody ? block('sec-simulator', 'See it in an agentic workflow',
-      'A working product, not a mockup of one. Start the workflow and the pattern appears ' +
-      'because the workflow produced it — then push it into the states a demo usually skips.',
+      'A small working product, chosen for this pattern. The pattern appears because the ' +
+      'work produced it.',
       simBody) : '';
 
     /* ── 4 · Install ─────────────────────────────────────────
@@ -288,6 +406,16 @@
         (p.how  ? '<div class="qa-row"><div class="qa-row__k">How to use it</div><div class="qa-row__v">' + p.how + '</div></div>' : '') +
       '</div>') : '';
 
+    /* ── 6 · Reference ───────────────────────────────────────
+       The four questions say what the pattern is for. This says
+       what it is made of, what it does, where it came from and
+       how it fails. It renders only from the fields a pattern
+       actually declares, so a pattern documented to four
+       questions looks exactly as it did before this existed. */
+    var ref = referenceHTML(p);
+    var reference = ref ? block('sec-reference', 'Reference',
+      'Precedent, anatomy, states, and the rules that keep the pattern honest.', ref) : '';
+
     var nav =
       '<div class="detail__nav">' +
         (n.prev
@@ -302,24 +430,19 @@
           : '<span></span>') +
       '</div>';
 
-    detail.innerHTML = bread + hero + example + simulator + install + qa + nav;
+    detail.innerHTML = bread + hero + example + simulator + install + qa + reference + nav;
     document.title = p.name + ' · Material 3.0 — Nucleux';
 
     if (playable) {
       window.MaterialPreview.mount(detail.querySelector('[data-preview-root]'), p.id);
     }
 
-    var root = detail.querySelector('[data-demo-root]');
-    if (root) window.MaterialDemo.mount(root, p.id);
-
-    if (live) {
-      var defs = window.MaterialContext.scenes(p.id);
-      detail.querySelectorAll('[data-scene]').forEach(function (host) {
-        window.MaterialContext.mount(host, defs[+host.dataset.scene]);
-      });
+    if (bespoke) {
+      window.MaterialSim.mount(detail.querySelector('[data-sim-root]'), p.id);
     }
 
-    renderTOC(p, { simulator: !!simulator, install: !!install, qa: hasQA });
+    renderTOC(p, { simulator: !!simulator, install: !!install, qa: hasQA,
+                   reference: !!reference });
     wireTOC();
     wireFrames(detail);
   }
@@ -335,6 +458,7 @@
     if (has.simulator) items.push({ id: 'sec-simulator', label: 'In an agentic workflow' });
     if (has.install)   items.push({ id: 'sec-install',   label: 'Install' });
     if (has.qa)        items.push({ id: 'sec-questions', label: 'The four questions' });
+    if (has.reference) items.push({ id: 'sec-reference', label: 'Reference' });
 
     toc.innerHTML =
       '<div class="toc__title">On this page</div>' +
