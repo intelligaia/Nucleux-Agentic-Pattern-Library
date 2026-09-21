@@ -81,6 +81,15 @@
         '<circle cx="20" cy="50" r="6" class="v-fill-p"/>' +
         '<rect x="32" y="46" width="40" height="8" rx="4" class="v-fill-line"/>' +
         '<rect x="80" y="46" width="46" height="8" rx="4" class="v-fill-pc"/>');
+    },
+    /* Labs is not one of the four stages of the journey, so it gets
+       its own abstract rather than borrowing one: an outline with
+       nothing filled in, which is what an unevidenced pattern is. */
+    labs: function () {
+      return shell(
+        '<rect x="14" y="16" width="112" height="36" rx="10" class="v-stroke"/>' +
+        '<rect x="26" y="26" width="42" height="6" rx="3" class="v-fill-line"/>' +
+        '<rect x="26" y="38" width="64" height="6" rx="3" class="v-fill-line"/>');
     }
   };
 
@@ -103,7 +112,7 @@
                '<div class="mh-live__scale">' + def.examples[0].code + '</div>' +
              '</div>';
     }
-    return VISUALS[stage.id]();
+    return (VISUALS[stage.id] || VISUALS.onboarding)();
   }
 
   /* A built pattern's description comes from its own definition, not
@@ -130,7 +139,15 @@
           '</div>' +
           '<p class="pcard__line">' + esc(oneline(p)) + '</p>' +
           '<div class="pcard__foot">' +
-            '<span class="t-mini t-muted">' + (built ? 'Documented' : 'Coming soon') + '</span>' +
+            /* The state in WORDS. The old card said "Documented"
+               or "Coming soon", which collapsed three different
+               answers into one and made a 30-pattern library look
+               like an 89-pattern one. */
+            '<span class="t-mini pcard__status" data-avail="' + NAV.status(p.id) + '">' +
+              NAV.STATUS_LABEL[NAV.status(p.id)] + '</span>' +
+            (NAV.isLabs(p.id)
+              ? '<span class="pcard__labs" title="Not established enough to build on. ' +
+                'Documented so the reasoning is visible.">Labs</span>' : '') +
             (built
               ? '<span class="pcard__open">Open' +
                   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">' +
@@ -160,11 +177,26 @@
           'of recurring design conversations. Open any pattern for the full What / Why / When / ' +
           'How, a live example, the tokens it resolves to, and the Material components it ' +
           'composes from.</p>' +
+        /* Availability, stated up front and by name. "89 patterns"
+           on its own was the single most misleading number on the
+           site: it is the size of the MAP, not the size of the
+           library, and a reader has no way to tell which one they
+           are being quoted. */
+        '<div class="main__avail">' +
+          '<span class="main__avail-item" data-avail="available">' +
+            '<strong>' + BUILT.length + '</strong> available</span>' +
+          '<span class="main__avail-item" data-avail="in-progress">' +
+            '<strong>' + NAV.inProgress.length + '</strong> in progress</span>' +
+          '<span class="main__avail-item" data-avail="planned">' +
+            '<strong>' + (total - BUILT.length - NAV.inProgress.length) +
+            '</strong> planned</span>' +
+        '</div>' +
+        '<p class="main__avail-note">Available means built and tested: a page, a live preview, ' +
+          'a working simulator. Planned means it is in the taxonomy and nothing more.</p>' +
         '<div class="main__meta">' +
-          '<span class="main__meta-item"><strong>' + total + '</strong> patterns</span>' +
+          '<span class="main__meta-item"><strong>' + total + '</strong> in the map</span>' +
           '<span class="main__meta-item"><strong>' + STAGES.length + '</strong> stages</span>' +
           '<span class="main__meta-item"><strong>' + cats + '</strong> categories</span>' +
-          '<span class="main__meta-item"><strong>' + BUILT.length + '</strong> built</span>' +
         '</div>' +
       '</header>';
 
@@ -177,12 +209,13 @@
         '<section class="lib-stage" id="stage-' + stage.id + '" data-stage="' + stage.id + '">' +
           '<header class="lib-stage__head">' +
             '<div>' +
-              '<div class="lib-stage__meta">Stage ' + esc(stage.num) + '</div>' +
+              '<div class="lib-stage__meta">' +
+                (stage.num === '\u2014' ? 'Not a stage' : 'Stage ' + esc(stage.num)) + '</div>' +
               '<h2 class="lib-stage__title">' + esc(stage.label) + '.</h2>' +
               '<p class="lib-stage__lede">' + esc(stage.lede) + '</p>' +
             '</div>' +
             '<span class="badge ' + (done ? 'badge--full' : 'badge--scaffold') + '">' +
-              (done ? done + ' of ' + count + ' built' : 'In production') +
+              done + ' of ' + count + ' available' +
             '</span>' +
           '</header>' +
           stage.subcats.map(function (sub) {

@@ -1781,7 +1781,7 @@ Scope: renewal forecasting, account health, outreach.</pre>
               ]
             },
             {
-              id: "connectors", name: "Connectors",
+              id: "connectors", name: "Connect Data Source",
               oneline: "OAuth into Drive, Slack, Notion, etc. for live grounding.",
               value: "high", sub: "Context",
               what: "A connection list where users authenticate third-party services — Drive, Slack, Notion, CRM — so the AI can read live data instead of stale uploads.",

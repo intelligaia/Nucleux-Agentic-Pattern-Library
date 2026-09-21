@@ -84,12 +84,16 @@
      product answers this question and it answers it in a sentence. */
   var WHEN_NOTE = 'Takes effect from your next message. Nothing already said is changed.';
 
-  var ICONS = {
-    chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
-    tick: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>',
-    auto: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-          '<path d="M4 17l5-10 5 10M5.8 14h6.4"/><path d="M17 7v10M14 10l3-3 3 3"/></svg>'
-  };
+    /* Material Symbols, by name. This module used to carry its own
+     hand-drawn approximations of these glyphs; they are now the
+     kit's own paths, resolved through one shared set so the same
+     idea cannot be drawn two ways in two files. */
+  var ICONS = (function () {
+    var MI = window.MaterialIcons, out = {};
+    var USE = {'chev': 'chevDown', 'tick': 'check', 'auto': 'spark'};
+    for (var k in USE) out[k] = MI ? MI.icon(USE[k]) : '';
+    return out;
+  })();
 
   /* ── The resting control ──────────────────────────────────
      Two values, because that is what the industry converged on:

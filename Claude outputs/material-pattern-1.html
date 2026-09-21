@@ -3202,21 +3202,6 @@
     }
     .sim-src b { font-weight: 500; color: var(--md-sys-color-on-surface); }
 
-    /* A panel the PERSON opened, rather than a turn the agent
-       took. It carries no card of its own — the list inside it is
-       already a bordered surface, and a box around a box is how a
-       picker starts looking like a settings page. */
-    .sim-panel { display: grid; gap: 4px; margin: 4px 0 8px; }
-    .sim-panel__h {
-      margin: 0; font-size: 14px; font-weight: 650;
-      color: var(--md-sys-color-on-surface);
-    }
-    .sim-panel__b {
-      margin: 0 0 8px; font-size: 12.5px; line-height: 1.55; max-width: 62ch;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-    .sim-panel__f { display: flex; gap: 6px; margin-top: 6px; }
-
     /* The sentence a remove control owes the person. Sits under
        the composer, where the standing caveat sits, because it is
        the same kind of statement: a fact about what this surface
@@ -4757,8 +4742,6 @@
       background: var(--md-sys-color-surface-container-lowest, #fff);
       color: var(--md-sys-color-on-surface-variant);
     }
-    .md-scope__mark--logo { padding: 1px; background: transparent; }
-    .md-scope__mark--logo svg { width: 100%; height: 100%; display: block; }
     .md-scope__t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .md-scope__d { opacity: .82; white-space: nowrap; }
     .md-scope__chev {
@@ -4913,38 +4896,6 @@
       color: var(--md-sys-color-on-surface);
     }
     .ax__mitem:hover { background: var(--md-sys-color-surface-container-high); }
-    /* A row that owns a second level says so with a chevron, and
-       keeps its highlight while that level is open — otherwise the
-       submenu looks like it belongs to nothing. */
-    .ax__mitem--sub { justify-content: space-between; }
-    .ax__mitem--sub[aria-expanded="true"] {
-      background: var(--md-sys-color-surface-container-high);
-    }
-    .ax__mchev { width: 16px; height: 16px; flex: 0 0 auto; margin-left: auto;
-      color: var(--md-sys-color-on-surface-variant); }
-    /* The second level, anchored to the first rather than to the
-       composer, so it stays beside its row whatever width the
-       first level turns out to be. Bottom-aligned because these
-       menus open upward. */
-    .ax__submenu {
-      position: absolute; left: calc(100% + 2px); bottom: 0; z-index: 7;
-      min-width: 290px; max-width: 320px; padding: 6px;
-      border-radius: var(--md-sys-shape-corner-medium);
-      background: var(--md-sys-color-surface-container-lowest);
-      box-shadow: 0 2px 6px rgba(16, 14, 24, .08), 0 18px 44px -22px rgba(16, 14, 24, .6);
-      animation: ax-sub 200ms var(--md-sys-motion-easing-emphasized) both;
-    }
-    @keyframes ax-sub {
-      from { opacity: 0; transform: translateX(-6px) scale(.97); }
-      to   { opacity: 1; transform: none; }
-    }
-    /* Inside a flyout the list is furniture, not a card: it drops
-       its own outline so there is one border, not two. */
-    .ax__submenu .md-conn-list-wrap,
-    .ax__submenu .md-conn-list { border: 0; background: transparent; }
-    @media (prefers-reduced-motion: reduce) {
-      .ax__submenu { animation: none; }
-    }
     .ax__mitem small { margin-left: auto; color: var(--md-sys-color-on-surface-variant); font-size: 11px; }
     /* What the composer is doing, in words, under the capsule. */
     .ax__cnote {

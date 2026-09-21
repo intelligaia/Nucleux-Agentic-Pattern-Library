@@ -41,6 +41,13 @@
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="nav-mega.css" />
+
+  <!-- Material 3.0 agentic components — scoped to the "Connect a
+       data source" section only (material-neural-ui-deterministic
+       skill). Nothing else on this page reads these tokens. -->
+  <link rel="stylesheet" href="material-tokens.css?v=4" />
+  <link rel="stylesheet" href="material-components.css?v=4" />
+  <link rel="stylesheet" href="material-connect.css?v=18" />
   <style>
     .npm-link { color: inherit; text-decoration: none; }
     .npm-link:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -2286,6 +2293,39 @@
 
 
   <!-- ────────────────────────────────────────────────────
+       CONNECT A DATA SOURCE — Material 3.0 agentic component,
+       live-rendered here (not a screenshot). Same component,
+       tokens, copy and states as the full pattern page — see
+       material-connect.js / material-connect.css. Everything
+       in this section is Material 3.0 per the
+       material-neural-ui-deterministic skill; nothing outside
+       this section uses those tokens or that skill.
+       ──────────────────────────────────────────────────── -->
+  <section class="practices" id="connect-a-data-source">
+    <div class="container">
+      <header class="practices__head reveal" data-parallax-y="-0.03">
+        <span class="t-eyebrow">Pattern &middot; Context Expansion</span>
+        <h2 class="practices__title">Connect a data source,<br/>without losing control of it.</h2>
+        <p class="practices__sub">As a product manager, connect a work tool like Notion, Google Drive, Slack or GitHub to the agent — so it can use what you already have there, while you can still see and withdraw exactly what it can reach.</p>
+      </header>
+
+      <div class="reveal" data-connect-showcase-root>
+        <div class="conn-showcase" data-connect-showcase></div>
+      </div>
+
+      <div class="practices__more reveal" style="display:flex;gap:12px;margin-top:var(--s-3);">
+        <a class="btn btn--ghost" href="material-pattern.html?id=connectors">
+          View the full pattern
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────────────
        LABS — interaction & typography playground.
        Lives on the home page; opens the standalone Labs
        page (does not launch inside the Library).
@@ -2395,6 +2435,20 @@
   <script src="global.js"></script>
 <script src="nav-splitflap.js"></script>
 <script src="nav-mega.js"></script>
+
+<!-- Material 3.0 agentic component — "Connect a data source".
+     Scoped to #connect-a-data-source only. -->
+<script src="material-icons.js?v=4"></script>
+<script src="material-connect.js?v=18"></script>
+<script src="material-connect-showcase.js?v=18"></script>
+<script>
+  (function () {
+    var root = document.querySelector('[data-connect-showcase]');
+    if (root && window.MaterialConnectShowcase) {
+      window.MaterialConnectShowcase.mount(root);
+    }
+  })();
+</script>
 
   <!-- Madlibs demo — vanilla JS, no dependencies -->
   <script>

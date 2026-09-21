@@ -33,47 +33,66 @@
    and are marked BASELINE below. Replace any BASELINE line with
    a READ one by linking a node in this file that uses it.
 
-   Nothing here is a Nucleux value. The expressive violet/rose/
-   amber triad used elsewhere in this library is deliberately
-   absent: on a Material page the palette is Material's.
+   ── NUCLEUX MATERIAL 3 EXPRESSIVE ─────────────────────────
+
+   COLOUR, TYPOGRAPHY AND ICONS COME FROM THE KIT. The scheme
+   below is Material's own baseline, read from the file above and
+   not reinterpreted: on a Material page the palette is Material's.
+   A Nucleux-seeded scheme was built and then reverted, because a
+   reference implementation of Material 3 that quietly reseeds the
+   palette is teaching the reader something they cannot check
+   against the kit in front of them.
+
+   Icons are Material Symbols. Type is the M3 type scale.
+
+   MOTION, SHAPE ROLES and the AGENT SEMANTIC roles are the only
+   additions, and are named --mx-* so the line between what was
+   read and what was invented stays visible.
+
+   MOTION, SHAPE and the AGENT SEMANTIC roles are additions, not
+   transcriptions, and are named --mx-* to say so. They exist
+   because the baseline layer does not answer the questions an
+   agentic product asks: what does "thinking" look like, what
+   does a container do when its state changes, and which curve
+   does a thing move on when it is moving rather than fading.
    ============================================================ */
 :root {
 
   /* ── Colour · light scheme ──────────────────────────────── */
-  --md-sys-color-primary:               #6750A4;   /* READ     */
-  --md-sys-color-on-primary:            #FFFFFF;   /* READ     */
-  --md-sys-color-primary-container:     #EADDFF;   /* READ     */
-  --md-sys-color-on-primary-container:  #4F378A;   /* READ     */
+  --md-sys-color-primary: #6750A4;   /* READ     */
+  --md-sys-color-on-primary: #FFFFFF;   /* READ     */
+  --md-sys-color-primary-container: #EADDFF;   /* READ     */
+  --md-sys-color-on-primary-container: #4F378A;   /* READ     */
 
-  --md-sys-color-secondary:              #625B71;  /* READ     */
-  --md-sys-color-on-secondary:           #FFFFFF;  /* READ     */
-  --md-sys-color-secondary-container:    #E8DEF8;  /* READ     */
+  --md-sys-color-secondary: #625B71;  /* READ     */
+  --md-sys-color-on-secondary: #FFFFFF;  /* READ     */
+  --md-sys-color-secondary-container: #E8DEF8;  /* READ     */
   --md-sys-color-on-secondary-container: #4A4459;  /* READ     */
 
-  --md-sys-color-tertiary:               #7D5260;  /* READ     */
-  --md-sys-color-on-tertiary:            #FFFFFF;  /* READ     */
-  --md-sys-color-tertiary-container:     #FFD8E4;  /* READ     */
-  --md-sys-color-on-tertiary-container:  #633B48;  /* READ     */
+  --md-sys-color-tertiary: #7D5260;  /* READ     */
+  --md-sys-color-on-tertiary: #FFFFFF;  /* READ     */
+  --md-sys-color-tertiary-container: #FFD8E4;  /* READ     */
+  --md-sys-color-on-tertiary-container: #633B48;  /* READ     */
 
-  --md-sys-color-error:                  #B3261E;  /* BASELINE */
-  --md-sys-color-on-error:               #FFFFFF;  /* BASELINE */
-  --md-sys-color-error-container:        #F9DEDC;  /* BASELINE */
-  --md-sys-color-on-error-container:     #852221;  /* BASELINE */
+  --md-sys-color-error: #B3261E;  /* BASELINE */
+  --md-sys-color-on-error: #FFFFFF;  /* BASELINE */
+  --md-sys-color-error-container: #F9DEDC;  /* BASELINE */
+  --md-sys-color-on-error-container: #852221;  /* BASELINE */
 
-  --md-sys-color-surface:                #FEF7FF;  /* BASELINE */
-  --md-sys-color-on-surface:             #1D1B20;  /* READ     */
-  --md-sys-color-surface-variant:        #E7E0EC;  /* BASELINE */
-  --md-sys-color-on-surface-variant:     #49454F;  /* READ     */
+  --md-sys-color-surface: #FEF7FF;  /* BASELINE */
+  --md-sys-color-on-surface: #1D1B20;  /* READ     */
+  --md-sys-color-surface-variant: #E7E0EC;  /* BASELINE */
+  --md-sys-color-on-surface-variant: #49454F;  /* READ     */
 
   --md-sys-color-surface-container-lowest: #FFFFFF; /* BASELINE */
-  --md-sys-color-surface-container-low:    #F7F2FA; /* BASELINE */
-  --md-sys-color-surface-container:        #F3EDF7; /* BASELINE */
-  --md-sys-color-surface-container-high:   #ECE6F0; /* BASELINE */
-  --md-sys-color-surface-container-highest:#E6E0E9; /* BASELINE */
+  --md-sys-color-surface-container-low: #F7F2FA; /* BASELINE */
+  --md-sys-color-surface-container: #F3EDF7; /* BASELINE */
+  --md-sys-color-surface-container-high: #ECE6F0; /* BASELINE */
+  --md-sys-color-surface-container-highest: #E6E0E9; /* BASELINE */
 
-  --md-sys-color-outline:                #79747E;  /* BASELINE */
-  --md-sys-color-outline-variant:        #CAC4D0;  /* READ     */
-  --md-sys-color-scrim:                  #000000;  /* BASELINE */
+  --md-sys-color-outline: #79747E;  /* BASELINE */
+  --md-sys-color-outline-variant: #CAC4D0;  /* READ     */
+  --md-sys-color-scrim: #000000;  /* BASELINE */
 
   /* ── Shape ──────────────────────────────────────────────── */
   --md-sys-shape-corner-none:        0px;    /* BASELINE */
@@ -104,11 +123,204 @@
   --md-sys-state-disabled-content: 0.38;   /* BASELINE */
   --md-sys-state-disabled-layer:   0.12;   /* BASELINE */
 
-  /* ── Motion ─────────────────────────────────────────────── */
+  /* ── Motion · the baseline curves ───────────────────────── */
+  /* Kept because components already name them. They are the raw
+     material for the roles below, not something to reach for
+     directly: a component that picks a curve is a component that
+     has decided how important it is, on its own. */
+  --md-sys-motion-easing-linear:        cubic-bezier(0, 0, 1, 1);        /* BASELINE */
   --md-sys-motion-easing-standard:      cubic-bezier(0.2, 0, 0, 1);      /* BASELINE */
+  --md-sys-motion-easing-standard-decel:cubic-bezier(0, 0, 0, 1);        /* BASELINE */
+  --md-sys-motion-easing-standard-accel:cubic-bezier(0.3, 0, 1, 1);      /* BASELINE */
   --md-sys-motion-easing-emphasized:    cubic-bezier(0.2, 0, 0, 1);      /* BASELINE */
+  --md-sys-motion-easing-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);   /* BASELINE */
+  --md-sys-motion-easing-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);   /* BASELINE */
+  --md-sys-motion-duration-short2:      100ms;                            /* BASELINE */
   --md-sys-motion-duration-short4:      200ms;                            /* BASELINE */
   --md-sys-motion-duration-medium2:     300ms;                            /* BASELINE */
+  --md-sys-motion-duration-medium4:     400ms;                            /* BASELINE */
+  --md-sys-motion-duration-long2:       500ms;                            /* BASELINE */
+  --md-sys-motion-duration-long4:       700ms;                            /* BASELINE */
+
+  /* ── Motion · SEMANTIC ROLES ────────────────────────────────
+     NUCLEUX ADDITION. Six roles, and a component spends one of
+     them rather than choosing a duration and a curve.
+
+     The rule this replaces: before these existed there were two
+     easing tokens in this file and they resolved to the SAME
+     curve, so anything that wanted to feel expressive wrote its
+     own cubic-bezier in place. Thirteen of them, in one
+     stylesheet, none of them reviewable as a system.
+
+     Choosing between them is a question about what is changing:
+
+       fast     a control acknowledging a press. Short enough
+                that it reads as response, not animation.
+       default  an ordinary state change — a menu, a panel, a
+                chip opening.
+       slow     a large surface rearranging. Long enough to be
+                followed, which is the point of making it slow.
+       spatial  something physically MOVES, resizes or morphs.
+                Gets the spring, because a spring is a claim
+                about mass and only motion through space can
+                make that claim honestly.
+       effects  opacity, colour, emphasis. Never a spring: a
+                fade that overshoots is a fade that lies about
+                what kind of change it is.
+       ambient  atmosphere only, measured in seconds. Nothing a
+                person is waiting on may use it.
+
+     `-in` and `-out` exist where entering and leaving should not
+     be symmetrical: things arrive decelerating and leave
+     accelerating, which is how arrival reads as arrival. */
+
+  --mx-motion-fast-duration:       120ms;
+  --mx-motion-fast-easing:         var(--md-sys-motion-easing-standard);
+
+  --mx-motion-default-duration:    220ms;
+  --mx-motion-default-easing:      var(--md-sys-motion-easing-emphasized);
+  --mx-motion-default-in:          var(--md-sys-motion-easing-emphasized-decel);
+  --mx-motion-default-out:         var(--md-sys-motion-easing-emphasized-accel);
+
+  --mx-motion-slow-duration:       420ms;
+  --mx-motion-slow-easing:         var(--md-sys-motion-easing-emphasized);
+  --mx-motion-slow-in:             var(--md-sys-motion-easing-emphasized-decel);
+  --mx-motion-slow-out:            var(--md-sys-motion-easing-emphasized-accel);
+
+  /* The spring. Overshoot is small on purpose — 1.24, not the
+     1.56 that was hard-coded in thirteen places. At composer
+     scale the larger value reads as a bounce, and a bounce on a
+     text field is a toy. */
+  --mx-motion-spatial-duration:    300ms;
+  --mx-motion-spatial-easing:      cubic-bezier(0.34, 1.24, 0.64, 1);
+  --mx-motion-spatial-slow-duration: 460ms;
+
+  --mx-motion-effects-duration:    180ms;
+  --mx-motion-effects-easing:      var(--md-sys-motion-easing-standard);
+  --mx-motion-effects-in:          var(--md-sys-motion-easing-standard-decel);
+
+  --mx-motion-ambient-duration:    18s;
+  --mx-motion-ambient-easing:      var(--md-sys-motion-easing-linear);
+
+  /* ── Shape · SEMANTIC ROLES ─────────────────────────────────
+     NUCLEUX ADDITION on top of the baseline corner ramp, which
+     stays exactly as it is.
+
+     The ramp answers "how round"; it does not answer "how round
+     should THIS be", so every surface in the library ended up
+     the same rounded rectangle. A role is a decision about what
+     the thing is for, and it is reviewable:
+
+       control-compact  dense controls in a row. Small, because
+                        a pill in a toolbar is a pill in a
+                        toolbar and there are six of them.
+       chip             anything that toggles or removes itself.
+                        Full, because pill reads as pressable in
+                        a way a rounded rectangle does not.
+       surface          a panel, a card, a menu.
+       prominent        a surface that should read as the most
+                        important thing on the screen. Used
+                        sparingly — if everything is prominent
+                        the role has no meaning left.
+       field            the composer at rest.
+
+     MORPH PAIRS are the expressive part: a container whose shape
+     changes BECAUSE its state changed. The composer entering
+     voice is the reference case — same component, same place,
+     rounder while it is listening — and it animates on the
+     spatial role because the shape is moving through space. */
+
+  --mx-shape-control-compact: var(--md-sys-shape-corner-small);
+  --mx-shape-chip:            var(--md-sys-shape-corner-full);
+  --mx-shape-field:           var(--md-sys-shape-corner-large);
+  --mx-shape-surface:         var(--md-sys-shape-corner-large);
+  --mx-shape-prominent:       var(--md-sys-shape-corner-extra-large);
+
+  /* resting → engaged. Both halves named, so a reader can see
+     what the morph is between without reading the animation. */
+  --mx-shape-morph-field-rest:    var(--md-sys-shape-corner-large);
+  --mx-shape-morph-field-active:  var(--md-sys-shape-corner-extra-large);
+  --mx-shape-morph-surface-rest:  var(--md-sys-shape-corner-medium);
+  --mx-shape-morph-surface-open:  var(--md-sys-shape-corner-large);
+
+  /* ── Colour · AGENT SEMANTIC ROLES ──────────────────────────
+     NUCLEUX ADDITION. The baseline scheme has no word for
+     "thinking" or "blocked", so every simulator was inventing
+     one out of primary and error.
+
+     These map one-to-one onto the agent state language —
+     idle · working · waiting · needs input · blocked · completed
+     · failed — so that a status word, a colour and an icon are
+     three views of one value rather than three decisions.
+
+     EVERY role here is required to ship with a non-colour
+     carrier: an icon, a label, a shape or a position. Colour is
+     the fastest of the three to read and the only one that some
+     people cannot read at all, which makes it a good accelerator
+     and a bad sole carrier. The regression suite asserts this
+     rather than trusting it. */
+
+  --mx-color-agent-active:        var(--md-sys-color-primary);
+  --mx-color-agent-active-bg:     var(--md-sys-color-primary-container);
+  --mx-color-on-agent-active:     var(--md-sys-color-on-primary-container);
+
+  /* Generated BY the agent rather than written by the person.
+     Deliberately the quietest role in the set: marking machine
+     output should be legible, not triumphant. */
+  --mx-color-agent-generated:     var(--md-sys-color-secondary);
+  --mx-color-agent-generated-bg:  var(--md-sys-color-secondary-container);
+  --mx-color-on-agent-generated:  var(--md-sys-color-on-secondary-container);
+
+  --mx-color-agent-thinking:      var(--md-sys-color-primary);
+  --mx-color-agent-thinking-bg:   var(--md-sys-color-primary-container);
+
+  /* Waiting is not working. It is the agent doing nothing while
+     something else happens, and it should not borrow the colour
+     of activity. */
+  --mx-color-agent-waiting:       var(--md-sys-color-on-surface-variant);
+  --mx-color-agent-waiting-bg:    var(--md-sys-color-surface-container-high);
+
+  /* Blocked is not an error. Something is required before the
+     work can continue, and the thing required is usually the
+     person, so it carries the warning hue rather than the error
+     one — red here would say "it went wrong" about a run that
+     is simply paused. */
+  /* ADDED. M3 has no warning role, so these two are the only
+     colour values in this file that were not read from the kit.
+     Both were contrast-checked against the kit's own surfaces
+     after the scheme was restored: 6.19:1 on surface, 5.66:1 on
+     surface-container, 5.02:1 on surface-container-highest. */
+  --mx-color-agent-blocked:       #9A4505;  /* ADDED  amber T40 */
+  --mx-color-agent-blocked-bg:    #FDE3D5;  /* ADDED  amber T92 */
+  --mx-color-on-agent-blocked:    #6D3005;  /* ADDED  8.25:1 on its container */
+
+  --mx-color-user-action-required:     var(--mx-color-agent-blocked);
+  --mx-color-user-action-required-bg:  var(--mx-color-agent-blocked-bg);
+  --mx-color-on-user-action-required:  var(--mx-color-on-agent-blocked);
+
+  /* ADDED, for the same reason. 6.22:1 on surface. */
+  --mx-color-success:             #086C36;  /* ADDED */
+  --mx-color-success-bg:          #C3F3CF;  /* ADDED  T92 */
+  --mx-color-on-success:          #034822;  /* ADDED  8.72:1 on its container */
+
+  --mx-color-warning:             var(--mx-color-agent-blocked);
+  --mx-color-warning-bg:          var(--mx-color-agent-blocked-bg);
+  --mx-color-on-warning:          var(--mx-color-on-agent-blocked);
+
+  --mx-color-error:               var(--md-sys-color-error);
+  --mx-color-error-bg:            var(--md-sys-color-error-container);
+  --mx-color-on-error:            var(--md-sys-color-on-error-container);
+
+  /* Where something came from — a citation, a connected service,
+     a knowledge source. Its own hue, because "this is evidence"
+     is a different claim from "this is active". */
+  --mx-color-source:              var(--md-sys-color-tertiary);
+  --mx-color-source-bg:           var(--md-sys-color-tertiary-container);
+  --mx-color-on-source:           var(--md-sys-color-on-tertiary-container);
+
+  --mx-color-selected:            var(--md-sys-color-primary);
+  --mx-color-selected-bg:         var(--md-sys-color-primary-container);
+  --mx-color-on-selected:         var(--md-sys-color-on-primary-container);
 
   /* ── Typography ─────────────────────────────────────────── */
   /* Roboto is the kit's font on every type style read above —
@@ -143,6 +355,83 @@
   --md-sys-typescale-label-medium-tracking: 0.5px;                                              /* BASELINE */
   --md-sys-typescale-label-small-size:  11px; --md-sys-typescale-label-small-line:  16px;       /* BASELINE */
   --md-sys-typescale-label-small-tracking: 0.5px;                                               /* BASELINE */
+}
+
+/* ── Reduced motion, once, at the token layer ─────────────────
+   NUCLEUX ADDITION. Every component that spends a motion ROLE
+   gets this for free; the alternative is thirty components each
+   remembering to write their own media query, and the one that
+   forgets is the one that hurts somebody.
+
+   Durations collapse rather than animations being disabled,
+   because a state change still has to be perceivable — a thing
+   that teleports is harder to follow than a thing that moves.
+   The spring is replaced outright: reduced motion is a request
+   about vestibular load, and overshoot is exactly the part that
+   causes it. Ambient motion stops completely: it is decoration
+   and nobody is waiting on it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mx-motion-fast-duration:          1ms;
+    --mx-motion-default-duration:       1ms;
+    --mx-motion-slow-duration:          1ms;
+    --mx-motion-spatial-duration:       1ms;
+    --mx-motion-spatial-slow-duration:  1ms;
+    --mx-motion-effects-duration:      80ms;   /* a fade is not vestibular */
+    --mx-motion-spatial-easing:  var(--md-sys-motion-easing-standard);
+    --mx-motion-ambient-duration:       0s;
+  }
+}
+
+/* ── Typography · SEMANTIC ROLES ──────────────────────────────
+   NUCLEUX ADDITION. The M3 type scale answers "how big"; these
+   answer "what job", which is the question that was being
+   guessed at. Four jobs, and nothing in the library needs a
+   fifth:
+
+     task      what this screen is FOR. One per surface.
+     active    the state hierarchy — what is happening right
+               now. Carries weight rather than size, because an
+               agent's status changing should not reflow the
+               page around it.
+     utility   compact labels on controls and chips. Its own
+               role so it stops being "body text, smaller".
+     support   supporting content that must stay calm: hints,
+               notes, consequences, the sentence under an
+               option.
+
+   Display sizes are deliberately not given a role. Expressive
+   typography in M3 means intentional contrast, not large type,
+   and a pattern library that reaches for 57px is decorating. */
+
+.mx-type-task {
+  font-family: var(--md-ref-typeface-brand);
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line);
+  font-weight: 500; letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+}
+.mx-type-active {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: 600;
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+}
+.mx-type-utility {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line);
+  font-weight: 500;
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}
+.mx-type-support {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: var(--md-sys-typescale-body-small-tracking);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* ── Type-scale utility classes ───────────────────────────────

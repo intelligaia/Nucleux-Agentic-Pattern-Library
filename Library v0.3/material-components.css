@@ -163,6 +163,18 @@
   box-shadow: var(--md-sys-elevation-1, 0 1px 3px rgba(16, 16, 20, 0.16));
 }
 .md-button--sm { height: 32px; padding: 0 16px; }
+/* Filled, in the error role — the one destructive confirmation in
+   the kit that should read as unmistakably different from a
+   normal filled action, without inventing a fifth button shape. */
+.md-button--filled-error {
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+.md-button--filled-error:hover {
+  background:
+    linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.08)),
+    var(--md-sys-color-error);
+}
 
 /* ── Basic dialog (M3) ────────────────────────────────────
    Extra-large corner (28), surface-container-high, elevation 3.
@@ -713,7 +725,10 @@
    Worked examples, each showing the ask AND what came back.
    A gallery of prompts alone teaches phrasing; a gallery of
    results teaches range, which is the thing being discovered. */
-.md-gallery { display: grid; gap: 12px; max-width: 620px; }
+/* A definite width, not a shrink-wrap: the stage centres its child,
+   so without `width: 100%` the auto-fit grid resolves to a single
+   column at content width and the Layout control moves nothing. */
+.md-gallery { display: grid; gap: 12px; width: 100%; max-width: 620px; }
 .md-gallery__filters { display: flex; gap: 8px; flex-wrap: wrap; }
 .md-filter {
   display: inline-flex; align-items: center; gap: 6px;
@@ -749,12 +764,28 @@
 
 .md-grid {
   display: grid; gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* 180px, not 240: the stage is ~390px wide once the Customize
+     panel is open, and 240 could not fit two columns there — so Grid
+     and List rendered identically exactly where a reader compares
+     them. Empty tracks collapse, so a two-example gallery still
+     shows two equal columns at full width. */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 /* List is one column, whatever the width — for a gallery whose
    examples are long enough that two of them side by side stop being
-   readable. */
+   readable. Below ~370px the grid has already collapsed to one column
+   on its own, so the column count alone cannot carry the difference:
+   a list row also turns the card sideways, putting the category in a
+   leading column instead of stacked above the ask. */
 .md-gallery[data-layout="list"] .md-grid { grid-template-columns: 1fr; }
+.md-gallery[data-layout="list"] .md-ex {
+  display: grid; grid-template-columns: auto 1fr;
+  column-gap: 12px; align-items: baseline;
+}
+.md-gallery[data-layout="list"] .md-ex__k { margin-bottom: 0; }
+.md-gallery[data-layout="list"] .md-ex__ask,
+.md-gallery[data-layout="list"] .md-ex__out,
+.md-gallery[data-layout="list"] .md-ex__use { grid-column: 2; }
 
 .md-ex {
   display: block; width: 100%; text-align: left;
@@ -1176,7 +1207,7 @@
   border-radius: var(--md-sys-shape-corner-full);
   background: var(--md-sys-color-primary);
   display: grid; place-items: center;
-  transition: transform 180ms var(--md-sys-motion-easing-spring, cubic-bezier(.34,1.56,.64,1));
+  transition: transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 .md-entry__send:active { transform: scale(0.92); }
 .md-entry__send svg { width: 17px; height: 17px; fill: var(--md-sys-color-on-primary); }
@@ -1201,7 +1232,7 @@
   padding: 8px 14px; font: inherit; cursor: pointer; text-align: left;
   animation: md-suggest-in 380ms var(--md-sys-motion-easing-emphasized) both;
   transition: background 180ms var(--md-sys-motion-easing-standard),
-              transform 180ms cubic-bezier(.34, 1.56, .64, 1);
+              transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 .md-suggest:nth-child(2) { animation-delay: 40ms; }
 .md-suggest:nth-child(3) { animation-delay: 80ms; }
@@ -1230,14 +1261,14 @@
   background: transparent; color: var(--md-sys-color-primary);
   display: grid; place-items: center;
   transition: background 180ms var(--md-sys-motion-easing-standard),
-              transform 180ms cubic-bezier(.34, 1.56, .64, 1);
+              transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 .md-field-glyph:hover  { background: var(--md-sys-color-primary-container); }
 .md-field-glyph:active { transform: scale(0.94); }
 /* Thinking is a hue rotation, never a spin: a spinner says wait,
    a hue shift says the agent is doing something. */
 .md-glyph--thinking {
-  animation: md-glyph-think 1.6s cubic-bezier(.4, 0, .2, 1) infinite;
+  animation: md-glyph-think 1.6s var(--mx-motion-effects-easing) infinite;
 }
 @keyframes md-glyph-think {
   0%, 100% { fill: var(--md-sys-color-primary); }
@@ -1297,7 +1328,7 @@
   border: 0; background: transparent; cursor: pointer; color: inherit;
   width: 18px; height: 18px; border-radius: var(--md-sys-shape-corner-full);
   line-height: 1; font-size: 15px;
-  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 .md-fchip button:hover  { background: rgba(0, 0, 0, 0.08); }
 .md-fchip button:active { transform: scale(0.85); }
@@ -1385,12 +1416,12 @@
   background: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
   font: inherit;
-  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 .md-dice:active { transform: scale(0.94); }
 .md-dice__ico { width: 18px; height: 18px; fill: currentColor; }
 .md-dice.is-rolling .md-dice__ico {
-  animation: md-dice-roll 380ms cubic-bezier(.34, 1.56, .64, 1);
+  animation: md-dice-roll var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 @keyframes md-dice-roll {
   from { transform: rotate(0deg)   scale(1); }
@@ -1463,7 +1494,7 @@
   background: var(--md-sys-color-surface-container-high);
   color: var(--md-sys-color-on-surface-variant);
   display: grid; place-items: center;
-  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1),
+  transition: transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing),
               background 180ms var(--md-sys-motion-easing-standard);
 }
 .md-voice__mic svg { width: 20px; height: 20px; fill: currentColor; }
@@ -1777,7 +1808,7 @@
   border: 0; background: transparent; cursor: pointer; font: inherit;
   padding: 0 2px; color: inherit;
   border-bottom: 2px dotted var(--md-sys-color-primary);
-  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1),
+  transition: transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing),
               background 180ms var(--md-sys-motion-easing-standard);
 }
 .md-ink__doubt:hover  { background: var(--md-sys-color-primary-container); }
@@ -2024,7 +2055,7 @@
   border-radius: var(--md-sys-shape-corner-small);
   border: 2px solid var(--md-sys-color-primary);
   background: color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent);
-  animation: md-sel-snap 320ms cubic-bezier(.34, 1.56, .64, 1) both;
+  animation: md-sel-snap var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing) both;
 }
 @keyframes md-sel-snap {
   from { opacity: 0; transform: scale(1.06); }
@@ -2108,7 +2139,7 @@
   border-radius: var(--md-sys-shape-corner-small);
   background: var(--md-sys-color-primary-container);
   color: var(--md-sys-color-on-primary-container);
-  animation: md-sel-land 380ms cubic-bezier(.34, 1.56, .64, 1) both;
+  animation: md-sel-land var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing) both;
 }
 /* It arrives from the layer above it, because it IS the region —
    one object in a second position, not a new one. */
@@ -2183,8 +2214,8 @@
   border-radius: var(--md-sys-shape-corner-small);
   background: var(--md-sys-color-primary-container);
   color: var(--md-sys-color-on-primary-container);
-  animation: md-echip-in 220ms cubic-bezier(.34, 1.56, .64, 1) both;
-  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1);
+  animation: md-echip-in var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing) both;
+  transition: transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
 }
 .md-echip:active { transform: scale(0.95); }
 @keyframes md-echip-in {

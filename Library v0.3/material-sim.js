@@ -104,20 +104,21 @@
      Shared by every shell, so two simulators cannot disagree
      about what an agent mark or a working indicator looks like.
      ══════════════════════════════════════════════════════════ */
-  var SPARK_D = 'M12 3.2 13.9 8.6 19.3 10.5 13.9 12.4 12 17.8 10.1 12.4 4.7 10.5 10.1 8.6Z';
-  var SPARK = '<path d="' + SPARK_D + '"/>';
+  /* The hand-drawn four-point star that used to be this
+     library's AI mark is gone; the mark is now Material Symbols'
+     `star_shine`, resolved through MI('spark') like every other
+     glyph. */
 
   function mark(cls) {
     return '<span class="md-agentav ' + (cls || '') + '" aria-hidden="true">' +
-             '<svg viewBox="0 0 24 24">' + SPARK + '</svg></span>';
+             MI('spark') + '</span>';
   }
   function chip(label) {
     /* A leading separator that exists in the text stream: read
        aloud, "Aria" and "AI generated" were arriving as one word. */
     return '<span class="ax__sep">, </span>' +
            '<span class="md-assist-chip md-assist-chip--tonal">' +
-             '<svg class="md-assist-chip__icon" viewBox="0 0 24 24" aria-hidden="true">' +
-             SPARK + '</svg>' + (label || 'AI generated') + '</span>';
+             MI('spark', 'md-assist-chip__icon') + (label || 'AI generated') + '</span>';
   }
   function working(label) {
     return '<div class="sc-working" role="status">' +
@@ -596,7 +597,7 @@
         if (s.step !== 'first') return '';
         return '<section class="md-disclaim sc-rise" role="dialog" aria-modal="true" ' +
             'aria-labelledby="sim-dc">' +
-          '<svg class="md-disclaim__ico" viewBox="0 0 24 24" aria-hidden="true">' + SPARK + '</svg>' +
+          MI('spark', 'md-disclaim__ico') +
           '<h2 class="md-disclaim__t md-title-medium" id="sim-dc">What Aria can and cannot do</h2>' +
           '<p class="md-disclaim__b md-body-small">Aria is an assistant, not a person, and its ' +
           'answers are generated from the sources below. Worth knowing before you rely on one:</p>' +
@@ -666,9 +667,7 @@
             '</button>' +
           '</form>' +
           '<button class="md-disclaim-line md-body-small" type="button" data-act="reopen">' +
-            '<svg class="md-disclaim-line__ico" viewBox="0 0 24 24" aria-hidden="true">' +
-            '<path d="M12 2.6a9.4 9.4 0 1 0 0 18.8 9.4 9.4 0 0 0 0-18.8Zm.1 4.2v5.6m0 3.1v.1" ' +
-            'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
+            MI('info', 'md-disclaim-line__ico') +
             'Aria can be wrong, and cannot see everything. What it knows.' +
           '</button>';
       },
@@ -753,7 +752,7 @@
             ? '<p class="sim-doc__p sim-doc__p--sel">Accounts closed before March 2024 are ' +
               'governed by the previous schedule.' +
               '<button class="sim-doc__ask" type="button" data-act="draft">' +
-              '<svg class="md-glyph" viewBox="0 0 24 24" aria-hidden="true">' + SPARK + '</svg>' +
+              MI('spark', 'md-glyph') +
               'Continue this paragraph</button></p>'
             : '<p class="sim-doc__p">Accounts closed before March 2024 are governed by the ' +
               'previous schedule.</p>')
@@ -879,9 +878,7 @@
         var chips = [['value', 'value &gt; &pound;50k'], ['date', 'signed after 1 Mar'],
                      ['clause', 'clause: auto-renew']].filter(function (c) { return f[c[0]]; });
         return '<form class="md-nlsearch">' +
-            '<svg class="md-nlsearch__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-              'stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/>' +
-              '<path d="m16 16 4.5 4.5"/></svg>' +
+            MI('search', 'md-nlsearch__ico') +
             '<input class="md-nlsearch__input md-body-medium" data-input type="text" ' +
               'value="renewals over £50k signed since March that mention auto-renew" ' +
               'aria-label="Describe the set you want">' +
@@ -1079,8 +1076,7 @@
       pill: function (s) { return s.exported ? 'Exported' : 'Draft'; },
 
       result: function (s) {
-        var ICO = '<svg class="md-caveat__ico" viewBox="0 0 24 24" aria-hidden="true">' +
-                  '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.1"/></svg>';
+        var ICO = MI('info', 'md-caveat__ico');
         return '<div class="sim-figure">' +
             '<p class="sim-figure__k">Revenue, quarter to date</p>' +
             '<p class="sim-figure__v">&pound;4.12m</p>' +
@@ -1452,8 +1448,7 @@
             !!s.menu + '" aria-label="More">' + ICON_DOTS + '</button>' +
           (s.opts.misuse
             ? '<span class="md-assist-chip md-assist-chip--tonal sim-tool__spacer">' +
-              '<svg class="md-assist-chip__icon" viewBox="0 0 24 24" aria-hidden="true">' +
-              SPARK + '</svg>New</span>'
+              MI('spark', 'md-assist-chip__icon') + 'New</span>'
             : '') +
           (s.menu
             ? '<div class="md-menu sim-menu" role="menu">' + items.map(function (m) {
@@ -1462,9 +1457,8 @@
                   (m[0] === 'ai' ? ' md-menu__item--ai' : '') + '" role="menuitem" type="button" ' +
                   'data-act="' + m[2] + '">' +
                   (m[0] === 'ai'
-                    ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + SPARK + '</svg>'
-                    : '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-                      '<path d="M4 6h16M4 12h16M4 18h10"/></svg>') +
+                    ? MI('spark')
+                    : MI('more')) +
                   '<span class="md-body-medium">' + m[1] + '</span></button>';
               }).join('') + '</div>'
             : '');
@@ -1574,8 +1568,7 @@
               var on = s.filter === f;
               return '<button class="md-filter' + (on ? ' is-on' : '') + '" type="button" ' +
                 'aria-pressed="' + on + '" data-act="filter:' + f + '">' +
-                '<svg class="md-filter__tick" viewBox="0 0 24 24" aria-hidden="true">' +
-                '<path d="M5 12.5 10 17.5 19 7"/></svg>' + f + '</button>';
+                MI('check', 'md-filter__tick') + f + '</button>';
             }).join('') + '</div>' +
           '<div class="sim-exs">' + shown.map(function (e) {
             return '<button class="md-ex" type="button" data-act="open:' + GAL.indexOf(e) + '">' +
@@ -1666,8 +1659,7 @@
             return '<button class="md-tpl-row" type="button" data-act="pick:' + k + '">' +
               '<span><span class="md-tpl-row__n md-body-medium">' + TPL2[k].name + '</span>' +
               '<span class="md-tpl-row__d md-body-small">' + TPL2[k].desc + '</span></span>' +
-              '<svg class="md-tpl-row__go" viewBox="0 0 24 24" aria-hidden="true">' +
-              '<path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
+              MI('arrowFwd', 'md-tpl-row__go') + '</button>';
           }).join('') + '</div>';
         }
         if (s.step === 'working' || s.step === 'done') {
@@ -1686,8 +1678,7 @@
             var on = !!s.slots[p[1]];
             return p[0] + ' <button class="md-slot' + (on ? ' is-set' : '') + '" type="button" ' +
               'data-act="slot:' + p[1] + '">' + (on ? p[2] : 'a ' + p[1]) +
-              '<svg class="md-slot__caret" viewBox="0 0 24 24" aria-hidden="true">' +
-              '<path d="M6 9.5 12 15.5 18 9.5"/></svg></button>';
+              MI('chevDown', 'md-slot__caret') + '</button>';
           }).join(' ') + '.</p>' +
           '<div class="md-tpl__foot">' +
             '<button class="md-button md-button--filled md-button--sm" type="button" ' +
@@ -1814,8 +1805,7 @@
         var n = (s.nudge && !s.dismissed && s.done < 6)
           ? '<div class="md-nudge md-nudge--above sc-rise" role="status">' +
               '<div class="md-nudge__head">' +
-                '<svg class="md-nudge__ico" viewBox="0 0 24 24" aria-hidden="true">' + SPARK +
-                '</svg>' +
+                MI('spark', 'md-nudge__ico') +
                 '<div><p class="md-nudge__t md-body-medium">Aria can check these against the ' +
                 'receipt first</p>' +
                 '<p class="md-nudge__d md-body-small">You have approved ' + s.done + ' in a row ' +
@@ -1909,8 +1899,7 @@
         }
         out += '<aside class="md-proactive sc-rise" role="status">' +
             '<div class="md-proactive__head">' +
-              '<svg class="md-proactive__ico" viewBox="0 0 24 24" aria-hidden="true">' + SPARK +
-              '</svg><p class="md-proactive__obs md-body-medium">' +
+              MI('spark', 'md-proactive__ico') + '<p class="md-proactive__obs md-body-medium">' +
               (s.opts.earned
                 ? 'The vessel slipped two days overnight.'
                 : 'Did you know Aria can rebook shipments for you?') + '</p></div>' +
@@ -2091,7 +2080,7 @@
         if (s.step === 'empty') {
           var sp = s.opts.specific;
           return '<section class="md-cta" aria-labelledby="sim-cta">' +
-            '<svg class="md-cta__ico" viewBox="0 0 24 24" aria-hidden="true">' + SPARK + '</svg>' +
+            MI('spark', 'md-cta__ico') +
             '<h2 class="md-cta__t md-title-medium" id="sim-cta">' +
               (sp ? 'Draft this brief from the three attached documents'
                   : 'Ask me anything') + '</h2>' +
@@ -2205,15 +2194,13 @@
         var busy = s.step === 'working';
         var hasText = !!s.q.trim();
         return '<form class="md-entry' + (busy ? ' md-entry--busy' : '') + '" data-form>' +
-            '<svg class="md-entry__glyph" viewBox="0 0 24 24" aria-hidden="true">' + SPARK +
-            '</svg>' +
+            MI('spark', 'md-entry__glyph') +
             '<input class="md-entry__input" data-input type="text" value="' + esc(s.q) + '" ' +
               'placeholder="Ask about a deploy, an incident or an on-call rota" ' +
               'aria-label="Ask Aria"' + (busy && !s.opts.keep ? ' disabled' : '') + '>' +
             (busy
               ? '<button class="md-entry__send md-entry__send--stop" type="button" ' +
-                'data-act="stop" aria-label="Stop"><svg viewBox="0 0 24 24" aria-hidden="true">' +
-                '<rect x="7" y="7" width="10" height="10" rx="2"/></svg></button>'
+                'data-act="stop" aria-label="Stop">' + MI('stop') + '</button>'
               : (hasText
                 ? '<button class="md-entry__send" type="submit" aria-label="Send">' + ICON_SEND +
                   '</button>'
@@ -2758,303 +2745,760 @@
     },
 
     /* ──────────────────────────────────────────────────────
-       CONNECTORS · conversation
+       CONNECT A DATA SOURCE · conversation
 
-       purpose   show the connector interaction that matters and
-                 that almost nobody designs: not the settings
-                 list, but the moment mid-conversation when the
-                 agent finds a wall and names the door
-       context   design triage, Monday, a backlog that lives in a
-                 tracker the agent has never been given
-       before    an ordinary request, asked in good faith, that
-                 cannot be answered
-       decision  grant standing access to an account &mdash; and at
-                 what level, which is the part settings pages hide
-       after     the door is open, the composer says so, and the
-                 answer names where it looked
+       purpose   let every meaningful state of the pattern be
+                 REACHED by doing something, rather than selected
+                 from a list — which is the whole difference
+                 between this and the Live Preview
+       context   a product review being written, and the research
+                 it depends on sitting in files nobody has granted
+       before    an empty workspace, a + and a question
+       decision  which source to grant, whether to keep it
+                 available, and whether to keep it at all
+       after     the question answers itself, and the source is
+                 still there for the next one
 
-       The scope list is written by the product, before the
-       handoff. That is the whole design argument: the provider's
-       consent screen is written by the party that benefits from
-       it, and arrives too late to refuse cheaply.
+       TWO DOORS, ONE COMPONENT. A person can go looking for a
+       source through the composer's +, or the agent can run into
+       a wall and ask for one. Products ship one of these and
+       wonder why the other audience never connects anything. Both
+       land in the same MaterialConnect surfaces — the same list,
+       the same access review, the same connecting card — because
+       a second connector UI for the second door is how the two
+       drift apart.
+
+       WHAT IS A GRAPH AND NOT A SEQUENCE. Failure, expiry,
+       management, disconnection and a second source are not later
+       chapters of one story: they are things that happen, from
+       wherever you are, when a condition is true. They are wired
+       as transitions off the connected state rather than as a
+       longer line, so the simulator behaves like a product
+       instead of a slideshow.
+
+       Every surface below is the pattern's own — sourceGroups()
+       for the picker and the several-sources state, card() for
+       available, authorise, connecting, error, connected, active
+       and stale, manage() and confirmDisconnect() for the
+       dialogs, chip() for the composer. The scene contributes the
+       story and the timing, and nothing else.
        ────────────────────────────────────────────────────── */
     connectors: {
       shell: 'conversation',
       product: 'Signal',
       agent: 'Aria',
-      note: 'Ask something the agent cannot reach and watch it name the door rather than ' +
-            'apologise. The scope list is the product&rsquo;s own words, before any sign-in ' +
-            '&mdash; and read-only is the default, not the maximum.',
+      note: 'Two ways in, and they meet in the same component. Open the composer&rsquo;s ' +
+            '<b>+</b> to go looking for a source, or just send the question and let the agent ' +
+            'run into the wall. Afterwards the + is how you add a second source, manage one, ' +
+            'or take one away.',
 
       initial: {
-        step: 'idle',   /* idle · offered · authorise · connecting · connected
-                           · searching · answer · stale */
+        /* idle · picker · authorise · handoff · connecting · failed
+           · connected · offered · searching · reading · answered
+           · done · stale */
+        step: 'idle',
+        /* Per-service truth. `null` is not connected; an object is
+           a live grant that may or may not be switched on. */
+        sources: {},
+        picking: null,      /* the service being connected */
+        modal: null,        /* 'manage:<id>' · 'disconnect:<id>' */
+        triedOnce: false,   /* a failure only happens the first time */
         turns: [],
-        access: [],     /* what has actually been granted */
-        opts: { write: false, admin: false }
+        pending: '',        /* the question a connection is for */
+        axText: 'Summarise the main onboarding problems from our latest customer research.',
+        opts: { cite: true, fail: false }
       },
 
-      title: function () { return 'Design triage'; },
+      /* ── Reading the state ────────────────────────────────
+         Small helpers rather than repeated inline tests, and
+         named so the conditions below read as sentences. Neither
+         name is a shell slot, so the engine never calls them. */
+      svc: function (id) {
+        return (window.MaterialConnect.SERVICES || {})[id || 'googledrive'] || {};
+      },
+      grantOf: function (s, id) { return s.sources[id || 'googledrive'] || null; },
+      /* Available to the agent right now: granted, switched on,
+         and the sign-in has not expired. Three different ways to
+         be unusable, and the pattern has a different surface for
+         each. */
+      usable: function (s, id) {
+        var g = SIMS.connectors.grantOf(s, id);
+        return !!g && g.enabled !== false && g.state !== 'stale';
+      },
+      anyGrant: function (s) {
+        return Object.keys(s.sources).some(function (k) { return !!s.sources[k]; });
+      },
+      /* Every service the pattern ships, in its own order, each
+         carrying whatever this scene knows about it. This is what
+         makes the picker and the several-sources state the same
+         call with different data. */
+      items: function (s) {
+        var C = window.MaterialConnect;
+        return C.SERVICE_ORDER.map(function (id) {
+          var g = s.sources[id];
+          return { service: C.SERVICES[id], connected: !!g,
+                   enabled: g ? g.enabled !== false : true,
+                   account: g ? C.SERVICES[id].account : '',
+                   state: g && g.state === 'stale' ? 'stale' : 'available' };
+        });
+      },
+
+      title: function () { return 'Product review'; },
       pill: function (s) {
-        if (s.step === 'searching') return 'Searching Beacon';
-        if (s.access.length) return 'Beacon · ' + s.access.join(' · ');
+        if (s.step === 'searching' || s.step === 'reading')
+          return 'Using ' + SIMS.connectors.svc(s.pickingUse || 'googledrive').name;
+        if (s.step === 'stale')  return 'Reconnect required';
+        if (s.step === 'failed') return 'Could not connect';
+        var on = Object.keys(s.sources).filter(function (k) {
+          return SIMS.connectors.usable(s, k); }).length;
+        if (on === 1) return SIMS.connectors.svc(Object.keys(s.sources).filter(function (k) {
+          return SIMS.connectors.usable(s, k); })[0]).name;
+        if (on > 1)  return on + ' sources';
         return '';
       },
 
       phase: function (s) {
-        if (s.step === 'searching')  return 'thinking';
-        if (s.step === 'answer')     return 'done';
-        if (s.step === 'offered' || s.step === 'authorise') return 'blocked';
-        if (s.step === 'connecting') return 'working';
-        if (s.access.length)         return 'focus';
+        if (s.step === 'offered' || s.step === 'authorise' ||
+            s.step === 'stale' || s.step === 'failed') return 'blocked';
+        if (s.step === 'handoff' || s.step === 'connecting') return 'working';
+        if (s.step === 'searching' || s.step === 'reading') return 'thinking';
+        if (s.step === 'answered' || s.step === 'done') return 'done';
+        if (SIMS.connectors.anyGrant(s)) return 'focus';
         return 'idle';
       },
 
-      /* Once the door is open the composer says so, for the rest
-         of the conversation. A connection nobody can see is a
-         connection nobody remembers granting. */
+      /* Every usable source rides in the composer, for the rest of
+         the conversation. A source that is switched off or expired
+         leaves the row, because a chip that outlives what it
+         stands for is a chip that lies. */
       scopes: function (s) {
-        if (!s.access.length) return null;
-        return [window.MaterialConnect.chip({
-          name: 'Beacon', mark: 'Bn',
-          granted: s.access,
-          state: s.step === 'stale' ? 'stale' : 'connected'
-        })];
+        var C = window.MaterialConnect, S = SIMS.connectors;
+        var live = C.SERVICE_ORDER.filter(function (id) { return S.usable(s, id); });
+        if (!live.length) return null;
+        /* The chip IS the connected-source context: pressing one
+           opens Manage for THAT source. The component's own chip
+           carries a single `conn:manage`, which is right when a
+           product has one connection and ambiguous the moment it
+           has two, so the scene names the source in the action. */
+        return live.map(function (id) {
+          var c = C.chip({ name: C.SERVICES[id].name, logo: C.SERVICES[id].logo,
+                           granted: ['search', 'read'], state: 'connected' });
+          c.act = 'conn:manage:' + id;
+          return c;
+        });
       },
 
       thread: function (s) {
-        var out = s.turns.map(function (t) {
-          return t.who === 'you'
-            ? human('You', 'P', t.text)
-            : '<div class="sim-turn">' + mark('md-agentav--sm') +
-              '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-              chip() + '</div><p class="wf-text">' + t.text + '</p>' +
-              (t.from ? '<p class="sim-src">Searched <b>' + t.from + '</b></p>' : '') +
-              '</div></div>';
-        }).join('');
+        var C = window.MaterialConnect, S = SIMS.connectors;
+        var svc = S.svc(s.picking);
 
-        if (!s.turns.length) {
-          out = '<p class="sim-stage__empty">Ask about the design backlog. It lives in ' +
-                'Beacon, which Aria has never been given.</p>';
+        function aria(inner) {
+          return '<div class="sim-turn">' + mark('md-agentav--sm') +
+            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
+            chip() + '</div>' + inner + '</div></div>';
         }
 
-        /* The card appears INSIDE the conversation, as the agent's
-           turn, because that is where the wall was hit. */
+        var out = s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'P', t.text);
+          /* A connection that happened stays in the transcript as
+             the compact card the pattern draws for a live source.
+             It is history by then — the attention has already
+             moved to the turn below it. */
+          if (t.who === 'conn') {
+            var cs = S.svc(t.id);
+            return aria(C.card({ inline: true, name: cs.name, logo: cs.logo,
+                                 state: 'connected', account: cs.account,
+                                 useLine: cs.useLine }));
+          }
+          return aria('<p class="wf-text">' + t.text + '</p>' +
+            (t.sources && s.opts.cite
+              ? '<p class="sim-src">Sources <b>' + esc(S.svc(t.from).name) + '</b> &middot; ' +
+                esc(t.sources) + '</p>'
+              : ''));
+        }).join('');
+
+        if (!s.turns.length && s.step !== 'picker') {
+          out = '<p class="sim-stage__empty">A product review is due and the research it ' +
+                'depends on is in files Aria has never been given. Open <b>+</b> to add a ' +
+                'source, or just send the question and watch what happens.</p>';
+        }
+
+        /* ── PATH A. The picker, opened deliberately. It is not an
+           agent turn, because it was not the agent's idea — it is
+           a panel in the workspace, and it is the pattern's own
+           list at whatever state the sources are actually in.
+           With nothing connected that IS the zero state; with one
+           connected it IS the several-sources state. One call. */
+        if (s.step === 'picker') {
+          var connectedCount = Object.keys(s.sources).filter(function (k) {
+            return !!s.sources[k]; }).length;
+          out += '<div class="sim-panel">' +
+            '<p class="sim-panel__h">' +
+              (connectedCount ? 'Your data sources' : 'Connect a data source') + '</p>' +
+            '<p class="sim-panel__b">' +
+              (connectedCount
+                ? 'Switch a source off to keep the connection but stop the agent using it. ' +
+                  'Manage is where a connection is ended.'
+                : 'The agent can use what your own account can already reach. Nothing here ' +
+                  'gives it more than you have.') + '</p>' +
+            C.sourceGroups(S.items(s), { headings: true }) +
+            '<div class="sim-panel__f">' +
+              button('Close', 'conn:close', 'text') +
+            '</div>' +
+          '</div>';
+        }
+
+        /* THE HANDOFF. The product leaves; it does not imitate a
+           sign-in. Nothing here asks for a password, because the
+           one thing a connector must never teach people is that
+           typing a provider's password into somebody else's
+           product is normal. */
+        if (s.step === 'handoff') {
+          out += aria(working('Opening ' + esc(svc.name) + '&hellip;') +
+            '<p class="sim-src">You will come back here when ' + esc(svc.name) +
+            ' is done.</p>');
+        }
+
+        /* ── BEING USED. Not a line bolted onto the conversation —
+           the pattern's own `active` card, which is a different
+           state from `connected` and says so in the markup as well
+           as on screen. Available and in-use are two facts and
+           this is the only place the difference shows. */
+        if (s.step === 'searching' || s.step === 'reading') {
+          var using = S.svc(s.pickingUse || 'googledrive');
+          out += aria(C.card({
+            inline: true, name: using.name, logo: using.logo, state: 'active',
+            account: using.account,
+            activity: { phase: 'searching',
+              text: s.step === 'searching'
+                ? 'Searching ' + using.name + '…'
+                : 'Reading 5 relevant research files…' }
+          }));
+        }
+
+        /* ── PATH B and the connection itself. Offered, the access
+           review, the handoff's connecting card, a failure and an
+           expiry are five states of ONE component, in the
+           conversation, because that is where the wall was hit. */
         if (s.step === 'offered' || s.step === 'authorise' ||
-            s.step === 'connecting' || s.step === 'stale') {
-          var asking = ['read', 'search']
-            .concat(s.opts.write ? ['write'] : [])
-            .concat(s.opts.admin ? ['admin'] : []);
-          out += '<div class="sim-turn">' + mark('md-agentav--sm') +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-            chip() + '</div>' +
-            window.MaterialConnect.card({
-              inline: true,
-              name: 'Beacon', mark: 'Bn',
-              state: s.step === 'connecting' ? 'connecting'
-                   : s.step === 'authorise'  ? 'authorise'
-                   : s.step === 'stale'      ? 'stale' : 'available',
-              because: s.step === 'stale'
-                ? 'The Beacon sign-in has expired, so I stopped rather than guessing. ' +
-                  'Signing in again picks up exactly where this left off.'
-                : 'Your design backlog lives in Beacon, and I have never been given it. ' +
-                  'Here is what connecting would let me do.',
-              blurb: 'Issue tracking for the design and platform teams.',
-              asking: asking,
-              granted: s.access
-            }) +
-            '</div></div>';
+            s.step === 'connecting' || s.step === 'failed' || s.step === 'stale') {
+          out += aria(C.card({
+            inline: true,
+            name: svc.name, logo: svc.logo,
+            state: s.step === 'connecting' ? 'connecting'
+                 : s.step === 'authorise'  ? 'authorise'
+                 : s.step === 'failed'     ? 'error'
+                 : s.step === 'stale'      ? 'stale' : 'available',
+            account: s.step === 'stale' ? svc.account : undefined,
+            because: s.step === 'stale'
+              ? 'The sign-in to ' + svc.name + ' has expired, so I stopped rather than ' +
+                'answering from memory.'
+              : s.step === 'failed'
+              ? svc.name + ' did not answer. Nothing was granted, and nothing was sent.'
+              : 'The research you are asking about is in files I have never been given. ' +
+                'Connecting ' + svc.name + ' lets me read the ones you can already open.',
+            blurb: s.step === 'stale'
+              ? 'Reconnect to carry on using ' + svc.name + ' in this conversation.'
+              : s.step === 'failed'
+              ? 'This happens. Trying again usually works.'
+              : svc.blurb,
+            benefits: svc.benefits
+          }));
+        }
+
+        /* The two dialogs, over the workspace rather than instead
+           of it — managing a connection is something you do beside
+           your work, not a place you navigate to. */
+        if (s.modal) {
+          var mid = s.modal.split(':')[1], msvc = S.svc(mid), g = S.grantOf(s, mid) || {};
+          out += s.modal.indexOf('manage:') === 0
+            ? C.manage({ service: msvc, account: msvc.account,
+                         state: g.state === 'stale' ? 'stale' : 'connected' })
+            : C.confirmDisconnect({ service: msvc });
         }
         return out;
       },
 
       foot: function (s) {
-        if (s.step === 'idle') {
-          return '<span class="sim-doc__who">Nothing connected</span>' +
-                 button('Ask about the backlog', 'ask', 'filled');
-        }
-        if (s.step === 'offered')
-          return '<span class="sim-doc__who">It named the door rather than apologising</span>';
+        var S = SIMS.connectors;
+        if (s.step === 'picker')
+          return '<span class="sim-doc__who">Sources you can grant &mdash; the agent gets no ' +
+                 'more than your account has</span>';
         if (s.step === 'authorise')
           return '<span class="sim-doc__who">Your decision, before any sign-in</span>';
+        if (s.step === 'handoff')
+          return '<span class="sim-doc__who">You are with ' + S.svc(s.picking).name +
+                 ' now</span>';
         if (s.step === 'connecting')
-          return '<span class="sim-doc__who">Waiting for Beacon</span>';
+          return '<span class="sim-doc__who">Waiting for the account to come back</span>';
+        if (s.step === 'failed')
+          return '<span class="sim-doc__who">Nothing was granted</span>';
+        if (s.step === 'offered')
+          return '<span class="sim-doc__who">It named the door rather than apologising</span>';
+        if (s.step === 'searching' || s.step === 'reading')
+          return '<span class="sim-doc__who">In use &mdash; which is not the same as ' +
+                 'connected</span>';
         if (s.step === 'stale')
-          return '<span class="sim-doc__who">The sign-in expired</span>';
-        if (s.step === 'searching')
-          return '<span class="sim-doc__who">Searching what it was given</span>';
-        if (s.step === 'answer') {
-          return '<span class="sim-doc__who">Granted: ' + s.access.join(', ') + '</span>' +
-                 button('Expire the sign-in', 'expire', 'outlined') +
-                 button('Start over', 'reset', 'text');
+          return '<span class="sim-doc__who">The sign-in expired mid-question</span>';
+        if (s.modal)
+          return '<span class="sim-doc__who">Beside your work, not instead of it</span>';
+
+        var live = S.anyGrant(s);
+        if (s.step === 'answered' || s.step === 'done') {
+          return '<span class="sim-doc__who">' +
+              (s.step === 'done' ? 'It never asked to connect again'
+                                 : 'Connected &middot; search and read') + '</span>' +
+            (s.step === 'answered'
+              ? button('Ask a follow-up', 'followup', 'filled') +
+                button('Expire the sign-in', 'expire', 'outlined')
+              : '') +
+            button('Start over', 'reset', 'text');
         }
-        return '<span class="sim-doc__who">Connected</span>' +
-               button('Ask again', 'ask', 'filled');
+        return '<span class="sim-doc__who">' +
+            (live ? 'Connected &mdash; send the question, or open + again'
+                  : 'Nothing connected yet') + '</span>' +
+          button('Send the question', 'ask', live ? 'filled' : 'outlined') +
+          (live ? '' : button('Open +', 'ax:plus', 'filled'));
       },
 
       controls: function (s) {
-        return [toggle('Also ask to write', 'opt:write', s.opts.write),
-                toggle('Also ask to manage', 'opt:admin', s.opts.admin)];
+        return [toggle('Cite the source on the answer', 'opt:cite', s.opts.cite),
+                toggle('Make the next connection fail', 'opt:fail', s.opts.fail)];
       },
 
       hint: function (s) {
-        if (s.opts.admin)
-          return 'Watch the scope list. A connector that asks to change settings in order to ' +
-                 'read a backlog is asking for something it does not need, and the list is ' +
-                 'where that becomes visible &mdash; which is the argument for writing the ' +
-                 'list at all.';
-        if (s.opts.write && s.step !== 'answer')
-          return 'Write is a different question from read and should be asked as one. Bundling ' +
-                 'them is how a summarising assistant ends up able to close somebody&rsquo;s ' +
-                 'tickets.';
-        if (s.step === 'idle')
-          return 'No settings page, no connector gallery. The request comes first and the ' +
-                 'connector arrives because the request needed it.';
+        var S = SIMS.connectors;
+        if (s.modal && s.modal.indexOf('disconnect:') === 0)
+          return 'One press should not end a standing grant. The sentence says what actually ' +
+                 'changes &mdash; future requests &mdash; and it does not claim to remove ' +
+                 'anything already said in the conversation.';
+        if (s.modal)
+          return 'The account, what the agent can reach with it, and the two ways out. Not a ' +
+                 'settings maze: auditing a connection somebody forgot they granted only works ' +
+                 'if it takes one glance.';
+        if (s.step === 'picker')
+          return S.anyGrant(s)
+            ? 'The same list, further along. A connected source gets a SWITCH rather than a ' +
+              'button, because turning it off is not disconnecting it &mdash; the grant, the ' +
+              'account and the configuration all stay exactly where they are.'
+            : 'Opened on purpose, from the composer. This is the door most products only build ' +
+              'for the agent, and it is the one a person actually goes looking for.';
         if (s.step === 'offered')
-          return 'It says what it cannot reach and what connecting would give it. An agent ' +
-                 'that answers &ldquo;I don&rsquo;t have access to that&rdquo; and stops has ' +
-                 'described the problem and left the person to solve it.';
+          return 'The other door. It names the specific service and the specific gap, not a ' +
+                 'vague &ldquo;I do not have access to that&rdquo; &mdash; and it is the same ' +
+                 'component the + menu opens, at the same state.';
         if (s.step === 'authorise')
-          return 'The scope list is the product&rsquo;s own sentences, before the handoff. The ' +
-                 'provider&rsquo;s consent screen is written by the party that benefits from it ' +
-                 'and arrives too late to refuse cheaply.';
+          return 'Search and read, in verbs a person can picture, before any sign-in. The ' +
+                 'provider&rsquo;s own consent screen arrives too late to refuse cheaply, and ' +
+                 'nothing here asks for more than the account already has.';
+        if (s.step === 'handoff')
+          return 'The product leaves rather than imitating the sign-in. A connector that draws ' +
+                 'its own password field teaches people that typing a provider&rsquo;s password ' +
+                 'into somebody else&rsquo;s product is normal.';
         if (s.step === 'connecting')
-          return 'The product does not pretend to be the sign-in. It waits, says it is waiting, ' +
-                 'and leaves a way out.';
+          return 'Waiting, and saying it is waiting, with a way out. No percentage, because ' +
+                 'nothing here knows one.';
+        if (s.step === 'failed')
+          return 'It failed before anything was granted, which is the honest place to fail. ' +
+                 'Try again goes back to connecting rather than to the beginning &mdash; the ' +
+                 'decision was already made and should not have to be made twice.';
+        if (s.step === 'searching' || s.step === 'reading')
+          return 'This is the <b>in use</b> state, not the connected one. Available and being ' +
+                 'drawn on are different facts, and a product that shows the same status for ' +
+                 'both has hidden the only moment anybody could object to.';
         if (s.step === 'stale')
-          return 'A sign-in expires and the agent stops rather than guessing. This is the state ' +
-                 'most connector designs forget, and the one people meet most often.';
-        if (s.step === 'answer')
-          return 'The composer carries the connection for the rest of the conversation, and the ' +
-                 'answer names where it looked. Standing access nobody can see is standing ' +
-                 'access nobody remembers granting.';
-        return 'One door, opened deliberately.';
+          return 'A question is on the table and the sign-in is dead, so the agent stopped ' +
+                 'rather than answering from what it read earlier. Reconnecting does not ask ' +
+                 'for the permissions again.';
+        if (s.step === 'done')
+          return 'The follow-up used the source without asking for anything. Standing access ' +
+                 'means the second question costs nothing, which is the whole reason it stands.';
+        if (s.step === 'answered')
+          return 'The answer says where it looked, and the composer carries the connection. ' +
+                 'Open + again to add another source, switch this one off, or end it.';
+        if (S.anyGrant(s)) {
+          var off = window.MaterialConnect.SERVICE_ORDER.filter(function (id) {
+            var g = S.grantOf(s, id); return g && g.enabled === false; });
+          if (off.length)
+            return esc(S.svc(off[0]).name) + ' is switched off: the grant, the account and ' +
+                   'the configuration are all exactly where they were, and it has simply left ' +
+                   'the composer row. Switch it back on to use it &mdash; or to reach Manage, ' +
+                   'which is where a connection is actually ended.';
+          return 'Connected, and nothing is being used. The source is available &mdash; the ' +
+                 'question in the composer is what will actually draw on it. Press a source ' +
+                 'chip in the composer to manage it.';
+        }
+        return 'Nothing is connected and nothing is asking you to connect anything. Both doors ' +
+               'are open: the + in the composer, or the question itself.';
+      },
+
+      /* The docked composer is one of the two doors. Whatever is
+         in it becomes the request — and if a source is already
+         live, it is simply answered. */
+      axSubmit: function (text, ctx) {
+        var s = ctx.s;
+        var open = ['idle', 'offered', 'answered', 'done', 'picker'];
+        if (open.indexOf(s.step) === -1) return;
+        s.pending = text;
+        return SIMS.connectors.act('ask', ctx);
+      },
+
+      /* PATH A starts here. The + offers the KINDS of context; the
+         second level offers the sources themselves — the same
+         shape every mature assistant uses, and the reason the
+         first level stays short enough to read.
+
+         The list in the flyout is the pattern's own sourceGroups,
+         at whatever state the sources are actually in: four
+         Connect rows when nothing is connected, switches for what
+         is. Not a menu that imitates the pattern — the pattern,
+         in a menu. */
+      plusMenu: function (at, s) {
+        if (at !== 1) return '';
+        var S = SIMS.connectors;
+        return window.MaterialConnect.sourceGroups(S.items(s), {
+          density: 'compact', settings: true,
+          settingsLabel: 'Connector settings', settingsAct: 'conn:settings'
+        });
+      },
+
+      addContext: function (i, ctx) {
+        /* Files are their own Nucleux pattern; here this does what
+           the shell would have done, so the menu has no dead row. */
+        var s = ctx.s;
+        s.axChips = (s.axChips || []).concat(['Draft review.docx']);
+        ctx.paint();
       },
 
       act: function (a, ctx) {
-        var s = ctx.s;
-        var ASK = 'Find the open design issues assigned to me.';
-        var REPLY = 'Six open, and two of them have been open longer than the other four put ' +
-                    'together. BEA-412 &mdash; empty-state copy &mdash; has sat unassigned for ' +
-                    '31 days behind a decision nobody has made, and BEA-388 is blocked on the ' +
-                    'same one. The remaining four are all in review.';
+        var s = ctx.s, S = SIMS.connectors, C = window.MaterialConnect;
+        var ASK = 'Summarise the main onboarding problems from our latest customer research.';
+        var FOLLOW = 'Which of those has grown most since last quarter?';
+        var ANSWER =
+          'Three problems come up in every round. People cannot tell what the assistant is ' +
+          'allowed to see, so they assume the worst and stop. The first-run permission step ' +
+          'reads as technical &mdash; two participants called it &ldquo;a developer ' +
+          'screen&rdquo; &mdash; and it is where most of the drop-off happens. And when setup ' +
+          'fails there is no way back: people close the tab rather than retry.';
+        var FOLLOW_ANSWER =
+          'Recovery. It was a minor complaint in the June round and it is the most-cited ' +
+          'problem in September &mdash; eleven of nineteen participants, against four of ' +
+          'sixteen before. The other two are flat.';
 
-        if (a === 'opt:write') { flip(ctx, 'write'); return; }
-        if (a === 'opt:admin') { flip(ctx, 'admin'); return; }
+        if (a === 'opt:cite') { flip(ctx, 'cite'); return; }
+        if (a === 'opt:fail') { flip(ctx, 'fail'); return; }
         if (a === 'reset') {
           var o = JSON.parse(JSON.stringify(s.opts));
           Object.assign(s, JSON.parse(JSON.stringify(SIMS.connectors.initial)));
           s.opts = o; ctx.paint(); return;
         }
 
+        /* ── The request, through either door ─────────────── */
         if (a === 'ask') {
-          s.turns = s.turns.concat([{ who: 'you', text: ASK }]);
-          if (s.access.length) {
-            s.step = 'searching'; ctx.paint();
-            return wait(1500).then(function () {
-              s.turns = s.turns.concat([{ who: 'aria', text: REPLY, from: 'Beacon' }]);
-              s.step = 'answer'; ctx.paint();
-            });
-          }
+          var text = s.pending || s.axText || ASK;
+          s.pending = text; s.axText = ''; s.step = 'idle'; s.modal = null;
+          s.turns = s.turns.concat([{ who: 'you', text: text }]);
+
+          if (S.usable(s, 'googledrive')) return run(ANSWER, '5 files', 'googledrive');
+
+          /* PATH B. The wall names the service and the gap, and
+             the question is HELD rather than discarded. */
+          s.picking = 'googledrive';
+          s.turns = s.turns.concat([{ who: 'aria',
+            text: 'Some of that research is in ' + S.svc('googledrive').name + ', which is ' +
+                  'not connected yet. Connect it and I will carry on with what you asked.' }]);
           s.step = 'offered'; ctx.paint(); return;
         }
 
-        /* Connect does not sign anybody in. It shows what is about
-           to be granted and waits for a yes, which is the step
-           products skip and then wonder why nobody reads scopes. */
-        if (a === 'conn:connect') { s.step = 'authorise'; ctx.paint(); return; }
-        if (a === 'conn:cancel')  { s.step = 'idle'; ctx.paint(); return; }
+        /* ── The picker ───────────────────────────────────── */
+        if (a === 'conn:close') { s.step = 'idle'; s.modal = null; ctx.paint(); return; }
 
+        /* Picking a row and pressing Connect on the inline card are
+           the same decision arriving from the two doors, so they
+           land in the same place. */
+        if (a.indexOf('conn:pick:') === 0) {
+          /* The menu has done its job the moment a source is
+             chosen — the decision moves into the workspace, where
+             there is room to read it. */
+          s.axPlus = false; s.axSubAt = null;
+          s.picking = a.slice(10); s.step = 'authorise'; ctx.paint(); return;
+        }
+        if (a === 'conn:connect') { s.step = 'authorise'; ctx.paint(); return; }
+
+        /* Backing out keeps whatever was already true: a held
+           question is still held, a picker is still open. */
+        if (a === 'conn:cancel') {
+          s.step = s.pending && !S.usable(s, 'googledrive') ? 'offered'
+                 : S.anyGrant(s) ? 'idle' : 'picker';
+          ctx.paint(); return;
+        }
+
+        /* ── Handoff, connecting, and the two ways it ends ── */
         if (a === 'conn:allow') {
-          s.access = ['read', 'search']
-            .concat(s.opts.write ? ['write'] : [])
-            .concat(s.opts.admin ? ['admin'] : []);
-          s.step = 'connecting'; ctx.paint();
-          return wait(1100).then(function () {
-            s.step = 'searching'; ctx.paint();
-            return wait(1400);
+          var id = s.picking || 'googledrive';
+          s.step = 'handoff'; ctx.paint();
+          return wait(1000).then(function () {
+            s.step = 'connecting'; ctx.paint(); return wait(1200);
           }).then(function () {
-            s.turns = s.turns.concat([{ who: 'aria', text: REPLY, from: 'Beacon' }]);
-            s.step = 'answer'; ctx.paint();
+            /* The failure happens before anything is granted,
+               which is the honest place for it to happen. */
+            if (s.opts.fail && !s.triedOnce) {
+              s.triedOnce = true; s.step = 'failed'; ctx.paint(); return;
+            }
+            s.sources[id] = { enabled: true };
+            s.turns = s.turns.concat([{ who: 'conn', id: id }]);
+            s.step = 'connected'; ctx.paint();
+            return wait(700).then(function () {
+              /* PATH B resumes the question that was waiting.
+                 PATH A had no question — it returns to the
+                 composer, where one is already typed. */
+              if (s.pending && id === 'googledrive') return run(ANSWER, '5 files', id);
+              s.step = 'idle'; ctx.paint();
+            });
           });
         }
 
-        if (a === 'expire') { s.step = 'stale'; ctx.paint(); return; }
-        if (a === 'conn:off') { s.access = []; s.step = 'idle'; ctx.paint(); return; }
-        if (a === 'conn:manage' || a.indexOf('scope:open:') === 0) {
-          s.step = s.access.length ? 'connected' : 'idle'; ctx.paint(); return;
+        /* ── Several sources: the switch, and Manage ──────── */
+        if (a.indexOf('conn:agent:') === 0) {
+          var gid = a.slice(11), g = s.sources[gid];
+          if (g) g.enabled = g.enabled === false;
+          ctx.paint(); return;
         }
-        if (a === 'conn:ask') { ctx.paint(); return; }
+        /* Opening a dialog dismisses the menus. Otherwise the
+           flyout sits open behind the dialog and the shell's
+           light-dismiss eats the dialog's first press — two
+           surfaces both claiming to be the thing you are using. */
+        if (a.indexOf('conn:manage:') === 0) {
+          s.axPlus = false; s.axSubAt = null;
+          s.modal = 'manage:' + a.slice(12); ctx.paint(); return;
+        }
+        /* The component's own card carries a bare `conn:manage`,
+           which names no source. With one grant that is not
+           ambiguous; with several it is, and the honest answer to
+           "which connection?" is the list, not a guess. */
+        if (a === 'conn:manage') {
+          s.axPlus = false; s.axSubAt = null;
+          var held = C.SERVICE_ORDER.filter(function (id) { return !!s.sources[id]; });
+          if (held.length === 1) { s.modal = 'manage:' + held[0]; }
+          else { s.step = 'picker'; s.modal = null; }
+          ctx.paint(); return;
+        }
+        if (a.indexOf('conn:disconnect-ask:') === 0) {
+          s.modal = 'disconnect:' + a.slice(20); ctx.paint(); return;
+        }
+        if (a.indexOf('conn:disconnect-cancel:') === 0) {
+          s.modal = 'manage:' + a.slice(23); ctx.paint(); return;
+        }
+        /* Disconnecting changes what happens NEXT. It does not
+           edit the conversation, and the pattern's own dialog has
+           already said so. */
+        if (a.indexOf('conn:disconnect-confirm:') === 0) {
+          var did = a.slice(24);
+          delete s.sources[did];
+          s.modal = null;
+          s.turns = s.turns.concat([{ who: 'aria',
+            text: S.svc(did).name + ' is disconnected. I will not use it in new requests &mdash; ' +
+                  'what is already in this conversation stays.' }]);
+          s.step = 'idle'; ctx.paint(); return;
+        }
+
+        /* ── The follow-up, which costs nothing ───────────── */
+        if (a === 'followup') {
+          s.turns = s.turns.concat([{ who: 'you', text: FOLLOW }]);
+          s.pending = FOLLOW;
+          return run(FOLLOW_ANSWER, '5 files', 'googledrive', 'done');
+        }
+
+        /* ── Expiry, against a real question ──────────────── */
+        if (a === 'expire') {
+          var eg = s.sources.googledrive;
+          if (eg) eg.state = 'stale';
+          s.picking = 'googledrive';
+          s.turns = s.turns.concat([
+            { who: 'you', text: FOLLOW },
+            { who: 'aria',
+              text: 'I stopped there. The sign-in to ' + S.svc('googledrive').name + ' has ' +
+                    'expired, and I am not going to answer this from what I read earlier.' }
+          ]);
+          s.pending = FOLLOW; s.step = 'stale'; ctx.paint(); return;
+        }
+        /* Reconnecting is not re-authorising: what was granted is
+           not asked for again, only the session is restored — and
+           the blocked question resumes. */
+        if (a === 'conn:reconnect' || a.indexOf('conn:reconnect:') === 0) {
+          var rid = a.indexOf(':') === a.lastIndexOf(':') ? 'googledrive' : a.split(':')[2];
+          s.picking = rid; s.modal = null; s.step = 'connecting'; ctx.paint();
+          return wait(1100).then(function () {
+            s.sources[rid] = { enabled: true };
+            if (s.pending) return run(FOLLOW_ANSWER, '5 files', rid, 'done');
+            s.step = 'idle'; ctx.paint();
+          });
+        }
+
+        if (a.indexOf('conn:ask') === 0) { ctx.paint(); return; }
+        if (a.indexOf('scope:open:') === 0) {
+          s.modal = 'manage:googledrive'; ctx.paint(); return;
+        }
+        /* The flyout is for doing; the panel is for looking. Same
+           component, more room and the headings turned on. */
+        if (a === 'conn:settings') {
+          s.axPlus = false; s.axSubAt = null;
+          s.step = 'picker'; s.modal = null; ctx.paint(); return;
+        }
+
+        /* Search, then read, then answer — the shape every request
+           takes once a source is live. */
+        function run(text, sources, from, land) {
+          s.pickingUse = from;
+          s.step = 'searching'; s.modal = null; ctx.paint();
+          return wait(1200).then(function () {
+            s.step = 'reading'; ctx.paint(); return wait(1300);
+          }).then(function () {
+            s.turns = s.turns.concat([{ who: 'aria', text: text,
+                                        sources: sources, from: from }]);
+            s.pending = ''; s.pickingUse = null;
+            s.step = land || 'answered'; ctx.paint();
+          });
+        }
       }
     },
 
     /* ──────────────────────────────────────────────────────
-       MCP CONNECTORS · conversation
+       MCP SERVER CONNECTION · conversation
 
-       purpose   make the difference between an app connector and
-                 an MCP server obvious by SHOWING it: the tool
-                 surface is not known until the client goes and
-                 asks, and the server's account of itself is not
-                 evidence
-       context   a release being cut, and a set of project tools
-                 the team runs themselves
-       before    an address in a field, and nothing else known
-       decision  which of the discovered capabilities to enable,
-                 and whether to let a destructive one run
-       after     the agent calls a tool, visibly, with the
-                 arguments shown before it goes
+       purpose   show the whole lifecycle inside the work that
+                 needed it, so that connecting, discovering,
+                 approving and recovering are one story rather
+                 than four screens
+       context   a checkout regression that has to become a bug,
+                 and an issue tracker the agent cannot reach yet
+       before    the agent says what it is missing, in the middle
+                 of the request it cannot finish
+       decision  whether to add the server, what to let it do, and
+                 whether to let one call run
+       after     the issue exists, and the call that made it is in
+                 the transcript with its arguments
 
-       The approval gate is at CALL time and shows the arguments,
-       because the spec asks clients to show tool inputs before
-       calling — an approval that hides what is being sent has
-       approved nothing in particular.
+       The second scenario is the one this pattern exists for. A
+       tool fails; the server is still connected; retry escalates
+       to the CONNECTION, which is a different failure with a
+       different fix. Products conflate the two constantly, and
+       the only way to teach the difference is to let somebody
+       watch it change scope under their hand.
        ────────────────────────────────────────────────────── */
     mcp: {
       shell: 'conversation',
       product: 'Signal',
       agent: 'Aria',
-      note: 'Add the server and watch the capability surface be DISCOVERED rather than ' +
-            'assumed. Then let it run something destructive: the gate is at call time, it ' +
-            'shows the arguments, and it has no &ldquo;always allow&rdquo;.',
+      note: 'Ask for something the agent cannot do yet, and watch the connection be built for ' +
+            'it &mdash; reached, validated, then <em>discovered</em>, which is the step most ' +
+            'products skip. Then break one call, and watch the failure change scope from the ' +
+            'tool to the connection.',
 
       initial: {
-        step: 'unset',  /* unset · validating · discovering · ready · asking
-                           · running · answer · unreachable */
-        open: false,
-        tools: [],
+        /* ask · adding · connecting · ready · gate · running · done
+           · toolfail · serverfail · recovered */
+        step: 'ask',
+        at: 'reach',
         turns: [],
-        ask: null,
-        opts: { bad: false, stale: false }
+        openTool: null,
+        off: [],
+        failDetail: false,
+        opts: { technical: false }
       },
 
-      title: function () { return 'Release 4.12'; },
-      pill: function (s) {
-        if (s.step === 'discovering') return 'Discovering';
-        if (s.step === 'running')     return 'Calling a tool';
-        if (s.step === 'asking')      return 'Waiting for you';
-        if (s.tools.length) {
-          var on = s.tools.filter(function (t) { return t.on !== false; }).length;
-          return on + (on === 1 ? ' tool' : ' tools');
+
+      /* Two helpers of its own rather than two more module globals.
+         Neither name is a shell slot, so the engine never calls
+         them by accident. */
+      isLive: function (s) {
+        return ['ready', 'gate', 'running', 'done', 'toolfail', 'recovered']
+          .indexOf(s.step) !== -1;
+      },
+
+      /* One model, built from the scene's state and handed to the
+         same component the Live Preview draws. The simulator does
+         not get its own copy of the markup — that is how two
+         surfaces drift into disagreeing about a pattern. */
+      mcpPanel: function (s) {
+        var M = window.MaterialMCP;
+        var srv = M.server('jira');
+        var list = M.tools('jira', s.off);
+        var writer = list.filter(function (t) { return t.name === 'create_issue'; })[0];
+        var breaker = list.filter(function (t) { return t.name === 'update_issue'; })[0];
+
+        var stage = 'ready', status = 'ready', at = null, ask = null, exec = null;
+        if (s.step === 'ask' || s.step === 'adding') {
+          stage = 'zero'; status = 'none';
+        } else if (s.step === 'connecting') {
+          stage = 'connecting';
+          at = s.at;
+          status = s.at === 'reach' ? 'reaching'
+                 : s.at === 'validate' ? 'validating' : 'discovering';
+        } else if (s.step === 'serverfail') {
+          stage = 'serverfail'; status = 'expired';
+        } else if (s.step === 'gate') {
+          ask = { name: writer.name, label: writer.label, risk: writer.risk, does: writer.does,
+                  args: { project: 'WEB', type: 'Bug', summary: 'Checkout regression',
+                          priority: 'High' } };
+        } else if (s.step === 'running') {
+          exec = { name: writer.name, label: writer.label, state: 'running' };
+        } else if (s.step === 'toolfail') {
+          exec = { name: breaker.name, label: breaker.label, state: 'failed',
+                   why: 'WEB-482 could not be updated. Its workflow does not allow that ' +
+                        'transition from its current status.',
+                   raw: 'HTTP 400 · transition_not_allowed' };
+        } else if (s.step === 'done' || s.step === 'recovered') {
+          status = s.off.length ? 'partial' : 'ready';
         }
+
+        return M.panel({
+          stage: stage, status: status, at: at,
+          name: stage === 'zero' && s.step === 'ask' ? 'MCP servers' : srv.name,
+          mark: stage === 'zero' && s.step === 'ask' ? 'MCP' : srv.mark,
+          url: srv.url, auth: srv.auth,
+          resources: srv.resources, prompts: srv.prompts,
+          tools: list, count: list.length, offCount: s.off.length,
+          adding: s.step === 'adding', openTool: s.openTool,
+          ask: ask, exec: exec,
+          emptyTitle: 'No issue tracker connected',
+          emptyBody: 'Connect an MCP server to give Aria access to your issues.',
+          failDetail: !!s.failDetail,
+          showWhat: true, showApproval: true, allowDisable: true,
+          technical: !!s.opts.technical,
+          layout: 'grouped', statusStyle: 'badge', density: 'comfortable'
+        });
+      },
+
+      title: function () { return 'Checkout regression'; },
+      pill: function (s) {
+        if (s.step === 'connecting')  return 'Connecting';
+        if (s.step === 'gate')        return 'Waiting for you';
+        if (s.step === 'running')     return 'Calling a tool';
+        if (s.step === 'toolfail')    return 'One call failed';
+        if (s.step === 'serverfail')  return 'Reconnect needed';
+        if (SIMS.mcp.isLive(s))                  return '4 tools';
         return '';
       },
 
       phase: function (s) {
-        if (s.step === 'asking')      return 'blocked';
-        if (s.step === 'discovering') return 'thinking';
-        if (s.step === 'running')     return 'working';
-        if (s.step === 'answer')      return 'done';
-        if (s.step === 'validating')  return 'working';
-        if (s.tools.length)           return 'focus';
+        if (s.step === 'gate')       return 'blocked';
+        if (s.step === 'serverfail') return 'blocked';
+        if (s.step === 'connecting') return 'thinking';
+        if (s.step === 'running')    return 'working';
+        if (s.step === 'done' || s.step === 'recovered') return 'done';
+        if (SIMS.mcp.isLive(s))                 return 'focus';
         return 'idle';
       },
 
+      /* The server rides in the composer once it is usable, and
+         stops riding there the moment it is not. A scope chip that
+         survives an expired connection is a chip that lies. */
       scopes: function (s) {
-        if (!s.tools.length || s.step === 'unset') return null;
-        return [window.MaterialMCP.chip({
-          name: 'Forge', tools: s.tools,
-          state: s.opts.stale ? 'stale' : 'ready'
-        })];
+        if (!SIMS.mcp.isLive(s)) return null;
+        var M = window.MaterialMCP;
+        return [M.chip({ name: M.server('jira').name, mark: 'JR',
+                         tools: M.tools('jira', s.off), status: 'ready' })];
       },
 
       thread: function (s) {
@@ -3062,12 +3506,12 @@
         var out = s.turns.map(function (t) {
           if (t.who === 'you') return human('You', 'P', t.text);
           if (t.who === 'call') {
-            /* The call itself is visible in the transcript. The
-               spec asks for "clear visual indicators when tools
-               are invoked", and a tool that runs silently is a
+            /* The call is in the transcript, with what went and what
+               came back. The spec asks for clear indicators when
+               tools are invoked, and a tool that runs silently is a
                tool nobody can audit afterwards. */
-            return '<div class="sim-call' + (t.denied ? ' is-denied' : '') + '">' +
-              '<span class="sim-call__k">' + (t.denied ? 'Refused' : 'Called') + '</span>' +
+            return '<div class="sim-call' + (t.bad ? ' is-denied' : '') + '">' +
+              '<span class="sim-call__k">' + (t.bad ? 'Failed' : 'Called') + '</span>' +
               '<code>' + esc(t.tool) + '</code>' +
               '<span class="sim-call__a">' + esc(t.args) + '</span>' +
               '<span class="sim-call__r">' + esc(t.result) + '</span>' +
@@ -3078,203 +3522,203 @@
             chip() + '</div><p class="wf-text">' + t.text + '</p></div></div>';
         }).join('');
 
-        if (!s.turns.length && s.step === 'unset') {
-          out = '<p class="sim-stage__empty">The team runs its own project tools. Point the ' +
-                'agent at the server and see what it turns out to offer.</p>';
+        /* The panel lives in the conversation, because adding a
+           server happens in the middle of trying to get something
+           done rather than on a settings page nobody was heading
+           for. */
+        if (s.step !== 'ask' || s.turns.length) {
+          out += '<div class="sim-turn">' + mark('md-agentav--sm') +
+            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
+            chip() + '</div>' + SIMS.mcp.mcpPanel(s) + '</div></div>';
         }
-
-        /* The panel lives in the conversation, because adding an
-           MCP server is a thing somebody does in the middle of
-           trying to get something done. */
-        out += '<div class="sim-turn">' + mark('md-agentav--sm') +
-          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-          chip() + '</div>' +
-          M.panel({
-            name: 'Forge',
-            url: s.step === 'unset' ? '' : 'https://forge.internal/mcp',
-            state: s.step === 'unset' ? 'unset'
-                 : s.step === 'validating' ? 'validating'
-                 : s.step === 'discovering' ? 'discovering'
-                 : s.step === 'unreachable' ? 'unreachable'
-                 : s.opts.stale ? 'stale'
-                 : s.tools.some(function (t) { return t.on === false; }) ? 'partial'
-                 : 'ready',
-            why: s.step === 'unreachable'
-              ? 'The address answered, but not with a protocol version this client speaks. ' +
-                'Nothing was enabled.'
-              : '',
-            cached: '2 hours ago',
-            tools: s.tools,
-            resources: s.tools.length ? 4 : undefined,
-            prompts: s.tools.length ? 2 : undefined,
-            open: s.open,
-            ask: s.ask
-          }) +
-          '</div></div>';
         return out;
       },
 
       foot: function (s) {
-        if (s.step === 'unset')
-          return '<span class="sim-doc__who">Nothing is known about it yet</span>' +
-                 button('Add the server', 'mcp:add', 'filled');
-        if (s.step === 'validating' || s.step === 'discovering')
-          return '<span class="sim-doc__who">Asking it what it offers</span>';
-        if (s.step === 'unreachable')
-          return '<span class="sim-doc__who">Nothing was enabled</span>' +
-                 button('Try again', 'mcp:add', 'filled');
-        if (s.step === 'asking')
-          return '<span class="sim-doc__who">A destructive call is waiting on you</span>';
+        if (s.step === 'ask')
+          return '<span class="sim-doc__who">The agent cannot reach an issue tracker</span>' +
+                 button('Ask it to file the bug', 'mcp:ask', 'filled');
+        if (s.step === 'adding')
+          return '<span class="sim-doc__who">Nothing is known about it yet</span>';
+        if (s.step === 'connecting')
+          return '<span class="sim-doc__who">Reaching it, then asking what it offers</span>';
+        if (s.step === 'gate')
+          return '<span class="sim-doc__who">A call is waiting on you</span>';
         if (s.step === 'running')
           return '<span class="sim-doc__who">Running it</span>';
-        if (s.step === 'answer')
-          return '<span class="sim-doc__who">The call is in the transcript</span>' +
+        if (s.step === 'toolfail')
+          return '<span class="sim-doc__who">One tool failed &mdash; the server is fine</span>';
+        if (s.step === 'serverfail')
+          return '<span class="sim-doc__who">Now it is the connection</span>';
+        if (s.step === 'done')
+          return '<span class="sim-doc__who">WEB-482 exists, and the call is in the transcript</span>' +
+                 button('Now let a call fail', 'mcp:break', 'filled') +
+                 button('Start over', 'reset', 'text');
+        if (s.step === 'recovered')
+          return '<span class="sim-doc__who">Reconnected, and the call went through</span>' +
                  button('Start over', 'reset', 'text');
         return '<span class="sim-doc__who">' +
-            s.tools.filter(function (t) { return t.on !== false; }).length +
-            ' enabled of ' + s.tools.length + '</span>' +
-          button('Ask it to cut the release', 'ask', 'filled') +
-          button(s.open ? 'Hide capabilities' : 'Review capabilities',
-                 s.open ? 'mcp:close' : 'mcp:open', 'text');
+            (4 - s.off.length) + ' enabled of 4</span>' +
+          button('Let it create the issue', 'mcp:use', 'filled');
       },
 
       controls: function (s) {
-        return [toggle('Server speaks an unknown version', 'opt:bad', s.opts.bad),
-                toggle('Server stopped answering', 'opt:stale', s.opts.stale)];
+        return [toggle('Show technical details', 'opt:technical', s.opts.technical)];
       },
 
       hint: function (s) {
-        if (s.opts.stale && s.tools.length)
-          return 'The list on screen is what the server said two hours ago. A tool surface ' +
-                 'that can change underneath you has to say when it was last confirmed &mdash; ' +
-                 'which is exactly why one client shows &ldquo;cached 2h ago&rdquo; and ' +
-                 'another freezes a snapshot at publish.';
-        if (s.step === 'unset')
-          return 'An address, and nothing else known. This is the whole difference from an app ' +
-                 'connector: there, the tool surface is fixed and reviewed before you press ' +
-                 'anything; here it has to be gone and asked for.';
-        if (s.step === 'validating' || s.step === 'discovering')
-          return 'Three named steps rather than a spinner. Reaching a server and understanding ' +
-                 'it are different problems with different fixes, and a failure has to say ' +
-                 'which one it was.';
-        if (s.step === 'unreachable')
-          return 'It answered &mdash; just not in a language this client speaks. Nothing was ' +
-                 'enabled, and the message says so, because a half-configured server is worse ' +
-                 'than none.';
-        if (s.step === 'asking')
-          return 'The gate is at CALL time and it shows the arguments. An approval that hides ' +
-                 'what is being sent has approved nothing in particular &mdash; and there is no ' +
-                 '&ldquo;always allow&rdquo; on a tool that deletes.';
-        if (s.step === 'answer')
-          return 'The call is in the transcript with its arguments and its result. A tool that ' +
-                 'runs silently is a tool nobody can audit afterwards.';
-        if (s.open)
-          return 'Read-only first, destructive last, so scanning down the list is scanning up a ' +
-                 'risk ladder. The labels come from the server&rsquo;s own annotations &mdash; ' +
-                 'which is why the note at the bottom says who wrote them.';
-        if (s.tools.length)
-          return 'Twelve tools, four resources, two prompts &mdash; none of which was known a ' +
-                 'moment ago. The summary is what most people need; the surface is one press ' +
-                 'away for anybody auditing it.';
-        return 'One server, and a list that had to be asked for.';
+        if (s.step === 'ask')
+          return 'The agent says what it is missing rather than failing quietly. This is where ' +
+                 'a connection gets added in practice &mdash; inside the request that needed ' +
+                 'it, not on a settings page somebody went looking for.';
+        if (s.step === 'adding')
+          return 'A name and an address. The authentication the server wants is NAMED, not ' +
+                 'configured, and transport lives behind Advanced &mdash; a connection panel ' +
+                 'that opens on headers has chosen its audience badly.';
+        if (s.step === 'connecting')
+          return 'Three named steps, not a spinner and not a percentage. Reaching a server, ' +
+                 'proving who you are and asking what it offers fail for different reasons and ' +
+                 'are fixed in different places, so a failure has to say which one it was.';
+        if (s.step === 'gate')
+          return 'At CALL time, with the arguments visible. An approval that hides what is ' +
+                 'being sent has approved nothing in particular &mdash; and Always allow is ' +
+                 'scoped to this one tool on this one server.';
+        if (s.step === 'toolfail')
+          return 'Look at the badge: still Ready. One tool failed and the other three work. A ' +
+                 'product that marks the whole connection down because one call returned 400 ' +
+                 'has told this person something untrue.';
+        if (s.step === 'serverfail')
+          return 'The SAME retry, and now the scope has changed. The badge moved, the tools ' +
+                 'went away, and the fix is no longer Retry &mdash; it is Reconnect. That is ' +
+                 'the distinction the whole pattern exists to carry.';
+        if (s.step === 'recovered')
+          return 'Signing in again brought the tools back and the call went through. Nothing ' +
+                 'was lost, because nothing had been written.';
+        if (s.step === 'done')
+          return 'The call is in the transcript with its arguments and its result. Now break ' +
+                 'one and watch what does &mdash; and does not &mdash; change.';
+        if (s.step === 'running')
+          return 'Which server, which tool, what happened. All three, because a call that runs ' +
+                 'without naming its server is a call nobody can audit afterwards.';
+        if (s.openTool)
+          return 'Inspection before use: what it does, what it touches, whether it will ask. ' +
+                 'The schema is one level further in, for the person who wants it.';
+        return 'Four tools, three resources, one prompt &mdash; none of which was known a ' +
+               'moment ago. Connected is not Ready: reachable and enumerated are different ' +
+               'facts, and the count only exists because the client went and asked.';
       },
 
       act: function (a, ctx) {
-        var s = ctx.s;
-        var TOOLS = [
-          { name: 'search_issues',  what: 'Find issues by text, label or milestone', risk: 'read' },
-          { name: 'get_issue',      what: 'Read one issue and its comments',         risk: 'read' },
-          { name: 'list_releases',  what: 'Read the release history',                risk: 'read' },
-          { name: 'read_pipeline',  what: 'Read build and deploy status',            risk: 'read' },
-          { name: 'create_issue',   what: 'Open a new issue',                        risk: 'write' },
-          { name: 'update_issue',   what: 'Change title, labels or assignee',        risk: 'write' },
-          { name: 'comment',        what: 'Add a comment to an issue',               risk: 'write' },
-          { name: 'cut_release',    what: 'Tag a release and start the pipeline',    risk: 'destroy' },
-          { name: 'delete_branch',  what: 'Remove a branch and its history',         risk: 'destroy' }
-        ];
+        var s = ctx.s, M = window.MaterialMCP;
 
-        if (a === 'opt:bad')   { flip(ctx, 'bad'); return; }
-        if (a === 'opt:stale') { flip(ctx, 'stale'); return; }
+        if (a === 'opt:technical') { flip(ctx, 'technical'); return; }
         if (a === 'reset') {
           var o = JSON.parse(JSON.stringify(s.opts));
           Object.assign(s, JSON.parse(JSON.stringify(SIMS.mcp.initial)));
           s.opts = o; ctx.paint(); return;
         }
 
-        if (a === 'mcp:add') {
-          s.step = 'validating'; s.tools = []; ctx.paint();
-          return wait(900).then(function () {
-            if (s.opts.bad) { s.step = 'unreachable'; ctx.paint(); return; }
-            s.step = 'discovering'; ctx.paint();
-            return wait(1200).then(function () {
-              /* Destructive tools arrive DISABLED. The spec's
-                 defaults are pessimistic and so is this. */
-              s.tools = TOOLS.map(function (t) {
-                return Object.assign({}, t, { on: t.risk !== 'destroy' });
-              });
-              s.step = 'ready'; s.open = true; ctx.paint();
+        /* ── The ask that cannot be answered yet ──────────── */
+        if (a === 'mcp:ask') {
+          s.turns = [
+            { who: 'you', text: 'File a bug for the checkout regression and set it to high ' +
+                                'priority.' },
+            { who: 'aria', text: 'I can write it, but I have no way to put it anywhere &mdash; ' +
+                                 'there is no issue tracker connected. Add one and I will file ' +
+                                 'it.' }
+          ];
+          s.step = 'adding'; ctx.paint(); return;
+        }
+
+        /* ── Establish, validate, discover ────────────────── */
+        if (a === 'mcp:add') { s.step = 'adding'; ctx.paint(); return; }
+        if (a === 'mcp:cancel') {
+          s.step = s.step === 'connecting' ? 'adding' : 'ask';
+          s.at = 'reach'; ctx.paint(); return;
+        }
+        if (a === 'mcp:connect' || a === 'mcp:reconnect') {
+          var back = a === 'mcp:reconnect';
+          s.step = 'connecting'; s.at = 'reach'; ctx.paint();
+          return wait(850).then(function () {
+            s.at = 'validate'; ctx.paint(); return wait(850);
+          }).then(function () {
+            s.at = 'discover'; ctx.paint(); return wait(950);
+          }).then(function () {
+            if (!back) { s.step = 'ready'; ctx.paint(); return; }
+            /* Reconnecting resumes the call that expired. Nothing
+               was written, so there is nothing to reconcile. */
+            s.step = 'running'; ctx.paint();
+            return wait(1000).then(function () {
+              s.turns = s.turns.concat([{ who: 'call', tool: 'update_issue',
+                args: 'issue: WEB-482, priority: High',
+                result: 'updated' }]);
+              s.turns = s.turns.concat([{ who: 'aria',
+                text: 'Signed back in and the update went through. WEB-482 is now High ' +
+                      'priority. Nothing was lost &mdash; the first attempt never wrote ' +
+                      'anything.' }]);
+              s.step = 'recovered'; ctx.paint();
             });
           });
         }
-        if (a === 'mcp:cancel' || a === 'mcp:remove') {
-          s.step = 'unset'; s.tools = []; s.open = false; ctx.paint(); return;
-        }
-        if (a === 'mcp:open')  { s.open = true; ctx.paint(); return; }
-        if (a === 'mcp:close') { s.open = false; ctx.paint(); return; }
+
+        /* ── Inspect and decline ──────────────────────────── */
         if (a.indexOf('mcp:tool:') === 0) {
-          var i = +a.slice(9);
-          if (s.tools[i]) s.tools[i].on = s.tools[i].on === false;
+          var id = a.slice(9);
+          s.openTool = s.openTool === id ? null : id;
+          ctx.paint(); return;
+        }
+        if (a.indexOf('mcp:toggle:') === 0) {
+          var t = a.slice(11), i = s.off.indexOf(t);
+          if (i === -1) s.off.push(t); else s.off.splice(i, 1);
           ctx.paint(); return;
         }
 
-        if (a === 'ask') {
-          s.turns = s.turns.concat([{ who: 'you', text: 'Cut release 4.12 and tell me what is in it.' }]);
-          /* The review is over. Leaving the surface open turns the
-             approval gate into a footnote at the bottom of an
-             audit, which is the wrong place for a decision. */
-          s.open = false;
-          s.step = 'running'; ctx.paint();
-          return wait(1200).then(function () {
-            s.turns = s.turns.concat([{ who: 'call', tool: 'search_issues',
-              args: 'milestone: 4.12, state: closed',
-              result: '14 issues' }]);
-            ctx.paint();
-            return wait(900);
-          }).then(function () {
-            /* The destructive one stops and asks, whatever else
-               has been enabled. */
-            s.ask = { server: 'Forge', tool: 'cut_release',
-                      what: 'Tags the release and starts the deploy pipeline. This cannot be ' +
-                            'undone from here.',
-                      args: { tag: 'v4.12.0', branch: 'release/4.12', deploy: 'production' } };
-            s.step = 'asking'; ctx.paint();
-          });
+        /* ── The gate, and the call ───────────────────────── */
+        if (a === 'mcp:use') {
+          s.openTool = null; s.step = 'gate'; ctx.paint(); return;
         }
-
-        if (a === 'mcp:approve') {
-          s.turns = s.turns.concat([{ who: 'call', tool: 'cut_release',
-            args: 'tag: v4.12.0, branch: release/4.12',
-            result: 'tagged, pipeline started' }]);
-          s.ask = null; s.step = 'running'; ctx.paint();
-          return wait(1300).then(function () {
+        if (a === 'mcp:allow' || a === 'mcp:always') {
+          s.step = 'running'; ctx.paint();
+          return wait(1100).then(function () {
+            s.turns = s.turns.concat([{ who: 'call', tool: 'create_issue',
+              args: 'project: WEB, type: Bug, priority: High',
+              result: 'WEB-482' }]);
             s.turns = s.turns.concat([{ who: 'aria',
-              text: '4.12 is tagged and the pipeline is running. Fourteen issues closed against ' +
-                    'this milestone: nine fixes, three of them in onboarding, plus the two ' +
-                    'performance items that were carried over from 4.11.' }]);
-            s.step = 'answer'; ctx.paint();
+              text: 'Filed as <b>WEB-482</b> in WEB, priority High, with the reproduction steps ' +
+                    'from this thread in the description.' }]);
+            s.step = 'done'; ctx.paint();
           });
         }
         if (a === 'mcp:deny') {
-          s.turns = s.turns.concat([{ who: 'call', tool: 'cut_release', denied: true,
-            args: 'tag: v4.12.0', result: 'you said no' }]);
-          s.ask = null; ctx.paint();
-          return wait(700).then(function () {
-            s.turns = s.turns.concat([{ who: 'aria',
-              text: 'Stopped there, then. Fourteen issues are closed against 4.12 &mdash; nine ' +
-                    'fixes, three in onboarding, and the two performance items carried over ' +
-                    'from 4.11. Nothing has been tagged.' }]);
-            s.step = 'answer'; ctx.paint();
+          s.turns = s.turns.concat([{ who: 'aria',
+            text: 'Left it alone. Nothing was sent to Jira &mdash; the description is still ' +
+                  'here if you want to file it yourself.' }]);
+          s.step = 'done'; ctx.paint(); return;
+        }
+
+        /* ── The distinction ──────────────────────────────── */
+        if (a === 'mcp:break') {
+          s.turns = s.turns.concat([{ who: 'you',
+            text: 'Actually bump it to highest and put it in this sprint.' }]);
+          s.step = 'running'; ctx.paint();
+          return wait(1000).then(function () {
+            s.turns = s.turns.concat([{ who: 'call', tool: 'update_issue', bad: true,
+              args: 'issue: WEB-482, sprint: 31', result: 'transition not allowed' }]);
+            s.step = 'toolfail'; s.failDetail = false; ctx.paint();
           });
+        }
+        if (a === 'mcp:retry') {
+          s.step = 'running'; ctx.paint();
+          return wait(1000).then(function () {
+            /* The second failure is the CONNECTION's. Same button,
+               different scope, and the surface says so. */
+            s.step = 'serverfail'; s.failDetail = false; ctx.paint();
+          });
+        }
+        if (a === 'mcp:detail') { s.failDetail = !s.failDetail; ctx.paint(); return; }
+        if (a === 'mcp:remove') {
+          s.step = 'ask'; s.turns = []; s.off = []; s.openTool = null;
+          ctx.paint(); return;
         }
       }
     },
@@ -4437,8 +4881,7 @@
         var chipEl = s.region
           ? '<button class="md-sel__chip" type="button" data-act="clear" ' +
             'aria-label="Remove ' + esc(s.region.label) + '">' +
-              '<svg class="md-sel__chip-i" viewBox="0 0 24 24" aria-hidden="true">' +
-              '<rect x="4" y="4" width="16" height="16" rx="3"/></svg>' +
+              MI('visibility', 'md-sel__chip-i') +
               esc(s.region.label) +
               '<span class="md-sel__x" aria-hidden="true">&times;</span></button>'
           : '<button class="md-button md-button--outlined md-button--sm" type="button" ' +
@@ -4629,6 +5072,12 @@
       initial: {
         step: 'draft',     /* draft · reading · asking · running · done */
         req: 'Create a customer research report on mid-market churn.',
+        /* The request starts in the SHARED composer's own field.
+           The page's argument is that nothing special stands in
+           front of a request like this one, and the way to make
+           that argument is to use the composer every other page
+           already has. */
+        axText: 'Create a customer research report on mid-market churn.',
         audience: null, range: null, sources: null,
         rangeDefault: false,
         rerun: false,
@@ -4678,9 +5127,14 @@
         var REQ = '<p class="md-struct__req">' + esc(s.req) + '</p>';
 
         if (s.step === 'draft') {
-          return '<div class="md-struct" role="textbox" aria-label="Ask for anything">' +
-              '<span>' + esc(s.req) + '</span><span class="sc-caret"></span>' +
-            '</div>';
+          /* Nothing here. The request is in the composer below,
+             where a request goes, and the empty workspace is the
+             honest picture of a report that has not been asked
+             for yet. A bespoke box drawn to look like a composer
+             was the page contradicting its own argument. */
+          return '<p class="sim-stage__empty">Nothing asked for yet. The request is in the ' +
+                 'composer below &mdash; the same one every other page has, with no form ' +
+                 'standing in front of it.</p>';
         }
 
         if (s.step === 'reading') return REQ + working('Working out what is missing&hellip;');
@@ -4759,7 +5213,7 @@
       foot: function (s) {
         if (s.step === 'draft') {
           return '<span class="sim-doc__who">Prose first &mdash; no form in front of it</span>' +
-                 button('Send the request', 'send', 'filled');
+                 button('Send it', 'send', 'filled');
         }
         if (s.step === 'done') {
           return '<span class="sim-doc__who">Change one value, ask again</span>' +
@@ -4810,6 +5264,16 @@
         return 'Reading the request is not the same as answering it.';
       },
 
+      /* Pressing send in the shared composer is the same act as
+         the demo button beside it, and it takes whatever was
+         actually typed. */
+      axSubmit: function (text, ctx) {
+        var s = ctx.s;
+        if (s.step !== 'draft') return;
+        s.req = text;
+        return this.act('send', ctx);
+      },
+
       act: function (a, ctx) {
         var s = ctx.s;
         if (a === 'opt:restraint') { flip(ctx, 'restraint'); return; }
@@ -4821,6 +5285,10 @@
           s.opts = o; ctx.paint(); return;
         }
         if (a === 'send') {
+          /* The request has left the composer and become the thing
+             on the page. Leaving a copy in the field would be two
+             claims about where it lives. */
+          s.axText = '';
           s.step = 'reading'; ctx.paint();
           return wait(800).then(function () { s.step = 'asking'; ctx.paint(); });
         }
@@ -4858,14 +5326,18 @@
     }
   };
 
-  var ICON_SEND = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-    '<path d="M3.4 20.4 21.9 12 3.4 3.6 3.4 10.1 16.5 12 3.4 13.9Z"/></svg>';
-  var ICON_DOTS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" ' +
-    'stroke-linecap="round" aria-hidden="true"><path d="M12 5.5v.1M12 12v.1M12 18.5v.1"/></svg>';
-  var MIC2 = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-    '<rect x="9" y="3" width="6" height="11" rx="3"/>' +
-    '<path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" ' +
-    'stroke-width="1.8" stroke-linecap="round"/></svg>';
+  /* ── Icons ────────────────────────────────────────────────
+     One call, one Material Symbol. The class is passed through so
+     every contextual size rule in the stylesheet keeps working;
+     what changes is that the SHAPE is no longer this file's
+     opinion. */
+  function MI(name, cls) {
+    return window.MaterialIcons ? window.MaterialIcons.icon(name, { cls: cls }) : '';
+  }
+
+  var ICON_SEND = MI('send');
+  var ICON_DOTS = MI('more');
+  var MIC2 = MI('mic');
 
   /* ── Contextual selection helpers ──────────────────────
      The name of a region is not cosmetic: it is the only evidence
@@ -4915,8 +5387,7 @@
   }
 
   function glyph16() {
-    return '<svg class="sc-glyph" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" ' +
-           'fill="currentColor">' + SPARK + '</svg>';
+    return MI('spark', 'sc-glyph');
   }
 
   /* A turn by a person. Present in most of these scenarios because
@@ -4950,10 +5421,7 @@
 
   function diceBtn(label) {
     return '<button class="md-dice" type="button" data-act="roll">' +
-      '<svg class="md-dice__ico" viewBox="0 0 24 24" aria-hidden="true">' +
-        '<rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" ' +
-        'stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5"/>' +
-        '<circle cx="15.5" cy="15.5" r="1.5"/><circle cx="12" cy="12" r="1.5"/></svg>' +
+      MI('lightbulb', 'md-dice__ico') +
       label + '</button>';
   }
 
@@ -5156,10 +5624,27 @@
     /* "Three places the agent can act on one record, and no
        composer anywhere." A docked composer is not a small
        inconsistency here — it is the counter-example. */
-    'ai-icons': 'absent'
+    'ai-icons': 'absent',
+    /* The inverse override. The `composer` layout normally means
+       the pattern draws its own way in, and for most of the
+       patterns on it that is right: their argument IS the input
+       surface, so a bespoke one is the subject of the page.
+
+       Structured Input is the exception, and the exception is the
+       whole point. Its argument is "prose first, no form in front
+       of it" — which is made by the ORDINARY composer every other
+       page already has, not by a bespoke box drawn to look like
+       one. Drawing its own field made the page say "here is a
+       special input for structured requests", which is the
+       opposite of what it means. */
+    'structured-input': 'shell'
   };
   function ownsAsk(sim) {
-    return !!OWNS_SHELL[sim.shell] || !!OWNS_PATTERN[sim.id];
+    var over = OWNS_PATTERN[sim.id];
+    /* `shell` hands the ask back to the dock even though the
+       layout would normally keep it. */
+    if (over === 'shell') return false;
+    return !!over || !!OWNS_SHELL[sim.shell];
   }
 
   /* ── Navigation, per scenario ─────────────────────────────
@@ -5191,8 +5676,8 @@
     randomize: { group: 'Campaign', items: ['Creative brief', 'Directions', 'Moodboards', 'Past campaigns'], on: 0 },
     'voice-input': { group: 'Feedback', items: ['Onboarding', 'This quarter', 'Last quarter', 'Sources'], on: 0 },
     attachments: { group: 'Procurement', items: ['Vendor proposal', 'Open reviews', 'Signed', 'Suppliers'], on: 0 },
-    connectors: { group: 'Design', items: ['Design triage', 'This week', 'Blocked', 'Connected apps'], on: 0 },
-    mcp: { group: 'Platform', items: ['Release 4.12', 'Pipelines', 'Servers', 'Audit log'], on: 0 },
+    connectors: { group: 'Research', items: ['Product review', 'Onboarding study', 'Interviews', 'Connected apps'], on: 0 },
+    mcp: { group: 'Platform', items: ['Checkout regression', 'Open bugs', 'Servers', 'Audit log'], on: 0 },
     'knowledge-base': { group: 'Research', items: ['Onboarding problems', 'Pricing', 'Churn', 'Sources'], on: 0 },
     'model-selection': { group: 'Finance', items: ['Quarterly analysis', 'Forecast', 'Board pack', 'Models'], on: 0 },
     'visual-input': { group: 'Support', items: ['Ticket 4417', 'Attachments', 'Known issues', 'Escalations'], on: 0 },
@@ -5228,12 +5713,15 @@
        scenario handles the choice — see `addContext`. */
     attachments: { ask: 'Ask about the proposal…',
                    plus: ['Upload a file', 'Upload a photo', 'Paste text'] },
-    connectors: { ask: 'Ask about the backlog…', plus: ['Attach a file', 'Connect an app'] },
-    mcp: { ask: 'Ask about the release…', plus: ['Attach a file', 'Add a server'] },
+    connectors: { ask: 'Ask the agent…',
+                  plus: ['Add images or files',
+                         { label: 'Use connectors', sub: true }] },
+    mcp: { ask: 'Ask Aria about this bug…', plus: ['Attach a file', 'Add an MCP server'] },
     'knowledge-base': { ask: 'Ask the research…', plus: ['Attach a file', 'Add a source'] },
     /* No `modes` here: the chip in that slot is the MODEL, and
        there is only ever one chip in it. */
-    'model-selection': { ask: 'Ask about the quarter…', plus: ['Attach a file', 'Add a source'] }
+    'model-selection': { ask: 'Ask about the quarter…', plus: ['Attach a file', 'Add a source'] },
+    'structured-input': { ask: 'Ask for a report…', plus: ['Attach a file', 'Add a data source'] }
   };
 
   /* ── The agent's state, as one word ───────────────────────
@@ -5261,15 +5749,12 @@
     return 'idle';
   }
 
-  var ICON_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
-  var ICON_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
-  var ICON_MIC = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-    '<rect x="9" y="3" width="6" height="11" rx="3"/>' +
-    '<path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>';
-  var ICON_SPARK = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" stroke="none">' +
-    SPARK + '</svg>';
-  var ICON_CHEV = '<svg class="md-scope__chev" viewBox="0 0 24 24" aria-hidden="true">' +
-    '<path d="M9 6l6 6-6 6"/></svg>';
+  var ICON_PLUS = MI('add');
+  var ICON_ARROW = MI('send');
+  var ICON_MIC = MI('mic');
+  var ICON_SPARK = MI('spark');
+  var ICON_CHEV = MI('chevRight', 'md-scope__chev');
+  var ICON_CHEV_R = MI('chevRight', 'ax__mchev');
 
   function navHTML(sim, s) {
     var n = NAVS[sim.id] || { group: 'Workspace', items: ['Current task'], on: 0 };
@@ -5345,8 +5830,15 @@
                 (sc.state ? 'data-state="' + sc.state + '" ' : '') +
                 'aria-label="' + esc(sc.label + (sc.detail ? ', ' + sc.detail : '') +
                   '. Manage what the agent can reach.') + '">' +
-              '<span class="md-scope__mark" aria-hidden="true">' +
-                esc((sc.mark || sc.label).slice(0, 2)) + '</span>' +
+              /* The service's own logo when the source gave us one.
+                 MaterialConnect.chip() has always returned a `logo`
+                 and this chip used to drop it on the floor, so a
+                 standing Google Drive connection identified itself
+                 as "GO" — recognition is the entire job of a logo,
+                 and two letters do not do it. */
+              '<span class="md-scope__mark' + (sc.logo ? ' md-scope__mark--logo' : '') + '" ' +
+                'aria-hidden="true">' +
+                (sc.logo || esc((sc.mark || sc.label).slice(0, 2))) + '</span>' +
               '<span class="md-scope__t">' + esc(sc.label) + '</span>' +
               /* A VISIBLE separator: this is running inline text
                  with no flex gap standing in for one, so the
@@ -5401,11 +5893,15 @@
                 'aria-label="Remove ' + esc(ch) + '">' + esc(ch) + ' ×</button>';
             }).join('') + '</span>'
           : '') +
-        '<input class="ax__field" data-ax-field type="text" ' +
+        /* A textarea rather than an input, because a request is
+           usually a sentence, and a sentence that scrolls sideways
+           out of a one-line box cannot be read back before it is
+           sent. It grows to a ceiling and then scrolls. */
+        '<textarea class="ax__field" data-ax-field rows="1" ' +
           'aria-label="Ask ' + esc(o.agent) + '" ' +
-          'value="' + esc(o.text || '') + '" ' +
           'placeholder="' + esc(busy || blocked ? '' : o.ask) + '"' +
-          (busy || blocked ? ' disabled' : '') + ' />' +
+          (busy || blocked ? ' disabled' : '') + '>' +
+          esc(o.text || '') + '</textarea>' +
         /* The composer has exactly one chip in this slot. A
            scenario about models fills it with a model; every
            other scenario fills it with a mode. There is no
@@ -5441,12 +5937,31 @@
         scopes +
         atts +
         body +
+        /* An item may be a plain label, or an object that owns a
+           SUBMENU — the flyout-into-flyout shape every mature
+           assistant uses for "add context", where the first level
+           is the kinds of context and the second is the actual
+           sources. The submenu is a child of the menu rather than
+           a sibling, so it anchors to it whatever width the first
+           level turns out to be. */
         (!voice && o.plusOpen
           ? '<div class="ax__menu ax__menu--plus" role="menu">' +
             o.plus.map(function (it, i) {
-              return '<button class="ax__mitem" type="button" role="menuitem" ' +
-                'data-act="ax:add:' + i + '">' + esc(it) + '</button>';
-            }).join('') + '</div>'
+              /* `typeof`, not a truthiness test on `.sub`: every
+                 string in JavaScript inherits String.prototype.sub,
+                 so `'Attach a file'.sub` is a function and every
+                 plain label would claim to own a submenu. */
+              var obj = it && typeof it === 'object';
+              var label = obj ? it.label : it;
+              var sub = !!(obj && it.sub);
+              return '<button class="ax__mitem' + (sub ? ' ax__mitem--sub' : '') + '" ' +
+                'type="button" role="menuitem" ' +
+                (sub ? 'aria-haspopup="menu" aria-expanded="' + (o.subAt === i) + '" ' : '') +
+                'data-act="' + (sub ? 'ax:sub:' : 'ax:add:') + i + '">' +
+                esc(label) + (sub ? ICON_CHEV_R : '') + '</button>';
+            }).join('') +
+            (o.sub ? '<div class="ax__submenu" role="menu">' + o.sub + '</div>' : '') +
+            '</div>'
           : '') +
         (!voice && o.modesOpen && o.model && window.MaterialModel
           ? window.MaterialModel.menu({
@@ -5484,6 +5999,11 @@
         busy: busy, blocked: blocked,
         text: s.axText, chips: s.axChips,
         plusOpen: s.axPlus, modesOpen: s.axModes, mode_: s.axMode,
+        /* The scenario owns the submenu's contents: the shell
+           knows there is a second level, not what is on it. */
+        subAt: s.axSubAt,
+        sub: (s.axSubAt !== null && s.axSubAt !== undefined && sim.plusMenu)
+               ? sim.plusMenu(s.axSubAt, s) : '',
         mode: mode,
         atts: sim.atts ? sim.atts(s) : null,
         scopes: sim.scopes ? sim.scopes(s) : null,
@@ -5594,10 +6114,22 @@
       if (sim.autostart) sim.act(sim.autostart, ctx);
       return true;
     }
-    if (a === 'ax:plus')  { s.axPlus = !s.axPlus; s.axModes = false; ctx.paint(); return true; }
+    if (a === 'ax:plus')  {
+      s.axPlus = !s.axPlus; s.axModes = false;
+      if (!s.axPlus) s.axSubAt = null;
+      ctx.paint(); return true;
+    }
+    /* A submenu is opened and closed on its own row; closing the
+       menu that owns it closes it too, which is the only way it
+       cannot outlive its parent. */
+    if (a.indexOf('ax:sub:') === 0) {
+      var sn = +a.slice(7);
+      s.axSubAt = s.axSubAt === sn ? null : sn;
+      ctx.paint(); return true;
+    }
     if (a === 'ax:mode')  { s.axModes = !s.axModes; s.axPlus = false; ctx.paint(); return true; }
     if (a.indexOf('ax:add:') === 0) {
-      s.axPlus = false;
+      s.axPlus = false; s.axSubAt = null;
       /* A scenario whose + menu offers SOURCES rather than labels
          handles the choice itself — picking a file is the start of
          something, not the end of it. */
@@ -5625,6 +6157,16 @@
 
     var s = JSON.parse(JSON.stringify(sim.initial));
     var busy = false;
+
+    /* The field is one row until the sentence needs two, and never
+       more than a few — a composer that keeps growing eats the
+       workspace it is asking about. The ceiling matches the CSS
+       max-height, past which it scrolls. */
+    function fitField(el) {
+      if (!el || el.tagName !== 'TEXTAREA') return;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 72) + 'px';
+    }
 
     function paint() {
       var typing = document.activeElement &&
@@ -5659,6 +6201,7 @@
          the new one. It is a no-op on the twenty-four patterns
          that have no voice surface in them. */
       if (window.MaterialVoice) window.MaterialVoice.drive(root);
+      fitField(root.querySelector('[data-ax-field]'));
       if (typing) {
         var input = root.querySelector('[data-input]');
         if (input) input.focus({ preventScroll: true });
@@ -5723,6 +6266,19 @@
         var af = root.querySelector('[data-ax-field]');
         var text = ((af && af.value) || '').trim();
         if (!text) return;
+        /* Where the docked composer is how the scenario STARTS —
+           rather than a place to leave a follow-up beside a task
+           already running — the scenario consumes what was typed.
+           Queueing it would be the shell answering a question the
+           pattern was asked. */
+        if (sim.axSubmit) {
+          var r = sim.axSubmit(text, ctx);
+          if (r && typeof r.then === 'function') {
+            busy = true;
+            r.then(function () { busy = false; }, function () { busy = false; });
+          }
+          return;
+        }
         s.axQueue = (s.axQueue || []).concat([text]);
         s.axText = '';
         paint();
@@ -5743,8 +6299,22 @@
     root.addEventListener('input', function (e) {
       if (!e.target.hasAttribute || !e.target.hasAttribute('data-ax-field')) return;
       s.axText = e.target.value;
+      fitField(e.target);
       var send = root.querySelector('.ax__cbtn--send');
       if (send) send.disabled = !e.target.value.trim();
+    });
+
+    /* Enter sends, Shift+Enter starts a line. A textarea has no
+       implicit submit, so the one a person expects is given back
+       explicitly rather than left to the send button alone. */
+    root.addEventListener('keydown', function (e) {
+      if (!e.target.hasAttribute || !e.target.hasAttribute('data-ax-field')) return;
+      if (e.key !== 'Enter' || e.shiftKey) return;
+      var form = e.target.closest('form');
+      if (!form) return;
+      e.preventDefault();
+      if (typeof form.requestSubmit === 'function') form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     });
 
     /* Focusing the composer gathers the atmosphere towards it, and
@@ -5770,7 +6340,7 @@
       if (!s.axPlus && !s.axModes) return;
       if (e && e.type === 'click' && e.target.closest &&
           e.target.closest('.ax__composer')) return;
-      s.axPlus = s.axModes = false;
+      s.axPlus = s.axModes = false; s.axSubAt = null;
       paint();
     }
     document.addEventListener('keydown', function (e) {

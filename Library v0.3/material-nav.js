@@ -32,6 +32,45 @@
                /* Initially · Context Expansion */
                'attachments', 'connectors', 'mcp', 'knowledge-base', 'model-selection'];
 
+  /* ── Availability ─────────────────────────────────────────────
+     The tree lists 89 patterns and 30 of them exist. Before this
+     map the page had one bit of state — link or not-a-link — which
+     meant a reader could not tell "we have not built it yet" from
+     "we have decided not to", and the overview implied a library
+     four times the size of the one that is here.
+
+     Four states, and only the first means you can use it today:
+
+       available    built: page, live preview, simulator, tests
+       in-progress  actively being built right now. Deliberately
+                    EMPTY unless something is genuinely underway —
+                    a roadmap that lists everything as in progress
+                    is a roadmap nobody believes
+       planned      in the taxonomy, not started
+
+     A fourth state, `labs`, marked two patterns the evidence did
+     not support. It went with the Labs section it belonged to:
+     a badge pointing at a holding area that no longer exists is
+     just a mark nobody can act on. `isLabs` stays as a stub so
+     the two callers keep working, and restoring the judgement is
+     a list rather than a rewrite. */
+  var IN_PROGRESS = [];
+
+  var LABS = [];
+
+  function status(id) {
+    if (BUILT.indexOf(id) !== -1) return 'available';
+    if (IN_PROGRESS.indexOf(id) !== -1) return 'in-progress';
+    return 'planned';
+  }
+  function isLabs(id) { return LABS.indexOf(id) !== -1; }
+
+  var STATUS_LABEL = {
+    'available':   'Available',
+    'in-progress': 'In progress',
+    'planned':     'Planned'
+  };
+
   var STAGES = [
   { id: "onboarding", num: "01", label: "Onboarding",
     lede: "Before a user types a single prompt, we set the rules: what this thing is, what it can do, who it is, and what we ask of them in return. Get this right and trust compounds across every later phase.",
@@ -92,8 +131,8 @@
       { id: "context-expansion", title: "Context Expansion", desc: "Letting a user hand over the material the answer depends on.",
         patterns: [
           { id: "attachments", name: "Attachments", oneline: "Upload files, photos, docs for the AI to read." },
-          { id: "connectors", name: "Connectors", oneline: "OAuth into Drive, Slack, Notion, etc. for live grounding." },
-          { id: "mcp", name: "MCP Connectors", oneline: "Standardised tool access so the AI can act, not just answer." },
+          { id: "connectors", name: "Connect Data Source", oneline: "Sign in to GitHub, Drive, Slack or Notion for live, bounded grounding." },
+          { id: "mcp", name: "MCP Server Connection", oneline: "Connect a server, discover what it can do, and decide before the agent uses it." },
           { id: "knowledge-base", name: "Knowledge Bases", oneline: "Persistent organisational corpus the AI can ground in." },
           { id: "model-selection", name: "Model Selection", oneline: "Let the user pick the right model for the task." }
         ] }
@@ -194,6 +233,31 @@
   ]}
   ];
 
+
+  /* ── Redirects ────────────────────────────────────────────────
+     Empty. Two patterns were merged away during the restructure and
+     redirected to whatever absorbed them; the merges have been
+     reverted, so both rows exist again and a redirect would send a
+     reader away from the page they asked for. The mechanism stays
+     because the next merge will want it. */
+  var REDIRECTS = {};
+
+  /* ── BUILT, in tree order ─────────────────────────────────────
+     The list above is maintained by hand, and prev/next walks it,
+     so it has to be in the same order as the sidebar or the two
+     disagree about what "next" means. Sorting it against the tree
+     rather than asking whoever adds a pattern to insert it in the
+     right place — which is the kind of instruction that survives
+     exactly as long as the person who wrote it. */
+  (function orderBuilt() {
+    var order = [], i, j, k;
+    for (i = 0; i < STAGES.length; i++)
+      for (j = 0; j < STAGES[i].subcats.length; j++)
+        for (k = 0; k < STAGES[i].subcats[j].patterns.length; k++)
+          order.push(STAGES[i].subcats[j].patterns[k].id);
+    BUILT.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
+  })();
+
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -203,8 +267,17 @@
     var tag   = built ? 'a' : 'span';
     var attr  = built ? ' href="material-pattern.html?id=' + encodeURIComponent(id) + '"' : '';
     var cls   = 'tree__pattern' + (id === current ? ' is-current' : '');
+    /* data-status keeps its original two values because the dot's
+       styling reads them; data-avail carries the finer state and
+       data-labs the judgement. Nothing here relies on the dot
+       alone: the row's title says the state in words, which is
+       what a screen reader and a greyscale screen both get. */
     return '<' + tag + ' class="' + cls + '" data-pattern="' + id + '"' +
-           ' data-status="' + (built ? 'full' : 'scaffold') + '"' + attr + '>' +
+           ' data-status="' + (built ? 'full' : 'scaffold') + '"' +
+           ' data-avail="' + status(id) + '"' +
+           (isLabs(id) ? ' data-labs="true"' : '') +
+           ' title="' + STATUS_LABEL[status(id)] +
+             (isLabs(id) ? ' &middot; Experimental (Labs)' : '') + '"' + attr + '>' +
            esc(name) + '<span class="badge-dot" aria-hidden="true"></span></' + tag + '>';
   }
 
@@ -292,6 +365,8 @@
   }
 
   window.MaterialNav = {
-    mount: mount, setActive: setActive, stages: STAGES, built: BUILT
+    mount: mount, setActive: setActive, stages: STAGES, built: BUILT,
+    inProgress: IN_PROGRESS, labs: LABS, REDIRECTS: REDIRECTS,
+    status: status, isLabs: isLabs, STATUS_LABEL: STATUS_LABEL
   };
 })();

@@ -67,23 +67,16 @@
     drive: 'Synced file'
   };
 
-  var ICONS = {
-    doc: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-         '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>' +
-         '<path d="M14 3v5h5"/></svg>',
-    sheet: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg>',
-    url: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-         '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5a15 15 0 0 1 0 17a15 15 0 0 1 0-17"/></svg>',
-    note: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-          '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>',
-    audio: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<rect x="9" y="3" width="6" height="11" rx="3"/>' +
-           '<path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>',
-    drive: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>',
-    tick: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>'
-  };
+    /* Material Symbols, by name. This module used to carry its own
+     hand-drawn approximations of these glyphs; they are now the
+     kit's own paths, resolved through one shared set so the same
+     idea cannot be drawn two ways in two files. */
+  var ICONS = (function () {
+    var MI = window.MaterialIcons, out = {};
+    var USE = {'doc': 'doc', 'sheet': 'sheet', 'url': 'link', 'note': 'note', 'audio': 'audio', 'drive': 'cloud', 'tick': 'check'};
+    for (var k in USE) out[k] = MI ? MI.icon(USE[k]) : '';
+    return out;
+  })();
 
   /* ── One source ───────────────────────────────────────────
      The checkbox is first because it is the control that makes

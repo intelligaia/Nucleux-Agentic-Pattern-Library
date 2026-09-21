@@ -54,28 +54,16 @@
     'Attached files stay with this conversation. Removing one takes it out of what comes ' +
     'next; it cannot unwrite an answer it has already shaped.';
 
-  var ICONS = {
-    doc: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-         '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>' +
-         '<path d="M14 3v5h5"/></svg>',
-    sheet: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<rect x="4" y="4" width="16" height="16" rx="2"/>' +
-           '<path d="M4 10h16M10 4v16"/></svg>',
-    image: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<rect x="3" y="4" width="18" height="16" rx="2"/>' +
-           '<path d="M3 16l4.5-4.5a2 2 0 0 1 2.8 0L15 16"/>' +
-           '<circle cx="15.5" cy="9" r="1.4"/></svg>',
-    close: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<path d="M6 6l12 12M18 6L6 18"/></svg>',
-    retry: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>',
-    upload: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-            '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>',
-    photo: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/></svg>',
-    paste: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4h6v3H9z"/></svg>'
-  };
+    /* Material Symbols, by name. This module used to carry its own
+     hand-drawn approximations of these glyphs; they are now the
+     kit's own paths, resolved through one shared set so the same
+     idea cannot be drawn two ways in two files. */
+  var ICONS = (function () {
+    var MI = window.MaterialIcons, out = {};
+    var USE = {'doc': 'doc', 'sheet': 'sheet', 'image': 'image', 'close': 'close', 'retry': 'refresh', 'upload': 'upload', 'photo': 'photo', 'paste': 'paste'};
+    for (var k in USE) out[k] = MI ? MI.icon(USE[k]) : '';
+    return out;
+  })();
 
   /* ── One attachment ───────────────────────────────────────
      An IMAGE gets a thumbnail because a thumbnail identifies it

@@ -103,10 +103,11 @@
                    ' aria-selected="' + (i === 0) + '">' + pm.id + '</button>';
           }).join('') +
           '<button class="mp-inst__copy" type="button" data-copy-cmd aria-label="Copy command">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" ' +
-            'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-            '<rect x="9" y="9" width="11" height="11" rx="2"/>' +
-            '<path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>' +
+            /* Material Symbols, like every other glyph — the only
+               thing that changed about this control when the icon
+               set did. */
+            '<svg class="mi" viewBox="0 -960 960 960" aria-hidden="true">' +
+            '<path d="M300-200q-24 0-42-18t-18-42v-560q0-24 18-42t42-18h440q24 0 42 18t18 42v560q0 24-18 42t-42 18H300Zm0-60h440v-560H300v560ZM180-80q-24 0-42-18t-18-42v-620h60v620h500v60H180Zm120-180v-560 560Z"/></svg>' +
           '</button>' +
         '</div>' +
         PMS.map(function (pm, i) {
@@ -140,118 +141,17 @@
       '</div>';
   }
 
-  /* ══════════════════════════════════════════════════════════
-     REFERENCE
+  /* `referenceHTML` and the sub-block helpers it used stood here.
+     The Reference section — precedent, anatomy, the interaction,
+     states, variants, content, accessibility, don't, metrics,
+     composed-from and related — has been removed from every
+     pattern page.
 
-     Six optional sub-blocks, each rendered only if the pattern
-     declares it. Three shapes are enough for all of them:
-
-       pairs  a keyed definition row   — anatomy, states, variants
-       steps  an ordered sequence      — the interaction itself
-       rules  a flat list of sentences — content, a11y, don'ts
-
-     Nothing here is prose-with-headings: a reader comparing two
-     patterns should be able to put the two pages side by side and
-     read across.
-     ══════════════════════════════════════════════════════════ */
-  function refPairs(rows) {
-    return '<div class="qa-list ref-pairs">' + rows.map(function (r) {
-      return '<div class="qa-row"><div class="qa-row__k">' + r[0] + '</div>' +
-             '<div class="qa-row__v">' + r[1] + '</div></div>';
-    }).join('') + '</div>';
-  }
-  function refSteps(items) {
-    return '<ol class="ref-steps">' + items.map(function (t) {
-      return '<li>' + t + '</li>';
-    }).join('') + '</ol>';
-  }
-  function refRules(items, kind) {
-    return '<ul class="ref-rules' + (kind ? ' ref-rules--' + kind : '') + '">' +
-      items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>';
-  }
-  function refSub(title, note, body) {
-    return '<h3 class="mp-sub">' + title + '</h3>' +
-           (note ? '<p class="ref-note">' + note + '</p>' : '') + body;
-  }
-
-  function referenceHTML(p) {
-    var out = '';
-
-    /* Precedent comes FIRST and carries links, because the claim the
-       rest of the page rests on is that this interaction exists in
-       shipping software. A pattern with no precedent says so. */
-    if (p.precedent && p.precedent.length) {
-      out += refSub('Precedent',
-        'Shipping products this pattern is drawn from. Behaviour only &mdash; none of their ' +
-        'visual design is copied here.',
-        refPairs(p.precedent.map(function (r) {
-          return [r.url ? '<a href="' + r.url + '" target="_blank" rel="noopener">' +
-                          r.name + '</a>' : r.name, r.what];
-        })));
-    }
-
-    if (p.anatomy && p.anatomy.length) {
-      out += refSub('Anatomy', '', refPairs(p.anatomy.map(function (r) {
-        return [r.part, r.role];
-      })));
-    }
-
-    if (p.flow && p.flow.length) {
-      out += refSub('The interaction', '', refSteps(p.flow));
-    }
-
-    if (p.statesList && p.statesList.length) {
-      out += refSub('States',
-        'Every one of these is reachable in the Live preview above.',
-        refPairs(p.statesList.map(function (r) { return [r.name, r.desc]; })));
-    }
-
-    if (p.variants && p.variants.length) {
-      out += refSub('Variants', '', refPairs(p.variants.map(function (r) {
-        return [r.name, r.desc];
-      })));
-    }
-
-    if (p.expressive) {
-      out += refSub('Expressive behaviour', '',
-        '<p class="ref-prose">' + p.expressive + '</p>');
-    }
-
-    if (p.content && p.content.length) {
-      out += refSub('Content', '', refRules(p.content));
-    }
-
-    if (p.a11y && p.a11y.length) {
-      out += refSub('Accessibility',
-        'Not a checklist bolted on afterwards &mdash; each of these changes what the pattern is.',
-        refRules(p.a11y));
-    }
-
-    if (p.donts && p.donts.length) {
-      out += refSub('Don&rsquo;t', '', refRules(p.donts, 'dont'));
-    }
-
-    if (p.metrics && p.metrics.length) {
-      out += refSub('How to tell it is working', '', refRules(p.metrics));
-    }
-
-    if (p.composed && p.composed.length) {
-      out += refSub('Composed from', '',
-        '<div class="ref-tags">' + p.composed.map(function (c) {
-          return '<span class="ref-tag">' + esc(c) + '</span>';
-        }).join('') + '</div>');
-    }
-
-    if (p.related && p.related.length) {
-      out += refSub('Related patterns', '',
-        '<div class="ref-tags">' + p.related.map(function (r) {
-          return '<a class="ref-tag ref-tag--link" href="material-pattern.html?id=' +
-                 encodeURIComponent(r[0]) + '">' + r[1] + '</a>';
-        }).join('') + '</div>');
-    }
-
-    return out;
-  }
+     The FIELDS are untouched in material-patterns.js. Nothing was
+     deleted from the data, only from what the page renders, so
+     bringing the section back is a matter of restoring this
+     function rather than rewriting thirty patterns' worth of
+     documentation. */
 
   function block(id, title, lede, body, count) {
     return '' +
@@ -271,8 +171,8 @@
   function neighbours(id) {
     var i = BUILT.indexOf(id);
     return {
-      prev: i > 0 ? PATTERNS[BUILT[i - 1]] : null,
-      next: i > -1 && i < BUILT.length - 1 ? PATTERNS[BUILT[i + 1]] : null
+      prev: i > 0 ? placed(BUILT[i - 1]) : null,
+      next: i > -1 && i < BUILT.length - 1 ? placed(BUILT[i + 1]) : null
     };
   }
 
@@ -396,25 +296,26 @@
       installHTML(p.pkg) +
       (p.usage ? '<h3 class="mp-sub">Basic usage</h3>' + usageHTML(p.usage) : '')) : '';
 
-    var hasQA = !!(p.what || p.why || p.when || p.how);
-    var qa = hasQA ? block('sec-questions', 'The four questions',
-      'Every pattern is documented against the same four prompts.',
+    /* `whenNot` is read from the pattern first and the
+       classification second, so a pattern that has written its
+       own keeps it. */
+    var meta = window.MaterialMeta ? window.MaterialMeta.get(p.id) : null;
+    var whenNot = p.whenNot || (meta && meta.whenNot) || '';
+
+    var hasQA = !!(p.what || p.why || p.when || p.how || whenNot);
+    var qa = hasQA ? block('sec-questions', 'The questions',
+      'Every pattern is documented against the same prompts &mdash; including the one pattern ' +
+      'libraries habitually leave out.',
       '<div class="qa-list">' +
         (p.what ? '<div class="qa-row"><div class="qa-row__k">What it is</div><div class="qa-row__v">' + p.what + '</div></div>' : '') +
         (p.why  ? '<div class="qa-row"><div class="qa-row__k">Why it matters</div><div class="qa-row__v">' + p.why + '</div></div>' : '') +
         (p.when ? '<div class="qa-row"><div class="qa-row__k">When to use it</div><div class="qa-row__v">' + p.when + '</div></div>' : '') +
         (p.how  ? '<div class="qa-row"><div class="qa-row__k">How to use it</div><div class="qa-row__v">' + p.how + '</div></div>' : '') +
+        /* Last, and marked, because it is the one a team reads
+           only if it is impossible to miss. */
+        (whenNot ? '<div class="qa-row qa-row--not"><div class="qa-row__k">When <em>not</em> to use it</div>' +
+                   '<div class="qa-row__v">' + whenNot + '</div></div>' : '') +
       '</div>') : '';
-
-    /* ── 6 · Reference ───────────────────────────────────────
-       The four questions say what the pattern is for. This says
-       what it is made of, what it does, where it came from and
-       how it fails. It renders only from the fields a pattern
-       actually declares, so a pattern documented to four
-       questions looks exactly as it did before this existed. */
-    var ref = referenceHTML(p);
-    var reference = ref ? block('sec-reference', 'Reference',
-      'Precedent, anatomy, states, and the rules that keep the pattern honest.', ref) : '';
 
     var nav =
       '<div class="detail__nav">' +
@@ -430,7 +331,7 @@
           : '<span></span>') +
       '</div>';
 
-    detail.innerHTML = bread + hero + example + simulator + install + qa + reference + nav;
+    detail.innerHTML = bread + hero + example + simulator + install + qa + nav;
     document.title = p.name + ' · Material 3.0 — Nucleux';
 
     if (playable) {
@@ -441,8 +342,7 @@
       window.MaterialSim.mount(detail.querySelector('[data-sim-root]'), p.id);
     }
 
-    renderTOC(p, { simulator: !!simulator, install: !!install, qa: hasQA,
-                   reference: !!reference });
+    renderTOC(p, { simulator: !!simulator, install: !!install, qa: hasQA });
     wireTOC();
     wireFrames(detail);
   }
@@ -457,8 +357,7 @@
     var items = [{ id: 'sec-example', label: 'Live preview' }];
     if (has.simulator) items.push({ id: 'sec-simulator', label: 'In an agentic workflow' });
     if (has.install)   items.push({ id: 'sec-install',   label: 'Install' });
-    if (has.qa)        items.push({ id: 'sec-questions', label: 'The four questions' });
-    if (has.reference) items.push({ id: 'sec-reference', label: 'Reference' });
+    if (has.qa)        items.push({ id: 'sec-questions', label: 'The questions' });
 
     toc.innerHTML =
       '<div class="toc__title">On this page</div>' +
@@ -473,7 +372,7 @@
         '<div class="toc__meta-row"><span class="toc__meta-k">Category</span>' +
           '<span class="toc__meta-v">' + esc(p.sub) + '</span></div>' +
         '<div class="toc__meta-row"><span class="toc__meta-k">Design system</span>' +
-          '<span class="toc__meta-v">Material 3</span></div>' +
+          '<span class="toc__meta-v">Material 3 Expressive</span></div>' +
       '</div>';
   }
 
@@ -527,12 +426,12 @@
       var pm = e.target.closest('[data-pm]');
       if (pm) {
         var inst = pm.closest('[data-inst]');
-        var id   = pm.dataset.pm;
+        var pmid = pm.dataset.pm;
         inst.querySelectorAll('[data-pm]').forEach(function (t) {
-          t.setAttribute('aria-selected', t.dataset.pm === id ? 'true' : 'false');
+          t.setAttribute('aria-selected', t.dataset.pm === pmid ? 'true' : 'false');
         });
         inst.querySelectorAll('[data-pm-pane]').forEach(function (pane) {
-          pane.hidden = pane.dataset.pmPane !== id;
+          pane.hidden = pane.dataset.pmPane !== pmid;
         });
         return;
       }
@@ -593,16 +492,79 @@
     }
   }
 
+  /* ── A pattern that is in the map but not built ───────────
+     107 of the 137 ids in the tree resolve here, and until now
+     they all got the same four words. That is a wasted page: the
+     tree already knows what the pattern IS, where it sits and what
+     its status is, and a reader who followed a link to it wants
+     exactly those three things.
+
+     It also has to be good, because it is where a MERGED pattern
+     lands. Following an old bookmark to a pattern that was folded
+     into another one should explain the fold, not look like a
+     broken link. */
   function missing(id) {
+    var N = window.MaterialNav, row = null, stage = null, sub = null;
+    if (N && id) {
+      N.stages.forEach(function (st) {
+        st.subcats.forEach(function (c) {
+          c.patterns.forEach(function (x) {
+            if (x.id === id) { row = x; stage = st; sub = c; }
+          });
+        });
+      });
+    }
+
+    if (!row) {
+      document.getElementById('detail').innerHTML =
+        '<nav class="bread" aria-label="Breadcrumb">' +
+          '<a href="material-agentic.html">Overview</a>' + CHEV +
+          '<span class="current">Not found</span></nav>' +
+        '<header class="detail__hero">' +
+          '<h1 class="detail__name">No pattern called &ldquo;' + esc(id || '') + '&rdquo;</h1>' +
+          '<p class="detail__oneline">It is not in the map under that name. The ' +
+          '<a href="material-agentic.html">overview</a> lists everything there is.</p>' +
+        '</header>';
+      document.title = 'Not found · Material 3 — Nucleux';
+      return;
+    }
+
+    var status = N.status(id);
+    var labs = N.isLabs(id);
+
     document.getElementById('detail').innerHTML =
       '<nav class="bread" aria-label="Breadcrumb">' +
-        '<a href="material-agentic.html">Home</a>' + CHEV +
-        '<span class="current">Not found</span></nav>' +
+        '<a href="material-agentic.html">Overview</a>' + CHEV +
+        '<a href="material-agentic.html#stage-' + stage.id + '">' + esc(stage.label) + '</a>' +
+        CHEV + '<span class="current">' + esc(row.name) + '</span></nav>' +
       '<header class="detail__hero">' +
-        '<h1 class="detail__name">No page for &ldquo;' + esc(id || '') + '&rdquo; yet</h1>' +
-        '<p class="detail__oneline">Trust &amp; Disclosure and Identity are built so far. ' +
-        '<a href="material-agentic.html">Back to the overview</a>.</p>' +
+        '<h1 class="detail__name">' + esc(row.name) + '</h1>' +
+        '<p class="detail__oneline">' + row.oneline + '</p>' +
+        '<div class="mp-class">' +
+          '<div class="mp-class__row">' +
+            '<span class="mp-class__k mx-type-utility">Category</span>' +
+            '<span class="mp-class__v">' + esc(stage.label) + ' &middot; ' + sub.title + '</span>' +
+          '</div>' +
+          '<div class="mp-class__row">' +
+            '<span class="mp-class__k mx-type-utility">Status</span>' +
+            '<span class="mp-class__v">' +
+              '<span class="mp-mat" data-level="' +
+                (labs ? 'experimental' : status === 'available' ? 'established' : 'specialized') +
+                '">' + esc(N.STATUS_LABEL[status]) + '</span>' +
+              (labs ? '<span class="mp-inst__badge">Labs</span>' : '') +
+              '<span class="mp-class__what mx-type-support">' +
+                (labs
+                  ? 'Documented but demoted: the library could not evidence it well enough to ' +
+                    'recommend building on it.'
+                  : 'In the taxonomy, not yet built. There is no page, preview or simulator for ' +
+                    'it because nothing has been made &mdash; which is a more useful thing to ' +
+                    'know than a placeholder would be.') +
+              '</span>' +
+            '</span>' +
+          '</div>' +
+        '</div>' +
       '</header>';
+    document.title = row.name + ' · Material 3 — Nucleux';
   }
 
   /* ── Moving between patterns without reloading ────────────
@@ -621,8 +583,40 @@
      move the current row, push the URL. Back and forward still
      work, deep links still work, and cmd-click still opens a new
      tab — because the anchor is still an anchor. */
-  function show(id, push) {
+  /* ── One source of truth for where a pattern LIVES ────────
+     The doc entries each carried their own copy of name, stage
+     and category. That was fine while the taxonomy never moved;
+     the moment it did, every move became two edits in two files
+     and the second one was the one that got forgotten.
+
+     So placement is now read from the tree and the doc entry's
+     copy is ignored. The tree is what the sidebar renders, so a
+     pattern can no longer sit under one heading in the navigation
+     and claim a different one on its own page. */
+  function placed(id) {
     var p = PATTERNS[id];
+    if (!p || !window.MaterialNav) return p;
+    var st = window.MaterialNav.stages, i, j, k, sub, row;
+    for (i = 0; i < st.length; i++) {
+      for (j = 0; j < st[i].subcats.length; j++) {
+        sub = st[i].subcats[j];
+        for (k = 0; k < sub.patterns.length; k++) {
+          row = sub.patterns[k];
+          if (row.id !== id) continue;
+          var out = Object.assign({}, p);
+          out.name = row.name;
+          out.oneline = row.oneline;
+          out.stage = st[i].label;   out.stageId = st[i].id;
+          out.sub   = sub.title;     out.subId   = sub.id;
+          return out;
+        }
+      }
+    }
+    return p;
+  }
+
+  function show(id, push) {
+    var p = placed(id);
 
     if (p) render(p); else missing(id);
     if (window.MaterialNav && window.MaterialNav.setActive) {
@@ -661,7 +655,23 @@
     show(back, false);
   });
 
+  /* ── Redirects ────────────────────────────────────────────
+     Merging two patterns removes a row from the tree. It must not
+     remove a URL: somebody has that link in a document, a ticket
+     or a bookmark, and a dead page is a worse answer than the
+     pattern that absorbed it.
+
+     `replaceState` rather than `assign`, so the old id does not
+     sit in the history and send a reader straight back to it when
+     they press back. */
   var current = new URLSearchParams(location.search).get('id');
+
+  var RED = (window.MaterialNav && window.MaterialNav.REDIRECTS) || {};
+  if (current && RED[current]) {
+    current = RED[current];
+    history.replaceState({ id: current }, '',
+      'material-pattern.html?id=' + encodeURIComponent(current));
+  }
 
   if (window.MaterialNav) window.MaterialNav.mount(PATTERNS[current] ? current : null);
   show(current, false);

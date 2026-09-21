@@ -63,18 +63,16 @@
 
   /* Material icons, drawn at the size the composer's other
      controls already use. Nothing here comes from another set. */
-  var ICONS = {
-    mic: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-         '<rect x="9" y="3" width="6" height="11" rx="3"/>' +
-         '<path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>',
-    micOff: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-            '<rect x="9" y="3" width="6" height="11" rx="3"/>' +
-            '<path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M4 4l16 16"/></svg>',
-    pause: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<path d="M9.5 5v14M14.5 5v14"/></svg>',
-    close: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-           '<path d="M6 6l12 12M18 6L6 18"/></svg>'
-  };
+    /* Material Symbols, by name. This module used to carry its own
+     hand-drawn approximations of these glyphs; they are now the
+     kit's own paths, resolved through one shared set so the same
+     idea cannot be drawn two ways in two files. */
+  var ICONS = (function () {
+    var MI = window.MaterialIcons, out = {};
+    var USE = {'mic': 'mic', 'micOff': 'micOff', 'pause': 'pause', 'close': 'close'};
+    for (var k in USE) out[k] = MI ? MI.icon(USE[k]) : '';
+    return out;
+  })();
 
   /* ── The indicator ────────────────────────────────────────
      Five capsules. The middle ones carry more of the amplitude
