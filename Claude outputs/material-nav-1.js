@@ -133,8 +133,8 @@
           { id: "attachments", name: "Attachments", oneline: "Upload files, photos, docs for the AI to read." },
           { id: "connectors", name: "Connect Data Source", oneline: "Sign in to GitHub, Drive, Slack or Notion for live, bounded grounding." },
           { id: "mcp", name: "MCP Server Connection", oneline: "Connect a server, discover what it can do, and decide before the agent uses it." },
-          { id: "knowledge-base", name: "Knowledge Base", oneline: "Persistent, named material the agent can draw on across a project." },
-          { id: "model-selection", name: "Model Selection", oneline: "Choose the capability that answers, or let the product choose per request." }
+          { id: "knowledge-base", name: "Knowledge Base", oneline: "Material the agent can read in every conversation in this scope." },
+          { id: "model-selection", name: "Model Selection", oneline: "Let the user pick the right model for the task." }
         ] }
   ]},
   { id: "during", num: "03", label: "During Interaction",

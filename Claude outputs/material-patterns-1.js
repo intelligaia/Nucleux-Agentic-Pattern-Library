@@ -1614,66 +1614,64 @@
       ],
 
       anatomy: [
-        { part: 'ModelChip',
-          role: 'The resting control, inside the composer that every other pattern already uses: ONE kit Small text button reading &ldquo;Balanced High&rdquo; &mdash; the model in the label weight, the effort value quieter beside it, so it reads as a name and a value rather than one setting with a dot in it. It is the composer&rsquo;s own mode slot rather than a control added beside it, and there is no ModelComposer.' },
-        { part: 'ModelPicker',
-          role: 'A list, not a catalogue. Auto at the top, a separator, then the models. One highlight travels between rows for pointer and keyboard alike, rather than a tint blinking on and off under the cursor.' },
-        { part: 'ModelOption',
-          role: 'Name, one line saying what it is FOR, and at most one attribute. Never a specification table &mdash; context windows and parameter counts belong where somebody is comparing on purpose rather than choosing mid-thought.' },
-        { part: 'AutoSwitch',
-          role: 'A toggle at the top of the list, above a separator, with one line underneath, shown on or off, saying what it weighs &mdash; quality and speed. A switch rather than a sixth radio because Auto is not one more thing to pick &mdash; it is the question of whether you pick at all, and turning it on collapses the list it replaces rather than leaving rows you can see and cannot use.' },
-        { part: 'EffortScreen',
-          role: 'The second screen of the same flyout. Picking a model (or turning Auto on) replaces the list with it: a breadcrumb &mdash; back chevron, the model, its effort value &mdash; and the slider, nothing else. The breadcrumb is the way back to the list. The two axes stay two settings; only the trigger is shared.' },
-        { part: 'EffortSlider',
-          role: 'Five notches and one handle. Effort is ordinal, and a column of radios says nothing about that ordering; a track says it in the shape of the control. One tab stop carries the value; arrows, Home and End move it, and the notches are pressable but silent. The active track stops short of the handle, which is M3 Expressive&rsquo;s own anatomy and what keeps the handle from vanishing into the fill.' },
-        { part: 'AvailabilityTag',
-          role: 'Temporarily unavailable or Restricted, in words. One field with three values rather than two booleans, because &ldquo;restricted and unavailable&rdquo; is a sentence no product can write.' },
-        { part: 'ChangeNote',
-          role: 'When a change starts mattering &mdash; next message, this conversation, or everywhere. Said once, after the change, where it is a fact rather than a standing warning at the bottom of a menu nobody reads twice.' },
-        { part: 'FallbackSurface',
-          role: 'The recovery when the selected model can no longer be used. Both ways out, and the sentence people actually need: the conversation is unchanged.' },
-        { part: 'ModelCredit',
-          role: 'Which model actually produced an answer. Optional, and most needed under Auto &mdash; where the whole point is that the answer did not come from a fixed model.' }
+        { part: 'The chip',
+          role: 'The composer&rsquo;s existing mode slot, carrying which model and how hard to think. Two values, because that is what the industry converged on and because they are genuinely different questions.' },
+        { part: 'Option',
+          role: 'A name, what it is FOR, and one line of consequence. Never a specification: nobody chooses a model by its context window, and a dropdown is a bad place to compare numbers.' },
+        { part: 'Recommendation',
+          role: 'One option marked as the default choice, so somebody who does not want to decide has a way not to.' },
+        { part: 'Router',
+          role: 'An automatic option that names its objective &mdash; cost, balance or capability. A router whose stated objective is not its real one has spent its credibility for good.' },
+        { part: 'Effort',
+          role: 'A second, separate axis. How hard to think is a different question from which model thinks, and collapsing them makes both harder to reason about.' },
+        { part: 'The switch sentence',
+          role: '&ldquo;Takes effect from your next message. Nothing already said is changed.&rdquo; Shown in the menu, before the change, because afterwards it is a reassurance rather than information.' },
+        { part: 'Cap notice',
+          role: 'On the row of a model whose allowance is spent, saying what answers instead. A model that silently becomes another model is the failure this exists to prevent.' },
+        { part: 'Restriction line',
+          role: 'One sentence explaining a list that has been narrowed by an organisation. The models themselves are absent, not disabled.' },
+        { part: 'Attribution',
+          role: 'Which model produced an answer, and whether it was the one that was asked for. Ahead of current practice, and the direct answer to substitution that is already shipping.' }
       ],
 
       flow: [
-        'A strong default is already selected. Nobody is asked to choose before their first request.',
-        'The chip is pressed and the picker opens, anchored to it. The prompt text is untouched.',
-        'Auto is a switch at the top; with it off, every model row below says what it is for.',
-        'Choosing one replaces the list with the effort screen for that model, updates the chip, and one line underneath says when the change starts mattering. The breadcrumb goes back; pressing the chip again closes.',
-        'Nothing is reset: the conversation continues, and what was already said is not rewritten.',
-        'A model that is temporarily down is listed, unselectable, and says what to use meanwhile.',
-        'A model an organisation has restricted reads differently, because waiting will not fix it.',
-        'If the model already in the chip is withdrawn, the product says so before the next request rather than substituting something after it, and offers both ways out.'
+        'The composer carries a small chip naming the current model and effort. Nothing else about it is different from any other scenario.',
+        'Pressing it opens a menu where each option says what it is for.',
+        'One option is recommended, so not deciding is a supported choice.',
+        'One option is a router, and it says what it optimises for rather than claiming to read your mind.',
+        'Effort is set separately, because it is a separate question.',
+        'The menu says what a change will do to the conversation before the change is made.',
+        'Choosing updates the label immediately and closes the menu. The next request uses it.',
+        'If an allowance is spent, the row says so and says what answers instead.',
+        'If the answer came from a different model than the one selected, the answer says so.'
       ],
 
       statesList: [
-        { name: 'Resting', desc: 'One small action carrying both values &mdash; &ldquo;Balanced High&rdquo; &mdash; with strong defaults already in it. Compact enough not to compete with Send, and typing is never blocked.' },
-        { name: 'Picker open', desc: 'The Auto switch, a separator, then the models. Every row says what it is for, because that is the axis people choose on and the one a list of names cannot express. Effort is the next screen: a pick moves on to it.' },
-        { name: 'Specific model selected', desc: 'A deliberate choice, and no router mark: what runs is exactly what the chip says. The state Auto must never be mistaken for.' },
-        { name: 'Auto selected', desc: 'The switch is on, the model list has eased shut, and the line under Auto says what it weighs. A router that will not say how it chooses is asking for trust it has offered no reason to give.' },
-        { name: 'Model changed', desc: 'The chip updates and one line underneath says when it takes effect, in the scope the host supports. No toast, no dialog, no success screen.' },
-        { name: 'Model unavailable', desc: 'Temporarily out of service: listed, not selectable, and it says what to use meanwhile. Expected back, so nothing is drawn as a fault and no status code is shown.' },
-        { name: 'Organization restricted', desc: 'Somebody decided this, and no amount of waiting changes it. Drawn apart from unavailable on purpose, because the recovery is a person rather than a retry.' },
-        { name: 'Fallback required', desc: 'The model in the chip can no longer answer, so the chip is lying until this is settled. Both ways out are offered, and it says the conversation is untouched.' }
+        { name: 'Resting', desc: 'One small chip carrying two values: which model, and how hard to think. It is the composer&rsquo;s own mode slot, not a control added beside it.' },
+        { name: 'Open', desc: 'Every row says what the model is FOR and what choosing it costs. No context windows, no parameter counts &mdash; nobody chooses a model by its context window.' },
+        { name: 'Automatic', desc: 'The router, naming what it is optimising for. The credibility of an automatic choice rests entirely on whether its stated objective is its real one.' },
+        { name: 'Changed', desc: 'The label updates and the menu has already said what happens to the conversation: the change applies from the next message, and nothing already said is rewritten.' },
+        { name: 'At your cap', desc: 'The row stays and says what answers instead. A model that silently becomes a different model is the failure this state exists to prevent &mdash; and it is shipping today.' },
+        { name: 'Restricted', desc: 'An organisation has narrowed the list, so the model is absent with one line saying why. Not a locked row: a row you can see and never press is an advertisement for a thing you cannot have.' },
+        { name: 'Retiring', desc: 'A model with a sunset date, still selectable and dated. The alternative is the disappearance people notice by the answer getting worse.' },
+        { name: 'Attributed', desc: 'An answer saying which model produced it, and whether that was the one asked for. Ahead of current practice, and the direct answer to substitution that already happens silently.' }
       ],
 
       variants: [
-        { name: 'Semantic tiers', desc: 'Fast, Balanced, Deep and nothing else, in place of model identifiers. The right shape for a consumer product, and the reason the component never assumes a row has a provider or a price.' },
-        { name: 'Fewer effort steps', desc: 'Three notches rather than five, where the host has only three. The slider is the control that scales in both directions: a five-item radio list is a wall, and a five-notch track is the same track.' },
-        { name: 'Named models', desc: 'The host&rsquo;s real model names where it exposes them &mdash; which is what the demo data shows. Same rows, same sentences: a name is an identifier, and the line underneath is still what does the work. Two things only show up at real length: identifiers overrun a composer chip and have to truncate, and some of them encode a reasoning setting in the name, which is the conflation the effort axis exists to undo.' },
-        { name: 'Auto only', desc: 'No manual choice at all. The chip still says Auto and it still says what it weighs, because a router nobody can override has more to prove rather than less.' },
-        { name: 'Multiple providers', desc: 'Grouping by provider, off unless the host needs it. A heading over a single group is furniture &mdash; but once a list spans two houses it is the fastest way to find the half you trust for this task.' },
-        { name: 'Restriction as absence', desc: 'The restricted model is not listed at all. A legitimate decision &mdash; a row you can see and never press is an advertisement for a thing you cannot have &mdash; and the cost is that somebody hunting for it never learns why it is gone.' }
+        { name: 'Two axes', desc: 'Model and effort, set separately. The default here and where the industry landed: a capability tier and a reasoning depth are different decisions, and one control asking both is one control doing neither well.' },
+        { name: 'Modes, not models', desc: 'Expose behaviour &mdash; quick, thorough, teaching, searching &mdash; and never name a model. Strong where the product owns the prompt, and it survives the model line-up changing underneath it, which it will.' },
+        { name: 'Router only', desc: 'No choice, one honest sentence about how the pick is made. Legitimate, and only as good as that sentence: a router marketed as task-aware while it balances capacity is worse than no router.' },
+        { name: 'Per-answer attribution', desc: 'Every response says which model produced it. <b>No mainstream product ships this</b> &mdash; included because silent substitution does, and an answer you cannot attribute is an answer you cannot reproduce. Marked as ahead of practice rather than drawn from it.' },
+        { name: 'Administered', desc: 'The organisation sets which models may be used and often a default. The important detail is that the allow-list must constrain the router too, or automatic selection quietly routes around the policy.' }
       ],
+
       content: [
-        'Write each option as a task, not a specification: &ldquo;More depth for complex, multi-step work&rdquo;, not &ldquo;200K context, 64K output&rdquo;.',
+        'Write each option as a task, not a specification: &ldquo;Long analysis and hard reasoning&rdquo;, not &ldquo;200K context, 64K output&rdquo;.',
         'Say what it costs in the person&rsquo;s own currency &mdash; their allowance, their waiting time &mdash; not in tokens.',
-        'Answer the switch question once, after the switch: &ldquo;Using Deep reasoning from your next message&rdquo;. A standing sentence at the foot of the picker is read once and then never again, and it competes with the options for the whole time it is there.',
-        'Keep the effort screen to where you are and the one control that changes it: a breadcrumb naming the model and its effort value, and the slider. The step&rsquo;s own meaning belongs in the slider&rsquo;s accessible value, not in a permanent line of prose.',
+        'Answer the switch question in the menu: &ldquo;Takes effect from your next message. Nothing already said is changed.&rdquo;',
         'Name the router&rsquo;s objective. &ldquo;Automatic&rdquo; alone asks for trust; &ldquo;picks the cheapest model that can do it&rdquo; earns it.',
-        'On a blocked row, say what to use instead. &ldquo;Temporarily unavailable&rdquo; on its own is half a sentence.',
-        'Word the two blocks apart. Temporarily unavailable ends in waiting; restricted ends in a person, and offering a retry there sends somebody round a loop that cannot close.'
+        'At a cap, say what answers instead. &ldquo;You have used this week&rsquo;s allowance&rdquo; is half a sentence.',
+        'When a model is retired, give the date and the successor. People notice a disappearance by the answers getting worse.'
       ],
 
       a11y: [
@@ -1699,7 +1697,7 @@
 
       metrics: [
         'How often the selector is opened and closed without a change, which measures whether the menu is answering the question or just being read.',
-        'The share of requests on the router. A product where nobody leaves Auto on has made it untrustworthy.',
+        'The share of requests on the recommended option and on the router. A product where nobody uses either has made the default untrustworthy.',
         'How often a switch is followed immediately by a re-ask of the same question &mdash; the signal that people expect switching to be retroactive.',
         'Substitution rate, and whether attribution is noticed. If nobody reacts to being substituted, the notice is not visible enough.',
         'For administered deployments: how often people ask for a model they cannot see. Rising means the absence needs its explanation strengthened.'
@@ -1708,7 +1706,7 @@
       composed: ['Menu', 'Chip', 'Button', 'Badge', 'Tooltip'],
       related: [['modes', 'Modes'], ['caveat', 'Caveat'], ['voice-input', 'Voice Input']],
       pkg: 'nucleux-m3-model-selection',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- The composer's OWN mode slot. There is no second control and\n     no ModelComposer: a choice that only matters at the moment of\n     asking belongs where the asking happens. ONE action carries\n     both values — the model, then its effort — and opens a flyout\n     with two screens: the model list, then effort. The axes stay\n     two settings; only the trigger is shared. It is the kit's\n     Small text button. -->\n<button class=\"ax__mode--model md-button md-button--text md-button--small\"\n        data-act=\"ax:mode\" aria-haspopup=\"menu\" aria-expanded=\"true\"\n        aria-label=\"Model: Balanced. Effort: High — Works through it step by step. Change them.\">\n  <span class=\"ax__mode__m\">Balanced</span>\n  <span class=\"ax__mode__v\">High</span>\n</button>\n\n<!-- Anchored to the chip that opens it, not to the composer -->\n<div class=\"ax__menu ax__menu--model md-ml\" role=\"menu\"\n     data-density=\"comfortable\" aria-label=\"Choose a model\">\n  <div class=\"md-ml__body\">\n    <p class=\"md-ml__h\">Models</p>\n\n    <!-- Auto is a SWITCH at the top, not a sixth radio: it is not\n         one more thing to pick, it is whether you pick at all.\n         Turning it on collapses the list below rather than\n         leaving rows you can see and cannot use. -->\n    <button class=\"md-ml__auto\" role=\"switch\" aria-checked=\"false\"\n            aria-controls=\"md-ml-models\" data-act=\"model:auto:on\">\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Auto</span>\n        <!-- Shown on or off: whoever is deciding whether to turn it\n             on is exactly who needs to know what it does. -->\n        <span class=\"md-ml__f\">Appropriate model for each request, balancing quality and speed.</span>\n      </span>\n      <span class=\"md-ml__sw\" aria-hidden=\"true\"><span></span></span>\n    </button>\n\n    <!-- 0fr to 1fr, so the ease is the real height of the real\n         content whether the host ships two models or twenty. -->\n    <div class=\"md-ml__models\" id=\"md-ml-models\" data-collapsed=\"false\">\n      <div class=\"md-ml__models__in\">\n        <div class=\"md-ml__rule\" aria-hidden=\"true\"></div>\n\n    <!-- Every row says what it is FOR. Names are neutral on\n         purpose: real line-ups turn over every few months. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"true\"\n            data-act=\"model:pick:balanced\" data-avail=\"ok\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- tick --></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Balanced</span>\n        <span class=\"md-ml__f\">Reliable for everyday writing and analysis.</span>\n      </span>\n    </button>\n\n    <!-- Temporarily down: listed, unpressable, and it says what\n         to use meanwhile. It is expected back. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n            data-act=\"model:pick:deep-reasoning\" data-avail=\"unavailable\" disabled aria-disabled=\"true\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Deep reasoning<span class=\"md-ml__tag md-ml__tag--wait\">Temporarily unavailable</span></span>\n        <span class=\"md-ml__f\">More depth for complex, multi-step work.</span>\n        <span class=\"md-ml__w\">Try again shortly, or use Balanced in the meantime.</span>\n      </span>\n    </button>\n\n    <!-- Decided by somebody. No retry: nothing about waiting\n         changes a decision, and offering one sends people round\n         a loop that cannot close. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n            data-act=\"model:pick:multimodal\" data-avail=\"restricted\" disabled aria-disabled=\"true\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Multimodal<span class=\"md-ml__tag md-ml__tag--denied\">Restricted</span></span>\n        <span class=\"md-ml__f\">Best for images, files, and mixed content.</span>\n        <span class=\"md-ml__w\">Not available in your workspace. Your administrator decides this.</span>\n      </span>\n    </button>\n\n      </div>\n    </div>\n\n  </div>\n</div>\n\n<!-- Screen two of the same flyout. Picking a model REPLACES the\n     list with this, in the same place: a breadcrumb and the slider,\n     nothing else. The breadcrumb names where you are and is the\n     way back to the list. -->\n<div class=\"ax__menu ax__menu--effort md-mle\" role=\"dialog\"\n     aria-label=\"Effort\">\n  <button class=\"md-mle__crumb md-button md-button--text md-button--small\"\n          data-act=\"model:back\" aria-label=\"Back to models. Balanced, High\">\n    <span class=\"md-mle__crumb-ico\" aria-hidden=\"true\"><!-- keyboard_arrow_left --></span>\n    <span class=\"md-mle__crumb-m\">Balanced</span>\n    <span class=\"md-mle__crumb-v\">High</span>\n  </button>\n  <div class=\"md-mle__track\" role=\"slider\" tabindex=\"0\"\n       aria-label=\"Effort\" aria-valuemin=\"0\" aria-valuemax=\"4\"\n       aria-valuenow=\"2\" aria-valuetext=\"High — Works through it step by step\"\n       style=\"--mle-x: 50%; --mle-fill: calc(50% - 10px)\">\n    <span class=\"md-mle__fill\" aria-hidden=\"true\"></span>\n    <!-- Low, Medium, High, Extra, Max -->\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:low\" style=\"left: 11px\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:medium\" style=\"left: 30.5%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:high\" style=\"left: 50%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:extra\" style=\"left: 69.5%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:max\" style=\"left: calc(100% - 11px)\"></button>\n    <span class=\"md-mle__thumb\" aria-hidden=\"true\"></span>\n  </div>\n</div>\n\n<!-- Said ONCE, after the change, where it is a fact rather than\n     a standing warning nobody reads twice. -->\n<p class=\"md-ml__changed\" role=\"status\" aria-live=\"polite\">\n  Using Deep reasoning from your next message\n</p>\n\n<!-- The selected model was withdrawn. Until this is answered the\n     chip is lying, so it interrupts — and it says what is NOT\n     affected, because the fear at this moment is the thread. -->\n<div class=\"md-ml__fall\" role=\"alertdialog\" tabindex=\"-1\"\n     aria-label=\"Deep reasoning is no longer available\">\n  <p class=\"md-ml__fallt\"><!-- warn -->Deep reasoning is no longer available</p>\n  <p class=\"md-ml__fallb\">Choose another model, or let Auto pick for each request.\n    Your conversation is unchanged.</p>\n  <div class=\"md-ml__fallact\">\n    <button class=\"md-button md-button--filled md-button--sm\"\n            data-act=\"model:fallback:auto\">Use Auto</button>\n    <button class=\"md-button md-button--text md-button--sm\"\n            data-act=\"model:fallback:pick\">Choose model</button>\n  </div>\n</div>"
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- The composer's OWN mode slot. There is no second control:\n     a choice that only matters at the moment of asking belongs\n     where the asking happens. Two values, set separately. -->\n<button class=\"ax__mode ax__mode--model\" data-act=\"ax:mode\"\n        aria-haspopup=\"menu\" aria-expanded=\"true\"\n        aria-label=\"Model: Balanced, effort: Standard. Choose a different one.\">\n  <span class=\"ax__mode__m\">Balanced</span>\n  <span class=\"ax__mode__e\"> &middot; Standard</span>\n</button>\n\n<div class=\"ax__menu ax__menu--model md-ml\" role=\"menu\" aria-label=\"Choose a model\">\n  <p class=\"md-ml__h\">Model</p>\n\n  <!-- Every row says what it is FOR, then what it costs.\n       Names are neutral on purpose: real line-ups turn over every\n       few months, and a component with names baked in is wrong\n       by Christmas. -->\n  <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"true\"\n          data-act=\"model:pick:balanced\">\n    <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- tick --></span>\n    <span class=\"md-ml__t\">\n      <span class=\"md-ml__n\">Balanced<span class=\"md-ml__tag\">Recommended</span></span>\n      <span class=\"md-ml__f\">Most everyday work</span>\n      <span class=\"md-ml__w\">The best trade of quality against speed.</span>\n    </span>\n  </button>\n\n  <!-- At a cap: the row STAYS and says what answers instead -->\n  <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n          data-act=\"model:pick:deep\" disabled>\n    <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n    <span class=\"md-ml__t\">\n      <span class=\"md-ml__n\">Deep</span>\n      <span class=\"md-ml__f\">Long analysis and hard reasoning</span>\n      <span class=\"md-ml__w\">You have used this week\\u2019s allowance.\n        Swift is answering instead until Monday.</span>\n    </span>\n  </button>\n\n  <!-- A router that names its objective -->\n  <div class=\"md-ml__sub\">\n    <p class=\"md-ml__h\">Automatic picks for</p>\n    <button class=\"md-ml__row\" role=\"menuitemradio\" aria-checked=\"true\"\n            data-act=\"model:aim:even\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- tick --></span>\n      <span><b>Balance</b><span class=\"md-ml__dash\"> &mdash; </span>Weighs quality against cost</span>\n    </button>\n  </div>\n\n  <!-- The question exactly one shipping product answers -->\n  <p class=\"md-ml__note md-ml__note--when\">\n    Takes effect from your next message. Nothing already said is changed.\n  </p>\n</div>\n\n<!-- On an answer: which model produced it, and whether it was the\n     one you asked for. Ahead of practice \\u2014 but silent\n     substitution is not. -->\n<span class=\"md-ml__credit is-sub\">Swift &mdash; substituted</span>"
     },
 
     'knowledge-base': {
@@ -1718,7 +1716,7 @@
       stageId: 'initially',
       sub: 'Context Expansion',
       subId: 'context-expansion',
-      oneline: 'Persistent, named material the agent can draw on in every conversation in this project.',
+      oneline: 'Material the agent can read in every conversation in this scope, not just this one.',
       intent: 'Standing context &mdash; sources that were here before the conversation and will outlive it.',
       what: 'A named set of sources an agent can read whenever it is working in a given scope: a project, a workspace, a custom assistant. The surface says four things and nothing else. What is in the base. Whether each source is usable yet. Whether the base is being read right now. And, after an answer, which sources it actually read.',
       why: 'Re-attaching the same material to every conversation is both tedious and unreliable &mdash; people forget, and the answer quietly gets worse without saying so. Making the material standing fixes that and introduces three confusions that an attachment never has, because a file dropped into a message is usable the instant it lands. Here, <b>added is not ready</b>: a file that has arrived has not necessarily been read. <b>Ready is not in use</b>: a base can be perfectly prepared and have contributed nothing to the answer on screen. And <b>one source is not the base</b>: a password-protected PDF is a problem with that PDF. A panel that blurs any of the three will be trusted at exactly the moments it should not be.',
@@ -1745,113 +1743,91 @@
       ],
 
       anatomy: [
-        { part: 'KnowledgeBaseSummary',
-          role: 'Mark, name, counts and status. The resting representation, and compact on purpose &mdash; most of the time the question is which scope am I working against, not what is in it.' },
-        { part: 'KnowledgeBaseStatus',
-          role: 'One badge reading No sources yet, Preparing, Available, Active, In use, Partly available, Needs attention or Not active. Derived from the sources and the project rather than stored beside them, so it cannot disagree with the list under it.' },
-        { part: 'KnowledgeScopeChip',
-          role: 'Where it applies, and in which of the two senses. &ldquo;Available in this project&rdquo; says it could be used here; &ldquo;Active in this project&rdquo; says it will be. The composer chip is the same fact while somebody is typing.' },
-        { part: 'KnowledgeSourceList',
-          role: 'Progressive disclosure. Closed by default, open while sources are preparing or a row needs a person, with optional status grouping and a cap that promotes trouble above the fold rather than truncating it below.' },
-        { part: 'KnowledgeSourceItem',
-          role: 'One source: kind, freshness written for that kind, readiness as a word, and the one action that fits its state. An uploaded source carries a capture date; a linked one says it follows the original.' },
-        { part: 'KnowledgeSourceStatus',
-          role: 'Preparing, Ready, Needs refresh, Couldn&rsquo;t be read, Unavailable. The last two are separate because they are fixed in different places &mdash; Retry and Replace against a file that would not parse, Reconnect against one you may no longer open.' },
-        { part: 'KnowledgeActivity',
-          role: 'Searching this base, then reading a named number of sources. Live, and gone when it finishes. No percentage, because nothing in the client knows an honest one for reading a document.' },
-        { part: 'KnowledgeProvenance',
-          role: '&ldquo;Used 4 sources from Product Research&rdquo;, each one inspectable. This is what makes a standing scope checkable rather than merely trusted.' },
-        { part: 'KnowledgeEmptyState',
-          role: 'What a source buys that an attachment does not &mdash; it outlives the conversation &mdash; and one action. Not a marketing screen: there is nothing to sell, only a distinction to explain.' },
-        { part: 'KnowledgeNoResult',
-          role: 'It looked and found nothing, with the actions the product can actually perform. Distinct from every failure state, because the base worked.' },
-        { part: 'KnowledgeBaseList',
-          role: 'Several collections, one project, each row carrying its own count and the word Active or Available. A list, not a dashboard.' },
-        { part: 'KnowledgeRemoveDialog',
-          role: 'Names the source, says what the agent will stop doing, and says what is not happening. Removing a source and deleting a base are two destructions and must never share a control.' }
+        { part: 'Base identity',
+          role: 'A mark, a name and a count. Enough to know which scope you are in without opening anything, which is the question people actually have most of the time.' },
+        { part: 'Base status',
+          role: 'One badge reading No sources yet, Preparing sources, Ready, In use or Needs attention. Derived from the sources rather than stored beside them, so it cannot disagree with the list under it.' },
+        { part: 'Scope note',
+          role: 'One line saying where this material applies &mdash; &ldquo;Available in this project&rdquo;. It is the sentence that separates a knowledge base from a file somebody attached.' },
+        { part: 'Source row',
+          role: 'One piece of material: kind, freshness, and its own readiness as a word. An uploaded source carries the date it was captured; a linked one says it follows the original.' },
+        { part: 'Row recovery',
+          role: 'Retry, Replace or Remove on the row that failed; Refresh on the row that is stale. The fix sits on the thing that is broken, not in a banner about the base.' },
+        { part: 'Trouble banner',
+          role: 'Names the scale of the problem in one sentence &mdash; one source, everything else still available &mdash; so nobody concludes the base is down.' },
+        { part: 'In-use band',
+          role: 'What the agent is doing right now: searching this base, then reading N sources. Live, and gone as soon as it is finished.' },
+        { part: 'Provenance',
+          role: '&ldquo;Used 4 sources from Product Research&rdquo;, with the sources named. This is what makes a standing scope checkable rather than merely trusted.' }
       ],
 
       flow: [
-        'The base is already there when the conversation opens, and the composer says which one.',
+        'The base is already there when the conversation opens. Nobody attached anything.',
         'A question arrives that the material can answer.',
-        'The base reports that it is searching, then that it is reading a named number of sources.',
-        'The answer arrives with those sources named underneath it.',
-        'Asked something the material does not cover, it says so instead of assembling an answer &mdash; and nothing reports a failure, because nothing failed.',
-        'One source stops working: the base becomes partly available, counts both halves, and keeps answering.',
-        'Review opens the list at the row that is the reason, which carries its own cause and its own recovery.',
-        'Removing that source asks once, in a sentence that says the base is unaffected, and takes out exactly one row.',
-        'Adding sources puts them through Preparing first, because added is not ready.',
-        'Switching the base off empties the composer chip and leaves every source where it was; deleting it is a different act behind different words.'
+        'The base reports that it is searching &mdash; visibly, because the answer is about to depend on it.',
+        'It narrows to the sources it will actually read, and says how many.',
+        'The answer arrives with the sources it used named underneath it.',
+        'Opening the list shows every source with its own readiness.',
+        'A source that could not be read carries its own reason and its own recovery, and the base stays usable around it.',
+        'A source added now is uploading, then processing, and only then ready &mdash; three states, because they fail differently.',
+        'From empty, the same path runs forwards: add, prepare, ready, ask.'
       ],
 
       statesList: [
-        { name: 'Empty', desc: 'No sources yet. Says what a knowledge base is <em>for</em> rather than drawing an empty list &mdash; the difference from attaching a file is exactly what somebody needs before they bother.' },
-        { name: 'Preparing', desc: 'Added and not usable yet. One honest word: the phases underneath are the product&rsquo;s business, and a count that appears the moment an upload finishes is a count people plan around too early.' },
-        { name: 'Available', desc: 'Healthy, and not in play here. A fact about the base rather than about this project &mdash; it can be available in five projects and active in one.' },
-        { name: 'Active', desc: 'In play in this project. The agent <em>may</em> draw on it, which is not the same as doing so, and the surface says only the first.' },
-        { name: 'Being used', desc: 'Searching, then reading a named number of sources, then the provenance the answer keeps. The only live state, and the only one that earns motion.' },
-        { name: 'Multiple knowledge bases', desc: 'More than one collection the project could use, each row saying how much is in it and whether it is on. Switching one on or off never touches what is inside it.' },
-        { name: 'Manage sources', desc: 'Every source with its kind, its freshness, its readiness and its own action. The state that has to stay a knowledge base rather than becoming a file manager.' },
-        { name: 'Partially available', desc: '&ldquo;11 available · 1 unavailable&rdquo;. Still compact, still answering, with one way through to the row that is the reason for the word.' },
-        { name: 'Source unavailable', desc: 'Two kinds of stop with two different ways out, and a stale linked source that is neither. The other ten rows still read Ready.' },
-        { name: 'No relevant knowledge', desc: 'It looked and the material is not in there. Not an error, not a broken base &mdash; and the state that proves the grounding is real, because a base that always has an answer is inventing them.' },
-        { name: 'Remove source confirmation', desc: 'Names the source and says what is <em>not</em> being destroyed. One source out; the base and everything else in it untouched.' },
-        { name: 'Inactive', desc: 'Switched off here and whole everywhere. Three different acts kept apart: stop using, remove from this project, destroy.' }
+        { name: 'Empty', desc: 'No sources yet. Says what a knowledge base is <em>for</em> rather than drawing an empty list &mdash; the difference from attaching a file is exactly the thing somebody needs at this moment.' },
+        { name: 'Processing', desc: 'Sources are present but not all readable yet. Added is not ready, and the gap between the two is where a product that shows a count too early starts lying.' },
+        { name: 'Ready', desc: 'Everything is prepared and available to this scope. Nothing is happening, and the panel says nothing is happening &mdash; ready is not the same as in use.' },
+        { name: 'Being used', desc: 'The agent is searching and reading right now, and finishes by naming what it read. The only live state here, and the only one that earns motion.' },
+        { name: 'Needs attention', desc: 'One source failed or fell out of date. The base is still usable, still answers, and still says so &mdash; with the reason and the recovery on the row that owns the problem.' }
       ],
 
       variants: [
         { name: 'Personal', desc: 'One person&rsquo;s standing material. Simplest, and provenance still earns its place &mdash; you will not remember in a month what you put in it.' },
-        { name: 'Shared', desc: 'A team adds to one base. Now an answer may rest on a source the reader has never opened, and provenance stops being a nicety.' },
-        { name: 'Read-only', desc: 'A curated company base nobody edits from here. Turn off adding and removing and the pattern still works; what it must not do is hide that the material exists.' },
-        { name: 'Per-source include', desc: 'A checkbox on each row that leaves a source out of answering without deleting it. Worth it where a base is large and shared; a real cost in the small case, because it adds a control that can be mistaken for delete.' },
-        { name: 'Grounded only', desc: 'The agent answers from these sources and nothing else. Much stronger guarantees, much narrower use &mdash; and it makes No relevant knowledge a state people will meet often, so it has to be well written.' },
-        { name: 'Linked sources', desc: 'Sources follow a live file rather than a copy. Removes staleness and introduces a subtler problem: the material can change without anybody here doing anything, so the row promises a relationship rather than a date.' }
+        { name: 'Shared', desc: 'A team adds to one base. Now &ldquo;added by&rdquo; is load-bearing, and an answer may rest on a source the reader has never opened. Provenance stops being a nicety.' },
+        { name: 'Per-source include', desc: 'A checkbox on each row that leaves a source out of answering without deleting it. Powerful where a base is large and shared, and a real cost in the small case: it adds a control that can be mistaken for delete. Ship it when scopes get big enough that people need to narrow one, not before.' },
+        { name: 'Grounded only', desc: 'The agent answers from these sources and nothing else, and says so when a question falls outside them. Much stronger guarantees, much narrower use &mdash; and the refusal has to be well written or it reads as failure.' },
+        { name: 'Linked sources', desc: 'Sources follow a live file rather than a copy. Removes staleness and introduces a subtler problem: the material can change without anybody in this product doing anything, so the row has to promise a relationship rather than a date.' }
       ],
 
       content: [
-        'Name the scope, and use the right verb. &ldquo;Available in this project&rdquo; and &ldquo;Active in this project&rdquo; are two different promises, and a product that prints one line for both leaves nobody able to tell whether their question will be grounded.',
-        'Write readiness as a word on the row &mdash; Ready, Preparing, Needs refresh, Couldn&rsquo;t be read, Unavailable. A tint and an icon may repeat it; neither carries it alone.',
-        'Describe an uploaded source and a linked source differently. &ldquo;Uploaded 2 days ago&rdquo; is a capture date; &ldquo;Linked · follows the original&rdquo; is a relationship. One sentence for both is a promise the product cannot keep.',
-        'Count both halves once either half is in trouble: &ldquo;11 available · 1 unavailable&rdquo;, never &ldquo;12 sources&rdquo; beside an amber badge.',
+        'Name the scope, always. &ldquo;Available in this project&rdquo; is what explains why an answer knows things nobody just said.',
+        'Write readiness as a word on the row &mdash; Ready, Processing, Needs refresh, Couldn&rsquo;t process. A tint and an icon may repeat it; neither carries it alone.',
+        'Describe an uploaded source and a linked source differently. &ldquo;Uploaded 2 days ago&rdquo; is a capture date; &ldquo;Linked &middot; follows the original&rdquo; is a relationship. Using one sentence for both makes a promise the product cannot keep.',
         'Say what an answer used, in the user&rsquo;s terms: &ldquo;Used 4 sources from Product Research&rdquo;, with the four named.',
-        'When nothing matches, say so plainly and name the base you searched. &ldquo;I searched Product Research and couldn&rsquo;t find anything about pricing in it&rdquo; is a good answer; a confident paragraph is not.',
-        'In the remove dialog, spend the sentence on what is <em>not</em> happening. That is the only thing the dialog is for.',
-        'Never show RAG vocabulary. Embeddings, vector stores, chunk size, index status and retrieval scores are all real, and none of them are the user&rsquo;s problem.'
+        'For a failure, give the reason a person can act on &mdash; &ldquo;The file is password protected, so it could not be read&rdquo; &mdash; and keep it on the row.',
+        'Never show RAG vocabulary. Embeddings, vector stores, chunk size and index status are all real, and none of them are the user&rsquo;s problem.'
       ],
 
       a11y: [
-        'Base status is announced as a word in a labelled region, not conveyed by badge colour. Preparing, Available, Active, In use, Partly available and Not active all read identically in greyscale.',
-        'The badge dot is a ring while the base cannot be used and a filled disc once it can, so the one distinction that changes behaviour survives with no colour perception at all.',
-        'Every source row states its readiness in text before any icon, and the spinner on a preparing row is aria-hidden &mdash; the word was carrying that state the whole time.',
-        'Row actions carry the source name in their accessible label, so a column of Remove buttons is not a column of identical labels.',
-        'The remove dialog is a real alertdialog with aria-modal, labelled by the question it is asking, and Cancel is reachable first.',
-        'Meaningful changes are announced as they happen: the base is active, searching, reading four sources, one source is unavailable, no relevant information found, a source was removed and the base is unchanged.',
+        'The base status is announced as a word in a labelled region, not conveyed by the badge colour. Preparing, Ready, In use and Needs attention all read identically in greyscale.',
+        'The badge dot is a ring while the base is not usable and a filled disc once it is, so the one distinction that changes behaviour survives with no colour perception at all.',
+        'Every source row states its own readiness in text before any icon, and the spinner on a busy row is aria-hidden &mdash; the word &ldquo;Processing&rdquo; was carrying that state the whole time.',
+        'Row recovery buttons carry the source name in their accessible label, so a column of &ldquo;Remove&rdquo; buttons is not a column of identical labels.',
+        'Expanding the source list moves focus nowhere and announces the change through a live region, because the list is a detail of a surface somebody is already reading.',
+        'Reading and provenance are announced as they happen &mdash; searching, then how many sources were read &mdash; so the fact that an answer is grounded is available without watching the panel.',
         'Under prefers-reduced-motion the in-use pulse and the row spinners stop and hold at partial opacity. Nothing that was only carried by motion is lost, because nothing was only carried by motion.'
       ],
 
       donts: [
         'Don&rsquo;t call a base ready because the files arrived. Added is not ready, and the count that appears too early is the one people plan around.',
-        'Don&rsquo;t let Active imply the answer used it. A base can be in play and have contributed nothing; only provenance settles that.',
+        'Don&rsquo;t let Ready imply the answer used it. A base can be perfectly prepared and have contributed nothing; only provenance settles that.',
         'Don&rsquo;t report base-level failure for a source-level problem. One protected PDF does not break a knowledge base, and a panel that says it does teaches people to distrust a working system.',
-        'Don&rsquo;t answer anyway when nothing matches. A base that always has an answer is inventing them, and the invention is invisible precisely where it matters.',
-        'Don&rsquo;t word removing a source like deleting a base. If both ask the same question, people will answer both the same way.',
-        'Don&rsquo;t confuse switching off, removing from this project and deleting. Three acts, three weights, three sentences.',
-        'Don&rsquo;t describe uploaded and linked sources with the same sentence.',
-        'Don&rsquo;t show a percentage for reading a document, or any pipeline the product happens to run. Nothing in the client knows an honest percentage, and an invented one is a lie with a progress bar around it.',
+        'Don&rsquo;t describe uploaded and linked sources with the same sentence. One is a snapshot with a date; the other follows the original. Conflating them is a freshness promise the product cannot keep.',
+        'Don&rsquo;t answer without saying what you read. A standing scope you cannot audit is one you have to take on faith, and it will eventually be wrong.',
+        'Don&rsquo;t show a percentage for reading a document. Nothing in the client knows one, and an invented one is a lie with a progress bar around it.',
         'Don&rsquo;t make this a file manager. Browsing, renaming and foldering belong wherever the files actually live; this surface exists to say what the agent may read.',
-        'Don&rsquo;t let an attachment quietly become knowledge. The moment a file outlives its conversation the rules about lifetime have changed, and somebody should have agreed to that.'
+        'Don&rsquo;t leave a stale source looking current. An answer drawn from a version that no longer exists is wrong in the most expensive way: confidently, and with a citation.'
       ],
 
       metrics: [
-        'The share of answers that show provenance, and how often it is opened. It measures whether grounding is being used or merely displayed.',
-        'How often No relevant knowledge is reached, and what people do next. Rising is not failure &mdash; it usually means the scope is narrower than people expect, which is a content problem, not a UI one.',
+        'The share of questions answered with provenance shown, and how often it is read. It measures whether grounding is being used or merely displayed.',
         'Time from a source being added to it being usable, and how often somebody asks a question inside that window. That gap is where added-is-not-ready does its damage.',
-        'How long a base sits partly available. A row-level failure nobody fixes for a fortnight is a base quietly answering with less than it claims.',
-        'How often a base is switched off versus deleted. If the two are close, the wording is not doing its job.',
-        'How often the same file is attached to a conversation whose base already covers it &mdash; the signal that the active scope is not visible enough.'
+        'How often a base sits in Needs attention, and for how long. A row-level failure that nobody fixes for a fortnight is a base quietly answering with less than it claims.',
+        'How often the same file is attached to a conversation whose base already covers it &mdash; the signal that the scope is not visible enough.',
+        'Sources added and never read, which is the sign of a base that has become a dumping ground rather than a corpus.'
       ],
 
-      composed: ['Card', 'List', 'Chip', 'Badge', 'Button', 'Dialog', 'Progress', 'Menu'],
+      composed: ['Card', 'List', 'Chip', 'Badge', 'Button', 'Progress'],
       related: [['attachments', 'Attachments'], ['connectors', 'Connect Data Source'], ['mcp', 'MCP Server Connection'], ['citation', 'Citation']],
       pkg: 'nucleux-m3-knowledge-base',
       usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/knowledge.css\" />\n\n<!-- The base's state is DERIVED from the sources. It is never\n     stored beside them, so it cannot disagree with the list. -->\n<div class=\"md-kb\" data-state=\"attention\">\n  <div class=\"md-kb__head\">\n    <span class=\"md-kb__mark\" aria-hidden=\"true\">PR</span>\n    <span class=\"md-kb__id\">\n      <span class=\"md-kb__name\">Product Research</span>\n      <!-- Counted apart: ready, stale and stopped are three\n           different things and folding them together hides one. -->\n      <span class=\"md-kb__meta\">4 ready &middot; 1 needs refresh &middot; 1 needs attention</span>\n    </span>\n    <!-- Ring while the base cannot be used, filled disc once it can -->\n    <span class=\"md-kb__badge\" data-kind=\"warn\">\n      <span class=\"md-kb__dot\" aria-hidden=\"true\"></span>Needs attention\n    </span>\n  </div>\n\n  <!-- What makes it a knowledge base rather than an attachment -->\n  <p class=\"md-kb__scope\">Available in this project</p>\n\n  <!-- The scale of the problem, in one sentence -->\n  <p class=\"md-kb__trouble\">\n    One source could not be read. Everything else is still available.\n  </p>\n\n  <ul class=\"md-kb__srcs\">\n    <!-- The reason and the recovery live on the row that owns them -->\n    <li class=\"md-kb__src\" data-state=\"failed\">\n      <span class=\"md-kb__sico\" aria-hidden=\"true\"><!-- doc --></span>\n      <span class=\"md-kb__st\">\n        <span class=\"md-kb__sn\">Onboarding interviews &mdash; Sept</span>\n        <span class=\"md-kb__sm\">PDF</span>\n        <span class=\"md-kb__swhy\">The file is password protected, so it could not be read.</span>\n      </span>\n      <span class=\"md-kb__sstate\" data-kind=\"stop\"><!-- ! -->Couldn\\u2019t process</span>\n      <span class=\"md-kb__sact\">\n        <button class=\"md-button md-button--text md-button--sm\">Retry</button>\n        <button class=\"md-button md-button--text md-button--sm\">Replace</button>\n        <button class=\"md-button md-button--text md-button--sm\"\n                aria-label=\"Remove Onboarding interviews &mdash; Sept\">Remove</button>\n      </span>\n    </li>\n\n    <!-- Linked sources promise a RELATIONSHIP, uploaded ones a DATE.\n         The same sentence for both is a promise you cannot keep. -->\n    <li class=\"md-kb__src\" data-state=\"ready\">\n      <span class=\"md-kb__sico\" aria-hidden=\"true\"><!-- sheet --></span>\n      <span class=\"md-kb__st\">\n        <span class=\"md-kb__sn\">Onboarding funnel analytics</span>\n        <span class=\"md-kb__sm\">Spreadsheet &middot; Linked &middot; follows the original</span>\n      </span>\n      <span class=\"md-kb__sstate\" data-kind=\"ok\"><!-- tick -->Ready</span>\n    </li>\n  </ul>\n</div>\n\n<!-- While reading: live, and no percentage, because nothing in the\n     client knows an honest one for reading a document. -->\n<div class=\"md-kb__active\">\n  <span class=\"md-kb__activedot\" aria-hidden=\"true\"></span>\n  Reading 4 relevant sources\\u2026\n</div>\n\n<!-- After the answer: what makes a standing scope checkable -->\n<div class=\"md-kb__cite\">\n  <p class=\"md-kb__ct\">Used 4 sources from Product Research</p>\n  <ul class=\"md-kb__clist\">\n    <li><span class=\"md-kb__cchip\">Onboarding interviews &mdash; Sept</span></li>\n    <li><span class=\"md-kb__cchip\">Onboarding funnel analytics</span></li>\n  </ul>\n</div>"

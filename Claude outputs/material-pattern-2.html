@@ -989,11 +989,6 @@
     .pv-stage:has(.ax__menu--model) {
       align-items: end; padding-top: 460px;
     }
-    /* Same reason, less of it: the effort popover is four lines
-       tall, not a list. */
-    .pv-stage:has(.ax__menu--effort) {
-      align-items: end; padding-top: 210px;
-    }
     .pv-code {
       position: relative; margin: 0; padding: 22px 24px;
       /* Matches .pv-stage's min-height so the frame is the same size
@@ -1429,7 +1424,6 @@
        playground or a scene. Expressiveness never justifies an
        invisible focus ring. */
     .pv .md-button:focus-visible,
-    .pv .md-icon-button:focus-visible,
     .pv-select__btn:focus-visible,
     .pv-select__opt:focus-visible,
     .pv-edit:focus-visible,
@@ -3045,23 +3039,9 @@
        A PERCENTAGE cap, not a pixel one: the pattern page sizes
        its column to its content, so a pixel max-width here would
        quietly become the width of the whole simulator. */
-    /* ── One composer width ───────────────────────────────
-       The prompt composer is the same object in every pattern, so
-       it is the same size in every pattern. Left to itself it
-       shrink-wraps its placeholder, which made it 393px on one
-       page and 460px on the next — the reader then reads the
-       difference as meaning something, and it means nothing.
-       One token, used by the docked composer and the standalone
-       one in the Live Preview. */
-    :root { --ax-composer-max: 560px; }
-
     .ax__dock {
       position: relative; z-index: 1; padding: 8px 22px 22px;
-      width: 100%; margin: 0 auto;
-      /* Still a share of the workspace rather than a fixed slab —
-         the dock sits inside a shell with its own navigation —
-         but it may not grow past the one standard width. */
-      max-width: min(calc(var(--ax-composer-max) + 44px), max(360px, 78%));
+      width: 100%; max-width: max(320px, 72%); margin: 0 auto;
       /* The composer's width is set by the workspace, not the
          viewport, so anything inside it that needs to respond to
          ITS width has to ask the dock rather than the window. */
@@ -3160,17 +3140,10 @@
     .ax[data-phase="done"] .ax__aura i:nth-child(3) { opacity: .18; }
 
     /* ── The composer ─────────────────────────────────────── */
-    /* Standalone in the Live Preview, the composer has no dock to
-       size it and the centred stage shrink-wraps whatever is put
-       in it. These two rules are what make every pattern's
-       composer the same width regardless of its placeholder. */
-    .pv-stage .ax__composer { width: 100%; max-width: var(--ax-composer-max); }
-    .pv-stage .pv-ml { width: 100%; display: grid; justify-items: center; }
-
     .ax__composer {
       position: relative; z-index: 1;
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-      padding: 7px 8px; min-height: 56px;
+      padding: 9px 10px 9px 12px; min-height: 56px;
       border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 80%, transparent);
       border-radius: 26px;
       background: color-mix(in srgb, var(--md-sys-color-surface-container-lowest) 88%, transparent);
@@ -3194,13 +3167,32 @@
     .ax[data-phase="working"] .ax__composer { transform: scale(.985); }
     .ax__composer[data-idle="false"] { opacity: .92; }
 
-    /* The composer's icon buttons are the kit's Small icon button
-       (.md-icon-button in material-components.css): + and mic are
-       standard, send is filled, the live mic is tonal. This class
-       only places them in the composer row; size, colour, state
-       layers and the pressed shape all come from the component. */
-    .ax__cbtn { flex: 0 0 auto; }
-
+    .ax__cbtn {
+      width: 34px; height: 34px; flex: 0 0 auto; padding: 0;
+      display: grid; place-items: center; cursor: pointer;
+      border: 0; border-radius: 50%;
+      background: transparent; color: var(--md-sys-color-on-surface-variant);
+      transition: background 160ms var(--md-sys-motion-easing-standard),
+                  color 160ms var(--md-sys-motion-easing-standard),
+                  transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
+    }
+    .ax__cbtn:hover:not(:disabled) {
+      background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+    }
+    .ax__cbtn:active:not(:disabled) { transform: scale(.92); }
+    .ax__cbtn:disabled { opacity: .4; cursor: default; }
+    .ax__cbtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor;
+      stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .ax__cbtn--send {
+      background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+    }
+    .ax__cbtn--send:hover:not(:disabled) {
+      background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+      filter: brightness(1.08);
+    }
+    .ax__cbtn--send:disabled { background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface-variant); }
     /* Provenance on a turn: which context the answer actually
        read. Quiet, because it is a footnote to the answer rather
        than a second answer. */
@@ -4475,10 +4467,6 @@
        alone, because "Ready" and "Needs attention" have to be
        distinguishable in greyscale. */
     .md-kb {
-      /* The two confirmations sit over the panel rather than
-         beside it, so the thing being destroyed stays visible
-         while the question is asked. */
-      position: relative;
       display: grid; gap: 12px; padding: 16px; width: 100%; max-width: 480px;
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: var(--md-sys-shape-corner-large, 16px);
@@ -4524,20 +4512,11 @@
       width: 8px; height: 8px; border-radius: 50%;
       border: 2px solid currentColor; background: transparent;
     }
-    /* A FILLED DISC means the agent can draw on this base right
-       now. Ready, Answered and a base that looked and found
-       nothing are all in that position — it worked, there was
-       simply nothing in there. */
-    .md-kb__badge[data-state="ready"],
-    .md-kb__badge[data-state="answered"],
-    .md-kb__badge[data-state="none"] {
+    .md-kb__badge[data-state="ready"] {
       background: color-mix(in srgb, var(--mx-color-success, #086C36) 12%, transparent);
       color: var(--mx-color-success, #086C36);
     }
-    .md-kb__badge[data-state="ready"] .md-kb__dot,
-    .md-kb__badge[data-state="answered"] .md-kb__dot,
-    .md-kb__badge[data-state="none"] .md-kb__dot { background: currentColor; }
-
+    .md-kb__badge[data-state="ready"] .md-kb__dot { background: currentColor; }
     .md-kb__badge[data-state="using"] {
       background: var(--md-sys-color-primary-container);
       color: var(--md-sys-color-on-primary-container);
@@ -4546,46 +4525,16 @@
       background: currentColor;
       animation: kb-pulse 1400ms var(--md-sys-motion-easing-standard) infinite;
     }
-
-    /* Partly ready keeps the DISC: nine sources answer, so the
-       agent can draw on it, and a ring here would say otherwise.
-       It is deliberately NOT the error container — the whole
-       point of the state is that the base still works — and
-       deliberately not tertiary either, which in this palette
-       sits close enough to error to be read as one. */
-    .md-kb__badge[data-state="partial"] {
-      background: var(--md-sys-color-secondary-container);
-      color: var(--md-sys-color-on-secondary-container);
-    }
-    /* A linked file that drifted is the quietest problem here.
-       Neutral, because spending a warning colour on it is how
-       people learn to ignore warning colours. */
-    .md-kb__badge[data-state="stale"] {
-      background: var(--md-sys-color-surface-container-highest);
-      color: var(--md-sys-color-on-surface);
-    }
-    .md-kb__badge[data-state="partial"] .md-kb__dot,
-    .md-kb__badge[data-state="stale"] .md-kb__dot { background: currentColor; }
-
-    .md-kb__badge[data-state="failed"],
-    .md-kb__badge[data-state="unavailable"] {
+    .md-kb__badge[data-state="attention"] {
       background: var(--md-sys-color-error-container);
       color: var(--md-sys-color-on-error-container);
     }
-    .md-kb__badge[data-state="uploading"],
     .md-kb__badge[data-state="processing"] {
       background: var(--md-sys-color-secondary-container);
       color: var(--md-sys-color-on-secondary-container);
     }
-    .md-kb__badge[data-state="uploading"] .md-kb__dot,
     .md-kb__badge[data-state="processing"] .md-kb__dot {
       animation: kb-pulse 1400ms var(--md-sys-motion-easing-standard) infinite;
-    }
-    /* Switched off: a ring, and the quietest surface on the
-       page. It is not broken and it is not working. */
-    .md-kb__badge[data-state="inactive"] {
-      background: var(--md-sys-color-surface-container-high);
-      color: var(--md-sys-color-on-surface-variant);
     }
     @keyframes kb-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
@@ -4630,185 +4579,6 @@
     }
     .md-kb__trouble svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px;
       color: var(--md-sys-color-error); }
-    /* A linked file that drifted is not an error. Spending the
-       error colour on it is how people learn to ignore the
-       error colour. */
-    .md-kb[data-state="stale"] .md-kb__trouble {
-      border-color: var(--md-sys-color-outline-variant);
-      background: var(--md-sys-color-surface-container-low);
-    }
-    .md-kb[data-state="stale"] .md-kb__trouble svg {
-      color: var(--md-sys-color-on-surface-variant);
-    }
-
-    /* ── It looked, and found nothing ─────────────────────
-       Not an error. The base worked; the material is not in
-       there. Drawn on a neutral surface for exactly that
-       reason. */
-    .md-kb__none {
-      display: grid; gap: 8px; padding: 12px;
-      border-radius: var(--md-sys-shape-corner-medium, 12px);
-      background: var(--md-sys-color-surface-container-low);
-    }
-    .md-kb__nt {
-      display: flex; align-items: flex-start; gap: 6px; margin: 0;
-      font-size: 12.5px; line-height: 1.5; color: var(--md-sys-color-on-surface);
-    }
-    .md-kb__nt svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px;
-      color: var(--md-sys-color-on-surface-variant); }
-    .md-kb__nact { display: flex; flex-wrap: wrap; gap: 2px; }
-
-    /* ── Not active ───────────────────────────────────────
-       The sentence does the work: nothing has been deleted. It
-       is the difference between this and the other button. */
-    .md-kb__off {
-      padding: 12px; border-radius: var(--md-sys-shape-corner-medium, 12px);
-      background: var(--md-sys-color-surface-container-low);
-    }
-    .md-kb__offt {
-      display: flex; align-items: flex-start; gap: 6px; margin: 0;
-      font-size: 12.5px; line-height: 1.55; color: var(--md-sys-color-on-surface-variant);
-    }
-    .md-kb__offt svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; }
-
-    /* ── Naming a new base ────────────────────────────────
-       First, because the name IS the scope: everything after
-       this is "in Product Research". */
-    .md-kb__make { display: grid; gap: 6px; }
-    .md-kb__mlabel { font-size: 12.5px; font-weight: 600;
-      color: var(--md-sys-color-on-surface); }
-    .md-kb__mfield {
-      height: 40px; padding: 0 12px; font: inherit; font-size: 13px;
-      color: var(--md-sys-color-on-surface);
-      background: var(--md-sys-color-surface-container-low);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: var(--md-sys-shape-corner-small, 8px);
-    }
-    .md-kb__mfield:focus-visible {
-      outline: 2px solid var(--md-sys-color-primary); outline-offset: -1px;
-      border-color: transparent;
-    }
-    .md-kb__mhint { margin: 0; font-size: 11.5px; line-height: 1.5;
-      color: var(--md-sys-color-on-surface-variant); }
-    .md-kb__mrow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
-    .md-kb__chip {
-      height: 28px; padding: 0 12px; font: inherit; font-size: 11.5px; font-weight: 550;
-      color: var(--md-sys-color-on-surface); cursor: pointer;
-      background: transparent; border-radius: 999px;
-      border: 1px solid var(--md-sys-color-outline-variant);
-    }
-    .md-kb__chip:hover { background: var(--md-sys-color-surface-container-high); }
-
-    /* ── Two different destructions ───────────────────────
-       One takes a file out of a base; the other destroys the
-       base. A product that asks the same question for both has
-       taught people to answer both the same way. */
-    .md-kb__ask {
-      position: absolute; inset: 0; z-index: 4;
-      display: grid; align-content: center; gap: 8px; padding: 20px;
-      background: color-mix(in srgb, var(--md-sys-color-surface) 94%, transparent);
-      backdrop-filter: blur(2px);
-    }
-    .md-kb__askt { margin: 0; font-size: 14px; font-weight: 650;
-      color: var(--md-sys-color-on-surface); }
-    .md-kb__askb { margin: 0; font-size: 12.5px; line-height: 1.55;
-      color: var(--md-sys-color-on-surface-variant); }
-    .md-kb__askact { display: flex; gap: 6px; margin-top: 4px; }
-    .md-button.md-kb__danger {
-      background: var(--md-sys-color-error); color: var(--md-sys-color-on-error);
-    }
-
-    /* ── Several knowledge bases ──────────────────────────
-       A list, not a dashboard. Each row says the same three
-       things — which collection, how much is in it, whether it
-       is in play here — because a name alone does not tell you
-       whether switching it on gives the agent six documents or
-       six hundred. */
-    .md-kb__bases { display: grid; gap: 6px; }
-    .md-kb__bt {
-      margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);
-    }
-    .md-kb__blist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-    .md-kb__brow {
-      display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto;
-      align-items: center; gap: 10px;
-      padding: 8px 10px; border-radius: var(--md-sys-shape-corner-medium, 12px);
-      transition: background-color var(--md-sys-motion-duration-short4, 200ms)
-                  var(--md-sys-motion-easing-standard);
-    }
-    .md-kb__brow:hover { background: var(--md-sys-color-surface-container-low); }
-    /* The active row is tinted, but the WORD on it is what
-       carries the state — the tint only makes it findable. */
-    .md-kb__brow[data-on="true"] {
-      background: color-mix(in srgb, var(--md-sys-color-primary) 7%, transparent);
-    }
-    .md-kb__bmark {
-      display: grid; place-items: center; width: 28px; height: 28px;
-      border-radius: var(--md-sys-shape-corner-small, 8px);
-      font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
-      background: var(--md-sys-color-surface-container-high);
-      color: var(--md-sys-color-on-surface-variant);
-    }
-    .md-kb__brow[data-on="true"] .md-kb__bmark {
-      background: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-    }
-    .md-kb__bid { display: grid; gap: 1px; min-width: 0; }
-    .md-kb__bn {
-      font-size: 12.5px; font-weight: 600; color: var(--md-sys-color-on-surface);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .md-kb__bc { font-size: 11px; color: var(--md-sys-color-on-surface-variant); }
-    .md-kb__bstate {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600; white-space: nowrap;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-    .md-kb__bstate svg { width: 13px; height: 13px; }
-    .md-kb__bstate[data-on="true"] { color: var(--md-sys-color-primary); }
-
-    /* Active and Available are two promises about the same
-       place, so the line that carries them is weighted, not
-       recoloured — the word is doing the work. */
-    .md-kb__scope[data-on="true"] { color: var(--md-sys-color-on-surface); font-weight: 600; }
-
-    /* ── Long lists stay one base ─────────────────────────── */
-    .md-kb__more {
-      justify-self: start; margin-top: 2px; padding: 4px 8px;
-      font: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer;
-      color: var(--md-sys-color-primary); background: none; border: 0;
-      border-radius: var(--md-sys-shape-corner-small, 8px);
-    }
-    .md-kb__more:hover { background: var(--md-sys-color-surface-container-high); }
-    .md-kb__group {
-      display: flex; align-items: center; gap: 6px;
-      margin: 6px 0 2px; padding: 0 10px;
-      font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-    .md-kb__group:first-child { margin-top: 0; }
-    .md-kb__gn {
-      min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
-      display: inline-grid; place-items: center;
-      font-size: 10px; letter-spacing: 0;
-      background: var(--md-sys-color-surface-container-highest);
-    }
-
-    /* The parser's own words, behind a disclosure, off by
-       default: useful to the one person in fifty who can act on
-       it, noise to everybody else. */
-    .md-kb__sdetail { margin-top: 4px; font-size: 11px; }
-    .md-kb__sdetail summary {
-      cursor: pointer; color: var(--md-sys-color-primary); font-weight: 600;
-    }
-    .md-kb__sdetail p {
-      margin: 4px 0 0; padding: 6px 8px; font-family: var(--md-font-mono, monospace);
-      font-size: 10.5px; line-height: 1.5; word-break: break-word;
-      color: var(--md-sys-color-on-surface-variant);
-      background: var(--md-sys-color-surface-container-high);
-      border-radius: var(--md-sys-shape-corner-small, 8px);
-    }
 
     /* ── Sources ──────────────────────────────────────────── */
     .md-kb__srcs {
@@ -4833,7 +4603,7 @@
        and it is outlined rather than filled — the base is still
        usable and a filled error row would say otherwise. */
     .md-kb__src[data-state="failed"],
-    .md-kb__src[data-state="unavailable"] {
+    .md-kb__src[data-state="missing"] {
       background: color-mix(in srgb, var(--md-sys-color-error) 6%, transparent);
       /* Three recovery actions do not fit beside a filename. They
          take a line of their own, under the name they belong to,
@@ -4843,13 +4613,13 @@
       align-items: start; row-gap: 6px;
     }
     .md-kb__src[data-state="failed"] .md-kb__sico,
-    .md-kb__src[data-state="unavailable"] .md-kb__sico { grid-area: ico; margin-top: 2px; }
+    .md-kb__src[data-state="missing"] .md-kb__sico { grid-area: ico; margin-top: 2px; }
     .md-kb__src[data-state="failed"] .md-kb__st,
-    .md-kb__src[data-state="unavailable"] .md-kb__st { grid-area: id; }
+    .md-kb__src[data-state="missing"] .md-kb__st { grid-area: id; }
     .md-kb__src[data-state="failed"] .md-kb__sstate,
-    .md-kb__src[data-state="unavailable"] .md-kb__sstate { grid-area: state; margin-top: 2px; }
+    .md-kb__src[data-state="missing"] .md-kb__sstate { grid-area: state; margin-top: 2px; }
     .md-kb__src[data-state="failed"] .md-kb__sact,
-    .md-kb__src[data-state="unavailable"] .md-kb__sact {
+    .md-kb__src[data-state="missing"] .md-kb__sact {
       grid-area: act; justify-content: flex-start;
     }
     .md-kb__sico { display: grid; place-items: center; color: var(--md-sys-color-on-surface-variant); }
@@ -4875,10 +4645,6 @@
     .md-kb__sstate[data-kind="ok"]    { color: var(--mx-color-success, #086C36); }
     .md-kb__sstate[data-kind="stop"]  { color: var(--md-sys-color-error); }
     .md-kb__sstate[data-kind="stale"] { color: var(--md-sys-color-on-surface); }
-    /* A source you are no longer allowed to read is not a source
-       that broke. Same weight, different word, different icon —
-       and a different button on the row. */
-    .md-kb__sstate[data-kind="gone"]  { color: var(--md-sys-color-error); }
     .md-kb__wait {
       width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto;
       border: 2px solid var(--md-sys-color-outline-variant);
@@ -4886,16 +4652,11 @@
       animation: kb-spin 900ms linear infinite;
     }
     @keyframes kb-spin { to { transform: rotate(360deg); } }
-    /* Queued is not moving. A spinner on a file that is waiting
-       its turn claims progress that is not happening. */
-    .md-kb__src[data-state="adding"] .md-kb__wait {
-      animation: none; border-top-color: var(--md-sys-color-outline-variant); opacity: .7;
-    }
     .md-kb__sact { display: flex; gap: 2px; flex-wrap: wrap; justify-content: flex-end; }
     /* The everyday Remove is quiet until the row is under the
        pointer: a delete repeated down a list of twelve reads as
        twelve invitations to delete something. */
-    .md-kb__src:not([data-state="failed"]):not([data-state="unavailable"]):not([data-state="stale"]) .md-kb__sact {
+    .md-kb__src:not([data-state="failed"]):not([data-state="missing"]) .md-kb__sact {
       opacity: 0; transition: opacity var(--md-sys-motion-duration-short4, 200ms)
                   var(--md-sys-motion-easing-standard);
     }
@@ -4962,9 +4723,14 @@
        capability tier and a reasoning depth, set separately.
        Same size, same shape, same slot — only the content is
        different, because there is no second control. */
-    /* Effort used to be the second half of the model chip and
-       dropped off here. It is its own chip now, so there is
-       nothing left for this to hide. */
+    .ax__mode--model { gap: 4px; padding-right: 8px; font-size: 11.5px; }
+    /* Two values is right when there is room for two values. Below
+       that the effort drops off the chip and stays in the menu,
+       rather than squeezing the field it shares a row with down to
+       a clipped word. */
+    @container dock (max-width: 430px) {
+      .ax__mode__e { display: none; }
+    }
     .ax__mode__ico { width: 13px; height: 13px; flex: 0 0 auto; opacity: .8; }
     .ax__mode__ico svg { width: 13px; height: 13px; fill: none; stroke: currentColor;
       stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
@@ -4974,25 +4740,7 @@
     .ax__mode__c svg { width: 13px; height: 13px; fill: none; stroke: currentColor;
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    .ax__menu--model {
-      /* Anchored to the chip that opens it, not to the left edge
-         of the composer. A menu that appears somewhere other than
-         the control it belongs to makes the reader re-find that
-         relationship every time it opens. */
-      right: 52px; left: auto;
-      /* Compact on purpose: descriptions may wrap to a second line
-         (text-wrap: pretty keeps that from leaving an orphan), which
-         is a better trade than a menu wide enough to cover the
-         conversation. Capped by the viewport so it never forces a
-         sideways scroll. */
-      min-width: 300px; max-width: min(340px, calc(100vw - 32px)); padding: 8px;
-      display: flex; flex-direction: column;
-      max-height: min(58vh, 430px);
-    }
-    /* Only the options scroll. The sentence about what happens to
-       the conversation stays put, because it is the one somebody
-       is looking for at the moment they hesitate. */
-    .md-ml__body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+    .ax__menu--model { min-width: 300px; max-width: 340px; padding: 8px; }
     .md-ml__h {
       margin: 6px 6px 4px; font-size: 10.5px; font-weight: 600;
       letter-spacing: .04em; text-transform: uppercase;
@@ -5004,57 +4752,27 @@
        comparing on purpose rather than choosing mid-thought. */
     .md-ml__opt, .md-ml__row {
       display: flex; align-items: flex-start; gap: 8px; width: 100%;
-      padding: 6px 9px; border: 0; cursor: pointer; text-align: left;
+      padding: 8px 9px; border: 0; cursor: pointer; text-align: left;
       border-radius: var(--md-sys-shape-corner-medium, 12px);
       background: transparent; font: inherit;
       color: var(--md-sys-color-on-surface);
       transition: background 140ms var(--md-sys-motion-easing-standard);
     }
-    /* One highlight that travels, rather than a tint blinking on
-       and off under the pointer. It follows the keyboard too. */
-    .md-ml__glow {
-      position: absolute; right: 8px; left: 8px; z-index: 0;
-      border-radius: var(--md-sys-shape-corner-medium, 12px);
+    .md-ml__opt:hover, .md-ml__row:hover {
       background: var(--md-sys-color-surface-container-high);
-      opacity: 0; pointer-events: none;
-      transition: top 220ms var(--md-sys-motion-easing-emphasized),
-                  height 220ms var(--md-sys-motion-easing-emphasized),
-                  opacity 150ms var(--md-sys-motion-easing-standard);
     }
-    .md-ml__body { position: relative; z-index: 1; }
-    .md-ml__opt, .md-ml__row, .md-ml__auto { position: relative; }
     .md-ml__opt:focus-visible, .md-ml__row:focus-visible {
       outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px;
     }
     .md-ml__opt[aria-checked="true"], .md-ml__row[aria-checked="true"] {
       background: color-mix(in srgb, var(--md-sys-color-primary) 9%, transparent);
     }
-    /* Disabled, not hidden, because a blocked row still has to
-       say what to do instead — and the two kinds of block are
-       drawn apart, since one ends in waiting and the other ends
-       in a person. Neither is dimmed to the point of being
-       unreadable: the sentence on them is the useful part. */
-    .md-ml__opt:disabled { cursor: default; }
+    /* Disabled, not hidden, ONLY where the row still says
+       something useful — a capped model has to be able to tell
+       you what you get instead. Restriction by an organisation is
+       absence, and has no row at all. */
+    .md-ml__opt:disabled { cursor: default; opacity: .62; }
     .md-ml__opt:disabled:hover { background: transparent; }
-    .md-ml__opt[data-avail="unavailable"] .md-ml__n,
-    .md-ml__opt[data-avail="restricted"] .md-ml__n { opacity: .7; }
-    .md-ml__opt[data-avail="unavailable"] .md-ml__f,
-    .md-ml__opt[data-avail="restricted"] .md-ml__f { opacity: .7; }
-    /* Restricted carries a struck-through feel via the label, not
-       the row: somebody decided this, and the decision is the
-       information. Unavailable stays neutral, because it is
-       expected back. */
-    .md-ml__opt[data-avail="restricted"] {
-      background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
-    }
-
-    /* At most one attribute, right-aligned, and only when the
-       host says this product differentiates on it. */
-    .md-ml__meta {
-      flex: 0 0 auto; margin-left: auto; padding-top: 2px;
-      font-size: 10.5px; white-space: nowrap;
-      color: var(--md-sys-color-on-surface-variant);
-    }
     .md-ml__tick {
       flex: 0 0 auto; width: 15px; height: 15px; margin-top: 2px;
       color: var(--md-sys-color-primary);
@@ -5066,9 +4784,7 @@
       display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
       font-size: 12.5px; font-weight: 600;
     }
-    /* pretty: a description that wraps to a second line never
-       ends on one orphaned word. */
-    .md-ml__f { font-size: 11.5px; line-height: 1.4; text-wrap: pretty;
+    .md-ml__f { font-size: 11.5px; line-height: 1.4;
       color: var(--md-sys-color-on-surface-variant); }
     .md-ml__w { font-size: 11px; line-height: 1.4;
       color: var(--app-ink-dim, #5f6368); }
@@ -5086,192 +4802,22 @@
       background: color-mix(in srgb, var(--md-sys-color-error-container) 65%, transparent);
       color: var(--md-sys-color-on-error-container);
     }
-    /* Temporarily down: a neutral, waiting colour. Nothing has
-       gone wrong with the product and nobody needs alarming. */
-    .md-ml__tag--wait {
-      background: var(--md-sys-color-surface-container-highest);
-      color: var(--md-sys-color-on-surface-variant);
+    .md-ml__row { font-size: 11.5px; line-height: 1.4; align-items: center; }
+    .md-ml__row b { font-weight: 600; }
+    .md-ml__dash { opacity: .7; }
+    .md-ml__sub {
+      margin-top: 4px; padding-top: 4px;
+      border-top: 1px solid var(--md-sys-color-outline-variant);
     }
-    /* Decided by somebody: the outline says a boundary rather
-       than a fault, which is the distinction people act on. */
-    .md-ml__tag--denied {
-      background: transparent;
-      color: var(--md-sys-color-on-surface-variant);
-      box-shadow: inset 0 0 0 1px var(--md-sys-color-outline);
-    }
-
-    /* Selected emphasis. The check always carries it; the fill is
-       an option on top, never the thing doing the work. */
-    .pv-ml[data-emphasis="tick"] .md-ml__opt[aria-checked="true"],
-    .pv-ml[data-emphasis="tick"] .md-ml__row[aria-checked="true"] {
-      background: transparent;
-    }
-    .pv-ml[data-emphasis="tick"] .md-ml__opt[aria-checked="true"]:hover,
-    .pv-ml[data-emphasis="tick"] .md-ml__row[aria-checked="true"]:hover {
-      background: var(--md-sys-color-surface-container-high);
-    }
-    .md-ml[data-density="compact"] .md-ml__opt,
-    .md-ml[data-density="compact"] .md-ml__row { padding: 5px 8px; }
-    .md-ml[data-density="compact"] .md-ml__h { margin: 4px 6px 2px; }
-
-    /* The change, acknowledged. One line under the composer, not
-       a toast over it: the selection changed, which is a small
-       thing, and the only part anybody needs is when it starts
-       mattering. */
-    .md-ml__changed {
-      margin: 10px auto 0; max-width: var(--ax-composer-max);
-      display: flex; align-items: center; gap: 6px;
-      font-size: 11.5px; line-height: 1.45;
-      color: var(--md-sys-color-on-surface-variant);
-      animation: ml-said var(--mx-motion-spatial-duration, 320ms)
-                 var(--mx-motion-spatial-easing, ease) both;
-    }
-    @keyframes ml-said {
-      from { opacity: 0; transform: translateY(-3px); }
-      to   { opacity: 1; transform: none; }
-    }
-
-    /* ── Fallback ──────────────────────────────────────────
-       The one state that interrupts, because until it is answered
-       the chip is lying about what happens next. It says what is
-       NOT affected, because the fear at this moment is the
-       thread. */
-    /* Aligned to the composer it is about, so the recovery and
-       the control it concerns share one edge. */
-    .md-ml__fall {
-      display: grid; gap: 6px; width: 100%; max-width: var(--ax-composer-max);
-      margin: 0 auto 14px; padding: 14px 16px;
-      border-radius: var(--md-sys-shape-corner-large, 16px);
-      border: 1px solid var(--md-sys-color-error);
-      background: color-mix(in srgb, var(--md-sys-color-error-container) 40%, transparent);
-      animation: ml-said var(--mx-motion-spatial-duration, 320ms)
-                 var(--mx-motion-spatial-easing, ease) both;
-    }
-    .md-ml__fall:focus-visible { outline: 2px solid var(--md-sys-color-primary);
-      outline-offset: 2px; }
-    .md-ml__fallt {
-      margin: 0; display: flex; align-items: center; gap: 7px;
-      font-size: 13.5px; font-weight: 650;
-      color: var(--md-sys-color-on-surface);
-    }
-    .md-ml__fallt svg { width: 16px; height: 16px; flex: 0 0 auto;
-      color: var(--md-sys-color-error); }
-    .md-ml__fallb {
-      margin: 0; font-size: 12.5px; line-height: 1.5;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-    .md-ml__fallact { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .md-ml__changed, .md-ml__fall { animation: none; }
-      .md-ml__opt, .md-ml__row { transition: none; }
-      .md-ml__glow { transition: opacity 150ms ease; }
-    }
-    /* ── Auto, as a switch ─────────────────────────────────
-       A toggle rather than a sixth radio, because Auto is the
-       question of whether you pick at all. */
-    .md-ml__auto {
-      display: flex; align-items: center; gap: 10px; width: 100%;
-      /* Left padding matches the tick column on the model rows,
-         so Auto's name starts on the same line as theirs — it is
-         the same list and should read as one. */
-      padding: 8px 9px 8px 32px; border: 0; cursor: pointer; text-align: left;
-      border-radius: var(--md-sys-shape-corner-medium, 12px);
-      background: transparent; font: inherit;
-      color: var(--md-sys-color-on-surface);
-      transition: background 140ms var(--md-sys-motion-easing-standard);
-    }
-    .md-ml__auto:hover { background: var(--md-sys-color-surface-container-high); }
-    .md-ml__auto:focus-visible {
-      outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px;
-    }
-    .md-ml__auto .md-ml__t { flex: 1 1 auto; }
-    .md-ml__sw {
-      flex: 0 0 auto; position: relative; width: 34px; height: 20px;
-      border-radius: 999px;
-      background: var(--md-sys-color-surface-container-highest);
-      box-shadow: inset 0 0 0 1.5px var(--md-sys-color-outline);
-      transition: background 200ms var(--md-sys-motion-easing-standard),
-                  box-shadow 200ms var(--md-sys-motion-easing-standard);
-    }
-    .md-ml__sw > span {
-      position: absolute; top: 50%; left: 3px; width: 12px; height: 12px;
-      margin-top: -6px; border-radius: 50%;
-      background: var(--md-sys-color-outline);
-      transition: transform 220ms var(--md-sys-motion-easing-emphasized),
-                  width 220ms var(--md-sys-motion-easing-emphasized),
-                  height 220ms var(--md-sys-motion-easing-emphasized),
-                  margin 220ms var(--md-sys-motion-easing-emphasized),
-                  background 200ms var(--md-sys-motion-easing-standard);
-    }
-    .md-ml__auto[aria-checked="true"] .md-ml__sw {
-      background: var(--md-sys-color-primary);
-      box-shadow: inset 0 0 0 1.5px var(--md-sys-color-primary);
-    }
-    .md-ml__auto[aria-checked="true"] .md-ml__sw > span {
-      width: 14px; height: 14px; margin-top: -7px;
-      transform: translateX(15px);
-      background: var(--md-sys-color-on-primary);
-    }
-
-    /* The separator under Auto travels with the list it separates,
-       so switching Auto on does not leave a rule with nothing
-       under it. */
-    .md-ml__rule {
-      height: 1px; margin: 4px 7px 6px;
-      background: var(--md-sys-color-outline-variant);
-    }
-
-    /* ── The list, collapsing ──────────────────────────────
-       0fr to 1fr rather than a guessed max-height, so the
-       animation is the real height of the real content whether
-       the host ships two models or twenty. */
-    .md-ml__models {
-      display: grid; grid-template-rows: 1fr;
-      opacity: 1;
-      transition: grid-template-rows 280ms ease-in-out,
-                  opacity 200ms ease-in-out 60ms,
-                  visibility 0s linear 0s;
-      visibility: visible;
-    }
-    .md-ml__models__in { overflow: hidden; min-height: 0; }
-    .md-ml__models[data-collapsed="true"] {
-      grid-template-rows: 0fr; opacity: 0;
-      /* Held back until the collapse finishes, so the rows leave
-         the tab order only once they have actually gone. */
-      visibility: hidden;
-      transition: grid-template-rows 280ms ease-in-out,
-                  opacity 160ms ease-in-out,
-                  visibility 0s linear 280ms;
-    }
-
-    /* After the rules it overrides, or it does not override them.
-       The list still goes; it just stops sliding, and the switch
-       and the chip were carrying the state anyway. */
-    @media (prefers-reduced-motion: reduce) {
-      .md-ml__auto, .md-ml__sw, .md-ml__sw > span { transition: none; }
-      .md-ml__models {
-        transition: opacity 1ms linear, visibility 0s linear 0s;
-      }
-      .md-ml__models[data-collapsed="true"] {
-        transition: opacity 1ms linear, visibility 0s linear 1ms;
-      }
-    }
-
-    /* The objective section (.md-ml__sub, .md-ml__row radios) was
-       removed: Auto says what it weighs in its own description. */
     .md-ml__note {
       margin: 6px 7px 2px; font-size: 10.5px; line-height: 1.45;
       color: var(--app-ink-dim, #5f6368);
     }
     /* The sentence exactly one shipping product answers. */
     .md-ml__note--when {
-      flex: 0 0 auto;
-      display: flex; align-items: flex-start; gap: 6px;
       margin-top: 8px; padding-top: 7px;
       border-top: 1px solid var(--md-sys-color-outline-variant);
     }
-    .md-ml__note--when svg { width: 13px; height: 13px; flex: 0 0 auto; margin-top: 1px; }
 
     /* Attribution on a past answer. Ahead of current practice and
        marked as such in the documentation — but silent
@@ -5389,8 +4935,13 @@
     .ax__composer[data-mode="voice"][data-voice="muted"] {
       border-color: color-mix(in srgb, var(--md-sys-color-outline-variant) 90%, transparent);
     }
-    /* The microphone, on: the kit's tonal icon button
-       (md-icon-button--tonal), set in the markup. */
+    /* The microphone, on. A filled-tonal icon button — the same
+       Material treatment the mode chip uses when it is pressed,
+       so "this control is active" looks the same everywhere. */
+    .ax__cbtn--mic.is-on {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
     .ax__voice {
       flex: 1 1 0; min-width: 0;
       display: flex; align-items: center; gap: 12px;
@@ -5469,224 +5020,6 @@
       box-shadow: 0 2px 6px rgba(16, 14, 24, .08), 0 18px 44px -22px rgba(16, 14, 24, .6);
       animation: ax-menu 200ms var(--md-sys-motion-easing-emphasized) both;
     }
-    /* ── The effort slider ─────────────────────────────────
-       Effort is ORDINAL, and a column of radios says nothing
-       about that ordering. A track with named ends says it in
-       the shape of the control: you can see that moving right
-       costs time before you read a word. Built on M3 slider
-       geometry — thick track, pill handle — not on the palette
-       it was borrowed from. */
-    .ax__menu--effort {
-      right: 52px; left: auto;
-      width: 252px; padding: 12px 14px 12px;
-    }
-    /* The effort screen is a breadcrumb and the slider, nothing
-       else (user wireframe). The breadcrumb is the kit's Small text
-       button with a leading back chevron: the model in on-surface,
-       the effort value beside it in primary, so it reads as where
-       you are and what that model is carrying. It sits flush with
-       the panel's left edge, the chevron standing in for padding. */
-    .md-mle__crumb {
-      margin: 0 0 8px -8px; padding: 0 12px 0 8px; gap: 4px;
-    }
-    .md-mle__crumb-ico { display: inline-grid; place-items: center; width: 20px; height: 20px;
-      color: var(--md-sys-color-on-surface); }
-    .md-mle__crumb-m { color: var(--md-sys-color-on-surface); margin-left: 2px; }
-    .md-mle__crumb-v { color: var(--md-sys-color-primary); font-weight: 400; margin-left: 4px; }
-    /* M3 Expressive slider, small: a 24px track split in two by
-       a 4px handle standing in a 6px gap. Outer corners are the
-       small size's 8px radius, inner corners — where each half
-       meets the gap — are tight. The handle is 36px rather than
-       the kit's 44px, by request: 6px proud of the track each side
-       reads as a marker rather than a post. The container itself paints nothing;
-       the two halves do. */
-    .md-mle__track {
-      position: relative; height: 24px; margin: 6px 0;
-      cursor: pointer; touch-action: none; user-select: none;
-      border-radius: 8px;
-    }
-    .md-mle__track:focus-visible {
-      outline: 2px solid var(--md-sys-color-primary); outline-offset: 8px;
-    }
-    /* The active track stops short of the handle. That gap is M3
-       Expressive's own slider anatomy, and it is what keeps the
-       handle from disappearing into the fill — a primary handle
-       on a primary track would otherwise vanish. */
-    .md-mle__fill, .md-mle__rest {
-      position: absolute; top: 0; bottom: 0;
-      transition: width var(--md-sys-motion-duration-short4, 220ms)
-                  var(--md-sys-motion-easing-emphasized),
-                  left var(--md-sys-motion-duration-short4, 220ms)
-                  var(--md-sys-motion-easing-emphasized),
-                  background-color 260ms var(--md-sys-motion-easing-standard);
-    }
-    /* Below the top step the fill is a lighter tone — primary
-       let down into primary-container — so Max, the one with a
-       real cost attached, is the step that lands at full
-       strength. The handle stays full primary on every step: it
-       is the marker, and the gap keeps it clear of the fill. */
-    .md-mle__fill {
-      left: 0; width: var(--mle-fill);
-      border-radius: 8px 2px 2px 8px;
-      background: color-mix(in srgb, var(--md-sys-color-primary) 55%,
-                            var(--md-sys-color-primary-container));
-    }
-    .md-mle__rest {
-      left: var(--mle-rest); right: 0;
-      border-radius: 2px 8px 8px 2px;
-      background: var(--md-sys-color-secondary-container);
-    }
-    /* The notches are pressable but silent: the slider above
-       already carries the value, and a slider that is also six
-       buttons is two controls wearing one coat. */
-    .md-mle__dot {
-      position: absolute; top: 50%; width: 16px; height: 16px;
-      margin: -8px 0 0 -8px; padding: 0; border: 0; border-radius: 50%;
-      background: transparent; cursor: pointer;
-    }
-    .md-mle__dot::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%;
-      background: var(--md-sys-color-on-secondary-container);
-    }
-    .md-mle__dot.is-on::after { background: var(--md-sys-color-secondary-container); }
-    .md-mle__dot.is-at::after { display: none; }
-    .md-mle__thumb {
-      position: absolute; top: -6px; left: var(--mle-x);
-      width: 2px; height: 36px; margin-left: -1px; border-radius: 1px;
-      background: var(--md-sys-color-primary);
-      transition: left var(--md-sys-motion-duration-short4, 220ms)
-                  var(--md-sys-motion-easing-emphasized),
-                  width 120ms var(--md-sys-motion-easing-standard),
-                  margin-left 120ms var(--md-sys-motion-easing-standard);
-    }
-    /* The handle rests thin (2px) and thickens to 4px when a
-       pointer is over the slider or it has keyboard focus — the
-       cue that it can be taken. While pressed it drops back to the
-       thin resting width, so the value under it stays visible
-       during a drag. The tracks do not move: the 6px gap is sized
-       for the thick handle, so at rest there is 7px either side.
-       Hover is gated to real hover devices, so a tap does not
-       leave the handle stuck thick on touch screens. */
-    @media (hover: hover) {
-      .md-mle__track:hover .md-mle__thumb { width: 4px; margin-left: -2px; border-radius: 2px; }
-    }
-    .md-mle__track:focus-visible .md-mle__thumb { width: 4px; margin-left: -2px; border-radius: 2px; }
-    /* .is-pressed, not only :active: a press that moves the handle
-       repaints the slider, and the new node is never :active. The
-       component carries the press across the repaint. */
-    .md-mle__track:active .md-mle__thumb,
-    .md-mle__track.is-pressed .md-mle__thumb { width: 2px; margin-left: -1px; border-radius: 1px; }
-
-    /* The sparks rise OUT of the track, so the canvas reaches
-       above it. It sits under the handle and the notches — the
-       control stays legible, the motion happens behind it — and
-       it never takes a pointer event, because the whole strip is
-       still the slider. */
-    .md-mle__sparks {
-      position: absolute; left: 0; right: 0; bottom: 0; top: -20px;
-      width: 100%; height: calc(100% + 20px);
-      pointer-events: none; z-index: 0;
-    }
-    .md-mle__dot, .md-mle__thumb { z-index: 1; }
-
-    /* At the top notch light moves through the fill. Two soft
-       bands of light purple drift along it at different speeds
-       and in opposite directions, so the glow swells and thins
-       instead of repeating in lockstep. There are no edges: each
-       band is a gradient that starts and ends fully transparent,
-       so it melts into the primary fill rather than sitting on
-       it. Like the sparks, it exists only at Max — the motion
-       marks the most expensive setting rather than decorating
-       every setting. The bands sway back and forth on an eased
-       alternate rather than looping, so there is no seam to jump. */
-    /* Max is the brightest step: full primary, against the
-       lighter tone every other step uses, with the glow and the
-       sparks moving over it. The glow is kept faint enough that
-       its average never falls back to the lighter steps' tone —
-       the most expensive setting must never look like the least. */
-    .md-mle[data-top="true"] .md-mle__fill {
-      overflow: hidden;
-      background: var(--md-sys-color-primary);
-    }
-    .md-mle[data-top="true"] .md-mle__fill::before,
-    .md-mle[data-top="true"] .md-mle__fill::after {
-      --mle-glow: color-mix(in srgb, var(--md-sys-color-primary) 40%,
-                            var(--md-sys-color-primary-container));
-      content: ''; position: absolute; inset: 0;
-      background-image: linear-gradient(90deg,
-        transparent 0%, var(--mle-glow) 22%, transparent 50%,
-        var(--mle-glow) 72%, transparent 100%);
-      background-size: 200% 100%;
-      background-repeat: repeat-x;
-      animation: mle-wave 7s ease-in-out infinite alternate;
-      pointer-events: none;
-    }
-    .md-mle[data-top="true"] .md-mle__fill::before { opacity: .34; }
-    .md-mle[data-top="true"] .md-mle__fill::after {
-      opacity: .15; background-size: 320% 100%;
-      animation-duration: 11s; animation-direction: alternate-reverse;
-    }
-    @keyframes mle-wave {
-      from { background-position: 0% 0; }
-      to   { background-position: 100% 0; }
-    }
-
-    /* The composer's model-and-effort action is ONE kit Small text
-       button (.md-button.md-button--small in material-components.css)
-       reading "Balanced High" (user wireframe). Size, type, state
-       layers, focus ring and the pressed shape all come from the
-       component; nothing here restyles it. The one addition is the
-       open state, which the kit leaves to the host: while either
-       screen of its flyout is open the chip holds the pressed
-       layer, so it is clear which control the flyout belongs to. */
-    .ax__mode--model[aria-expanded="true"]::before {
-      opacity: var(--md-sys-state-pressed-opacity);
-    }
-    /* The chip's inner parts predate the kit button and are shared
-       with the generic mode chip, which stays as it was; inside a
-       kit button they take the kit's 20dp icon at full strength and
-       the button's own label colour and weight. */
-    .md-button--small .ax__mode__ico,
-    .md-button--small .ax__mode__c {
-      display: inline-grid; place-items: center;
-      width: 20px; height: 20px; opacity: 1;
-    }
-    .md-button--small .ax__mode__ico svg,
-    .md-button--small .ax__mode__c svg {
-      width: 20px; height: 20px; fill: currentColor; stroke: none;
-    }
-    .md-button--small .ax__mode__m { color: inherit; font-weight: inherit; }
-    /* The effort value beside the model name: same primary, the
-       regular weight, so the chip reads as a name and a value. */
-    .md-button--small .ax__mode__v { font-weight: 400; }
-
-    /* Model names a host passes in can be long — a real identifier
-       easily runs past 25 characters, and "Deep reasoning" is 14 —
-       and the chip must not push the field out of
-       the composer to show all of them. It truncates; the full
-       name is in the accessible label and one row away in the
-       menu. Below the field's own minimum it gives up more. */
-    .ax__mode--model .ax__mode__m {
-      display: inline-block; max-width: 22ch;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      vertical-align: bottom;
-    }
-    @container dock (max-width: 460px) {
-      .ax__mode--model .ax__mode__m { max-width: 12ch; }
-    }
-    @media (max-width: 520px) {
-      .ax__mode--model .ax__mode__m { max-width: 11ch; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .md-mle__fill, .md-mle__rest, .md-mle__thumb { transition: none; }
-      /* The swell stays as a still shape, so Max still looks
-         different; it just does not roll. */
-      .md-mle[data-top="true"] .md-mle__fill::before,
-      .md-mle[data-top="true"] .md-mle__fill::after { animation: none; }
-    }
-
     .ax__menu--plus { left: 4px; }
     .ax__menu--mode { right: 52px; }
     @keyframes ax-menu {
@@ -5784,19 +5117,7 @@
       .ax__item { flex: 0 0 auto; }
       .ax__spacer { display: none; }
       .ax__composer { border-radius: 22px; }
-      /* The generic mode chip goes; the MODEL and EFFORT chips
-         stay. For every other pattern that chip is a convenience,
-         but for Model Selection it is the resting state — hiding
-         it on a phone means the one thing the pattern promises to
-         keep visible is the first thing to disappear. They wrap
-         to their own line instead, which the composer already
-         supports. */
-      .ax__mode:not(.ax__mode--model):not(.ax__mode--effort) { display: none; }
-      .ax__mode--model .ax__mode__m { max-width: 14ch; }
-      /* The field takes the whole first line and the controls sit
-         under it, rather than three things fighting over one row
-         and the prompt losing. */
-      .ax__composer .ax__field { flex: 1 1 100%; order: -1; }
+      .ax__mode { display: none; }
     }
 
     /* ── Reduced motion ───────────────────────────────────────

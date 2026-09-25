@@ -1429,7 +1429,6 @@
        playground or a scene. Expressiveness never justifies an
        invisible focus ring. */
     .pv .md-button:focus-visible,
-    .pv .md-icon-button:focus-visible,
     .pv-select__btn:focus-visible,
     .pv-select__opt:focus-visible,
     .pv-edit:focus-visible,
@@ -3170,7 +3169,7 @@
     .ax__composer {
       position: relative; z-index: 1;
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-      padding: 7px 8px; min-height: 56px;
+      padding: 9px 10px 9px 12px; min-height: 56px;
       border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 80%, transparent);
       border-radius: 26px;
       background: color-mix(in srgb, var(--md-sys-color-surface-container-lowest) 88%, transparent);
@@ -3194,13 +3193,32 @@
     .ax[data-phase="working"] .ax__composer { transform: scale(.985); }
     .ax__composer[data-idle="false"] { opacity: .92; }
 
-    /* The composer's icon buttons are the kit's Small icon button
-       (.md-icon-button in material-components.css): + and mic are
-       standard, send is filled, the live mic is tonal. This class
-       only places them in the composer row; size, colour, state
-       layers and the pressed shape all come from the component. */
-    .ax__cbtn { flex: 0 0 auto; }
-
+    .ax__cbtn {
+      width: 34px; height: 34px; flex: 0 0 auto; padding: 0;
+      display: grid; place-items: center; cursor: pointer;
+      border: 0; border-radius: 50%;
+      background: transparent; color: var(--md-sys-color-on-surface-variant);
+      transition: background 160ms var(--md-sys-motion-easing-standard),
+                  color 160ms var(--md-sys-motion-easing-standard),
+                  transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
+    }
+    .ax__cbtn:hover:not(:disabled) {
+      background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+    }
+    .ax__cbtn:active:not(:disabled) { transform: scale(.92); }
+    .ax__cbtn:disabled { opacity: .4; cursor: default; }
+    .ax__cbtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor;
+      stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .ax__cbtn--send {
+      background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+    }
+    .ax__cbtn--send:hover:not(:disabled) {
+      background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+      filter: brightness(1.08);
+    }
+    .ax__cbtn--send:disabled { background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface-variant); }
     /* Provenance on a turn: which context the answer actually
        read. Quiet, because it is a footnote to the answer rather
        than a second answer. */
@@ -4962,6 +4980,7 @@
        capability tier and a reasoning depth, set separately.
        Same size, same shape, same slot — only the content is
        different, because there is no second control. */
+    .ax__mode--model { gap: 4px; padding-right: 8px; font-size: 11.5px; }
     /* Effort used to be the second half of the model chip and
        dropped off here. It is its own chip now, so there is
        nothing left for this to hide. */
@@ -4980,12 +4999,7 @@
          the control it belongs to makes the reader re-find that
          relationship every time it opens. */
       right: 52px; left: auto;
-      /* Compact on purpose: descriptions may wrap to a second line
-         (text-wrap: pretty keeps that from leaving an orphan), which
-         is a better trade than a menu wide enough to cover the
-         conversation. Capped by the viewport so it never forces a
-         sideways scroll. */
-      min-width: 300px; max-width: min(340px, calc(100vw - 32px)); padding: 8px;
+      min-width: 300px; max-width: 340px; padding: 8px;
       display: flex; flex-direction: column;
       max-height: min(58vh, 430px);
     }
@@ -5066,9 +5080,7 @@
       display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
       font-size: 12.5px; font-weight: 600;
     }
-    /* pretty: a description that wraps to a second line never
-       ends on one orphaned word. */
-    .md-ml__f { font-size: 11.5px; line-height: 1.4; text-wrap: pretty;
+    .md-ml__f { font-size: 11.5px; line-height: 1.4;
       color: var(--md-sys-color-on-surface-variant); }
     .md-ml__w { font-size: 11px; line-height: 1.4;
       color: var(--app-ink-dim, #5f6368); }
@@ -5389,8 +5401,13 @@
     .ax__composer[data-mode="voice"][data-voice="muted"] {
       border-color: color-mix(in srgb, var(--md-sys-color-outline-variant) 90%, transparent);
     }
-    /* The microphone, on: the kit's tonal icon button
-       (md-icon-button--tonal), set in the markup. */
+    /* The microphone, on. A filled-tonal icon button — the same
+       Material treatment the mode chip uses when it is pressed,
+       so "this control is active" looks the same everywhere. */
+    .ax__cbtn--mic.is-on {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
     .ax__voice {
       flex: 1 1 0; min-width: 0;
       display: flex; align-items: center; gap: 12px;
@@ -5480,19 +5497,33 @@
       right: 52px; left: auto;
       width: 252px; padding: 12px 14px 12px;
     }
-    /* The effort screen is a breadcrumb and the slider, nothing
-       else (user wireframe). The breadcrumb is the kit's Small text
-       button with a leading back chevron: the model in on-surface,
-       the effort value beside it in primary, so it reads as where
-       you are and what that model is carrying. It sits flush with
-       the panel's left edge, the chevron standing in for padding. */
-    .md-mle__crumb {
-      margin: 0 0 8px -8px; padding: 0 12px 0 8px; gap: 4px;
+    /* Label and value read as one line — "Effort  High" — with
+       the explanation behind a mark rather than spent as a
+       permanent line of prose under the track. */
+    .md-mle__head {
+      display: flex; align-items: center; gap: 8px; margin: 0 0 2px;
+      font-size: 13px; color: var(--md-sys-color-on-surface-variant);
     }
-    .md-mle__crumb-ico { display: inline-grid; place-items: center; width: 20px; height: 20px;
-      color: var(--md-sys-color-on-surface); }
-    .md-mle__crumb-m { color: var(--md-sys-color-on-surface); margin-left: 2px; }
-    .md-mle__crumb-v { color: var(--md-sys-color-primary); font-weight: 400; margin-left: 4px; }
+    .md-mle__v {
+      font-size: 13px; font-weight: 650;
+      color: var(--md-sys-color-on-surface);
+    }
+    .md-mle__help {
+      display: inline-grid; place-items: center; margin-left: auto;
+      width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%;
+      background: transparent; cursor: pointer;
+      color: var(--md-sys-color-on-surface-variant);
+      transition: background 140ms var(--md-sys-motion-easing-standard);
+    }
+    .md-mle__help:hover { background: var(--md-sys-color-surface-container-high); }
+    .md-mle__help:focus-visible {
+      outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px;
+    }
+    .md-mle__help svg { width: 15px; height: 15px; }
+    .md-mle__ends {
+      display: flex; justify-content: space-between; margin: 12px 0 8px;
+      font-size: 12px; color: var(--md-sys-color-on-surface-variant);
+    }
     /* M3 Expressive slider, small: a 24px track split in two by
        a 4px handle standing in a 6px gap. Outer corners are the
        small size's 8px radius, inner corners — where each half
@@ -5632,38 +5663,23 @@
       to   { background-position: 100% 0; }
     }
 
-    /* The composer's model-and-effort action is ONE kit Small text
-       button (.md-button.md-button--small in material-components.css)
-       reading "Balanced High" (user wireframe). Size, type, state
-       layers, focus ring and the pressed shape all come from the
-       component; nothing here restyles it. The one addition is the
-       open state, which the kit leaves to the host: while either
-       screen of its flyout is open the chip holds the pressed
-       layer, so it is clear which control the flyout belongs to. */
-    .ax__mode--model[aria-expanded="true"]::before {
-      opacity: var(--md-sys-state-pressed-opacity);
+    /* The top notch is the one with a real cost attached, so it
+       is marked — but by WEIGHT, not by a new hue. The borrowed
+       component used a violet that is not in this system, and
+       the nearest token to it here is a dull rose that reads as
+       an error rather than as emphasis. Filling the track to its
+       end and letting the chip go tonal says the same thing in
+       the library's own voice. */
+    .ax__mode--effort[data-top="true"] {
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      border-color: transparent;
     }
-    /* The chip's inner parts predate the kit button and are shared
-       with the generic mode chip, which stays as it was; inside a
-       kit button they take the kit's 20dp icon at full strength and
-       the button's own label colour and weight. */
-    .md-button--small .ax__mode__ico,
-    .md-button--small .ax__mode__c {
-      display: inline-grid; place-items: center;
-      width: 20px; height: 20px; opacity: 1;
-    }
-    .md-button--small .ax__mode__ico svg,
-    .md-button--small .ax__mode__c svg {
-      width: 20px; height: 20px; fill: currentColor; stroke: none;
-    }
-    .md-button--small .ax__mode__m { color: inherit; font-weight: inherit; }
-    /* The effort value beside the model name: same primary, the
-       regular weight, so the chip reads as a name and a value. */
-    .md-button--small .ax__mode__v { font-weight: 400; }
+    .ax__mode--effort[data-top="true"] .ax__mode__ico { opacity: 1; }
+    .ax__mode--effort .ax__mode__ico svg { width: 13px; height: 13px; }
 
-    /* Model names a host passes in can be long — a real identifier
-       easily runs past 25 characters, and "Deep reasoning" is 14 —
-       and the chip must not push the field out of
+    /* Real model names are long — claude-3.7-sonnet-thinking is
+       26 characters — and the chip must not push the field out of
        the composer to show all of them. It truncates; the full
        name is in the accessible label and one row away in the
        menu. Below the field's own minimum it gives up more. */

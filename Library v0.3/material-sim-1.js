@@ -4242,7 +4242,7 @@
 
       initial: {
         step: 'idle',   /* idle · working · answer */
-        model: 'balanced',
+        model: 'claude-3-7-sonnet',
         effort: 'high',
         turns: [],
         fallback: false,
@@ -4272,12 +4272,12 @@
            product can write. */
         if (s.opts.down) {
           list.forEach(function (m) {
-            if (m.id === 'deep-reasoning') m.availability = 'unavailable';
+            if (m.id === 'claude-3-7-sonnet-thinking') m.availability = 'unavailable';
           });
         }
         if (s.opts.org) {
           list.forEach(function (m) {
-            if (m.id === 'deep-reasoning') m.availability = 'restricted';
+            if (m.id === 'claude-3-7-sonnet-thinking') m.availability = 'restricted';
           });
         }
         return list;
@@ -4285,7 +4285,7 @@
       modelOpts: function (s) {
         return {
           showAuto: true, showFor: true, showNote: false,
-          unavailableCopy: 'Try again shortly, or use Balanced in the meantime.',
+          unavailableCopy: 'Try again shortly, or use claude-3.7-sonnet in the meantime.',
           restrictedCopy: 'Not available in your workspace. Your administrator decides this.',
           footNote: window.MaterialModel.scopeNote('request', '')
         };
@@ -4298,7 +4298,7 @@
         var M = window.MaterialModel;
         var fall = s.fallback
           ? M.fallback({
-              title: 'Deep reasoning is no longer available',
+              title: 'claude-3.7-sonnet-thinking is no longer available',
               body: s.opts.org
                 ? 'Your organisation has restricted it. Choose another model, or let Auto ' +
                   'pick for each request. Your conversation is unchanged.'
@@ -4344,7 +4344,7 @@
       },
 
       controls: function (s) {
-        return [toggle('Deep reasoning is down', 'opt:down', s.opts.down),
+        return [toggle('claude-3.7-sonnet-thinking is down', 'opt:down', s.opts.down),
                 toggle('Your organisation restricts it', 'opt:org', s.opts.org),
                 toggle('Say which model answered', 'opt:credit', s.opts.credit)];
       },
@@ -4371,10 +4371,11 @@
                  'fault — and no provider error text, because a status code is not a ' +
                  'thing anybody can act on.';
         if (s.model === 'default')
-          return 'Auto says what it weighs &mdash; quality and speed &mdash; in one line ' +
-                 'under the switch, on or off. The credibility of a router rests entirely on ' +
-                 'that line being true: at least one shipping router claims to pick for your ' +
-                 'task while quietly balancing capacity.';
+          return 'Auto says what it weighs &mdash; quality, speed and availability &mdash; in ' +
+                 'one line under the switch, on or off. The credibility of a router rests ' +
+                 'entirely on that line being true, and it names availability out loud on ' +
+                 'purpose: at least one shipping router claims to pick for your task while ' +
+                 'quietly balancing capacity.';
         if (s.step === 'answer')
           return 'The label updated, the next request used it, and the answer says which model ' +
                  'produced it. Switching is not retroactive, and the menu said so before the ' +
@@ -4396,12 +4397,12 @@
         /* Keyed by model id, so a renamed line-up is a data change
            rather than a code change. */
         var BY = {
-          'fast': 'The riskiest part is the data move itself. I would start by taking a full ' +
+          'claude-3-5-sonnet': 'The riskiest part is the data move itself. I would start by taking a full ' +
                  'backup and rehearsing the cutover on a copy.',
-          'balanced': 'The riskiest part is not the data move — it is the window where both ' +
+          'claude-3-7-sonnet': 'The riskiest part is not the data move — it is the window where both ' +
                     'systems think they own a billing row. I would start by making writes ' +
                     'idempotent, then run both in parallel for a cycle before cutting over.',
-          'deep-reasoning': 'Three risks, and they are not equally likely. The one that will actually bite ' +
+          'claude-3-7-sonnet-thinking': 'Three risks, and they are not equally likely. The one that will actually bite ' +
                 'is dual ownership during the parallel run: if both systems can write a ' +
                 'billing row you get double charges, and billing errors are the kind ' +
                 'customers escalate rather than report. Second is the foreign keys the ' +
@@ -4410,10 +4411,7 @@
                 'would start by making every write idempotent and putting a single source of ' +
                 'truth behind a feature flag, so the parallel run is observable and ' +
                 'reversible in one switch rather than a rollback.',
-          'coding': 'The riskiest code path is the billing write. Wrap it in an idempotency ' +
-                    'key check before the parallel run, and add a test that replays the same ' +
-                    'event twice and asserts one charge.',
-          'multimodal': 'From the diagram, the billing service still reads three tables it does not ' +
+          'gpt-4o': 'From the diagram, the billing service still reads three tables it does not ' +
                   'own. Those reads are the coupling to break first.',
           'default': 'The riskiest part is the parallel-run window where both systems can write the ' +
                 'same billing row. Make writes idempotent first, then cut over behind a flag.'
@@ -4426,10 +4424,10 @@
         function withdraw(k) {
           s.opts[k] = !s.opts[k];
           s.axModes = false;
-          if (s.opts[k] && s.model === 'deep-reasoning') s.fallback = true;
+          if (s.opts[k] && s.model === 'claude-3-7-sonnet-thinking') s.fallback = true;
           if (!s.opts.down && !s.opts.org) s.fallback = false;
           ctx.paint();
-          if (s.fallback) ctx.announce && ctx.announce('Deep reasoning is no longer available. ' +
+          if (s.fallback) ctx.announce && ctx.announce('claude-3.7-sonnet-thinking is no longer available. ' +
             'Choose another model, or use Auto.');
         }
         if (a === 'opt:down') { withdraw('down'); return; }
@@ -4453,26 +4451,17 @@
            the model that was chosen before. */
         if (a === 'model:auto:on') {
           if (s.model !== 'default') s.was = s.model;
-          s.model = 'default';
-          /* On to effort, as a pick does (see the Live Preview). */
-          s.axModes = false; s.axEffort = true; if (M.holdTrack) M.holdTrack();
-          ctx.paint();
-          ctx.announce && ctx.announce('Auto on. It will choose a model for each request. Now set the effort.');
+          s.model = 'default'; ctx.paint();
+          ctx.announce && ctx.announce('Auto on. It will choose a model for each request.');
           return;
         }
         if (a === 'model:auto:off') {
-          s.model = s.was || 'balanced'; ctx.paint();
+          s.model = s.was || 'claude-3-7-sonnet'; ctx.paint();
           ctx.announce && ctx.announce('Auto off. Using ' +
             ((M.byId(M.MODELS, s.model) || {}).label || s.model) + '.');
           return;
         }
 
-        /* The breadcrumb on the effort screen: back to the list. */
-        if (a === 'model:back') {
-          s.axEffort = false; s.axModes = true;
-          if (M.holdMenu) M.holdMenu();
-          ctx.paint(); return;
-        }
         if (a.indexOf('model:pick:') === 0) {
           var pid = a.slice(11);
           var row = M.byId(SIMS['model-selection'].models(s), pid);
@@ -4480,13 +4469,9 @@
             ctx.announce && ctx.announce((row.label || pid) + ' cannot be used.');
             return;
           }
-          /* The list is replaced by the effort screen for this
-             model, one gesture setting both values. */
-          s.model = pid; s.axModes = false; s.axEffort = true; s.fallback = false;
-          if (M.holdTrack) M.holdTrack();
-          ctx.paint();
+          s.model = pid; s.axModes = false; s.fallback = false; ctx.paint();
           ctx.announce && ctx.announce((row ? row.label : pid) + ' selected. ' +
-            M.scopeNote('request', row ? row.label : pid) + ' Now set the effort.');
+            M.scopeNote('request', row ? row.label : pid));
           return;
         }
         if (a === 'model:effort:focus') return;
@@ -4509,8 +4494,8 @@
 
           s.turns = s.turns.concat([{ who: 'you', text: ASK }]);
           s.step = 'working'; ctx.paint();
-          return wait(s.model === 'deep-reasoning' && !sub ? 2200 : 1400).then(function () {
-            s.turns = s.turns.concat([{ who: 'aria', text: BY[used] || BY['balanced'],
+          return wait(s.model === 'claude-3-7-sonnet-thinking' && !sub ? 2200 : 1400).then(function () {
+            s.turns = s.turns.concat([{ who: 'aria', text: BY[used] || BY['claude-3-7-sonnet'],
                                         model: label, sub: sub }]);
             s.step = 'answer'; ctx.paint();
           });
@@ -6219,7 +6204,7 @@
          the microphone, now showing that it is on — the same
          button that got you here, which is also the way back. */
       body =
-        '<button class="ax__cbtn ax__cbtn--mic is-on md-icon-button md-icon-button--tonal" type="button" data-act="voice:stop" ' +
+        '<button class="ax__cbtn ax__cbtn--mic is-on" type="button" data-act="voice:stop" ' +
           'aria-pressed="true" aria-label="Stop voice input">' + V.ICONS.mic + '</button>' +
         '<span class="ax__voice">' +
           V.indicator(vs) +
@@ -6235,17 +6220,17 @@
           '</span>' +
         '</span>' +
         (vs === 'error' || vs === 'permission'
-          ? '<button class="ax__cbtn ax__cbtn--send md-icon-button md-icon-button--filled" type="button" data-act="voice:retry" ' +
+          ? '<button class="ax__cbtn ax__cbtn--send" type="button" data-act="voice:retry" ' +
               'aria-label="Try the microphone again">' + V.ICONS.mic + '</button>'
-          : '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="voice:mute" ' +
+          : '<button class="ax__cbtn" type="button" data-act="voice:mute" ' +
               'aria-pressed="' + (vs === 'muted') + '" ' +
               'aria-label="' + (vs === 'muted' ? 'Unmute the microphone' : 'Mute the microphone') + '">' +
               (vs === 'muted' ? V.ICONS.micOff : V.ICONS.pause) + '</button>') +
-        '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="voice:cancel" ' +
+        '<button class="ax__cbtn" type="button" data-act="voice:cancel" ' +
           'aria-label="Cancel voice input">' + V.ICONS.close + '</button>';
     } else {
       body =
-        '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="ax:plus" ' +
+        '<button class="ax__cbtn" type="button" data-act="ax:plus" ' +
           'aria-label="Add context" aria-expanded="' + (!!o.plusOpen) + '"' +
           (busy || blocked ? ' disabled' : '') + '>' + ICON_PLUS + '</button>' +
         (o.chips && o.chips.length
@@ -6273,13 +6258,15 @@
           /* modelOpts is the Model Selection pattern's own bag:
              the composer forwards it untouched rather than growing
              a parameter for every option that pattern adds. */
-          /* ONE chip for both values (user wireframe), opening a
-             flyout with two screens: the model list, then effort.
-             The axes stay two settings; only the trigger is shared. */
+          /* TWO chips, because there are two axes. Gluing them
+             into one control was the pattern arguing against
+             itself: "Balanced · Standard" reads as one setting
+             with a dot in it. */
           ? window.MaterialModel.chip(Object.assign({
               models: o.models, model: o.model, effort: o.effort,
-              showEffort: !!o.effort,
-              open: !!o.modesOpen || !!o.effortOpen }, o.modelOpts || {}))
+              open: !!o.modesOpen }, o.modelOpts || {})) +
+            window.MaterialModel.effortChip(Object.assign({
+              effort: o.effort, open: !!o.effortOpen }, o.modelOpts || {}))
           : o.modes
             ? '<button class="ax__mode" type="button" data-act="ax:mode" ' +
               'aria-pressed="' + (!!o.modesOpen) + '"' +
@@ -6290,11 +6277,11 @@
            a way of asking in this scenario. A control with no use
            in the scenario it is standing in is furniture. */
         (o.mic
-          ? '<button class="ax__cbtn ax__cbtn--mic md-icon-button md-icon-button--standard" type="button" data-act="voice:start" ' +
+          ? '<button class="ax__cbtn ax__cbtn--mic" type="button" data-act="voice:start" ' +
             'aria-label="Speak instead of typing"' +
             (busy || blocked ? ' disabled' : '') + '>' + (V ? V.ICONS.mic : ICON_MIC) + '</button>'
           : '') +
-        '<button class="ax__cbtn ax__cbtn--send md-icon-button md-icon-button--filled" type="submit" aria-label="Send"' +
+        '<button class="ax__cbtn ax__cbtn--send" type="submit" aria-label="Send"' +
           (busy || blocked || !(o.text || '').trim() ? ' disabled' : '') + '>' +
           ICON_ARROW + '</button>';
     }
@@ -6338,7 +6325,7 @@
           : '') +
         (!voice && o.effortOpen && o.effort && window.MaterialModel
           ? window.MaterialModel.effortPanel(Object.assign({
-              models: o.models, model: o.model, effort: o.effort }, o.modelOpts || {}))
+              effort: o.effort }, o.modelOpts || {}))
           : '') +
         (!voice && o.modesOpen && !o.model && o.modes
           ? '<div class="ax__menu ax__menu--mode" role="menu">' +
@@ -6500,13 +6487,10 @@
       s.axSubAt = s.axSubAt === sn ? null : sn;
       ctx.paint(); return true;
     }
-    /* One chip, two screens: pressed while either is showing it
-       closes the flyout; pressed while closed it opens the list. */
-    if (a === 'ax:mode')  {
-      if (s.axModes || s.axEffort) { s.axModes = false; s.axEffort = false; }
-      else s.axModes = true;
-      s.axPlus = false; ctx.paint(); return true;
-    }
+    if (a === 'ax:mode')  { s.axModes = !s.axModes; s.axPlus = false;
+                           s.axEffort = false; ctx.paint(); return true; }
+    if (a === 'ax:effort') { s.axEffort = !s.axEffort; s.axModes = false;
+                             s.axPlus = false; ctx.paint(); return true; }
     if (a.indexOf('ax:add:') === 0) {
       s.axPlus = false; s.axSubAt = null;
       /* A scenario whose + menu offers SOURCES rather than labels

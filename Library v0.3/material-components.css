@@ -176,6 +176,95 @@
     var(--md-sys-color-error);
 }
 
+/* ── Small size (M3 Expressive kit, Button · Size: Small) ─
+   40dp container on a 48dp touch target, 16dp side padding, 8dp
+   icon-label gap, 20dp icon, Label Large. Every state from the
+   kit: an 8% state layer on hover, 10% on focus and press (the
+   layer is the label colour, so it is right for every variant),
+   a 3dp secondary focus ring, and the pressed shape morph — the
+   full corner tightens to Corner/Small while held. Disabled is
+   the kit's: 38% content, 10% on-surface container where the
+   variant has one.
+
+   The state layer is a pseudo-element rather than a background
+   change, so it sits over any container colour (text, tonal,
+   filled) without each variant re-deriving its own hover mix. */
+.md-button--small {
+  position: relative; isolation: isolate;
+  height: 40px; padding: 0 16px; gap: 8px;
+  transition: border-radius var(--mx-motion-fast-duration, 120ms) var(--md-sys-motion-easing-standard),
+              background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+.md-button--small::before,
+.md-icon-button::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; background: currentColor; opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--mx-motion-fast-duration, 120ms) var(--md-sys-motion-easing-standard);
+}
+/* The 48dp touch target, larger than the 40dp container. */
+.md-button--small::after,
+.md-icon-button::after {
+  content: ''; position: absolute; inset: -4px; border-radius: inherit;
+}
+.md-button--small svg { width: 20px; height: 20px; flex: 0 0 auto; fill: currentColor; }
+/* The variants' own hover backgrounds are replaced by the layer. */
+.md-button--small.md-button--text:hover { background: transparent; }
+.md-button--small.md-button--filled:hover { background: var(--md-sys-color-primary); }
+.md-button--small.md-button--tonal:hover { box-shadow: none; }
+
+.md-button--small:hover::before,
+.md-icon-button:hover::before { opacity: var(--md-sys-state-hover-opacity); }
+.md-button--small:focus-visible::before,
+.md-icon-button:focus-visible::before { opacity: var(--md-sys-state-focus-opacity); }
+.md-button--small:active::before,
+.md-icon-button:active::before { opacity: var(--md-sys-state-pressed-opacity); }
+.md-button--small:active,
+.md-icon-button:active { border-radius: var(--md-sys-shape-corner-small); }
+.md-button--small:focus-visible,
+.md-icon-button:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px;
+}
+.md-button--small:disabled,
+.md-icon-button:disabled {
+  cursor: default; color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+}
+.md-button--small:disabled::before,
+.md-icon-button:disabled::before { opacity: 0; }
+.md-button--small.md-button--filled:disabled,
+.md-button--small.md-button--tonal:disabled,
+.md-icon-button--filled:disabled,
+.md-icon-button--tonal:disabled {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 10%, transparent);
+}
+
+/* ── Icon button (M3 Expressive kit) · Size: Small ────────
+   40dp container, 24dp icon, 48dp touch target, full corner.
+   Standard has no container; filled is primary; tonal is
+   secondary-container. A toggle (aria-pressed) in the standard
+   style shows its selected state in primary. */
+.md-icon-button {
+  position: relative; isolation: isolate; flex: 0 0 auto;
+  display: inline-grid; place-items: center;
+  width: 40px; height: 40px; padding: 0;
+  border: 0; border-radius: var(--md-sys-shape-corner-full);
+  background: transparent; color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  transition: border-radius var(--mx-motion-fast-duration, 120ms) var(--md-sys-motion-easing-standard),
+              background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+.md-icon-button svg { width: 24px; height: 24px; fill: currentColor; }
+.md-icon-button--standard[aria-pressed="true"] { color: var(--md-sys-color-primary); }
+.md-icon-button--filled {
+  background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+}
+.md-icon-button--tonal {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
 /* ── Basic dialog (M3) ────────────────────────────────────
    Extra-large corner (28), surface-container-high, elevation 3.
    All three read from the kit. */
@@ -275,7 +364,8 @@
 .md-field__spacer { margin-left: auto; }
 
 @media (prefers-reduced-motion: reduce) {
-  .md-button { transition: none; }
+  .md-button, .md-icon-button,
+  .md-button--small::before, .md-icon-button::before { transition: none; }
 }
 
 

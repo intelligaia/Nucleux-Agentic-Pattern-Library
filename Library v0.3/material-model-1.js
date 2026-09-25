@@ -30,7 +30,7 @@
    down the page — and its distinctness is carried where somebody
    is actually reading: a router mark on the row and on the chip,
    and, the one thing that makes a router trustworthy, a sentence
-   under it saying what it weighs — quality and speed.
+   under it saying what it weighs — quality, speed, availability.
    A product whose stated behaviour is not its real one has spent
    its credibility for good.
 
@@ -63,11 +63,11 @@
    tiers, or at two models, or at six across two providers, and
    the same code draws all three.
 
-   The demo set names capability tiers — Fast, Balanced, Deep
-   reasoning, Coding, Multimodal — rather than model identifiers.
-   Names the host passes in can still be long (a real identifier
-   like `some-model-3.7-thinking` does not fit a composer chip), so
-   the chip still truncates; see the CSS.
+   The demo set is deliberately realistic anyway, because the
+   problems only show up at real length: `claude-3.7-sonnet-thinking`
+   does not fit in a composer chip, and it carries a reasoning
+   setting inside a model identifier — which is exactly the
+   conflation the effort axis exists to undo.
    ============================================================ */
 (function () {
   'use strict';
@@ -97,44 +97,42 @@
 
   /* The demo set. `for` is the sentence that does the work: it
      describes a KIND OF TASK rather than a capability, because
-     nobody chooses a model by its context window. Tier names, on
-     purpose — see the header. */
+     nobody chooses a model by its context window. Fictional
+     names, on purpose — see the header. */
   var MODELS = [
     /* The id stays 'default' — it is a key the demo state, the
        fallback and the tests all use; only what people READ
        changed. The sentence names what the router weighs, which
        is the thing that makes an Auto trustworthy. */
     { id: 'default', label: 'Auto', router: true,
-      for: 'Appropriate model for each request, balancing quality and speed.',
+      for: 'Appropriate model for each request, balancing quality, speed, and availability',
       note: 'Picks a model per request.' },
-    /* Capability tiers named for the work, not model identifiers
-       (the user's line-up). Each `for` is the user's own sentence. */
-    { id: 'fast', label: 'Fast',
+    { id: 'claude-3-5-sonnet', label: 'claude-3.5-sonnet',
       provider: 'Anthropic', costTier: 'low', capabilities: ['tools'],
-      for: 'Quick responses for simple, everyday tasks.',
+      for: 'Quick questions and drafts',
       note: 'Fastest, and the lightest on your allowance.' },
-    { id: 'balanced', label: 'Balanced',
+    { id: 'claude-3-7-sonnet', label: 'claude-3.7-sonnet',
       provider: 'Anthropic', costTier: 'standard', capabilities: ['tools', 'images'],
-      for: 'Reliable for everyday writing and analysis.',
+      for: 'Most everyday work',
       note: 'The best trade of quality against speed.' },
-    /* The one tier whose NAME is about how hard it thinks. That
-       overlaps the effort axis, and it is kept anyway because real
-       line-ups ship exactly this: effort still applies on top of
-       it, and the row describes the work it suits (planning,
-       multi-step analysis) rather than claiming to be "better". */
-    { id: 'deep-reasoning', label: 'Deep reasoning',
+    /* A model whose NAME carries a reasoning setting. It is the
+       conflation this pattern is built to keep apart, and it is
+       shipping — which is the argument for the effort axis rather
+       than against it: the axis is the thing that lets a product
+       stop encoding depth in an identifier. */
+    { id: 'claude-3-7-sonnet-thinking', label: 'claude-3.7-sonnet-thinking',
       provider: 'Anthropic', costTier: 'premium',
       capabilities: ['tools', 'images', 'long'],
-      for: 'More depth for complex, multi-step work.',
+      for: 'Long analysis and hard reasoning',
       note: 'Slower, and uses your allowance faster.' },
-    { id: 'coding', label: 'Coding',
-      provider: 'OpenAI', costTier: 'premium', capabilities: ['tools'],
-      for: 'Built for writing, understanding, and debugging code.',
-      note: 'Strongest on code; no faster than Balanced on prose.' },
-    { id: 'multimodal', label: 'Multimodal',
+    { id: 'gpt-4o', label: 'gpt-4o',
       provider: 'OpenAI', costTier: 'standard', capabilities: ['tools', 'images'],
-      for: 'Best for images, files, and mixed content.',
-      note: 'Reads images and files as well as text.' }
+      for: 'Screenshots, diagrams and photographs',
+      note: 'Reads images as well as text.' },
+    { id: 'gpt-4-5-preview', label: 'gpt-4.5-preview',
+      provider: 'OpenAI', costTier: 'premium', capabilities: ['tools', 'images'],
+      for: 'Trying the newest model',
+      note: 'A preview. Its behaviour can change without notice.' }
   ];
 
 
@@ -177,7 +175,7 @@
     var MI = window.MaterialIcons, out = {};
     var USE = { chev: 'chevDown', tick: 'check', auto: 'spark',
                 warn: 'warning', block: 'block', info: 'info',
-                effort: 'bolt', help: 'help', back: 'chevLeft' };
+                effort: 'bolt', help: 'help' };
     for (var k in USE) out[k] = MI ? MI.icon(USE[k]) : '';
     return out;
   })();
@@ -199,32 +197,49 @@
   function usable(m) { return !!avail(m).usable; }
 
   /* ── The resting control ──────────────────────────────────
-     ONE action carrying both values — "Balanced High" — per the
-     user's wireframe. The two axes stay two settings: they are set
-     on two separate screens of the same flyout (the model list,
-     then the effort slider), and the chip reads them as a name and
-     a value rather than one setting with a dot in it — the model in
-     the label weight, the effort quieter beside it.
-
-     It is the kit's Small text button (material-components.css);
-     ax__mode--model is a hook for layout and tests only. The router
-     keeps its mark, the one glance-level difference between "the
-     product is choosing" and "this exact model is running". */
+     Two values, because that is what the industry converged on:
+     a capability tier and a reasoning depth, set separately. It
+     is the composer's own mode chip — same size, same shape, same
+     place — carrying different content. */
   function chip(o) {
     o = o || {};
     var models = o.models || MODELS;
     var m = byId(models, o.model) || models[0];
-    var e = o.showEffort === false ? null : byId(EFFORT, o.effort);
-    return '<button class="ax__mode--model md-button md-button--text md-button--small" ' +
-        'type="button" data-act="ax:mode" ' +
+    return '<button class="ax__mode ax__mode--model" type="button" data-act="ax:mode" ' +
         'aria-haspopup="menu" aria-expanded="' + (!!o.open) + '" ' +
         'aria-label="' + esc('Model: ' + m.label +
-          (m.router ? ', chosen automatically' : '') +
-          (e ? '. Effort: ' + e.label + ' \u2014 ' + e.what : '') +
-          '. Change ' + (e ? 'them' : 'it') + '.') + '">' +
+          (m.router ? ', chosen automatically' : '') + '. Choose a different one.') + '">' +
+      /* The router mark, and only for the router. It is the one
+         glance-level difference between "the product is choosing"
+         and "this exact model is running". */
       (m.router ? '<span class="ax__mode__ico" aria-hidden="true">' + ICONS.auto + '</span>' : '') +
       '<span class="ax__mode__m">' + esc(m.label) + '</span>' +
-      (e ? '<span class="ax__mode__v">' + esc(e.label) + '</span>' : '') +
+      '<span class="ax__mode__c" aria-hidden="true">' + ICONS.chev + '</span>' +
+    '</button>';
+  }
+
+  /* ── The effort chip ──────────────────────────────────────
+     Its own control beside the model, not a second half of it.
+     "Balanced · Standard" in one chip reads as one setting with
+     a dot in the middle, which is exactly the confusion this
+     pattern spends the rest of its surface undoing.
+
+     At the top step it takes the expressive tone, because the
+     last notch is the one with a real cost attached and the one
+     somebody should notice they are sitting on. */
+  function effortChip(o) {
+    o = o || {};
+    if (o.showEffort === false) return '';
+    var e = byId(EFFORT, o.effort);
+    if (!e) return '';
+    var top = EFFORT[EFFORT.length - 1].id === e.id;
+    return '<button class="ax__mode ax__mode--effort" type="button" data-act="ax:effort" ' +
+        'aria-haspopup="dialog" aria-expanded="' + (!!o.open) + '" ' +
+        (top ? 'data-top="true" ' : '') +
+        'aria-label="' + esc('Effort: ' + e.label + ' \u2014 ' + e.what +
+          '. Change it.') + '">' +
+      '<span class="ax__mode__ico" aria-hidden="true">' + ICONS.effort + '</span>' +
+      '<span class="ax__mode__m">' + esc(e.label) + '</span>' +
     '</button>';
   }
 
@@ -241,7 +256,6 @@
     o = o || {};
     var i = Math.max(0, EFFORT.map(function (x) { return x.id; }).indexOf(o.effort));
     var cur = EFFORT[i];
-    var m = byId(o.models || MODELS, o.model);
     var last = EFFORT.length - 1;
     var top = i === last;
     var at = function (n) {
@@ -252,19 +266,20 @@
     return '<div class="ax__menu ax__menu--effort md-mle" role="dialog" ' +
         'aria-label="' + esc(o.effortHeading || 'Effort') + '"' +
         (top ? ' data-top="true"' : '') + '>' +
-      /* The second screen of the one flyout (user wireframe): a
-         breadcrumb and the slider, nothing else. The breadcrumb
-         names where you are — the model, then the effort value it
-         is carrying — and is itself the way back to the model
-         list. The per-step description is not printed; it lives
-         in aria-valuetext, where somebody listening gets it. */
-      '<button class="md-mle__crumb md-button md-button--text md-button--small" ' +
-          'type="button" data-act="model:back" ' +
-          'aria-label="' + esc('Back to models. ' + (m ? m.label : '') + ', ' + cur.label) + '">' +
-        '<span class="md-mle__crumb-ico" aria-hidden="true">' + ICONS.back + '</span>' +
-        '<span class="md-mle__crumb-m">' + esc(m ? m.label : '') + '</span>' +
-        '<span class="md-mle__crumb-v">' + esc(cur.label) + '</span>' +
-      '</button>' +
+      /* Label and value on one line, reading as a sentence, with
+         the explanation behind a mark on the right rather than
+         spent as a permanent line of prose. */
+      '<p class="md-mle__head">' +
+        '<span class="md-mle__t">' + esc(o.effortHeading || 'Effort') + '</span>' +
+        '<span class="md-mle__v">' + esc(cur.label) + '</span>' +
+        '<button class="md-mle__help" type="button" data-act="model:effort:help" ' +
+            'aria-label="' + esc(o.effortHelp || EFFORT_HELP) + '" ' +
+            'title="' + esc(o.effortHelp || EFFORT_HELP) + '">' +
+          ICONS.help +
+        '</button>' +
+      '</p>' +
+      '<p class="md-mle__ends"><span>' + esc(o.effortLow || 'Faster') + '</span>' +
+        '<span>' + esc(o.effortHigh || 'Smarter') + '</span></p>' +
       '<div class="md-mle__track" role="slider" tabindex="0" ' +
           'data-act="model:effort:focus" ' +
           'aria-label="' + esc(o.effortHeading || 'Effort') + '" ' +
@@ -545,10 +560,9 @@
     var glow = menu.querySelector('.md-ml__glow');
     if (!glow) return;
     var rows = [].slice.call(menu.querySelectorAll('.md-ml__opt, .md-ml__row, .md-ml__auto'));
-    var first = true, cur = null;
+    var first = true;
     function to(el) {
-      if (!el || el.disabled) { glow.style.opacity = '0'; cur = null; return; }
-      cur = el;
+      if (!el || el.disabled) { glow.style.opacity = '0'; return; }
       if (first) { glow.style.transition = 'none'; }
       /* Measured on screen, against the box the glow is actually
          positioned in. offsetTop is relative to the row's own
@@ -565,17 +579,6 @@
       glow.style.opacity = '1';
       if (first) { void glow.offsetHeight; glow.style.transition = ''; first = false; }
     }
-    /* The glow lives outside the scrolling .md-ml__body, so when
-       the list scrolls it has to be re-placed — instantly, not
-       eased, or it visibly chases the row it belongs to. A list
-       short enough never to scroll hid this; five two-line
-       descriptions did not. */
-    var body = menu.querySelector('.md-ml__body');
-    if (body) body.addEventListener('scroll', function () {
-      if (!cur || glow.style.opacity !== '1') return;
-      glow.style.transition = 'none'; to(cur);
-      void glow.offsetHeight; glow.style.transition = '';
-    }, { passive: true });
     rows.forEach(function (el) {
       el.addEventListener('pointerenter', function () { to(el); });
       el.addEventListener('focus', function () { to(el); });
@@ -767,20 +770,10 @@
   }
 
   var lastCollapsed = null;
-  var menuHeld = false;
   function animate(root) {
     wireTrack(root);
     wireGlow(root);
     wireSparks(root);
-    /* Back from the effort screen: the list was repainted, so focus
-       goes to the row that is selected (or the Auto switch when the
-       router is), not to wherever the browser dropped it. */
-    if (menuHeld) {
-      menuHeld = false;
-      var back = root && (root.querySelector('.md-ml__opt[aria-checked="true"]') ||
-                          root.querySelector('.md-ml__auto'));
-      if (back) back.focus({ preventScroll: true });
-    }
     var box = root && root.querySelector('.md-ml__models');
     if (!box) { lastCollapsed = null; return; }
     var now = box.getAttribute('data-collapsed');
@@ -796,12 +789,7 @@
     MODELS: MODELS, EFFORT: EFFORT, AVAIL: AVAIL,
     COST: COST, CAPS: CAPS, SCOPE: SCOPE, ICONS: ICONS,
     EFFORT_DEFAULT: EFFORT_DEFAULT, EFFORT_HELP: EFFORT_HELP,
-    chip: chip, effortPanel: effortPanel,
-    /* Focus hand-off across the flyout's two screens, which are
-       repainted from scratch: holdTrack() puts focus on the slider
-       after the next paint, holdMenu() on the selected model row. */
-    holdTrack: function () { trackHeld = true; },
-    holdMenu: function () { menuHeld = true; },
+    chip: chip, effortChip: effortChip, effortPanel: effortPanel,
     menu: menu, option: option, credit: credit,
     changed: changed, fallback: fallback,
     byId: byId, avail: avail, usable: usable, scopeNote: scopeNote,

@@ -1,0 +1,25 @@
+const { chromium } = require(process.env.PW || '/opt/node-tools/node_modules/playwright-core');
+(async()=>{
+const b=await chromium.launch({executablePath:(process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome')});
+const p=await b.newPage({viewport:{width:1300,height:1300},deviceScaleFactor:2});
+const errs=[];p.on('pageerror',e=>errs.push(String(e)));
+await p.goto('http://127.0.0.1:8901/material-pattern.html?id=model-selection',{waitUntil:'networkidle'});
+await p.waitForTimeout(800);
+await p.click('.pv-select__btn');await p.waitForTimeout(160);
+await p.$$eval('.pv-select__opt',o=>{const h=o.find(e=>e.textContent.trim()==='Picker open');if(h)h.click();});
+await p.waitForTimeout(450);
+const g=()=>p.evaluate(()=>{const e=document.querySelector('.pv-stage .md-ml__glow');
+  return e?{top:e.style.top,h:e.style.height,op:e.style.opacity}:null;});
+console.log('rest',JSON.stringify(await g()));
+await p.hover('.pv-stage .md-ml__opt:nth-of-type(1)').catch(()=>{});
+await p.evaluate(()=>{const r=document.querySelectorAll('.pv-stage .md-ml__opt')[0];
+  r.dispatchEvent(new PointerEvent('pointerenter',{bubbles:false}));});
+await p.waitForTimeout(300);
+console.log('row0',JSON.stringify(await g()));
+await p.evaluate(()=>{const r=document.querySelectorAll('.pv-stage .md-ml__opt')[2];
+  r.dispatchEvent(new PointerEvent('pointerenter',{bubbles:false}));});
+await p.waitForTimeout(300);
+console.log('row2',JSON.stringify(await g()));
+const e=await p.$('.pv-stage'); if(e) await e.screenshot({path:'/tmp/m-glow.png'});
+console.log('ERRS',errs);
+await b.close();})();

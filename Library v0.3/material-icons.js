@@ -48,6 +48,7 @@
     more:        'More',
     chevDown:    'Open a menu',
     chevRight:   'Go deeper',
+    chevLeft:    'Go back a level',
     arrowFwd:    'Forward',
     arrowBack:   'Back',
     undo:        'Undo',
@@ -119,6 +120,7 @@
     more:        'more_horiz',
     chevDown:    'keyboard_arrow_down',
     chevRight:   'keyboard_arrow_right',
+    chevLeft:    'keyboard_arrow_left',
     arrowFwd:    'arrow_forward',
     arrowBack:   'arrow_back',
     undo:        'undo',
@@ -189,6 +191,10 @@
     more: 'M207.86-432Q188-432 174-446.14t-14-34Q160-500 174.14-514t34-14Q228-528 242-513.86t14 34Q256-460 241.86-446t-34 14Zm272 0Q460-432 446-446.14t-14-34Q432-500 446.14-514t34-14Q500-528 514-513.86t14 34Q528-460 513.86-446t-34 14Zm272 0Q732-432 718-446.14t-14-34Q704-500 718.14-514t34-14Q772-528 786-513.86t14 34Q800-460 785.86-446t-34 14Z',
     chevDown: 'M480-344 240-584l43-43 197 197 197-197 43 43-240 240Z',
     chevRight: 'M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z',
+    /* keyboard_arrow_left: the exact horizontal mirror of
+       keyboard_arrow_right on the 960 grid (x -> 960 - x), which is
+       how Material Symbols draws the pair. */
+    chevLeft: 'M430-481 628-679l-43-43-241 241 241 241 43-43-198-198Z',
     arrowFwd: 'M686-450H160v-60h526L438-758l42-42 320 320-320 320-42-42 248-248Z',
     arrowBack: 'm274-450 248 248-42 42-320-320 320-320 42 42-248 248h526v60H274Z',
     undo: 'M259-200v-60h310q70 0 120.5-46.5T740-422q0-69-50.5-115.5T569-584H274l114 114-42 42-186-186 186-186 42 42-114 114h294q95 0 163.5 64T800-422q0 94-68.5 158T568-200H259Z',

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Model Selection — Wireframe</title>
+<style>
+  :root {
+    --ink: #16161a; --mid: #5b5b66; --faint: #8a8a96;
+    --line: #c9c9d2; --line2: #e3e3ea; --bg: #f6f6f8; --card: #fff;
+    --accent: #2b2b33;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ececf2; --mid: #a9a9b6; --faint: #7d7d8a;
+      --line: #4a4a56; --line2: #34343e; --bg: #121216; --card: #1a1a20;
+      --accent: #ececf2;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ececf2; --mid: #a9a9b6; --faint: #7d7d8a;
+    --line: #4a4a56; --line2: #34343e; --bg: #121216; --card: #1a1a20;
+    --accent: #ececf2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 40px 16px 80px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 0 0 6px; letter-spacing: -.01em; }
+  .sub { color: var(--mid); margin: 0 0 6px; }
+  .stamp {
+    display: inline-block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--faint); border: 1px dashed var(--line); border-radius: 4px;
+    padding: 3px 8px; margin-bottom: 28px;
+  }
+  h2 {
+    font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+    margin: 44px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line2);
+  }
+  h3 { font-size: 15px; margin: 0 0 4px; }
+  p { margin: 0 0 12px; }
+  .note { color: var(--mid); font-size: 13.5px; }
+
+  /* wireframe primitives — deliberately unstyled boxes */
+  .box { border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
+  .dash { border-style: dashed; }
+  .pad { padding: 12px; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  .fill { flex: 1; }
+  .bar { height: 8px; border-radius: 2px; background: var(--line2); }
+  .bar.w40 { width: 40%; } .bar.w60 { width: 60%; } .bar.w25 { width: 25%; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+    border: 1px solid var(--line); border-radius: 999px; font-size: 13px; background: var(--card);
+  }
+  .composer { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+
+  .state { margin: 0 0 26px; }
+  .state__h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .state__n {
+    font-size: 11px; font-weight: 700; color: var(--faint);
+    border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; white-space: nowrap;
+  }
+  .state__d { color: var(--mid); font-size: 13.5px; margin: 0 0 10px; }
+
+  .opt { display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; padding: 9px 10px; align-items: start; }
+  .opt + .opt { border-top: 1px solid var(--line2); }
+  .opt__n { font-size: 13.5px; font-weight: 600; }
+  .opt__f { font-size: 12.5px; color: var(--mid); }
+  .tick { font-size: 13px; color: var(--ink); }
+  .tag {
+    font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--faint);
+    border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; margin-left: 6px;
+    white-space: nowrap;
+  }
+  .off { opacity: .55; }
+  .grp { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+         padding: 10px 10px 4px; }
+  .cut { border-top: 1px solid var(--line2); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line2); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+  td.k { white-space: nowrap; color: var(--mid); }
+
+  pre {
+    margin: 0; padding: 14px; overflow-x: auto; border: 1px solid var(--line2);
+    border-radius: 6px; background: var(--card); font-size: 12.5px; line-height: 1.55;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--mid);
+  }
+  .callout {
+    border-left: 3px solid var(--line); padding: 2px 0 2px 14px; margin: 14px 0;
+    color: var(--mid); font-size: 13.5px;
+  }
+  .two { display: grid; gap: 18px; }
+  @media (min-width: 720px) { .two { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Model Selection</h1>
+  <p class="sub">Reusable agentic pattern · Nucleux · wireframe and state model</p>
+  <span class="stamp">Low fidelity — structure and behaviour only, no visual design</span>
+
+  <h2>The question the pattern answers</h2>
+  <p><b>“What capability will handle my request?”</b> — answered without anyone needing to know a
+  model ID, a parameter count or a routing rule.</p>
+  <div class="callout">
+    Three things sit near each other here and are <b>not</b> the same setting.
+    <b>Model</b> is which capability answers. <b>Effort</b> is how hard it thinks.
+    <b>Mode</b> is how the product behaves. This pattern owns the first two and keeps them on
+    separate axes; it does not own the third.
+  </div>
+
+  <h2>1 · Resting — the control in the shared composer</h2>
+  <p class="note">One chip, two values, inside the composer that every other pattern already uses.
+  There is no ModelComposer.</p>
+
+  <div class="box pad">
+    <div class="composer">
+      <span class="chip">+</span>
+      <div class="fill"><div class="bar w60"></div></div>
+      <span class="chip">Balanced · Standard ▾</span>
+      <span class="chip">mic</span>
+      <span class="chip">send</span>
+    </div>
+  </div>
+
+  <div class="two" style="margin-top:14px">
+    <div>
+      <h3>Anatomy</h3>
+      <table>
+        <tr><td class="k">icon</td><td>only when Auto is selected — a router is not a model</td></tr>
+        <tr><td class="k">model</td><td>the selected label, always present</td></tr>
+        <tr><td class="k">· effort</td><td>the second axis, omitted where the host has none</td></tr>
+        <tr><td class="k">▾</td><td>it opens something</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Rules</h3>
+      <p class="note">Compact enough not to compete with Send. Typing is never blocked.
+      The accessible name carries both values and the fact that it can be changed.
+      Nothing about the selection is carried by colour alone.</p>
+    </div>
+  </div>
+
+  <h2>2 · Picker open</h2>
+  <p class="note">A list, not a catalogue. Auto is separated from the models because it is a
+  different kind of thing. Effort is a second section, never mixed into the model rows.</p>
+
+  <div class="box" style="max-width:420px">
+    <div class="grp">Automatic</div>
+    <div class="opt">
+      <span class="tick">✓</span>
+      <span><span class="opt__n">Auto</span><span class="tag">Recommended</span>
+        <div class="opt__f">Chooses for each request</div></span>
+    </div>
+    <div class="grp cut">Models</div>
+    <div class="opt">
+      <span class="tick"></span>
+      <span><span class="opt__n">Swift</span>
+        <div class="opt__f">Quick questions and drafts</div></span>
+      <span class="tag">Low cost</span>
+    </div>
+    <div class="opt">
+      <span class="tick"></span>
+      <span><span class="opt__n">Balanced</span>
+        <div class="opt__f">Most everyday work</div></span>
+      <span class="tag">Standard</span>
+    </div>
+    <div class="opt">
+      <span class="tick"></span>
+      <span><span class="opt__n">Deep</span>
+        <div class="opt__f">Long analysis and hard reasoning</div></span>
+      <span class="tag">Premium</span>
+    </div>
+    <div class="grp cut">How hard to think</div>
+    <div class="opt">
+      <span class="tick"></span>
+      <span><span class="opt__n">Quick</span> <span class="opt__f">— answers immediately</span></span>
+    </div>
+    <div class="opt">
+      <span class="tick">✓</span>
+      <span><span class="opt__n">Standard</span> <span class="opt__f">— thinks briefly first</span></span>
+    </div>
+    <div class="opt">
+      <span class="tick"></span>
+      <span><span class="opt__n">Thorough</span> <span class="opt__f">— works through it step by step</span></span>
+    </div>
+    <div class="pad cut note" style="font-size:12.5px">
+      Takes effect from your next message. Nothing already said is changed.
+    </div>
+  </div>
+
+  <div class="callout">
+    Row anatomy: name · one line saying what it is <b>for</b> · optional single attribute ·
+    selected tick. Never a specification table. Cost, tools and multimodal are each off by
+    default and shown only where the host genuinely differentiates on them.
+  </div>
+
+  <h2>3 · The nine states</h2>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">1 · RESTING</span><h3>A selection is already made</h3></div>
+    <p class="state__d">Nobody is asked to choose before their first request. A strong default is
+    already in the chip.</p>
+    <div class="box pad"><span class="chip">Balanced · Standard ▾</span></div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">2 · PICKER OPEN</span><h3>The list above, anchored to the chip</h3></div>
+    <p class="state__d">Arrow keys move, Enter selects, Escape closes and returns focus to the chip.
+    The prompt text is untouched throughout.</p>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">3 · SPECIFIC MODEL SELECTED</span><h3>A deliberate choice</h3></div>
+    <p class="state__d">The user picked one capability. No router icon: what runs is what the chip
+    says.</p>
+    <div class="box pad"><span class="chip">Deep · Thorough ▾</span></div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">4 · AUTO SELECTED</span><h3>The product chooses per request</h3></div>
+    <p class="state__d">Auto carries a router mark and states what it optimises for. It must never
+    read as a fixed model — and the objective is the one thing that makes it trustworthy.</p>
+    <div class="box pad">
+      <span class="chip">◇ Auto ▾</span>
+      <div class="note" style="margin-top:10px;font-size:12.5px">Chooses for each request · optimising for Balance</div>
+    </div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">5 · MODEL CHANGED</span><h3>Acknowledged, not celebrated</h3></div>
+    <p class="state__d">The chip updates and one line says when it takes effect, in the scope the
+    host actually supports. No success screen, no toast, no confirmation dialog.</p>
+    <div class="box pad">
+      <span class="chip">Deep · Standard ▾</span>
+      <div class="note" style="margin-top:10px;font-size:12.5px">Using Deep from your next message</div>
+    </div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">6 · RECOMMENDED / DEFAULT</span><h3>Marked, not enforced</h3></div>
+    <p class="state__d">One row carries the label. Every other available row stays fully selectable
+    — a recommendation that removes the choice is not a recommendation.</p>
+    <div class="box" style="max-width:420px">
+      <div class="opt"><span class="tick">✓</span>
+        <span><span class="opt__n">Balanced</span><span class="tag">Recommended</span>
+        <div class="opt__f">Most everyday work</div></span></div>
+      <div class="opt"><span class="tick"></span>
+        <span><span class="opt__n">Deep</span><div class="opt__f">Long analysis and hard reasoning</div></span></div>
+    </div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">7 · MODEL UNAVAILABLE</span><h3>Temporary, and it may come back</h3></div>
+    <p class="state__d">Not selectable, still listed, and it says what to do instead. No provider
+    error text, no status codes.</p>
+    <div class="box" style="max-width:420px">
+      <div class="opt off"><span class="tick"></span>
+        <span><span class="opt__n">Deep</span><span class="tag">Temporarily unavailable</span>
+        <div class="opt__f">Try again shortly, or use Balanced for now</div></span></div>
+    </div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">8 · ORGANIZATION RESTRICTED</span><h3>Permanent here, and somebody decided it</h3></div>
+    <p class="state__d">Reads differently from unavailable on purpose: nothing about waiting will
+    change it. The recovery is a person, not a retry — and only where the host supports that flow.</p>
+    <div class="box" style="max-width:420px">
+      <div class="opt off"><span class="tick"></span>
+        <span><span class="opt__n">Deep</span><span class="tag">Restricted</span>
+        <div class="opt__f">Not available in your workspace · contact your administrator</div></span></div>
+    </div>
+  </div>
+
+  <div class="state">
+    <div class="state__h"><span class="state__n">9 · FALLBACK REQUIRED</span><h3>The selected model can no longer be used</h3></div>
+    <p class="state__d">The one state that interrupts, because the chip is now lying. It says so,
+    offers both ways out, and takes focus.</p>
+    <div class="box dash pad" style="max-width:460px">
+      <div style="font-weight:600;font-size:14px">Deep is no longer available</div>
+      <div class="note" style="font-size:13px;margin:4px 0 12px">
+        Choose another model, or let Auto pick for each request. Your conversation is unchanged.
+      </div>
+      <div class="row"><span class="chip">Use Auto</span><span class="chip">Choose model</span></div>
+    </div>
+  </div>
+
+  <h2>4 · State transitions</h2>
+  <pre>RESTING ──open──▶ PICKER OPEN ──pick model──▶ MODEL CHANGED ──▶ SPECIFIC MODEL SELECTED
+   ▲                   │                                                    │
+   │                   └──pick Auto──▶ MODEL CHANGED ──▶ AUTO SELECTED      │
+   │                                                          │             │
+   └──────────────────── escape / close ─────────────────────-┴─────────────┘
+
+PICKER OPEN ─┬─ a row may be RECOMMENDED      (selectable)
+             ├─ a row may be UNAVAILABLE      (not selectable · temporary · retry)
+             └─ a row may be RESTRICTED       (not selectable · permanent · a person)
+
+SPECIFIC MODEL SELECTED ──model withdrawn──▶ FALLBACK REQUIRED ─┬─ Use Auto ──▶ AUTO SELECTED
+                                                                └─ Choose ───▶ PICKER OPEN</pre>
+
+  <h2>5 · Data model</h2>
+  <p class="note">Nothing product-specific is baked in. No provider name, no model name, no tier
+  vocabulary — the host supplies all of it, and the component renders whatever it is given.</p>
+  <pre>model = {
+  id, label,
+  for,            // one line: the KIND OF TASK, not the capability
+  note,           // one line of consequence; on a blocked row, what to use instead
+  provider,       // optional — grouping is only drawn when the host asks for it
+  costTier,       // optional — 'low' | 'standard' | 'premium', never raw pricing
+  capabilities,   // optional — ['tools', 'images']; shown only where they differ
+  recommended,    // at most one
+  router,         // Auto. NOT a model, and never rendered as one
+  availability    // 'ok' | 'unavailable' | 'restricted'
+}
+
+selection = {
+  kind,           // 'auto' | 'model'
+  modelId,
+  effortId,       // the second axis, independent of modelId
+  aimId,          // what Auto optimises for — meaningless unless kind is 'auto'
+  scope           // 'request' | 'conversation' | 'workspace' — host-defined
+}</pre>
+
+  <div class="callout">
+    <b>Availability is one field with three values</b>, not two booleans. Two booleans permit
+    “restricted and unavailable”, which is a sentence no product can write.
+  </div>
+
+  <h2>6 · What this pattern refuses to do</h2>
+  <table>
+    <tr><th>Not this</th><th>Because</th></tr>
+    <tr><td class="k">Auto as another model row</td><td>It is a decision procedure. Drawing it as a peer makes people think one fixed model is running.</td></tr>
+    <tr><td class="k">Effort folded into the model list</td><td>Two axes. “Deep · Quick” and “Swift · Thorough” are both legitimate and neither is expressible if they are one list.</td></tr>
+    <tr><td class="k">Slower described as better</td><td>Deep is not better than Swift for a one-line draft. Rows say what a thing is <i>for</i>.</td></tr>
+    <tr><td class="k">Specifications on every row</td><td>Context windows and parameter counts belong in developer documentation, where somebody is comparing on purpose.</td></tr>
+    <tr><td class="k">Restricted drawn like unavailable</td><td>One is waiting; the other is asking a person. Same treatment sends people to the wrong recovery.</td></tr>
+    <tr><td class="k">A model change resetting the thread</td><td>Changing who answers next is not the same as starting again.</td></tr>
+  </table>
+
+  <p class="note" style="margin-top:36px">Next: hi-fi in Material 3 / Neural Expressive, then the
+  component, the nine Live Preview states and the simulator.</p>
+</div>
+</body>
+</html>

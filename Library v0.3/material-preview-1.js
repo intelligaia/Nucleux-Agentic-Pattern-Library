@@ -2365,14 +2365,14 @@ card + '>\n' + head +
             states: ['brief', 'full', 'failure'],
             note: 'One profile, applied everywhere the agent speaks.',
             controls: [
-              { id: 'formality', label: 'Formality', type: 'segment', value: 'balanced',
-                options: [['casual', 'Casual'], ['balanced', 'Balanced'], ['formal', 'Formal']] },
+              { id: 'formality', label: 'Formality', type: 'segment', value: 'claude-3-7-sonnet',
+                options: [['casual', 'Casual'], ['claude-3-7-sonnet', 'Balanced'], ['formal', 'Formal']] },
               { id: 'warmth', label: 'Warmth', type: 'segment', value: 'neutral',
                 visibleWhen: function (c, st) { return st !== 'failure'; },
                 options: [['neutral', 'Neutral'], ['warm', 'Warm']] },
-              { id: 'directness', label: 'Directness', type: 'segment', value: 'balanced',
+              { id: 'directness', label: 'Directness', type: 'segment', value: 'claude-3-7-sonnet',
                 visibleWhen: function (c, st) { return st !== 'failure'; },
-                options: [['soft', 'Soft'], ['balanced', 'Balanced'], ['direct', 'Direct']] },
+                options: [['soft', 'Soft'], ['claude-3-7-sonnet', 'Balanced'], ['direct', 'Direct']] },
               /* Only the failure reply is written from this; every other
                  state takes its voice from warmth and directness. */
               { id: 'errorTone', label: 'Error tone', type: 'segment', value: 'neutral',
@@ -3726,7 +3726,7 @@ card + '>\n' + head +
                 value: 'Temporarily unavailable',
                 visibleWhen: function (c, s) { return s === 'unavailable'; } },
               { id: 'unavailableCopy', label: 'Unavailable line', type: 'text',
-                value: 'Try again shortly, or use Balanced in the meantime.',
+                value: 'Try again shortly, or use claude-3.7-sonnet in the meantime.',
                 visibleWhen: function (c, s) { return s === 'unavailable'; },
                 hint: 'What to do instead. Without it the row is dead rather than useful.' },
               { id: 'restrictedLabel', label: 'Restricted label', type: 'text',
@@ -3765,8 +3765,7 @@ card + '>\n' + head +
               { id: 'showEffort', label: 'Offer an effort level', type: 'toggle', value: true,
                 capability: true,
                 hint: 'Off where the host has one reasoning setting or none. The chip then ' +
-                      'carries the model alone, and a pick closes the flyout instead of ' +
-                      'moving on to effort.' }
+                      'carries the model alone.' }
             ] },
 
           { id: 'attrs', label: 'Which differences to show', section: 'behavior',
@@ -3838,9 +3837,8 @@ card + '>\n' + head +
                        trigger: 'The chip is pressed.',
                        behaviour: 'A list, not a catalogue. Auto sits in its own group above the ' +
                                   'models because it is a different kind of thing, every row ' +
-                                  'says what it is FOR, and picking one moves the flyout on to ' +
-                                  'the effort screen for that model. The prompt text is ' +
-                                  'untouched throughout.',
+                                  'says what it is FOR, and effort is a separate section at the ' +
+                                  'bottom. The prompt text is untouched throughout.',
                        action: 'Choose a model' },
         selected:    { label: 'Specific model selected',
                        trigger: 'Somebody deliberately chose one capability.',
@@ -3852,7 +3850,7 @@ card + '>\n' + head +
                        trigger: 'The router is selected.',
                        behaviour: 'The switch is on, the model list has eased shut, and the ' +
                                   'chip takes a router mark. Auto says what it weighs &mdash; ' +
-                                  'quality and speed &mdash; in its own line, on ' +
+                                  'quality, speed and availability &mdash; in its own line, on ' +
                                   'or off, so nobody has to switch it on to find out what it ' +
                                   'does.',
                        action: 'Change the model' },
@@ -3898,9 +3896,9 @@ card + '>\n' + head +
         var d = s.demo && s.demo.on === st ? s.demo : (s.demo = {
           on: st,
           model: st === 'auto' ? 'default'
-               : st === 'selected' || st === 'changed' ? 'deep-reasoning'
-               : st === 'fallback' ? 'deep-reasoning'
-               : 'balanced',
+               : st === 'selected' || st === 'changed' ? 'claude-3-7-sonnet-thinking'
+               : st === 'fallback' ? 'claude-3-7-sonnet-thinking'
+               : 'claude-3-7-sonnet',
           effort: st === 'selected' ? 'max' : window.MaterialModel.EFFORT_DEFAULT,
           open: st === 'open' ||
                 st === 'unavailable' || st === 'restricted',
@@ -3913,9 +3911,9 @@ card + '>\n' + head +
            branching on the state name in three places. */
         var models = M.MODELS.map(function (m) {
           var o = Object.assign({}, m);
-          if (st === 'unavailable' && o.id === 'deep-reasoning') o.availability = 'unavailable';
-          if (st === 'restricted'  && o.id === 'deep-reasoning') o.availability = 'restricted';
-          if (st === 'fallback'    && o.id === 'deep-reasoning') o.availability = 'unavailable';
+          if (st === 'unavailable' && o.id === 'claude-3-7-sonnet-thinking') o.availability = 'unavailable';
+          if (st === 'restricted'  && o.id === 'claude-3-7-sonnet-thinking') o.availability = 'restricted';
+          if (st === 'fallback'    && o.id === 'claude-3-7-sonnet-thinking') o.availability = 'unavailable';
           if (c.showAuto === false && o.router) o.skip = true;
           return o;
         }).filter(function (m) { return !m.skip; });
@@ -3923,7 +3921,7 @@ card + '>\n' + head +
         /* A selection that is no longer selectable cannot stay in
            the chip: that is the whole reason Fallback exists. */
         var cur = d.model;
-        if (c.showAuto === false && cur === 'default') cur = 'balanced';
+        if (c.showAuto === false && cur === 'default') cur = 'claude-3-7-sonnet';
 
         var opts = {
           models: models,
@@ -3974,7 +3972,7 @@ card + '>\n' + head +
 
         if (st === 'fallback') {
           html = M.fallback({
-            title: 'Deep reasoning is no longer available',
+            title: 'claude-3.7-sonnet-thinking is no longer available',
             body: c.fallbackCopy,
             showAuto: c.showAuto !== false
           }) + html;
@@ -4015,15 +4013,10 @@ card + '>\n' + head +
             /* Routed through the chip so it goes down the same
                path a press does, rather than a second way to
                change the same state. */
-            /* One chip owns both screens of the flyout now. */
-            var chip = root.querySelector('.pv-stage [data-act="ax:mode"]');
-            /* The click repaints, so the chip it focused would be a
-               detached node: focus the fresh one instead. */
-            if (chip) {
-              e.preventDefault(); chip.click();
-              var fresh = root.querySelector('.pv-stage [data-act="ax:mode"]');
-              if (fresh) fresh.focus();
-            }
+            var which = root.querySelector('.pv-stage .md-mle__track')
+              ? '[data-act="ax:effort"]' : '[data-act="ax:mode"]';
+            var chip = root.querySelector('.pv-stage ' + which);
+            if (chip) { e.preventDefault(); chip.click(); chip.focus(); }
           });
         }
       },
@@ -4034,57 +4027,45 @@ card + '>\n' + head +
       act: function (a, ctx) {
         var S = ctx.s, c = S.cfg, M = window.MaterialModel;
         var d = S.demo && S.demo.on === S.state ? S.demo
-              : (S.demo = { on: S.state, model: 'balanced', effort: window.MaterialModel.EFFORT_DEFAULT,
+              : (S.demo = { on: S.state, model: 'claude-3-7-sonnet', effort: window.MaterialModel.EFFORT_DEFAULT,
                             open: false, said: false });
         function moveTo(next) { S.state = next; d.on = next; }
         function labelOf(id) {
           return (M.byId(M.MODELS, id) || {}).label || id;
         }
 
-        if (a === 'model:effort:focus') { return; }
-        var effortOn = c.showEffort !== false;
-
-        /* ONE chip, two screens (user wireframe). Pressed while
-           either screen is showing, it closes the flyout; pressed
-           while closed, it always opens on the model list. */
-        if (a === 'ax:mode') {
-          if (d.open || d.effortOpen) {
-            d.open = false; d.effortOpen = false;
-            ctx.paint(); ctx.announce('Model menu closed');
-            return;
-          }
-          d.open = true; d.said = false;
-          if (S.state !== 'unavailable' && S.state !== 'restricted') moveTo('open');
+        /* The effort popover is its own control now, so it opens
+           and closes on its own and never at the same time as the
+           model list. */
+        if (a === 'ax:effort') {
+          d.effortOpen = !d.effortOpen; d.open = false; d.said = false;
           ctx.paint();
-          ctx.announce('Model menu open');
+          ctx.announce(d.effortOpen ? 'Effort open' : 'Effort closed');
           return;
         }
-        /* The breadcrumb on the effort screen: back to the list, in
-           the same place, with focus on the model that is selected. */
-        if (a === 'model:back') {
-          d.effortOpen = false; d.open = true;
-          if (M.holdMenu) M.holdMenu();
-          ctx.paint(); ctx.announce('Models');
+        if (a === 'model:effort:focus') { return; }
+
+        if (a === 'ax:mode') {
+          d.open = !d.open; d.effortOpen = false; d.said = false;
+          if (d.open && S.state !== 'unavailable' &&
+              S.state !== 'restricted') moveTo('open');
+          ctx.paint();
+          ctx.announce(d.open ? 'Model menu open' : 'Model menu closed');
           return;
         }
 
         /* The switch. Turning Auto ON hands the choice over;
            turning it OFF hands it back — to the model that was
            chosen before, not to whatever happens to be first. */
-        /* Turning Auto on is a choice of model too, and with the
-           list collapsed there is nothing left to pick on this
-           screen — so it moves on to effort, like a pick does. */
         if (a === 'model:auto:on') {
           d.was = d.model === 'default' ? d.was : d.model;
           d.model = 'default'; d.said = true;
-          if (effortOn) { d.open = false; d.effortOpen = true; if (M.holdTrack) M.holdTrack(); }
           moveTo('auto'); ctx.paint();
-          ctx.announce('Auto on. It will choose a model for each request.' +
-            (effortOn ? ' Now set the effort.' : ''));
+          ctx.announce('Auto on. It will choose a model for each request.');
           return;
         }
         if (a === 'model:auto:off') {
-          d.model = d.was || 'balanced'; d.said = true;
+          d.model = d.was || 'claude-3-7-sonnet'; d.said = true;
           moveTo('changed'); ctx.paint();
           ctx.announce('Auto off. Using ' + labelOf(d.model) + '.');
           return;
@@ -4097,23 +4078,18 @@ card + '>\n' + head +
              attribute already stops it; this stops it twice,
              because a keyboard can reach things a mouse cannot. */
           if (!m || !M.usable(Object.assign({}, m,
-              (S.state === 'unavailable' || S.state === 'fallback') && id === 'deep-reasoning'
+              (S.state === 'unavailable' || S.state === 'fallback') && id === 'claude-3-7-sonnet-thinking'
                 ? { availability: 'unavailable' }
-                : S.state === 'restricted' && id === 'deep-reasoning'
+                : S.state === 'restricted' && id === 'claude-3-7-sonnet-thinking'
                   ? { availability: 'restricted' } : {}))) {
             ctx.announce(labelOf(id) + ' cannot be used.');
             return;
           }
-          /* A pick replaces the list with the effort screen for
-             that model, rather than closing — the second value is
-             set in the same gesture, one screen on. */
           d.model = id; d.open = false; d.said = true;
-          if (effortOn) { d.effortOpen = true; if (M.holdTrack) M.holdTrack(); }
           moveTo(id === 'default' ? 'auto' : 'changed');
           ctx.paint();
           ctx.announce(labelOf(id) + ' selected. ' +
-            M.scopeNote(c.scope || 'request', labelOf(id)) +
-            (effortOn ? ' Now set the effort.' : ''));
+            M.scopeNote(c.scope || 'request', labelOf(id)));
           return;
         }
 
@@ -4136,7 +4112,7 @@ card + '>\n' + head +
           return;
         }
         if (a === 'model:fallback:pick') {
-          d.model = 'balanced'; d.open = true; d.said = false;
+          d.model = 'claude-3-7-sonnet'; d.open = true; d.said = false;
           moveTo('open'); ctx.paint();
           ctx.announce('Choose a model.');
           return;

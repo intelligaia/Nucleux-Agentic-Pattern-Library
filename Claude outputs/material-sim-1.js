@@ -662,7 +662,7 @@
            anything at all. */
         return '<form class="wf-ask" data-form>' +
             '<input class="wf-ask__input" data-input type="text" autocomplete="off" ' +
-              'placeholder="Ask me anything" aria-label="Ask Aria">' +
+              'placeholder="Ask about anything in this workspace" aria-label="Ask Aria">' +
             '<button class="wf-ask__send" type="submit" aria-label="Send">' + ICON_SEND +
             '</button>' +
           '</form>' +
@@ -2196,7 +2196,7 @@
         return '<form class="md-entry' + (busy ? ' md-entry--busy' : '') + '" data-form>' +
             MI('spark', 'md-entry__glyph') +
             '<input class="md-entry__input" data-input type="text" value="' + esc(s.q) + '" ' +
-              'placeholder="Ask me anything" ' +
+              'placeholder="Ask about a deploy, an incident or an on-call rota" ' +
               'aria-label="Ask Aria"' + (busy && !s.opts.keep ? ' disabled' : '') + '>' +
             (busy
               ? '<button class="md-entry__send md-entry__send--stop" type="button" ' +
@@ -2307,7 +2307,7 @@
       foot: function (s) {
         return '<form class="wf-ask" data-form>' +
             '<input class="wf-ask__input" data-input type="text" value="' + esc(s.q) + '" ' +
-              'placeholder="Ask me anything" aria-label="Ask Aria">' +
+              'placeholder="Ask about this chart" aria-label="Ask Aria">' +
             '<button class="wf-ask__send" type="submit" aria-label="Send">' + ICON_SEND +
             '</button></form>' +
           (s.text ? button('Start over', 'reset', 'text') : '');
@@ -3752,21 +3752,17 @@
       product: 'Signal',
       agent: 'Aria',
       note: 'The project already has a knowledge base, and it was here before this ' +
-            'conversation. Ask the question it was built for and watch Active become in ' +
-            'use &mdash; then ask something it does not cover, break a source, or switch ' +
-            'the base off, and see that all three are different things.',
+            'conversation. Ask the question it was built for and watch the base go from ' +
+            'Ready to in use &mdash; then break a source, and see that the base keeps ' +
+            'answering around it.',
 
       initial: {
-        on: true,          /* active in this project */
-        moment: null,      /* using · none · manage · multiple · confirm */
+        kb: 'ready',        /* empty · processing · ready · using · attention */
         open: false,
         turns: [],
-        sources: null,     /* filled lazily so Start over genuinely restocks */
+        sources: null,      /* filled lazily so Start over genuinely restocks */
         activity: '',
         reading: null,
-        asking: null,
-        second: false,     /* a second base switched on */
-        touched: false,    /* anything at all has been pressed */
         opts: { prov: true }
       },
 
@@ -3775,77 +3771,52 @@
         if (!s.sources) s.sources = window.MaterialKB.sources('research');
         return s.sources;
       },
-      /* The base's state, in one place, so the panel, the footer
-         and the hint can never disagree about what is happening. */
-      live: function (s) {
-        var K = window.MaterialKB, me = SIMS['knowledge-base'];
-        if (!s.on) return 'inactive';
-        return K.derive(me.stock(s), s.moment);
-      },
 
       title: function () { return 'Onboarding Redesign'; },
-      pill: function (s) {
-        return SIMS['knowledge-base'].live(s) === 'using' ? 'Reading sources' : '';
-      },
+      pill: function (s) { return s.kb === 'using' ? 'Reading sources' : ''; },
       phase: function (s) {
-        if (SIMS['knowledge-base'].live(s) === 'using') return 'thinking';
-        if (s.turns.length) return 'done';
+        if (s.kb === 'using') return 'thinking';
+        if (s.turns.length)   return 'done';
         return 'idle';
       },
 
-      /* The scope is in the composer from the first frame, and
-         only while the base is actually in play. A chip that
-         stays put after somebody switches a base off is the
-         clearest possible way to lie about what an answer used. */
+      /* The scope is in the composer from the first frame. Nobody
+         attached anything during this conversation, and the chip
+         is what says so. */
       scopes: function (s) {
-        var K = window.MaterialKB, me = SIMS['knowledge-base'];
-        if (!s.on) return [];
-        var out = [K.chip({ name: 'Product Research', mark: 'PR',
-                            sources: me.stock(s) })];
-        if (s.second) out.push({ kind: 'knowledge', mark: 'DS',
-          label: 'Design System', detail: '6 sources', act: 'kb:open' });
-        return out;
+        var K = window.MaterialKB;
+        return [K.chip({ name: 'Product Research', mark: 'PR',
+                         sources: SIMS['knowledge-base'].stock(s) })];
       },
 
       thread: function (s) {
         var K = window.MaterialKB;
         var me = SIMS['knowledge-base'];
         var list = me.stock(s);
-        var state = me.live(s);
+        var t = K.tally(list);
+
+        /* The base's state is DERIVED, never stored beside the
+           sources: a retry that fixes the last broken row has to
+           clear Needs attention by itself, or the badge and the
+           list will eventually disagree. */
+        var state = s.kb === 'using' ? 'using'
+                  : !list.length     ? 'empty'
+                  : t.busy           ? 'processing'
+                  : (t.stop || t.stale) ? 'attention'
+                  : 'ready';
 
         var panel = K.panel({
-          state: state,
           name: 'Product Research', mark: 'PR',
-          where: 'in this project', scopeNote: true,
-          sources: list,
+          scope: 'Available in this project', scopeNote: true,
+          sources: list, state: state,
           showCount: true, showList: true, showFresh: true,
-          allowManage: true, allowRemove: true, allowSwitch: true,
-          allowDelete: true, allowUngrounded: true,
-          showProv: s.opts.prov,
-          open: !!s.open,
+          allowManage: true, showProv: s.opts.prov,
+          open: s.open,
           activity: s.activity,
-          used: s.reading,
-          usedHeading: s.reading && s.activity ? 'Reading from ' +
+          used: s.reading, usedHeading: s.reading ? 'Reading from ' +
             s.reading.length + ' sources' : '',
-          bases: [
-            { name: 'Product Research', mark: 'PR', count: list.length, on: true },
-            { name: 'Design System', mark: 'DS', count: 6, on: !!s.second },
-            { name: 'Launch Requirements', mark: 'LR', count: 4, on: false }
-          ],
-          basesHeading: 'Knowledge in this project',
-          confirming: {
-            title: 'Remove “' + (s.asking || '') + '”?',
-            body: 'The agent will stop using ' + (s.asking || 'it') + ' when answering. ' +
-                  'It stays out of Product Research until you add it again — the ' +
-                  'knowledge base and its other sources are unaffected.',
-            confirm: 'kb:remove-ok', cancel: 'kb:cancel', verb: 'Remove'
-          },
-          noneCopy: 'I searched Product Research and couldn’t find anything about pricing ' +
-                    'in it.',
-          trouble: state === 'partial'
-            ? 'One source is unavailable. The other eleven still answer.'
-            : 'Some sources need attention. Everything else is still available.',
-          emptyTitle: 'No knowledge added yet',
+          failCopy: 'One source could not be read. Everything else is still available.',
+          emptyTitle: 'No sources yet',
           emptyBody: 'Add research, briefs or reports and the agent can use them in every ' +
                      'conversation in this project — not just this one.'
         });
@@ -3871,37 +3842,31 @@
       },
 
       foot: function (s) {
-        var K = window.MaterialKB, me = SIMS['knowledge-base'];
-        var state = me.live(s);
+        var me = SIMS['knowledge-base'];
+        var list = me.stock(s);
+        var t = window.MaterialKB.tally(list);
 
-        if (state === 'using')
+        if (s.kb === 'using')
           return '<span class="sim-doc__who">Reading the project&rsquo;s own material</span>';
-        if (state === 'confirm')
-          return '<span class="sim-doc__who">One source, not the base</span>';
-        if (state === 'inactive')
-          return '<span class="sim-doc__who">Switched off, not deleted &mdash; ' +
-                 'everything is still in it</span>' +
-                 button('Start over', 'reset', 'text');
-        if (state === 'empty')
-          return '<span class="sim-doc__who">Nothing to read yet</span>' +
-                 button('Start over', 'reset', 'text');
-        if (state === 'preparing')
+
+        if (!list.length)
+          return '<span class="sim-doc__who">Nothing to read yet &mdash; add sources ' +
+                 'in the panel</span>' + button('Start over', 'reset', 'text');
+
+        if (t.busy)
           return '<span class="sim-doc__who">Added is not ready</span>' +
                  button('Ask anyway', 'ask', 'outlined') +
                  button('Start over', 'reset', 'text');
 
-        var t = K.tally(me.stock(s));
         var asked = s.turns.length > 0;
         return '<span class="sim-doc__who">' +
             (t.stop ? 'One source is broken &mdash; the base still answers'
-             : asked ? 'Active is not the same as in use'
+             : asked ? 'Ready is not the same as in use'
                      : 'The base was here before this conversation') + '</span>' +
           button(asked ? 'Ask again' : 'Ask about onboarding', 'ask', 'filled') +
-          /* The branch that proves grounding is real: a question
-             this material genuinely does not cover. */
-          button('Ask about pricing', 'ask:miss', 'text') +
           (t.stop ? '' : button('Break a source', 'sim:break', 'text')) +
-          (asked || t.stop || s.touched ? button('Start over', 'reset', 'text') : '');
+          (asked || t.stop ? '' : button('Start from an empty base', 'sim:empty', 'text')) +
+          (asked || t.stop ? button('Start over', 'reset', 'text') : '');
       },
 
       controls: function (s) {
@@ -3909,50 +3874,37 @@
       },
 
       hint: function (s) {
-        var K = window.MaterialKB, me = SIMS['knowledge-base'];
-        var state = me.live(s);
-        var t = K.tally(me.stock(s));
+        var me = SIMS['knowledge-base'];
+        var list = me.stock(s);
+        var t = window.MaterialKB.tally(list);
 
         if (!s.opts.prov)
           return 'Without provenance the answer is exactly as fluent and there is no way to ' +
                  'tell whether it read four sources, one, or none of them. &ldquo;Knowledge ' +
                  'base connected&rdquo; is not evidence that anything was read through it, ' +
                  'and those are the two claims people conflate.';
-        if (state === 'inactive')
-          return 'Switched off, and the chip has left the composer with it. Nothing was ' +
-                 'deleted &mdash; every source is still in the base, and one press puts it ' +
-                 'back. A product where the only way to stop using a base is to destroy it ' +
-                 'is a product where nobody stops using one.';
-        if (state === 'confirm')
-          return 'The sentence exists to say what is <em>not</em> happening. Removing one ' +
-                 'source and deleting a knowledge base are two different destructions, and a ' +
-                 'product that words them alike has taught people to answer both the same way.';
-        if (state === 'multiple')
-          return 'Two collections, one project, and each row says how much is in it. A name ' +
-                 'on its own does not tell you whether switching it on gives the agent six ' +
-                 'documents or six hundred.';
-        if (state === 'none')
-          return 'It looked, and the material is not in there &mdash; and it says so rather ' +
-                 'than answering anyway. A knowledge base that always has an answer is a ' +
-                 'knowledge base that is inventing them, and this is the state that proves ' +
-                 'this one is not. Nothing here is broken.';
-        if (state === 'using')
-          return 'Searching, then reading a named number of sources. Two moments because they ' +
+        if (s.kb === 'using')
+          return 'Searching, then reading a named number of sources. Two lines because they ' +
                  'are two things &mdash; and no percentage, because nothing in the client ' +
                  'knows an honest one for reading a document.';
-        if (state === 'preparing')
+        if (!list.length)
+          return 'The empty state says what a knowledge base is <em>for</em> rather than ' +
+                 'drawing an empty list. The difference from attaching a file &mdash; that ' +
+                 'this material outlives the conversation &mdash; is exactly what somebody ' +
+                 'needs to understand before they bother.';
+        if (t.busy)
           return 'The files have arrived and the base still cannot answer from them. Added is ' +
-                 'not ready, and a product that shows the count the moment the upload finishes ' +
-                 'has told somebody they can ask a question they cannot yet ask.';
+                 'not ready, and a product that shows the count the moment the upload ' +
+                 'finishes has told somebody they can ask a question they cannot yet ask.';
         if (t.stop)
-          return 'One source failed and the base is still usable: it counts both halves, keeps ' +
-                 'answering, and puts the reason and the recovery on the row that owns the ' +
-                 'problem. A panel that greys out a whole base because one file is password ' +
-                 'protected has told you something untrue.';
+          return 'One source failed and the base is still usable: it says so in a sentence, ' +
+                 'keeps answering, and puts the reason and the recovery on the row that owns ' +
+                 'the problem. A panel that greys out a whole base because one PDF is ' +
+                 'password protected has told you something untrue.';
         if (s.turns.length)
           return 'The answer names the four sources it actually read. That sentence is what ' +
                  'turns a standing scope from something you trust into something you can ' +
-                 'check &mdash; and it is the only thing on screen that distinguishes active ' +
+                 'check &mdash; and it is the only thing on screen that distinguishes ready ' +
                  'from used.';
         return 'The chip and the panel were here before the first message. Nobody attached ' +
                'anything, and nobody will have to attach it again tomorrow &mdash; that is ' +
@@ -3960,7 +3912,7 @@
       },
 
       axSubmit: function (text, ctx) {
-        if (SIMS['knowledge-base'].live(ctx.s) === 'using') return;
+        if (ctx.s.kb === 'using') return;
         return SIMS['knowledge-base'].act('ask', ctx);
       },
 
@@ -3970,181 +3922,100 @@
         var me = SIMS['knowledge-base'];
 
         if (a === 'opt:prov') { flip(ctx, 'prov'); return; }
-        /* Anything that moves the scene earns a way back. Without
-           this, somebody who removed a source or switched the base
-           off had no Start over unless they had also asked a
-           question, which is the wrong condition entirely. */
-        if (a !== 'reset') s.touched = true;
         if (a === 'reset') {
           var o = JSON.parse(JSON.stringify(s.opts));
           Object.assign(s, JSON.parse(JSON.stringify(me.initial)));
           s.opts = o; ctx.paint(); return;
         }
 
-        if (a === 'kb:open')  { s.open = true;  s.moment = 'manage'; ctx.paint(); return; }
-        if (a === 'kb:close') { s.open = false; s.moment = null;     ctx.paint(); return; }
-        if (a === 'kb:review') { s.open = true; ctx.paint(); return; }
-        if (a.indexOf('scope:open:') === 0) {
-          s.open = !s.open; s.moment = s.open ? 'manage' : null; ctx.paint(); return;
-        }
-        if (a.indexOf('kb:peek:') === 0) {
-          s.open = true; s.moment = 'manage'; ctx.paint(); return;
+        if (a === 'kb:open')  { s.open = true;  ctx.paint(); return; }
+        if (a === 'kb:close') { s.open = false; ctx.paint(); return; }
+        if (a.indexOf('scope:open:') === 0) { s.open = !s.open; ctx.paint(); return; }
+        if (a.indexOf('kb:peek:') === 0)    { s.open = true;    ctx.paint(); return; }
+
+        /* Zero state. Not a different panel — the same one with
+           nothing in it, which is the honest drawing. */
+        if (a === 'sim:empty') {
+          s.sources = []; s.turns = []; s.open = false;
+          s.reading = null; s.activity = ''; ctx.paint(); return;
         }
 
-        /* ACTIVE is not the same object as the base. Switching it
-           off here empties the composer chip and leaves every
-           source exactly where it was. */
-        if (a === 'kb:deactivate') {
-          s.on = false; s.open = false; s.moment = null; ctx.paint();
-          ctx.announce && ctx.announce('Product Research is no longer active in this ' +
-            'project. Nothing was deleted.');
-          return;
-        }
-        if (a === 'kb:activate') {
-          s.on = true; s.moment = null; ctx.paint();
-          ctx.announce && ctx.announce('Product Research is active in this project.');
-          return;
-        }
-        if (a === 'kb:delete') {
-          ctx.announce && ctx.announce('Deleting a knowledge base is a separate, ' +
-            'destructive action. Switching one off never deletes anything.');
-          return;
-        }
-
-        /* Several collections, one project. */
-        if (a.indexOf('kb:on:') === 0) {
-          if (+a.slice(6) === 1) s.second = true;
-          s.moment = 'multiple'; ctx.paint();
-          ctx.announce && ctx.announce('Design System is now active in this project.');
-          return;
-        }
-        if (a.indexOf('kb:off:') === 0) {
-          var oi = +a.slice(7);
-          if (oi === 1) { s.second = false; s.moment = 'multiple'; ctx.paint(); return; }
-          s.on = false; s.moment = null; ctx.paint();
-          ctx.announce && ctx.announce('Product Research is no longer active here.');
-          return;
-        }
-
-        /* REMOVE ASKS, because the value of the question is the
-           sentence about what is not being destroyed. */
-        if (a.indexOf('kb:remove:') === 0) {
-          var rm = me.stock(s)[+a.slice(10)];
-          if (!rm) return;
-          s.asking = rm.name; s.moment = 'confirm'; s.open = true; ctx.paint();
-          return;
-        }
-        if (a === 'kb:cancel') {
-          s.asking = null; s.moment = 'manage'; ctx.paint();
-          ctx.announce && ctx.announce('Nothing was removed.');
-          return;
-        }
-        if (a === 'kb:remove-ok') {
-          var gone = s.asking;
-          s.sources = me.stock(s).filter(function (x) { return x.name !== gone; });
-          s.asking = null; s.moment = 'manage'; ctx.paint();
-          ctx.announce && ctx.announce(gone + ' removed. The knowledge base and its other ' +
-            'sources are unchanged.');
-          return;
-        }
-
+        /* One source, not the base. */
         if (a === 'sim:break') {
           var l = me.stock(s);
           l[0].state = 'failed';
           l[0].note = 'The file is password protected, so it could not be read.';
-          s.open = false; s.moment = null; ctx.paint();
-          ctx.announce && ctx.announce('One source needs attention. The rest are still ' +
-            'available.');
-          return;
+          s.open = true; ctx.paint(); return;
         }
 
+        /* Adding is three states because it fails in three places:
+           getting the file here, reading it, and having it
+           available. Collapsing them loses the one people need. */
         if (a === 'kb:add') {
-          var add = K.base('research').sources.slice(0, 3).map(function (x) {
-            return Object.assign({}, x, { name: x.name + ' (new)', state: 'preparing' });
+          var add = K.base('research').sources.slice(0, 4).map(function (x) {
+            return Object.assign({}, x, { state: 'uploading' });
           });
-          s.sources = me.stock(s).concat(add);
-          s.open = true; s.moment = 'manage'; ctx.paint();
-          ctx.announce && ctx.announce('Three sources added. Preparing them.');
-          return wait(1600).then(function () {
+          s.sources = (s.sources || []).concat(add);
+          s.open = true; ctx.paint();
+          ctx.announce && ctx.announce('Uploading 4 sources');
+
+          return wait(1100).then(function () {
             s.sources.forEach(function (x) {
-              if (x.state === 'preparing') x.state = 'ready';
+              if (x.state === 'uploading') x.state = 'processing';
             });
             ctx.paint();
-            ctx.announce && ctx.announce('The new sources are ready.');
+            ctx.announce && ctx.announce('Preparing 4 sources');
+            return wait(1500);
+          }).then(function () {
+            s.sources.forEach(function (x) {
+              if (x.state === 'processing') x.state = 'ready';
+            });
+            ctx.paint();
+            ctx.announce && ctx.announce('4 sources ready');
           });
         }
 
-        /* Row recovery. Fixing the last broken row clears the
-           base's state by itself, because that state was derived
-           from the rows rather than stored beside them. */
+        /* Recovery lives on the row that failed, and fixing the
+           last broken row clears the base's state by itself,
+           because that state was derived from the rows. */
         if (a.indexOf('kb:retry:') === 0) {
           var i = +a.slice(9); var li = me.stock(s);
           if (!li[i]) return;
-          li[i].state = 'preparing'; delete li[i].note; ctx.paint();
+          li[i].state = 'processing'; delete li[i].note; ctx.paint();
           return wait(1200).then(function () {
             if (!li[i]) return;
-            li[i].state = 'ready'; li[i].fresh = 'Uploaded just now';
+            li[i].state = 'ready';
+            li[i].fresh = 'Uploaded just now';
             ctx.paint();
-            ctx.announce && ctx.announce(li[i].name + ' is ready.');
-          });
-        }
-        if (a.indexOf('kb:reconnect:') === 0) {
-          var ci = +a.slice(13); var lc = me.stock(s);
-          if (!lc[ci]) return;
-          lc[ci].state = 'preparing'; delete lc[ci].note; ctx.paint();
-          return wait(1200).then(function () {
-            if (!lc[ci]) return;
-            lc[ci].state = 'ready';
-            lc[ci].fresh = 'Linked · follows the original';
-            ctx.paint();
-            ctx.announce && ctx.announce(lc[ci].name + ' is available again.');
+            ctx.announce && ctx.announce(li[i].name + ' is ready');
           });
         }
         if (a.indexOf('kb:replace:') === 0) {
-          var pi = +a.slice(11); var lp = me.stock(s);
-          if (!lp[pi]) return;
-          lp[pi].state = 'ready'; delete lp[pi].note;
-          lp[pi].name = lp[pi].name + ' (unlocked)';
-          lp[pi].fresh = 'Uploaded just now'; ctx.paint();
-          return;
+          var r = +a.slice(11); var lr = me.stock(s);
+          if (!lr[r]) return;
+          lr[r].state = 'uploading'; delete lr[r].note; ctx.paint();
+          return wait(900).then(function () {
+            if (!lr[r]) return;
+            lr[r].state = 'ready';
+            lr[r].fresh = 'Uploaded just now';
+            ctx.paint();
+          });
         }
         if (a.indexOf('kb:refresh:') === 0) {
-          var fi = +a.slice(11); var lf = me.stock(s);
-          if (!lf[fi]) return;
-          lf[fi].state = 'preparing'; ctx.paint();
+          var f = +a.slice(11); var lf = me.stock(s);
+          if (!lf[f]) return;
+          lf[f].state = 'processing'; ctx.paint();
           return wait(1000).then(function () {
-            if (!lf[fi]) return;
-            lf[fi].state = 'ready';
-            lf[fi].fresh = 'Linked · follows the original';
+            if (!lf[f]) return;
+            lf[f].state = 'ready';
+            lf[f].fresh = 'Uploaded just now';
             ctx.paint();
           });
         }
-
-        /* THE BRANCH THAT PROVES GROUNDING. It searches, finds
-           nothing, and says so — the base is healthy throughout,
-           which is what makes this different from a failure. */
-        if (a === 'ask:miss') {
-          s.turns = s.turns.concat([{ who: 'you',
-            text: 'What did we decide about pricing tiers?' }]);
-          s.moment = 'using'; s.activity = 'Searching Product Research…';
-          s.reading = null; s.open = false; ctx.paint();
-          ctx.announce && ctx.announce('Searching Product Research');
-          return wait(1500).then(function () {
-            s.turns = s.turns.concat([{ who: 'aria',
-              text: 'I searched Product Research and there is nothing about pricing tiers ' +
-                    'in it — it is onboarding research. I would rather say that than ' +
-                    'assemble something that sounds right.' }]);
-            s.moment = 'none'; s.activity = ''; s.reading = null;
-            ctx.paint();
-            ctx.announce && ctx.announce('No relevant information found in Product Research.');
-          });
-        }
-
-        if (a === 'kb:ask-without') {
-          s.moment = null; ctx.paint();
-          ctx.announce && ctx.announce('Asking without Product Research. The answer will not ' +
-            'be grounded in it, and will not claim to be.');
-          return;
+        if (a.indexOf('kb:remove:') === 0) {
+          var d = +a.slice(10);
+          s.sources = me.stock(s).filter(function (_, k) { return k !== d; });
+          ctx.paint(); return;
         }
 
         if (a === 'ask') {
@@ -4164,20 +4035,21 @@
 
           /* Asking while sources are still being prepared is the
              clearest demonstration there is that added is not
-             ready. */
+             ready: the question is answerable, and not from
+             everything that has been added. */
           if (t.busy && usable.length < 2) {
-            ctx.paint();
+            s.kb = 'ready'; ctx.paint();
             return wait(700).then(function () {
               s.turns = s.turns.concat([{ who: 'aria',
                 text: 'The sources are still being prepared, so there is nothing I can read ' +
-                      'yet. They are uploaded — that is not the same as being ready. Give it ' +
-                      'a moment and ask again.' }]);
+                      'yet. They are uploaded &mdash; that is not the same as being ready. ' +
+                      'Give it a moment and ask again.' }]);
               ctx.paint();
             });
           }
 
           var read = usable.slice(0, 4);
-          s.moment = 'using'; s.activity = 'Searching Product Research…';
+          s.kb = 'using'; s.activity = 'Searching Product Research…';
           s.reading = null; s.open = false; ctx.paint();
           ctx.announce && ctx.announce('Searching Product Research');
 
@@ -4191,19 +4063,20 @@
             return wait(1600);
           }).then(function () {
             var text = blocked.length
-              ? 'Two stand out. Connecting a data source is where people stop — it is 31% of ' +
-                'first sessions and the share has risen for three months, so that is the one ' +
-                'getting worse. The invite flow assumes an admin, and everyone else stalls at ' +
-                'the same screen; that one is flat. I could not read the September interviews, ' +
-                'so I cannot tell you what people said about either in their own words.'
+              ? 'Two stand out. Connecting a data source is where people stop &mdash; it is ' +
+                '31% of first sessions and the share has risen for three months, so that is ' +
+                'the one getting worse. The invite flow assumes an admin, and everyone else ' +
+                'stalls at the same screen; that one is flat. I could not read the September ' +
+                'interviews, so I cannot tell you what people said about either in their own ' +
+                'words.'
               : 'Three, and one of them is moving. Connecting a data source is where people ' +
-                'stop: 31% of first sessions end there, up from 22% in June — that is the one ' +
-                'getting worse. The empty state gives no next step; eleven of fourteen ' +
-                'interviewees described the same pause. And the invite flow assumes an admin, ' +
-                'so anyone who is not one stalls. The second and third are steady.';
+                'stop: 31% of first sessions end there, up from 22% in June &mdash; that is ' +
+                'the one getting worse. The empty state gives no next step; eleven of ' +
+                'fourteen interviewees described the same pause. And the invite flow assumes ' +
+                'an admin, so anyone who is not one stalls. The second and third are steady.';
 
             s.turns = s.turns.concat([{ who: 'aria', text: text, used: s.reading }]);
-            s.moment = null; s.activity = ''; s.reading = null;
+            s.kb = 'ready'; s.activity = ''; s.reading = null;
             ctx.paint();
             ctx.announce && ctx.announce('Used ' + read.length +
               ' sources from Product Research');
@@ -4243,13 +4116,13 @@
       initial: {
         step: 'idle',   /* idle · working · answer */
         model: 'balanced',
-        effort: 'high',
+        effort: 'standard',
+        aim: 'even',
         turns: [],
-        fallback: false,
-        opts: { down: false, org: false, credit: true }
+        opts: { capped: false, org: false, credit: true }
       },
 
-      title: function () { return 'Migration review'; },
+      title: function () { return 'Quarterly analysis'; },
       pill: function (s) {
         if (s.step === 'working') return 'Working';
         return '';
@@ -4265,53 +4138,38 @@
         var M = window.MaterialModel;
         var list = M.MODELS.map(function (m) { return Object.assign({}, m); });
 
-        /* Two different ways a row stops working, and they are
-           not drawn alike: one ends in waiting, the other ends in
-           a person. Availability is one field with three values,
-           because 'restricted and unavailable' is a sentence no
-           product can write. */
-        if (s.opts.down) {
+        /* At the cap, the row stays and says what you get instead.
+           A model that silently becomes another model is the
+           failure this state exists to prevent. */
+        if (s.opts.capped) {
           list.forEach(function (m) {
-            if (m.id === 'deep-reasoning') m.availability = 'unavailable';
+            if (m.id === 'deep') {
+              m.state = 'capped';
+              m.note = 'You have used this week’s allowance. Swift is answering instead ' +
+                       'until Monday.';
+            }
           });
         }
-        if (s.opts.org) {
-          list.forEach(function (m) {
-            if (m.id === 'deep-reasoning') m.availability = 'restricted';
-          });
-        }
+        /* Restriction is ABSENCE. A row you can see and never
+           press is an advertisement for a thing you cannot have. */
+        if (s.opts.org) list = list.filter(function (m) { return m.id !== 'deep'; });
         return list;
-      },
-      modelOpts: function (s) {
-        return {
-          showAuto: true, showFor: true, showNote: false,
-          unavailableCopy: 'Try again shortly, or use Balanced in the meantime.',
-          restrictedCopy: 'Not available in your workspace. Your administrator decides this.',
-          footNote: window.MaterialModel.scopeNote('request', '')
-        };
       },
       model:  function (s) { return s.model; },
       effort: function (s) { return s.effort; },
-
+      aim:    function (s) { return s.aim; },
+      restricted: function (s) {
+        return s.opts.org
+          ? 'Your organisation has limited which models are available here.' : null;
+      },
 
       thread: function (s) {
         var M = window.MaterialModel;
-        var fall = s.fallback
-          ? M.fallback({
-              title: 'Deep reasoning is no longer available',
-              body: s.opts.org
-                ? 'Your organisation has restricted it. Choose another model, or let Auto ' +
-                  'pick for each request. Your conversation is unchanged.'
-                : 'It is temporarily down. Choose another model, or let Auto pick for each ' +
-                  'request. Your conversation is unchanged.'
-            })
-          : '';
         if (!s.turns.length) {
-          return fall +
-            '<p class="sim-stage__empty">A migration to sign off, and a question worth ' +
-            'waiting for. The model chip is in the composer, where the asking happens.</p>';
+          return '<p class="sim-stage__empty">A quarter&rsquo;s numbers, and a question worth ' +
+                 'waiting for. The model chip is in the composer, where the asking happens.</p>';
         }
-        return fall + s.turns.map(function (t) {
+        return s.turns.map(function (t) {
           if (t.who === 'you') return human('You', 'P', t.text);
           return '<div class="sim-turn">' + mark('md-agentav--sm') +
             '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
@@ -4336,16 +4194,12 @@
             button('Start over', 'reset', 'text');
         return '<span class="sim-doc__who">Using ' + (cur ? cur.label : s.model) + '</span>' +
                button('Ask the hard question', 'ask', 'filled') +
-               button('Open the selector', 'ax:mode', 'text') +
-               /* Anything that moved the scene earns a way back.
-                  Gating Start over on having asked a question
-                  strands anybody who only changed the model. */
-               (s.touched ? button('Start over', 'reset', 'text') : '');
+               button('Open the selector', 'ax:mode', 'text');
       },
 
       controls: function (s) {
-        return [toggle('Deep reasoning is down', 'opt:down', s.opts.down),
-                toggle('Your organisation restricts it', 'opt:org', s.opts.org),
+        return [toggle('Weekly allowance used up', 'opt:capped', s.opts.capped),
+                toggle('Organisation limits the list', 'opt:org', s.opts.org),
                 toggle('Say which model answered', 'opt:credit', s.opts.credit)];
       },
 
@@ -4355,26 +4209,19 @@
                  'answer &mdash; including the one that was quietly substituted when the ' +
                  'allowance ran out. No mainstream product ships this, and silent ' +
                  'substitution already does.';
-        if (s.fallback)
-          return 'The model in the chip can no longer answer, so the product says so before ' +
-                 'the next request rather than substituting something after it. Both ways out ' +
-                 'are offered, and the sentence people actually need is the last one: the ' +
-                 'conversation is unchanged.';
         if (s.opts.org)
-          return 'Restricted reads differently from unavailable on purpose. Somebody decided ' +
-                 'this and no amount of waiting will change it, so the row points at a person ' +
-                 'rather than at a retry. Drawing the two alike sends people round a loop that ' +
-                 'cannot end.';
-        if (s.opts.down)
-          return 'Temporarily unavailable: not selectable, still listed, and it says what to ' +
-                 'use in the meantime. It is expected back, so nothing here is drawn as a ' +
-                 'fault — and no provider error text, because a status code is not a ' +
-                 'thing anybody can act on.';
-        if (s.model === 'default')
-          return 'Auto says what it weighs &mdash; quality and speed &mdash; in one line ' +
-                 'under the switch, on or off. The credibility of a router rests entirely on ' +
-                 'that line being true: at least one shipping router claims to pick for your ' +
-                 'task while quietly balancing capacity.';
+          return 'Restriction rendered as ABSENCE. The model is simply not in the list, with ' +
+                 'one line saying why &mdash; a row you can see and never press is an ' +
+                 'advertisement for a thing you cannot have.';
+        if (s.opts.capped)
+          return 'At the cap the row stays and says what answers instead. A model that ' +
+                 'silently becomes a different model is the failure this state exists to ' +
+                 'prevent, and it is shipping in more than one product today.';
+        if (s.model === 'auto')
+          return 'An Auto that names what it is optimising for. The credibility of a router ' +
+                 'rests entirely on whether its stated objective is its real one &mdash; and ' +
+                 'at least one shipping router claims to pick for your task while actually ' +
+                 'balancing capacity.';
         if (s.step === 'answer')
           return 'The label updated, the next request used it, and the answer says which model ' +
                  'produced it. Switching is not retroactive, and the menu said so before the ' +
@@ -4386,61 +4233,33 @@
       act: function (a, ctx) {
         var s = ctx.s;
         var M = window.MaterialModel;
-        if (a !== 'reset') s.touched = true;
-        var ASK = 'We are moving the billing service off the shared database. What is the ' +
-                  'riskiest part of that, and what would you do first?';
-        /* The SAME question, four ways. This is the only honest
-           argument for a model picker: not that one is better, but
-           that they answer differently and somebody knows which
-           kind of answer they need right now. */
-        /* Keyed by model id, so a renamed line-up is a data change
-           rather than a code change. */
+        var ASK = 'Compare this quarter against the last four and tell me what actually changed.';
         var BY = {
-          'fast': 'The riskiest part is the data move itself. I would start by taking a full ' +
-                 'backup and rehearsing the cutover on a copy.',
-          'balanced': 'The riskiest part is not the data move — it is the window where both ' +
-                    'systems think they own a billing row. I would start by making writes ' +
-                    'idempotent, then run both in parallel for a cycle before cutting over.',
-          'deep-reasoning': 'Three risks, and they are not equally likely. The one that will actually bite ' +
-                'is dual ownership during the parallel run: if both systems can write a ' +
-                'billing row you get double charges, and billing errors are the kind ' +
-                'customers escalate rather than report. Second is the foreign keys the ' +
-                'shared database is quietly enforcing for you — once it is gone, nothing ' +
-                'stops an orphaned subscription. Third, and least likely, is throughput. I ' +
-                'would start by making every write idempotent and putting a single source of ' +
-                'truth behind a feature flag, so the parallel run is observable and ' +
-                'reversible in one switch rather than a rollback.',
-          'coding': 'The riskiest code path is the billing write. Wrap it in an idempotency ' +
-                    'key check before the parallel run, and add a test that replays the same ' +
-                    'event twice and asserts one charge.',
-          'multimodal': 'From the diagram, the billing service still reads three tables it does not ' +
-                  'own. Those reads are the coupling to break first.',
-          'default': 'The riskiest part is the parallel-run window where both systems can write the ' +
-                'same billing row. Make writes idempotent first, then cut over behind a flag.'
+          swift: 'Revenue is up 8% on the quarter. The largest movement is in mid-market, ' +
+                 'which grew while enterprise was flat.',
+          balanced: 'Up 8% on the quarter, but the shape matters more than the number. ' +
+                    'Mid-market grew 21% while enterprise was flat for the second quarter ' +
+                    'running, so the headline is being carried by the segment with the ' +
+                    'shortest contracts.',
+          deep: 'Up 8%, and three of the last four quarters have now been carried by ' +
+                'mid-market while enterprise has been flat or down. That is a mix shift ' +
+                'rather than a good quarter: average contract length has fallen from 26 ' +
+                'months to 19 across the period, which means the same revenue is being ' +
+                'renewed more often and is more exposed to churn. The two enterprise losses ' +
+                'in Q2 were both at renewal, not mid-term.',
+          auto: 'Up 8% on the quarter, carried by mid-market at 21% against a flat ' +
+                'enterprise. Worth noting the contract length has been falling across the ' +
+                'same period.'
         };
 
-        /* A model taken away under somebody cannot stay in the
-           chip: until it is answered, the chip is lying about what
-           will happen next. So it does not silently swap — it
-           asks, which is the whole point of Fallback. */
-        function withdraw(k) {
-          s.opts[k] = !s.opts[k];
-          s.axModes = false;
-          if (s.opts[k] && s.model === 'deep-reasoning') s.fallback = true;
-          if (!s.opts.down && !s.opts.org) s.fallback = false;
-          ctx.paint();
-          if (s.fallback) ctx.announce && ctx.announce('Deep reasoning is no longer available. ' +
-            'Choose another model, or use Auto.');
-        }
-        if (a === 'opt:down') { withdraw('down'); return; }
-        if (a === 'opt:org')  { withdraw('org');  return; }
-        if (a === 'model:fallback:auto') {
-          s.model = 'default'; s.fallback = false; ctx.paint();
-          ctx.announce && ctx.announce('Auto selected. It will choose a model per request.');
-          return;
-        }
-        if (a === 'model:fallback:pick') {
-          s.fallback = false; s.axModes = true; ctx.paint(); return;
+        if (a === 'opt:capped') { flip(ctx, 'capped'); return; }
+        if (a === 'opt:org')    {
+          flip(ctx, 'org');
+          /* A model that has just been taken away cannot stay
+             selected. It falls back, which is what a real
+             revocation does. */
+          if (s.opts.org && s.model === 'deep') s.model = 'balanced';
+          ctx.paint(); return;
         }
         if (a === 'opt:credit') { flip(ctx, 'credit'); return; }
         if (a === 'reset') {
@@ -4449,68 +4268,26 @@
           s.opts = o; ctx.paint(); return;
         }
 
-        /* The switch hands the choice over, or hands it back to
-           the model that was chosen before. */
-        if (a === 'model:auto:on') {
-          if (s.model !== 'default') s.was = s.model;
-          s.model = 'default';
-          /* On to effort, as a pick does (see the Live Preview). */
-          s.axModes = false; s.axEffort = true; if (M.holdTrack) M.holdTrack();
-          ctx.paint();
-          ctx.announce && ctx.announce('Auto on. It will choose a model for each request. Now set the effort.');
-          return;
-        }
-        if (a === 'model:auto:off') {
-          s.model = s.was || 'balanced'; ctx.paint();
-          ctx.announce && ctx.announce('Auto off. Using ' +
-            ((M.byId(M.MODELS, s.model) || {}).label || s.model) + '.');
-          return;
-        }
-
-        /* The breadcrumb on the effort screen: back to the list. */
-        if (a === 'model:back') {
-          s.axEffort = false; s.axModes = true;
-          if (M.holdMenu) M.holdMenu();
-          ctx.paint(); return;
-        }
         if (a.indexOf('model:pick:') === 0) {
-          var pid = a.slice(11);
-          var row = M.byId(SIMS['model-selection'].models(s), pid);
-          if (row && !M.usable(row)) {
-            ctx.announce && ctx.announce((row.label || pid) + ' cannot be used.');
-            return;
-          }
-          /* The list is replaced by the effort screen for this
-             model, one gesture setting both values. */
-          s.model = pid; s.axModes = false; s.axEffort = true; s.fallback = false;
-          if (M.holdTrack) M.holdTrack();
-          ctx.paint();
-          ctx.announce && ctx.announce((row ? row.label : pid) + ' selected. ' +
-            M.scopeNote('request', row ? row.label : pid) + ' Now set the effort.');
-          return;
+          s.model = a.slice(11); s.axModes = false; ctx.paint(); return;
         }
-        if (a === 'model:effort:focus') return;
         if (a.indexOf('model:effort:') === 0) {
-          var eid = a.slice(13);
-          var ef = M.EFFORT.filter(function (x) { return x.id === eid; })[0];
-          if (!ef) return;
-          s.effort = eid; ctx.paint();
-          ctx.announce && ctx.announce(ef.label + ' — ' + ef.what +
-            '. The model is unchanged.');
-          return;
+          s.effort = a.slice(13); ctx.paint(); return;
+        }
+        if (a.indexOf('model:aim:') === 0) {
+          s.aim = a.slice(10); ctx.paint(); return;
         }
 
         if (a === 'ask') {
-          /* No silent substitution. A model that cannot answer is
-             unselectable and says so before the request, rather
-             than becoming a different model after it. */
+          /* The cap substitutes, and SAYS it substituted. */
           var used = s.model, sub = false;
+          if (s.opts.capped && s.model === 'deep') { used = 'swift'; sub = true; }
           var label = (M.byId(M.MODELS, used) || {}).label || used;
 
           s.turns = s.turns.concat([{ who: 'you', text: ASK }]);
           s.step = 'working'; ctx.paint();
-          return wait(s.model === 'deep-reasoning' && !sub ? 2200 : 1400).then(function () {
-            s.turns = s.turns.concat([{ who: 'aria', text: BY[used] || BY['balanced'],
+          return wait(s.model === 'deep' && !sub ? 2200 : 1400).then(function () {
+            s.turns = s.turns.concat([{ who: 'aria', text: BY[used] || BY.balanced,
                                         model: label, sub: sub }]);
             s.step = 'answer'; ctx.paint();
           });
@@ -6040,7 +5817,7 @@
     connectors: { group: 'Research', items: ['Product review', 'Onboarding study', 'Interviews', 'Connected apps'], on: 0 },
     mcp: { group: 'Platform', items: ['Checkout regression', 'Open bugs', 'Servers', 'Audit log'], on: 0 },
     'knowledge-base': { group: 'Onboarding Redesign', items: ['Onboarding problems', 'Activation', 'Pricing research', 'Project knowledge'], on: 0 },
-    'model-selection': { group: 'Platform', items: ['Migration review', 'Incident 412', 'Release notes', 'Cost review'], on: 0 },
+    'model-selection': { group: 'Finance', items: ['Quarterly analysis', 'Forecast', 'Board pack', 'Models'], on: 0 },
     'visual-input': { group: 'Support', items: ['Ticket 4417', 'Attachments', 'Known issues', 'Escalations'], on: 0 },
     handwriting: { group: 'Coursework', items: ['Problem sheet 4', 'My working', 'Marked sheets', 'Formula notes'], on: 0 },
     gesture: { group: 'Analytics', items: ['Self-serve · September', 'Dashboards', 'Saved regions', 'Reports'], on: 0 },
@@ -6055,34 +5832,34 @@
      here works: choosing an attachment puts a real chip on the
      composer, and choosing a mode changes the mode. */
   var COMPOSERS = {
-    consent: { ask: 'Ask me anything', plus: ['Attach a file', 'Add a source', 'Add context'], modes: ['Balanced', 'Thorough'] },
-    color: { ask: 'Ask me anything', plus: ['Attach a file', 'Cite a source'], modes: ['Edit', 'Rewrite'] },
+    consent: { ask: 'Ask about Northwind…', plus: ['Attach a file', 'Add a source', 'Add context'], modes: ['Balanced', 'Thorough'] },
+    color: { ask: 'Ask about this paragraph…', plus: ['Attach a file', 'Cite a source'], modes: ['Edit', 'Rewrite'] },
     disclosure: { ask: 'Draft a reply…', plus: ['Attach a file', 'Insert a macro'], modes: ['Balanced', 'Formal'] },
-    caveat: { ask: 'Ask me anything', plus: ['Attach a workbook', 'Add a source'], modes: ['Balanced', 'Thorough'] },
+    caveat: { ask: 'Ask about this figure…', plus: ['Attach a workbook', 'Add a source'], modes: ['Balanced', 'Thorough'] },
     avatar: { ask: 'Message the thread…', plus: ['Attach a file'], modes: ['Balanced', 'Brief'] },
-    name: { ask: 'Ask me anything', plus: ['Attach a file', 'Add context'], modes: ['Balanced', 'Thorough'] },
+    name: { ask: 'Ask Aria…', plus: ['Attach a file', 'Add context'], modes: ['Balanced', 'Thorough'] },
     personality: { ask: 'Reply to the customer…', plus: ['Attach a file', 'Insert order details'], modes: ['Balanced', 'Formal'] },
-    iconography: { ask: 'Ask me anything', plus: ['Attach a file', 'Add a reference'], modes: ['Edit', 'Rewrite'] },
-    nudges: { ask: 'Ask me anything', plus: ['Attach a receipt', 'Add policy'], modes: ['Balanced', 'Thorough'] },
-    proactive: { ask: 'Ask me anything', plus: ['Attach a document', 'Add a carrier'], modes: ['Balanced', 'Thorough'] },
-    'visual-input': { ask: 'Ask me anything', plus: ['Attach a screenshot', 'Add a known issue'], modes: ['Balanced', 'Thorough'] },
+    iconography: { ask: 'Ask about this chapter…', plus: ['Attach a file', 'Add a reference'], modes: ['Edit', 'Rewrite'] },
+    nudges: { ask: 'Ask about these claims…', plus: ['Attach a receipt', 'Add policy'], modes: ['Balanced', 'Thorough'] },
+    proactive: { ask: 'Ask about this shipment…', plus: ['Attach a document', 'Add a carrier'], modes: ['Balanced', 'Thorough'] },
+    'visual-input': { ask: 'Ask about the screenshot…', plus: ['Attach a screenshot', 'Add a known issue'], modes: ['Balanced', 'Thorough'] },
     /* `mic: true` is the only difference between this composer and
        the twelve above it. That is the whole argument of the
        pattern, expressed as one flag rather than a component. */
-    'voice-input': { ask: 'Ask me anything', plus: ['Attach a file', 'Add a source'], mic: true },
+    'voice-input': { ask: 'Ask about the feedback…', plus: ['Attach a file', 'Add a source'], mic: true },
     /* The + here offers SOURCES rather than labels, and the
        scenario handles the choice — see `addContext`. */
-    attachments: { ask: 'Ask me anything',
+    attachments: { ask: 'Ask about the proposal…',
                    plus: ['Upload a file', 'Upload a photo', 'Paste text'] },
-    connectors: { ask: 'Ask me anything',
+    connectors: { ask: 'Ask the agent…',
                   plus: ['Add images or files',
                          { label: 'Use connectors', sub: true }] },
-    mcp: { ask: 'Ask me anything', plus: ['Attach a file', 'Add an MCP server'] },
-    'knowledge-base': { ask: 'Ask me anything', plus: ['Add images or files', 'Add a source to the project'] },
+    mcp: { ask: 'Ask Aria about this bug…', plus: ['Attach a file', 'Add an MCP server'] },
+    'knowledge-base': { ask: 'Ask about this project…', plus: ['Add images or files', 'Add a source to the project'] },
     /* No `modes` here: the chip in that slot is the MODEL, and
        there is only ever one chip in it. */
-    'model-selection': { ask: 'Ask me anything', plus: ['Attach a file', 'Add a source'] },
-    'structured-input': { ask: 'Ask me anything', plus: ['Attach a file', 'Add a data source'] }
+    'model-selection': { ask: 'Ask about the quarter…', plus: ['Attach a file', 'Add a source'] },
+    'structured-input': { ask: 'Ask for a report…', plus: ['Attach a file', 'Add a data source'] }
   };
 
   /* ── The agent's state, as one word ───────────────────────
@@ -6219,7 +5996,7 @@
          the microphone, now showing that it is on — the same
          button that got you here, which is also the way back. */
       body =
-        '<button class="ax__cbtn ax__cbtn--mic is-on md-icon-button md-icon-button--tonal" type="button" data-act="voice:stop" ' +
+        '<button class="ax__cbtn ax__cbtn--mic is-on" type="button" data-act="voice:stop" ' +
           'aria-pressed="true" aria-label="Stop voice input">' + V.ICONS.mic + '</button>' +
         '<span class="ax__voice">' +
           V.indicator(vs) +
@@ -6235,17 +6012,17 @@
           '</span>' +
         '</span>' +
         (vs === 'error' || vs === 'permission'
-          ? '<button class="ax__cbtn ax__cbtn--send md-icon-button md-icon-button--filled" type="button" data-act="voice:retry" ' +
+          ? '<button class="ax__cbtn ax__cbtn--send" type="button" data-act="voice:retry" ' +
               'aria-label="Try the microphone again">' + V.ICONS.mic + '</button>'
-          : '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="voice:mute" ' +
+          : '<button class="ax__cbtn" type="button" data-act="voice:mute" ' +
               'aria-pressed="' + (vs === 'muted') + '" ' +
               'aria-label="' + (vs === 'muted' ? 'Unmute the microphone' : 'Mute the microphone') + '">' +
               (vs === 'muted' ? V.ICONS.micOff : V.ICONS.pause) + '</button>') +
-        '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="voice:cancel" ' +
+        '<button class="ax__cbtn" type="button" data-act="voice:cancel" ' +
           'aria-label="Cancel voice input">' + V.ICONS.close + '</button>';
     } else {
       body =
-        '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="ax:plus" ' +
+        '<button class="ax__cbtn" type="button" data-act="ax:plus" ' +
           'aria-label="Add context" aria-expanded="' + (!!o.plusOpen) + '"' +
           (busy || blocked ? ' disabled' : '') + '>' + ICON_PLUS + '</button>' +
         (o.chips && o.chips.length
@@ -6270,16 +6047,9 @@
            that only matters at the moment of asking belongs
            where the asking happens. */
         (o.model && window.MaterialModel
-          /* modelOpts is the Model Selection pattern's own bag:
-             the composer forwards it untouched rather than growing
-             a parameter for every option that pattern adds. */
-          /* ONE chip for both values (user wireframe), opening a
-             flyout with two screens: the model list, then effort.
-             The axes stay two settings; only the trigger is shared. */
-          ? window.MaterialModel.chip(Object.assign({
+          ? window.MaterialModel.chip({
               models: o.models, model: o.model, effort: o.effort,
-              showEffort: !!o.effort,
-              open: !!o.modesOpen || !!o.effortOpen }, o.modelOpts || {}))
+              open: !!o.modesOpen })
           : o.modes
             ? '<button class="ax__mode" type="button" data-act="ax:mode" ' +
               'aria-pressed="' + (!!o.modesOpen) + '"' +
@@ -6290,11 +6060,11 @@
            a way of asking in this scenario. A control with no use
            in the scenario it is standing in is furniture. */
         (o.mic
-          ? '<button class="ax__cbtn ax__cbtn--mic md-icon-button md-icon-button--standard" type="button" data-act="voice:start" ' +
+          ? '<button class="ax__cbtn ax__cbtn--mic" type="button" data-act="voice:start" ' +
             'aria-label="Speak instead of typing"' +
             (busy || blocked ? ' disabled' : '') + '>' + (V ? V.ICONS.mic : ICON_MIC) + '</button>'
           : '') +
-        '<button class="ax__cbtn ax__cbtn--send md-icon-button md-icon-button--filled" type="submit" aria-label="Send"' +
+        '<button class="ax__cbtn ax__cbtn--send" type="submit" aria-label="Send"' +
           (busy || blocked || !(o.text || '').trim() ? ' disabled' : '') + '>' +
           ICON_ARROW + '</button>';
     }
@@ -6332,13 +6102,9 @@
             '</div>'
           : '') +
         (!voice && o.modesOpen && o.model && window.MaterialModel
-          ? window.MaterialModel.menu(Object.assign({
-              models: o.models, model: o.model, effort: o.effort
-            }, o.modelOpts || {}))
-          : '') +
-        (!voice && o.effortOpen && o.effort && window.MaterialModel
-          ? window.MaterialModel.effortPanel(Object.assign({
-              models: o.models, model: o.model, effort: o.effort }, o.modelOpts || {}))
+          ? window.MaterialModel.menu({
+              models: o.models, model: o.model, effortId: o.effort,
+              aim: o.aim, restricted: o.restricted })
           : '') +
         (!voice && o.modesOpen && !o.model && o.modes
           ? '<div class="ax__menu ax__menu--mode" role="menu">' +
@@ -6382,8 +6148,7 @@
         models: sim.models ? sim.models(s) : null,
         model: sim.model ? sim.model(s) : null,
         effort: sim.effort ? sim.effort(s) : null,
-        modelOpts: sim.modelOpts ? sim.modelOpts(s) : null,
-        effortOpen: !!s.axEffort,
+        aim: sim.aim ? sim.aim(s) : null,
         restricted: sim.restricted ? sim.restricted(s) : null,
         voice: sim.voiceState ? sim.voiceState(s) : null,
         status: sim.voiceStatus ? sim.voiceStatus(s) : '',
@@ -6500,13 +6265,7 @@
       s.axSubAt = s.axSubAt === sn ? null : sn;
       ctx.paint(); return true;
     }
-    /* One chip, two screens: pressed while either is showing it
-       closes the flyout; pressed while closed it opens the list. */
-    if (a === 'ax:mode')  {
-      if (s.axModes || s.axEffort) { s.axModes = false; s.axEffort = false; }
-      else s.axModes = true;
-      s.axPlus = false; ctx.paint(); return true;
-    }
+    if (a === 'ax:mode')  { s.axModes = !s.axModes; s.axPlus = false; ctx.paint(); return true; }
     if (a.indexOf('ax:add:') === 0) {
       s.axPlus = false; s.axSubAt = null;
       /* A scenario whose + menu offers SOURCES rather than labels
@@ -6607,15 +6366,6 @@
         if (!back && held.i > -1 && now[held.i]) back = now[held.i];
         if (back) back.focus({ preventScroll: true });
       }
-
-      /* Model Selection's list collapses when Auto is switched on.
-         The repaint is wholesale, so the collapsing element is a
-         new node already in its end state and has nothing to
-         transition from; this replays the change on it. Does
-         nothing when there is no such list. */
-      if (window.MaterialModel && window.MaterialModel.animate) {
-        window.MaterialModel.animate(root);
-      }
     }
 
     /* `root` is exposed because two patterns animate a live element
@@ -6624,25 +6374,18 @@
        beside a control instead of transforming the control. */
     var ctx = { s: s, sim: sim, paint: paint, el: null, root: root, wait: wait };
 
-    /* One dispatch path, named, because the light dismiss below
-       has to be able to replay an action whose element it just
-       destroyed. Two copies of this would drift. */
-    function run(action, el) {
-      ctx.el = el || null;
-      if (shellAct(action, ctx)) return;
-      var out = sim.act(action, ctx);
+    root.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-act]');
+      if (!el || !root.contains(el)) return;
+      e.preventDefault();
+      ctx.el = el;
+      if (shellAct(el.dataset.act, ctx)) return;
+      var out = sim.act(el.dataset.act, ctx);
       if (out && typeof out.then === 'function') {
         if (busy) return;
         busy = true;
         out.then(function () { busy = false; }, function () { busy = false; });
       }
-    }
-
-    root.addEventListener('click', function (e) {
-      var el = e.target.closest('[data-act]');
-      if (!el || !root.contains(el)) return;
-      e.preventDefault();
-      run(el.dataset.act, el);
     });
 
     /* A simulator with an inert field is a screenshot. Submitting
@@ -6732,21 +6475,11 @@
        often not inside root when either of those happens. */
     function closeMenus(e) {
       if (!root.isConnected) return;
-      if (!s.axPlus && !s.axModes && !s.axEffort) return;
+      if (!s.axPlus && !s.axModes) return;
       if (e && e.type === 'click' && e.target.closest &&
           e.target.closest('.ax__composer')) return;
-      /* The repaint below destroys whatever was clicked, so the
-         bubble-phase handler never sees it and the first click
-         outside an open menu is silently eaten. Carry the intent
-         across the repaint instead of losing it. */
-      var pending = null;
-      if (e && e.type === 'click' && e.target.closest) {
-        var hit = e.target.closest('[data-act]');
-        if (hit && root.contains(hit)) pending = hit.dataset.act;
-      }
-      s.axPlus = s.axModes = s.axEffort = false; s.axSubAt = null;
+      s.axPlus = s.axModes = false; s.axSubAt = null;
       paint();
-      if (pending) { e.preventDefault(); e.stopPropagation(); run(pending); }
     }
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') closeMenus(e);

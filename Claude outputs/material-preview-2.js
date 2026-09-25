@@ -47,35 +47,6 @@
   }
   var MORPH = reduce ? 0 : 420;
 
-  /* Knowledge Base: the states whose panel actually has SOURCE
-     ROWS on screen, and the data shape each state is built from.
-     Kept here rather than inside the definition because a group's
-     `states` list is read before the definition's own scope
-     exists — and because a control offered in a state where its
-     rows are not drawn is a control that moves nothing.
-
-     Specifically: the states whose list is ALREADY OPEN, because
-     something is arriving or a row needs a person. Everywhere
-     else the list is folded behind Manage sources, so a control
-     that only changes rows changes nothing until you press
-     something else — which is a dead control however true its
-     description is. */
-  /* Knowledge Base: the states whose panel shows source ROWS, and
-     which shape of demo data each state is built from. Keeping the
-     two apart is what lets Manage sources and Partly available be
-     different situations over the same twelve sources. */
-  var ROWS = ['preparing', 'manage', 'unavailable'];
-  /* Model Selection: the states whose picker is actually open.
-     A control that draws a row has nothing to draw anywhere else. */
-  var MENU = ['open', 'unavailable', 'restricted'];
-  /* Rows exist in Preparing too, but every one of them is busy:
-     a busy row shows no freshness line and offers no Remove, so
-     the two controls that govern those are offered only where a
-     row can actually carry them. */
-  var SETTLED = ['manage', 'unavailable'];
-  var MIX = { preparing: 'preparing', partial: 'partial',
-              unavailable: 'unavailable' };
-
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -3669,478 +3640,175 @@ card + '>\n' + head +
       initial: 'resting',
 
       customize: {
-        /* Nothing borrowed from another pattern. What a model
-           picker actually decides is: whether the product routes
-           at all, how much of each row it says out loud, which of
-           the many attributes genuinely differ in THIS product,
-           and when a change starts mattering. */
-        api: {
-          name: 'ModelSelector',
-          props: function (c) {
-            return {
-              showAuto: c.showAuto,
-              showDescriptions: c.showFor,
-              showEffort: c.showEffort,
-              groupByProvider: c.groupBy === 'provider',
-              showCostTier: c.showCost,
-              showCapabilities: c.showCaps,
-              unavailableLabel: c.unavailableLabel,
-              unavailableText: c.unavailableCopy,
-              restrictedLabel: c.restrictedLabel,
-              restrictedText: c.restrictedCopy,
-              scope: c.scope,
-              density: c.density,
-              selectedEmphasis: c.emphasis
-            };
-          }
-        },
-
         groups: [
-          /* ══ CONTENT ═══════════════════════════════════════ */
-          /* The menu-only states. Everything that draws a row
-             belongs here and nowhere else, because with the picker
-             closed there is no row for it to change. */
-          { id: 'words', label: 'What the rows say', section: 'content',
-            states: MENU,
-            note: 'Every row says what a model is FOR. That is the axis people actually ' +
-                  'choose on, and it is the one a list of names cannot express.',
+          { id: 'menu', label: 'The menu',
+            states: ['open', 'automatic', 'changed', 'at-cap', 'restricted', 'retiring'],
+            note: 'What a person is given to decide with. None of these is a specification.',
             controls: [
-              { id: 'showFor', label: 'Say what each one is for', type: 'toggle',
-                value: true, capability: true,
+              { id: 'why', label: 'Say what each is for', type: 'toggle', value: true,
+                capability: true,
                 hint: 'Off, this is a list of names, and a list of names answers none of the ' +
                       'questions somebody actually has.' },
-              { id: 'showNote', label: 'Add a line of consequence', type: 'toggle', value: false,
-                visibleWhen: function (c) { return c.showFor !== false; },
-                hint: 'A second line per row — what choosing it costs you. Off by default: ' +
-                      'three lines a row turns a picker into a document. A row that cannot be ' +
-                      'used always keeps its sentence regardless.' }
-            ] },
-
-          { id: 'blocked', label: 'When a model cannot be used', section: 'content',
-            states: ['unavailable', 'restricted', 'fallback'],
-            note: 'Two different sentences on purpose. One ends in waiting; the other ends in ' +
-                  'a person. A product that words them alike sends people to the wrong ' +
-                  'recovery and teaches them to retry things that will never work.',
-            controls: [
-              { id: 'unavailableLabel', label: 'Unavailable label', type: 'text',
-                value: 'Temporarily unavailable',
-                visibleWhen: function (c, s) { return s === 'unavailable'; } },
-              { id: 'unavailableCopy', label: 'Unavailable line', type: 'text',
-                value: 'Try again shortly, or use Balanced in the meantime.',
-                visibleWhen: function (c, s) { return s === 'unavailable'; },
-                hint: 'What to do instead. Without it the row is dead rather than useful.' },
-              { id: 'restrictedLabel', label: 'Restricted label', type: 'text',
-                value: 'Restricted',
-                visibleWhen: function (c, s) { return s === 'restricted'; } },
-              { id: 'restrictedCopy', label: 'Restricted line', type: 'text',
-                value: 'Not available in your workspace. Your administrator decides this.',
-                visibleWhen: function (c, s) { return s === 'restricted'; },
-                hint: 'Never a retry. Nothing about waiting changes a decision somebody made.' },
-              { id: 'fallbackCopy', label: 'Fallback line', type: 'text',
-                value: 'Choose another model, or let Auto pick for each request. ' +
-                       'Your conversation is unchanged.',
-                visibleWhen: function (c, s) { return s === 'fallback'; },
-                hint: 'The fear at this moment is the thread. Say it is safe.' }
-            ] },
-
-          /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'routing', label: 'Automatic selection', section: 'behavior',
-            note: 'A product may route, may not, or may route and still allow a deliberate ' +
-                  'choice. All three are real, and the component draws whichever it is given.',
-            controls: [
-              { id: 'showAuto', label: 'Offer Auto', type: 'toggle', value: true,
+              { id: 'effort', label: 'Offer an effort level', type: 'toggle', value: true,
+                hint: 'The second axis the industry converged on. How hard to think is a ' +
+                      'different question from which model thinks, and they are set ' +
+                      'separately.' },
+              { id: 'when', label: 'Say when a change takes effect', type: 'toggle', value: true,
                 capability: true,
-                visibleWhen: function (c, s) {
-                  return MENU.indexOf(s) >= 0 || s === 'auto' || s === 'fallback';
-                },
-                hint: 'Off, every request uses a model somebody chose. A real configuration ' +
-                      'for products with two models and nothing to route between.' }
+                hint: 'Exactly one shipping product answers this, in one sentence. Everybody ' +
+                      'else leaves people guessing whether switching rewrites what was ' +
+                      'already said.' }
             ] },
 
-          { id: 'axes', label: 'The second axis', section: 'behavior',
-            note: 'How hard to think is a different question from which model thinks. Products ' +
-                  'that fold them together can express neither a deep model on Quick nor ' +
-                  'Swift &middot; Thorough, and both are legitimate.',
+          { id: 'after', label: 'Afterwards',
+            states: ['resting', 'changed', 'attributed', 'at-cap'],
+            note: 'What the product says about a choice once it has been made.',
             controls: [
-              { id: 'showEffort', label: 'Offer an effort level', type: 'toggle', value: true,
+              { id: 'credit', label: 'Say which model answered', type: 'toggle', value: true,
                 capability: true,
-                hint: 'Off where the host has one reasoning setting or none. The chip then ' +
-                      'carries the model alone, and a pick closes the flyout instead of ' +
-                      'moving on to effort.' }
-            ] },
-
-          { id: 'attrs', label: 'Which differences to show', section: 'behavior',
-            states: MENU,
-            note: 'Off by default, and rightly. A row wearing four badges is a specification ' +
-                  'table with extra steps &mdash; turn one on only where this product genuinely ' +
-                  'differentiates on it.',
-            controls: [
-              { id: 'showCost', label: 'Show a cost tier', type: 'toggle', value: false,
-                hint: 'Tiers, never per-token pricing. A price nobody can act on mid-thought ' +
-                      'is noise with a decimal point.' },
-              { id: 'showCaps', label: 'Show capabilities', type: 'toggle', value: false,
-                hint: 'Only where they differ. Tools and images on every row says nothing.' },
-              { id: 'groupBy', label: 'Grouping', type: 'segment', value: 'none',
-                options: [['none', 'One list'], ['provider', 'By provider']],
-                hint: 'Most products have one provider, and a heading over a single group is ' +
-                      'furniture. Worth it when somebody has a reason to care whose model runs.' }
-            ] },
-
-          { id: 'when', label: 'When a change takes effect', section: 'behavior',
-            note: 'A fact about the host product, so the component is told rather than guessing. ' +
-                  'Exactly one shipping product answers this at all.',
-            controls: [
-              { id: 'scope', label: 'Scope', type: 'segment', value: 'request',
-                options: [['request', 'Next message'], ['conversation', 'This conversation'],
-                          ['workspace', 'Everywhere']],
-                /* Written in two places and only two: the note
-                   under the picker, and the line acknowledging a
-                   change. */
-                /* Only where the scope sentence is the one on
-                   screen. Under Auto the line says what the router
-                   does instead, so there is nothing here to word. */
-                visibleWhen: function (c, s) {
-                  return c.showSaid !== false && s === 'changed';
-                },
-                hint: 'Say only what the product actually does. Claiming a workspace default ' +
-                      'that is really per-request is the kind of lie people discover late.' },
-              { id: 'showSaid', label: 'Acknowledge the change', type: 'toggle',
-                value: true, capability: true,
-                visibleWhen: function (c, s) { return s === 'changed' || s === 'auto'; },
-                hint: 'One line after the fact, where it is a fact. A standing sentence at the ' +
-                      'bottom of the picker was read once and then never again.' }
-            ] },
-
-          /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'The picker', section: 'appearance',
-            states: MENU,
-            controls: [
-              { id: 'emphasis', label: 'Selected row', type: 'segment', value: 'tick',
-                options: [['tick', 'Check'], ['container', 'Check and fill']],
-                hint: 'Never colour alone. The check carries it; the fill only makes it easier ' +
-                      'to find.' },
-              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
-                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+                hint: 'Ahead of current practice &mdash; no mainstream product ships this. ' +
+                      'But silent substitution does, which is what makes the absence worth ' +
+                      'designing against.' }
             ] }
         ]
       },
 
       states: {
-        resting:     { label: 'Resting',
-                       trigger: 'The product at rest, before anybody has chosen anything.',
-                       behaviour: 'One small chip carrying two values: which model, and how hard ' +
-                                  'to think. It is the composer&rsquo;s own mode slot rather ' +
-                                  'than a control added beside it, and a strong default is ' +
-                                  'already in it &mdash; nobody is asked to choose before their ' +
-                                  'first request.',
-                       action: 'Open it' },
-        open:        { label: 'Picker open',
-                       trigger: 'The chip is pressed.',
-                       behaviour: 'A list, not a catalogue. Auto sits in its own group above the ' +
-                                  'models because it is a different kind of thing, every row ' +
-                                  'says what it is FOR, and picking one moves the flyout on to ' +
-                                  'the effort screen for that model. The prompt text is ' +
-                                  'untouched throughout.',
-                       action: 'Choose a model' },
-        selected:    { label: 'Specific model selected',
-                       trigger: 'Somebody deliberately chose one capability.',
-                       behaviour: 'No router mark: what runs is exactly what the chip says. This ' +
-                                  'is the state Auto must never be mistaken for, because here ' +
-                                  'the person has taken responsibility for the choice.',
-                       action: 'Switch to Auto' },
-        auto:        { label: 'Auto selected',
-                       trigger: 'The router is selected.',
-                       behaviour: 'The switch is on, the model list has eased shut, and the ' +
-                                  'chip takes a router mark. Auto says what it weighs &mdash; ' +
-                                  'quality and speed &mdash; in its own line, on ' +
-                                  'or off, so nobody has to switch it on to find out what it ' +
-                                  'does.',
-                       action: 'Change the model' },
-        changed:     { label: 'Model changed',
-                       trigger: 'A different option has just been chosen.',
-                       behaviour: 'The chip updates and one line says when it starts mattering, ' +
-                                  'in the scope the host actually supports. No toast, no dialog, ' +
-                                  'no success screen &mdash; and the conversation is untouched.',
-                       action: 'See one that is down' },
-        unavailable: { label: 'Model unavailable',
-                       trigger: 'A model is temporarily out of service.',
-                       behaviour: 'Listed, not selectable, and it says what to use in the ' +
-                                  'meantime. Temporary, so it may come back &mdash; and no ' +
-                                  'provider error text, because a status code is not a thing ' +
-                                  'anybody can act on.',
-                       action: 'See one the organisation blocks' },
-        restricted:  { label: 'Organization restricted',
-                       trigger: 'An organisation has narrowed what may be used.',
-                       behaviour: 'Reads differently from unavailable on purpose: somebody ' +
-                                  'decided this, and no amount of waiting will change it. The ' +
-                                  'recovery is a person, and it is only offered where the host ' +
-                                  'genuinely has that flow.',
-                       action: 'Lose the model you were using' },
-        fallback:    { label: 'Fallback required',
-                       trigger: 'The model already selected can no longer be used.',
-                       behaviour: 'The one state that interrupts, because until it is answered ' +
-                                  'the chip is lying about what will happen next. Both ways out ' +
-                                  'are offered &mdash; the router, or the list &mdash; and it ' +
-                                  'says what is not affected, because the fear at this moment ' +
-                                  'is the thread.',
-                       action: 'Recover, either way' }
+        resting:    { label: 'Resting',
+                      trigger: 'The product at rest.',
+                      behaviour: 'One small chip carrying two values: which model, and how ' +
+                                 'hard to think. It is the composer&rsquo;s own mode slot, ' +
+                                 'not a control added beside it.',
+                      action: 'Open it' },
+        open:       { label: 'Open',
+                      trigger: 'The chip is pressed.',
+                      behaviour: 'Every row says what the model is FOR and what choosing it ' +
+                                 'costs. No context windows, no parameter counts &mdash; ' +
+                                 'nobody chooses a model by its context window.',
+                      action: 'Choose Automatic' },
+        automatic:  { label: 'Automatic',
+                      trigger: 'The router is selected.',
+                      behaviour: 'And it names what it is optimising for. The credibility of ' +
+                                 'a router rests entirely on whether its stated objective is ' +
+                                 'its real one.',
+                      action: 'Change the model' },
+        changed:    { label: 'Changed',
+                      trigger: 'A different model is chosen.',
+                      behaviour: 'The label updates and the menu has already said what happens ' +
+                                 'to the conversation: the change applies from the next ' +
+                                 'message, and nothing already said is rewritten.',
+                      action: 'Run out of allowance' },
+        'at-cap':   { label: 'At your cap',
+                      trigger: 'The week&rsquo;s allowance for a model is used up.',
+                      behaviour: 'The row stays and says what answers instead. A model that ' +
+                                 'silently becomes a different model is the failure this ' +
+                                 'state exists to prevent &mdash; and it is shipping today.',
+                      action: 'Let the organisation limit it' },
+        restricted: { label: 'Restricted',
+                      trigger: 'An organisation narrows what may be used.',
+                      behaviour: 'The model is ABSENT, with one line saying why. Not a locked ' +
+                                 'row: a row you can see and never press is an advertisement ' +
+                                 'for a thing you cannot have.',
+                      action: 'See one retiring' },
+        retiring:   { label: 'Retiring',
+                      trigger: 'A model has a sunset date.',
+                      behaviour: 'Still selectable, and dated. The alternative is the ' +
+                                 'disappearance people notice by the answer getting worse.',
+                      action: 'See an answer attributed' },
+        attributed: { label: 'Attributed',
+                      trigger: 'An answer arrives.',
+                      behaviour: 'Which model produced it &mdash; and whether it was the one ' +
+                                 'you asked for. No mainstream product does this, and silent ' +
+                                 'fallback is already normal.',
+                      action: 'Back to resting' }
       },
 
-      /* ── The model ────────────────────────────────────────
-         One shape handed to the shared composer. The selection
-         lives on s.demo rather than in the config, because where
-         a demonstration has got to is not a customization. */
       view: function (s) {
-        var c = s.cfg, st = s.state;
+        var c = s.cfg;
+        var st = s.state;
         var M = window.MaterialModel, S = window.MaterialSim;
         if (!M || !S || !S.composer) return '';
 
-        var d = s.demo && s.demo.on === st ? s.demo : (s.demo = {
-          on: st,
-          model: st === 'auto' ? 'default'
-               : st === 'selected' || st === 'changed' ? 'deep-reasoning'
-               : st === 'fallback' ? 'deep-reasoning'
-               : 'balanced',
-          effort: st === 'selected' ? 'max' : window.MaterialModel.EFFORT_DEFAULT,
-          open: st === 'open' ||
-                st === 'unavailable' || st === 'restricted',
-          effortOpen: false,
-          said: st === 'changed'
-        });
-
-        /* Availability is a fact about the DATA, so the state
-           shapes the data and the view reads it back rather than
-           branching on the state name in three places. */
         var models = M.MODELS.map(function (m) {
           var o = Object.assign({}, m);
-          if (st === 'unavailable' && o.id === 'deep-reasoning') o.availability = 'unavailable';
-          if (st === 'restricted'  && o.id === 'deep-reasoning') o.availability = 'restricted';
-          if (st === 'fallback'    && o.id === 'deep-reasoning') o.availability = 'unavailable';
-          if (c.showAuto === false && o.router) o.skip = true;
+          if (c.why === false) { o.for = ''; o.note = ''; }
           return o;
-        }).filter(function (m) { return !m.skip; });
-
-        /* A selection that is no longer selectable cannot stay in
-           the chip: that is the whole reason Fallback exists. */
-        var cur = d.model;
-        if (c.showAuto === false && cur === 'default') cur = 'balanced';
-
-        var opts = {
-          models: models,
-          showAuto: c.showAuto !== false,
-          modelsHeading: 'Models',
-          effortHeading: 'Effort',
-          showFor: c.showFor !== false,
-          showNote: c.showFor !== false && !!c.showNote,
-          showEffort: c.showEffort !== false,
-          groupBy: c.groupBy,
-          showCost: !!c.showCost,
-          showCaps: !!c.showCaps,
-          unavailableLabel: c.unavailableLabel,
-          unavailableCopy: c.showFor === false ? '' : c.unavailableCopy,
-          restrictedLabel: c.restrictedLabel,
-          restrictedCopy: c.showFor === false ? '' : c.restrictedCopy,
-          density: c.density || 'comfortable',
-          emphasis: c.emphasis || 'tick',
-          showSaid: c.showSaid !== false
-        };
-
-        var html = S.composer({
-          agent: 'Aria',
-          ask: 'Ask me anything',
-          plus: ['Attach a file', 'Add a source'],
-          models: models, model: cur,
-          effort: c.showEffort === false ? null : d.effort,
-          text: d.text || '',
-          modesOpen: !!d.open && st !== 'fallback',
-          effortOpen: !!d.effortOpen && st !== 'fallback',
-          modelOpts: opts
         });
 
-        /* Auto has to keep explaining itself at rest. A chip
-           reading Auto with nothing under it is indistinguishable
-           from a chip naming a model, which is the one thing Auto
-           must never look like. */
-        var curM = M.byId(models, cur);
-        if (c.showSaid === false) { /* the host says nothing after a change */ }
-        else if (curM && curM.router && !d.open && st !== 'fallback') {
-          html += M.changed({ text: 'Auto picks a model for each request.' });
-        } else if (d.said && st !== 'fallback') {
-          html += M.changed({
-            text: M.scopeNote(c.scope || 'request',
-              (M.byId(models, cur) || {}).label || '')
-          });
-        }
-
-        if (st === 'fallback') {
-          html = M.fallback({
-            title: 'Deep reasoning is no longer available',
-            body: c.fallbackCopy,
-            showAuto: c.showAuto !== false
-          }) + html;
-        }
-
-        /* The emphasis choice is a property of the surface, and
-           the menu is rendered inside the composer, so it is set
-           on the wrapper the menu actually lands in. */
-        return '<div class="pv-ml" data-emphasis="' + (c.emphasis || 'tick') + '">' +
-          html + '</div>';
-      },
-
-      /* The draft survives a repaint, and Escape closes the
-         picker. Both are things the real control does and neither
-         can be expressed as an action, because one is a value the
-         repaint would otherwise throw away and the other is a key. */
-      mounted: function (root, s) {
-        /* Replays the open/close on the freshly painted node, so
-           the list actually eases rather than snapping. */
-        if (window.MaterialModel) window.MaterialModel.animate(root);
-        var field = root.querySelector('.pv-stage [data-ax-field]');
-        if (field) {
-          if (s.demo && s.demo.text) field.value = s.demo.text;
-          if (!field.dataset.mlBound) {
-            field.dataset.mlBound = '1';
-            field.addEventListener('input', function () {
-              if (s.demo) s.demo.text = field.value;
-            });
-          }
-        }
-        var stage = root.querySelector('.pv-stage');
-        if (stage && !stage.dataset.mlKeys) {
-          stage.dataset.mlKeys = '1';
-          stage.addEventListener('keydown', function (e) {
-            if (e.key !== 'Escape') return;
-            if (!root.querySelector('.pv-stage .md-ml') &&
-                !root.querySelector('.pv-stage .md-mle__track')) return;
-            /* Routed through the chip so it goes down the same
-               path a press does, rather than a second way to
-               change the same state. */
-            /* One chip owns both screens of the flyout now. */
-            var chip = root.querySelector('.pv-stage [data-act="ax:mode"]');
-            /* The click repaints, so the chip it focused would be a
-               detached node: focus the fresh one instead. */
-            if (chip) {
-              e.preventDefault(); chip.click();
-              var fresh = root.querySelector('.pv-stage [data-act="ax:mode"]');
-              if (fresh) fresh.focus();
+        if (st === 'at-cap') {
+          models.forEach(function (m) {
+            if (m.id === 'deep') {
+              m.state = 'capped';
+              m.note = c.why === false ? ''
+                : 'You have used this week’s allowance. Swift is answering instead ' +
+                  'until Monday.';
             }
           });
         }
+        if (st === 'retiring') {
+          models.forEach(function (m) {
+            if (m.id === 'swift') { m.state = 'retiring'; m.until = 'in March'; }
+          });
+        }
+        /* Absence, not a locked row. */
+        if (st === 'restricted') {
+          models = models.filter(function (m) { return m.id !== 'deep'; });
+        }
+
+        var cur = st === 'automatic' ? 'auto'
+                : st === 'changed'   ? 'deep'
+                : 'balanced';
+        var open = st !== 'resting' && st !== 'attributed';
+
+        var html = S.composer({
+          agent: 'Aria',
+          ask: 'Ask about the quarter…',
+          plus: ['Attach a file', 'Add a source'],
+          models: models, model: cur,
+          effort: c.effort === false ? null : 'standard',
+          aim: 'even',
+          modesOpen: open,
+          restricted: st === 'restricted'
+            ? 'Your organisation has limited which models are available here.' : null
+        });
+
+        if (c.effort === false) {
+          html = html.replace(/<div class="md-ml__sub">(?:(?!<\/div>)[\s\S])*?How hard to think[\s\S]*?<\/div>/, '');
+        }
+        if (c.when === false) {
+          html = html.replace(/<p class="md-ml__note md-ml__note--when">[\s\S]*?<\/p>/, '');
+        }
+
+        /* Attribution belongs on an answer, so the state that
+           shows it shows an answer. */
+        if (st === 'attributed' && c.credit !== false) {
+          html = '<div class="pv-mlturn">' +
+              '<p class="pv-mlq">Compare this quarter against the last four.</p>' +
+              '<p class="pv-mla">Up 8%, carried by mid-market at 21% against a flat ' +
+                'enterprise.</p>' +
+              M.credit('Swift', true) +
+            '</div>' + html;
+        }
+        return html;
       },
 
-      /* ── The transitions ──────────────────────────────────
-         Real ones. Pressing a row selects that model; it does not
-         jump to a frame drawn in advance. */
       act: function (a, ctx) {
-        var S = ctx.s, c = S.cfg, M = window.MaterialModel;
-        var d = S.demo && S.demo.on === S.state ? S.demo
-              : (S.demo = { on: S.state, model: 'balanced', effort: window.MaterialModel.EFFORT_DEFAULT,
-                            open: false, said: false });
-        function moveTo(next) { S.state = next; d.on = next; }
-        function labelOf(id) {
-          return (M.byId(M.MODELS, id) || {}).label || id;
-        }
-
-        if (a === 'model:effort:focus') { return; }
-        var effortOn = c.showEffort !== false;
-
-        /* ONE chip, two screens (user wireframe). Pressed while
-           either screen is showing, it closes the flyout; pressed
-           while closed, it always opens on the model list. */
-        if (a === 'ax:mode') {
-          if (d.open || d.effortOpen) {
-            d.open = false; d.effortOpen = false;
-            ctx.paint(); ctx.announce('Model menu closed');
-            return;
-          }
-          d.open = true; d.said = false;
-          if (S.state !== 'unavailable' && S.state !== 'restricted') moveTo('open');
-          ctx.paint();
-          ctx.announce('Model menu open');
-          return;
-        }
-        /* The breadcrumb on the effort screen: back to the list, in
-           the same place, with focus on the model that is selected. */
-        if (a === 'model:back') {
-          d.effortOpen = false; d.open = true;
-          if (M.holdMenu) M.holdMenu();
-          ctx.paint(); ctx.announce('Models');
-          return;
-        }
-
-        /* The switch. Turning Auto ON hands the choice over;
-           turning it OFF hands it back — to the model that was
-           chosen before, not to whatever happens to be first. */
-        /* Turning Auto on is a choice of model too, and with the
-           list collapsed there is nothing left to pick on this
-           screen — so it moves on to effort, like a pick does. */
-        if (a === 'model:auto:on') {
-          d.was = d.model === 'default' ? d.was : d.model;
-          d.model = 'default'; d.said = true;
-          if (effortOn) { d.open = false; d.effortOpen = true; if (M.holdTrack) M.holdTrack(); }
-          moveTo('auto'); ctx.paint();
-          ctx.announce('Auto on. It will choose a model for each request.' +
-            (effortOn ? ' Now set the effort.' : ''));
-          return;
-        }
-        if (a === 'model:auto:off') {
-          d.model = d.was || 'balanced'; d.said = true;
-          moveTo('changed'); ctx.paint();
-          ctx.announce('Auto off. Using ' + labelOf(d.model) + '.');
-          return;
-        }
-
-        if (a.indexOf('model:pick:') === 0) {
+        var ORDER = ['resting', 'open', 'automatic', 'changed',
+                     'at-cap', 'restricted', 'retiring', 'attributed'];
+        var S = ctx.s;
+        if (a.indexOf('go:') === 0) { S.state = a.slice(3); }
+        /* The real control does the real thing. */
+        else if (a === 'ax:mode') { S.state = S.state === 'open' ? 'resting' : 'open'; }
+        else if (a.indexOf('model:pick:') === 0) {
           var id = a.slice(11);
-          var m = M.byId(M.MODELS, id);
-          /* A blocked row is not a selection. The disabled
-             attribute already stops it; this stops it twice,
-             because a keyboard can reach things a mouse cannot. */
-          if (!m || !M.usable(Object.assign({}, m,
-              (S.state === 'unavailable' || S.state === 'fallback') && id === 'deep-reasoning'
-                ? { availability: 'unavailable' }
-                : S.state === 'restricted' && id === 'deep-reasoning'
-                  ? { availability: 'restricted' } : {}))) {
-            ctx.announce(labelOf(id) + ' cannot be used.');
-            return;
-          }
-          /* A pick replaces the list with the effort screen for
-             that model, rather than closing — the second value is
-             set in the same gesture, one screen on. */
-          d.model = id; d.open = false; d.said = true;
-          if (effortOn) { d.effortOpen = true; if (M.holdTrack) M.holdTrack(); }
-          moveTo(id === 'default' ? 'auto' : 'changed');
-          ctx.paint();
-          ctx.announce(labelOf(id) + ' selected. ' +
-            M.scopeNote(c.scope || 'request', labelOf(id)) +
-            (effortOn ? ' Now set the effort.' : ''));
-          return;
+          S.state = id === 'auto' ? 'automatic' : id === 'deep' ? 'changed' : 'resting';
         }
-
-        if (a.indexOf('model:effort:') === 0) {
-          var eid = a.slice(13);
-          var ef = M.EFFORT.filter(function (x) { return x.id === eid; })[0];
-          if (!ef) return;
-          d.effort = eid; ctx.paint();
-          /* Names the value AND says the model did not move,
-             because the whole point of two axes is that one can
-             change without the other. */
-          ctx.announce(ef.label + ' \u2014 ' + ef.what + '. The model is unchanged.');
-          return;
-        }
-
-        if (a === 'model:fallback:auto') {
-          d.model = 'default'; d.open = false; d.said = true;
-          moveTo('auto'); ctx.paint();
-          ctx.announce('Auto selected. It will choose a model for each request.');
-          return;
-        }
-        if (a === 'model:fallback:pick') {
-          d.model = 'balanced'; d.open = true; d.said = false;
-          moveTo('open'); ctx.paint();
-          ctx.announce('Choose a model.');
-          return;
-        }
+        else if (a.indexOf('model:aim:') === 0)    { return; }
+        else if (a.indexOf('model:effort:') === 0) { return; }
+        else return;
+        ctx.paint();
+        ctx.announce(S.state === 'resting' ? 'Model menu closed' : 'Model menu open');
+        return ORDER;
       }
     },
 
@@ -4161,77 +3829,32 @@ card + '>\n' + head +
        them, driven by act(). You do not navigate to "Processing";
        you add something and watch it happen.
 
-    /* ── Knowledge Base ───────────────────────────────────────
-       Twelve states, and each is a different KIND of fact rather
-       than a different frame of one animation. They fall into
-       four questions a person actually has:
-
-         WHAT IS IN IT
-           Empty            nothing has been trusted to it yet
-           Uploading        files are arriving
-           Processing       they are here and not yet readable
-           Partly ready     nine answer, two are coming, one will not
-           Ready            everything is readable
-
-         IS IT IN PLAY
-           Not active       it exists; it is not attached to this work
-
-         IS IT WORKING RIGHT NOW
-           Being used       searching and reading, for this request
-           Answered         finished, with the sources it read named
-           Found nothing    it looked, and the material is not in there
-
-         WHAT NEEDS A PERSON
-           Source failed    one file would not process
-           Source unavailable  one file is no longer readable by you
-           Needs refresh    a linked source drifted from its original
-
-       THE FOUR STATES THAT LOOK LIKE ONE AND ARE NOT.
-       Ready, Not active, Being used and Answered are the axis
-       every product collapses. Ready is a fact about the
-       SOURCES. Not active is a fact about this PROJECT. Being
-       used is a fact about this REQUEST. Answered is a claim
-       about a finished one. A panel with a single "connected"
-       badge has thrown away three of the four, and with them
-       every moment somebody could have objected.
-
-       THE STATES THAT ARE NOT HERE. Creating, Adding sources,
-       Removing a source and Deleting the base are moments, not
-       resting states — nothing sits in them. They are reached by
-       doing them, in the simulator, which is where an interaction
-       graph belongs. Freezing a dialog into a state picker would
-       demonstrate the drawing and hide the behaviour. */
+       WHAT THE FIFTH STATE IS FOR. A PDF that would not open says
+       nothing about the other eleven. The base stays usable, the
+       recovery sits on the row that needs it, and the header
+       counts both halves — because a product that greys out a
+       whole knowledge base over one file has told somebody
+       something untrue and offered them the wrong fix. */
     'knowledge-base': {
-      initial: 'active',
+      initial: 'ready',
 
       customize: {
         /* Nothing here is borrowed from another pattern. What a
-           knowledge base actually decides is: which base, how
-           much of each source it says out loud, whether a person
-           may change what is in it, whether they may switch it
-           off or destroy it, and how a list that may run to two
-           hundred rows stays one base rather than a file
-           manager. */
+           knowledge base actually decides is: which base, how much
+           of each source it says out loud, whether a person may
+           change what is in it, and how much of the list is on
+           screen when nothing is wrong. */
         api: {
           name: 'KnowledgeBase',
           props: function (c) {
             return {
               base: c.base,
-              title: c.baseName,
-              scopeLabel: c.scopeText,
               showSourceCount: c.showCount,
-              showScope: c.scopeNote,
               showSourceList: c.showList,
               showFreshness: c.showFresh,
               showProvenance: c.showProv,
               allowManage: c.allowManage,
-              allowRemove: c.allowRemove,
-              allowSwitch: c.allowSwitch,
-              allowDelete: c.allowDelete,
-              allowUngrounded: c.allowUngrounded,
-              groupSources: c.group,
-              collapseAfter: c.maxRows === 'six' ? 6 : 0,
-              showErrorDetail: c.showDetail,
+              showScope: c.scopeNote,
               layout: c.layout,
               statusStyle: c.statusStyle,
               density: c.density
@@ -4248,26 +3871,7 @@ card + '>\n' + head +
             controls: [
               { id: 'base', label: 'Base', type: 'segment', value: 'research',
                 options: [['research', 'Research'], ['engineering', 'Engineering'],
-                          ['design', 'Design'], ['support', 'Support'], ['policy', 'Policy']] },
-              { id: 'baseName', label: 'Title', type: 'text', value: '',
-                hint: 'Blank uses the base’s own name. A knowledge base called Untitled ' +
-                      'teaches nobody what belongs in it.' }
-            ] },
-
-          { id: 'scope', label: 'Where it applies', section: 'content',
-            note: 'Scope is a promise about reach, and the wrong word here is the difference ' +
-                  'between a project and an account. Only say Available everywhere if that is ' +
-                  'what the implementation actually does.',
-            controls: [
-              { id: 'scopeText', label: 'Scope line', type: 'text', value: '',
-                /* There is no scope line before there is anything to
-                   scope, and a control that moves nothing in the
-                   state you are looking at teaches that it never
-                   moves anything. */
-                visibleWhen: function (c, s) {
-                  return c.scopeNote !== false && s !== 'empty' && s !== 'inactive';
-                },
-                hint: 'Blank uses the base’s own scope.' }
+                          ['design', 'Design'], ['support', 'Support'], ['policy', 'Policy']] }
             ] },
 
           { id: 'zero', label: 'Before anything is added', section: 'content',
@@ -4275,176 +3879,77 @@ card + '>\n' + head +
             note: 'The sentence has one job: say what a source buys you that an attachment ' +
                   'does not.',
             controls: [
-              { id: 'emptyTitle', label: 'Heading', type: 'text', value: 'No knowledge added yet' },
+              { id: 'emptyTitle', label: 'Heading', type: 'text', value: 'No sources added yet' },
               { id: 'emptyBody', label: 'Body', type: 'text',
-                value: 'Add product research, briefs or other reference material so the agent ' +
-                       'can use it across this project — not just in this conversation.' }
+                value: 'Add research, briefs or reports and the agent can use them in every ' +
+                       'conversation in this project — not just this one.' }
             ] },
 
-          { id: 'trouble', label: 'When a source needs a person', section: 'content',
-            states: ['partial', 'unavailable'],
+          { id: 'trouble', label: 'When a source breaks', section: 'content',
+            states: ['attention'],
             note: 'About the source, never about the base. The rest of the material is still ' +
-                  'there and still answerable, and the sentence has to say so.',
+                  'there and still answerable.',
             controls: [
-              { id: 'partCopy', label: 'One source stopped working', type: 'text',
-                value: 'One source is unavailable. The other eleven still answer.',
-                visibleWhen: function (c, s) { return s === 'partial'; } },
-              { id: 'goneCopy', label: 'Several sources need a person', type: 'text',
-                value: 'Some sources need attention. Everything else is still available.',
-                visibleWhen: function (c, s) { return s === 'unavailable'; } }
-            ] },
-
-          { id: 'blank', label: 'When it finds nothing', section: 'content',
-            states: ['none'],
-            note: 'Not an error. The base worked — it looked, and the material is not in ' +
-                  'there. Saying so is the entire value of grounding.',
-            controls: [
-              { id: 'noneCopy', label: 'What to say', type: 'text',
-                value: 'I couldn’t find enough about this in Product Research.' }
-            ] },
-
-          { id: 'gone', label: 'When one source is removed', section: 'content',
-            states: ['confirm'],
-            note: 'The sentence exists to say what is NOT happening. Removing one source and ' +
-                  'deleting a knowledge base are two different destructions, and a product ' +
-                  'that words them alike has taught people to answer both the same way.',
-            controls: [
-              { id: 'removeCopy', label: 'What it warns', type: 'text',
-                value: 'The agent will stop using {source} when answering. It stays out of ' +
-                       '{base} until you add it again — the knowledge base and its other ' +
-                       'sources are unaffected.',
-                hint: '{source} and {base} are filled in from the row and the base.' }
-            ] },
-
-          { id: 'several', label: 'When there is more than one', section: 'content',
-            states: ['multiple'],
-            note: 'A project may have several collections it could draw on. This is a short ' +
-                  'list that says which is in play — not a dashboard, and not a file picker.',
-            controls: [
-              { id: 'basesHeading', label: 'Heading', type: 'text',
-                value: 'Knowledge in this project' }
+              { id: 'failCopy', label: 'What to say', type: 'text',
+                value: 'One source could not be read. Everything else is still available.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
           { id: 'says', label: 'What the panel reports', section: 'behavior',
+            states: ['processing', 'ready', 'using', 'attention'],
             controls: [
               { id: 'showCount', label: 'Show the source count', type: 'toggle', value: true,
-                visibleWhen: function (c, s) { return s !== 'empty'; },
                 hint: 'How much material is behind an answer is the first thing anybody asks ' +
                       'about a knowledge base.' },
               { id: 'scopeNote', label: 'Say where it applies', type: 'toggle', value: true,
-                /* Not in Not active: a base that is switched off
-                   makes no claim about where it applies, so there
-                   is no line there for this to govern. */
-                visibleWhen: function (c, s) { return s !== 'empty' && s !== 'inactive'; },
                 hint: 'Available in this project is a different promise from available ' +
                       'everywhere, and only one of them is usually true.' },
               /* Freshness is written on the source rows, so it is
-                 offered where the rows are. */
+                 offered where the rows are: while sources are
+                 being prepared, and while one needs attention. */
               { id: 'showFresh', label: 'Show freshness', type: 'toggle', value: true,
-                visibleWhen: function (c, s) {
-                  return c.showList !== false && SETTLED.indexOf(s) >= 0;
+                visibleWhen: function (c, state) {
+                  return !!c.showList && (state === 'processing' || state === 'attention');
                 },
                 hint: 'An uploaded file is a photograph; a linked one follows its original. ' +
-                      'Only a linked source can ever need refreshing.' },
+                      'Drawing them alike is a promise the product cannot keep.' },
               /* Only where there is something to be provenance
                  FOR. Ready deliberately claims nothing about an
-                 answer, so a toggle that changed nothing there
+                 answer, so a toggle that changes nothing there
                  would teach that the two are the same state. */
               { id: 'showProv', label: 'Show which sources answered', type: 'toggle',
                 value: true, capability: true,
-                visibleWhen: function (c, s) { return s === 'using'; },
+                visibleWhen: function (c, state) { return state === 'using'; },
                 hint: 'Off, the answer is an assertion. Connected is not evidence that ' +
-                      'anything was read.' },
-              { id: 'showDetail', label: 'Offer the technical reason', type: 'toggle',
-                value: false,
-                visibleWhen: function (c, s) {
-                  /* Partly available is a summary and draws no
-                     rows, so there is no row to hang a reason on. */
-                  return c.showList !== false && s === 'unavailable';
-                },
-                hint: 'Behind a disclosure, off by default. Useful to the one person in fifty ' +
-                      'who can act on it, noise to everybody else.' }
+                      'anything was read.' }
             ] },
 
           { id: 'manage', label: 'What a person may change', section: 'behavior',
+            states: ['processing', 'ready', 'using', 'attention'],
             controls: [
-              { id: 'showList', label: 'Let them open the sources', type: 'toggle',
-                value: true, capability: true,
-                visibleWhen: function (c, s) { return s !== 'empty' && s !== 'inactive'; },
-                hint: 'A base you cannot look inside is a box you have to take on faith.' },
-              { id: 'allowManage', label: 'Let them add sources', type: 'toggle', value: true,
-                visibleWhen: function (c, s) {
-                  /* Not in Empty: a base with nothing in it offers
-                     Add sources as its only reason to exist, and
-                     a toggle that cannot change that is a toggle
-                     that moves nothing. */
-                  return c.showList !== false && s !== 'inactive' && s !== 'empty';
-                },
-                hint: 'A read-only base is a real configuration — a curated company base ' +
-                      'nobody edits from here.' },
-              { id: 'allowRemove', label: 'Let them remove a source', type: 'toggle',
+              { id: 'showList', label: 'Offer the source list', type: 'toggle', value: true,
+                capability: true,
+                hint: 'Off, the base is a count and a status. Some products are right to stop ' +
+                      'there; most are not.' },
+              { id: 'allowManage', label: 'Allow adding and removing', type: 'toggle',
                 value: true,
-                visibleWhen: function (c, s) {
-                  return c.showList !== false && c.allowManage !== false &&
-                         SETTLED.indexOf(s) >= 0;
-                },
-                hint: 'One source, not the base. These are two different destructions and ' +
-                      'they must never share a control.' },
-              { id: 'allowSwitch', label: 'Let them switch it on and off here', type: 'toggle',
-                value: true, capability: true,
-                /* The off switch only exists where the base is on.
-                   In Available there is nothing to switch off — the
-                   action on offer there is the opposite one. */
-                visibleWhen: function (c, s) {
-                  /* Nor in Preparing: a base that cannot answer yet
-                     has not been put in play, so there is nothing
-                     to switch off. */
-                  return s !== 'empty' && s !== 'inactive' &&
-                         s !== 'available' && s !== 'preparing';
-                },
-                hint: 'Switching a base off is reversible and leaves everything in place. If ' +
-                      'the only way to stop using it is to delete it, nobody will stop using ' +
-                      'it.' },
-              { id: 'allowDelete', label: 'Let them delete the base', type: 'toggle',
-                value: true,
-                visibleWhen: function (c, s) { return s === 'inactive'; },
-                hint: 'Offered where it belongs — beside a base already out of play — and ' +
-                      'never beside the button that merely switches one off.' },
-              { id: 'allowUngrounded', label: 'Offer to answer without it', type: 'toggle',
-                value: true,
-                visibleWhen: function (c, s) { return s === 'none'; },
-                hint: 'Only if the product genuinely will. Offering a way out that does not ' +
-                      'exist is worse than offering none.' }
+                visibleWhen: function (c) { return !!c.showList; },
+                hint: 'A read-only base is a real configuration — a curated company base that ' +
+                      'nobody edits from here.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
+          /* Offered only where the list is actually on screen. In
+             Ready and Being used it is collapsed behind Manage
+             sources, and a Layout control that moves nothing until
+             you press something else is a dead control. */
           { id: 'arrange', label: 'The source list', section: 'appearance',
-            states: ROWS,
-            visibleWhen: function (c) { return c.showList !== false; },
-            note: 'A base may hold two hundred sources and still has to read as one base. ' +
-                  'The list opens by itself while something is arriving or needs a person; ' +
-                  'otherwise it sits behind Manage sources.',
+            states: ['processing', 'attention'],
+            visibleWhen: function (c) { return !!c.showList; },
+            note: 'The list is open while sources are being prepared and while one needs ' +
+                  'attention. In Ready it sits behind Manage sources.',
             controls: [
-              { id: 'group', label: 'Grouping', type: 'segment', value: 'none',
-                options: [['none', 'Flat'], ['status', 'By status']],
-                hint: 'By status puts the rows that need somebody at the top. Worth it past ' +
-                      'roughly twenty sources; noise below that.' },
-              { id: 'maxRows', label: 'Long lists', type: 'segment', value: 'all',
-                options: [['all', 'Show all'], ['six', 'First six']],
-                /* Only where there is a long list. Capping six rows
-                   at six moves nothing, and a control that moves
-                   nothing in front of you is a control you stop
-                   believing in everywhere else. */
-                visibleWhen: function (c, s) {
-                  var K = window.MaterialKB;
-                  if (!K) return true;
-                  return K.sources(c.base, MIX[s] || null).length > 6;
-                },
-                hint: 'Capped, trouble is promoted above the fold rather than truncated ' +
-                      'below it — a cap that hides the broken row hides the only row anybody ' +
-                      'needed.' },
-              { id: 'layout', label: 'Row layout', type: 'segment', value: 'rows',
+              { id: 'layout', label: 'Layout', type: 'segment', value: 'rows',
                 options: [['rows', 'Rows'], ['compact', 'Compact']],
                 hint: 'Compact drops the second line, for a side panel where the name is ' +
                       'identification enough.' }
@@ -4461,101 +3966,49 @@ card + '>\n' + head +
       },
 
       states: {
-        empty:       { label: 'Empty',
-                       trigger: 'A project exists and nothing has been trusted to it yet.',
-                       behaviour: 'One sentence saying what a source buys that an attachment ' +
-                                  'does not — it outlives the conversation — and one action. ' +
-                                  'Not an empty dashboard: there is nothing to dash.',
-                       action: 'Add knowledge' },
-        preparing:   { label: 'Preparing',
-                       trigger: 'Sources have been added and cannot be read yet.',
-                       behaviour: 'The half of the lifecycle products skip. A file that has ' +
-                                  'finished uploading is not a file the agent can read, and ' +
-                                  'one status for both sends somebody to ask a question thirty ' +
-                                  'seconds too early. One honest word, and no pipeline.',
-                       action: 'Wait, or ask from what is already available' },
-        available:   { label: 'Available',
-                       trigger: 'The base is healthy and this project is not using it.',
-                       behaviour: 'The resting state products lose. Available is a fact about ' +
-                                  'the base; active is a fact about this project. A base can be ' +
-                                  'available in five projects and in play in one, and only the ' +
-                                  'second changes what an answer is made of.',
-                       action: 'Use it in this project' },
-        active:      { label: 'Active',
-                       trigger: 'The base is in play here.',
-                       behaviour: 'Compact: the count, where it applies, a way into the list. ' +
-                                  'Active means the agent MAY draw on it — not that it is ' +
-                                  'doing so, which is the next state and a different fact.',
-                       action: 'Open the sources, or ask a question' },
-        using:       { label: 'Being used',
-                       trigger: 'A question arrives that this material can answer.',
-                       behaviour: 'Searching, then reading a named number of sources, then the ' +
-                                  'provenance the answer carries. Three moments of one state, ' +
-                                  'because that is how it happens — and no percentage, because ' +
-                                  'nothing in the client knows an honest one.',
-                       action: 'Open any source it read' },
-        multiple:    { label: 'Multiple knowledge bases',
-                       trigger: 'The project could draw on more than one collection.',
-                       behaviour: 'A short list saying which is in play and which merely could ' +
-                                  'be, with the count on every row — because a name alone does ' +
-                                  'not say whether choosing it gives the agent six documents ' +
-                                  'or six hundred. A list, not a dashboard.',
-                       action: 'Switch one on or off' },
-        manage:      { label: 'Manage sources',
-                       trigger: 'Somebody came to see what is actually in it.',
-                       behaviour: 'Every source with its kind, its freshness written for that ' +
-                                  'kind, its own readiness as a word, and its own action. This ' +
-                                  'is the state that has to stay a knowledge base rather than ' +
-                                  'becoming a file manager.',
-                       action: 'Remove a source, or add more' },
-        partial:     { label: 'Partially available',
-                       trigger: 'One source stopped working and the rest did not.',
-                       behaviour: '"11 available · 1 unavailable" — counted apart, because ' +
-                                  '"12 sources" beside an amber badge reads as twelve broken ' +
-                                  'ones. The base still answers, and Review goes straight to ' +
-                                  'the row that is the reason for the word.',
-                       action: 'Review the one that needs a person' },
-        unavailable: { label: 'Source unavailable',
-                       trigger: 'Sources cannot be read, for two different reasons.',
-                       behaviour: 'Two kinds of stop with two different ways out: a file that ' +
-                                  'would not parse offers Retry and Replace; a file you are no ' +
-                                  'longer allowed to open offers Reconnect, because nothing ' +
-                                  'about trying again fixes permission.',
-                       action: 'Retry, reconnect, replace or remove' },
-        none:        { label: 'No relevant knowledge',
-                       trigger: 'The question falls outside the material.',
-                       behaviour: 'It looked and found nothing, and says so. Not an error and ' +
-                                  'not a broken base — the base worked. A base that always has ' +
-                                  'an answer is a base that is inventing them, and this is the ' +
-                                  'state that proves it is not.',
-                       action: 'Add sources, or ask without it' },
-        confirm:     { label: 'Remove source confirmation',
-                       trigger: 'Somebody pressed Remove on one source.',
-                       behaviour: 'Names the source, says what the agent will stop doing, and ' +
-                                  'says what is NOT happening — the base and its other eleven ' +
-                                  'sources are untouched. Removing one source and deleting a ' +
-                                  'knowledge base must never read alike.',
-                       action: 'Remove it, or cancel' },
-        inactive:    { label: 'Inactive',
-                       trigger: 'The base has been switched off here.',
-                       behaviour: 'Everything is still in it. Switching a base off, removing it ' +
-                                  'from this project and destroying it are three different ' +
-                                  'acts — one is a primary button, one is reversible in a ' +
-                                  'press, and the third asks again before it happens.',
-                       action: 'Use it here again, or delete it' }
+        empty:      { label: 'Empty',
+                      trigger: 'A project exists and nothing has been trusted to it yet.',
+                      behaviour: 'One sentence saying what a source buys that an attachment ' +
+                                 'does not — it outlives the conversation — and one action. ' +
+                                 'Not an empty dashboard: there is nothing to dash.',
+                      action: 'Add sources' },
+        processing: { label: 'Processing',
+                      trigger: 'Sources have arrived.',
+                      behaviour: 'Added is not ready. The rows say which are uploading, which ' +
+                                 'are being read and which can already be used, because a ' +
+                                 'product that shows one status for both sends somebody to ' +
+                                 'ask a question thirty seconds too early.',
+                      action: 'Watch them finish' },
+        ready:      { label: 'Ready',
+                      trigger: 'Every source is readable.',
+                      behaviour: 'Compact. The count, where it applies, and a way into the ' +
+                                 'list — because most of the time the question is what am I ' +
+                                 'working against, not what is in it.',
+                      action: 'Open the sources, or let the agent use them' },
+        using:      { label: 'Being used',
+                      trigger: 'A question arrives that the material can answer.',
+                      behaviour: 'Available and being drawn on are different facts, and this ' +
+                                 'is the only place the difference shows. The four sources ' +
+                                 'it is reading are named while it reads them, which is the ' +
+                                 'same provenance the answer will carry a moment later.',
+                      action: 'See the answer it produces in the simulator' },
+        attention:  { label: 'Needs attention',
+                      trigger: 'One source cannot be read.',
+                      behaviour: 'Eleven of twelve still answer. The recovery — retry, ' +
+                                 'replace, remove — sits on the row that needs it, and the ' +
+                                 'header counts both halves rather than condemning the base.',
+                      action: 'Retry it, or take it out' }
       },
 
       /* ── The model ────────────────────────────────────────
          One shape, built once, handed to the component. The view
          decides nothing the data has not already decided, which
-         is what lets the same panel serve five different bases
-         and twelve different situations. */
+         is what lets the same panel serve five different bases. */
       view: function (s) {
         var c = s.cfg, K = window.MaterialKB;
         if (!K) return '';
         var st = s.state;
         var b = K.base(c.base);
-        var name = c.baseName || b.name;
 
         /* Where the demonstration has got to — not customization,
            so it lives beside the config rather than in it, and
@@ -4563,93 +4016,50 @@ card + '>\n' + head +
            wherever somebody left it last time. */
         var d = s.demo && s.demo.on === st ? s.demo : (s.demo = { on: st, drop: [] });
 
-        var list = st === 'empty' ? [] : K.sources(c.base, MIX[st] || null);
+        var list = st === 'empty' ? []
+                 : K.sources(c.base, st === 'processing' ? 'processing'
+                                   : st === 'attention' ? 'attention' : null);
 
-        /* Rows a person removed, fixed, reconnected or refreshed
-           all stay true across a repaint. */
+        /* Rows a person removed, and rows they fixed, both stay
+           true across a repaint. */
         list = list.filter(function (x) { return d.drop.indexOf(x.name) === -1; });
-        ['fixed', 'refreshed', 'back'].forEach(function (k) {
-          if (!d[k]) return;
-          list.forEach(function (x) {
-            if (x.name === d[k]) {
-              x.state = 'ready'; x.note = ''; x.detail = '';
-              if (k === 'refreshed') x.fresh = 'Linked · follows the original';
-            }
-          });
+        if (d.fixed) list.forEach(function (x) {
+          if (x.name === d.fixed) { x.state = 'ready'; x.note = ''; }
+        });
+        if (d.refreshed) list.forEach(function (x) {
+          if (x.name === d.refreshed) { x.state = 'ready'; }
         });
         if (d.added) list = list.concat(d.added);
         if (d.done) list.forEach(function (x) { x.state = 'ready'; });
 
-        /* The base's state comes from the sources, so a base whose
-           last broken row was fixed is not still in trouble and
-           one whose uploads have finished is not still uploading.
-           The moments the data cannot know — in use, answered,
-           found nothing, switched off — are passed in and win. */
-        /* Arriving at the confirmation directly still has to name
-           a real source: a dialog that asks about "this source" is
-           the exact failure the state exists to prevent. */
-        if (st === 'confirm' && !d.asking && list.length) d.asking = list[0].name;
-
-        var TOLD = { using: 1, none: 1, inactive: 1, available: 1,
-                     multiple: 1, manage: 1, confirm: 1,
-                     unavailable: 1, partial: 1 };
-        var moment = d.moment !== undefined ? d.moment : (TOLD[st] ? st : null);
-        var live = K.derive(list, moment);
-
-        /* Being used carries both halves: the live line while it is
-           reading, and the provenance the answer keeps. Naming the
-           four it is reading now and the four it read a moment ago
-           is the same list at two moments, not two facts. */
-        var used = null, heading = null;
-        if (live === 'using') {
-          used = d.usedShown || list.slice(0, 4);
-          heading = d.usedShown ? null : 'Reading from 4 sources';
-        }
+        var t = K.tally(list);
+        /* A base whose last broken source was fixed or removed is
+           not still in trouble, and one whose sources have all
+           finished is not still processing. The state follows the
+           data rather than the label on the selector. */
+        var live = st === 'attention' && !t.stop && !t.stale ? 'ready'
+                 : st === 'processing' && !t.busy ? 'ready'
+                 : st === 'empty' && list.length ? 'processing'
+                 : st;
 
         return K.panel({
           state: live,
-          name: name, mark: b.mark,
-          scope: c.scopeText || b.scope,
-          /* Available and Active are the same place with two
-             different promises, so the verb is computed and only
-             the WHERE is authored. */
-          where: c.scopeText || (b.where || 'in this project'),
-          bases: [
-            { name: name, mark: b.mark, count: list.length, on: true },
-            { name: 'Design System',      mark: 'DS', count: 6, on: false },
-            { name: 'Launch Requirements', mark: 'LR', count: 4, on: false }
-          ],
-          basesHeading: c.basesHeading,
-          allowSwitch: c.allowSwitch !== false,
-          confirming: {
-            title: 'Remove “' + (d.asking || 'this source') + '”?',
-            body: (c.removeCopy || '')
-                    .replace('{source}', d.asking || 'this source')
-                    .replace('{base}', name),
-            confirm: 'kb:remove-ok', cancel: 'kb:cancel', verb: 'Remove'
-          },
+          name: c.baseName || b.name, mark: b.mark, scope: b.scope,
           sources: list,
           open: !!d.open,
-          showAll: !!d.showAll,
           activity: d.activity,
-          used: used, usedHeading: heading,
-          emptyTitle: c.emptyTitle, emptyBody: c.emptyBody,
-          noneCopy: (c.noneCopy || '').replace('Product Research', name),
-          trouble: live === 'partial' ? c.partCopy : c.goneCopy,
+          /* While it is reading, the four it is reading ARE the
+             provenance — the same list a moment earlier. */
+          used: live === 'using' ? (d.usedShown || list.slice(0, 4)) : null,
+          usedHeading: live === 'using' && !d.usedShown
+            ? 'Reading from 4 sources' : null,
+          emptyTitle: c.emptyTitle, emptyBody: c.emptyBody, failCopy: c.failCopy,
           showCount: c.showCount !== false,
           scopeNote: c.scopeNote !== false,
           showFresh: c.showFresh !== false,
           showProv: c.showProv !== false,
-          showDetail: !!c.showDetail,
           showList: c.showList !== false,
           allowManage: c.showList !== false && c.allowManage !== false,
-          allowRemove: c.showList !== false && c.allowManage !== false &&
-                       c.allowRemove !== false,
-          allowSwitch: c.allowSwitch !== false,
-          allowDelete: c.allowDelete !== false,
-          allowUngrounded: c.allowUngrounded !== false,
-          group: c.group || 'none',
-          maxRows: c.maxRows === 'six' ? 6 : 0,
           layout: c.layout || 'rows',
           statusStyle: c.statusStyle || 'badge',
           density: c.density || 'comfortable'
@@ -4664,95 +4074,45 @@ card + '>\n' + head +
         var d = S.demo && S.demo.on === S.state ? S.demo : (S.demo = { on: S.state, drop: [] });
         function moveTo(next) { S.state = next; d.on = next; }
         function live() {
-          var l = K.sources(c.base, MIX[S.state] || null)
-            .filter(function (x) { return d.drop.indexOf(x.name) === -1; });
-          return d.added ? l.concat(d.added) : l;
+          var l = K.sources(c.base, S.state === 'processing' ? 'processing'
+                                  : S.state === 'attention' ? 'attention' : null);
+          return l.filter(function (x) { return d.drop.indexOf(x.name) === -1; });
         }
-        function nameOf() { return c.baseName || K.base(c.base).name; }
 
         if (a === 'kb:open')  { d.open = true;  ctx.paint(); return; }
         if (a === 'kb:close') { d.open = false; ctx.paint(); return; }
-        if (a === 'kb:all')   { d.showAll = true;  ctx.paint(); return; }
-        if (a === 'kb:fewer') { d.showAll = false; ctx.paint(); return; }
-        if (a === 'kb:peek')  { ctx.paint(); return; }
 
-        /* ACTIVE is not READY, and the proof is that you can turn
-           one off without touching the other. */
-        if (a === 'kb:deactivate') {
-          d.moment = 'inactive'; moveTo('inactive'); ctx.paint();
-          ctx.announce(nameOf() + ' is no longer active here. Nothing was deleted.');
-          return;
-        }
-        if (a === 'kb:activate') {
-          d.moment = 'active'; moveTo('active'); ctx.paint();
-          ctx.announce(nameOf() + ' is active in this project.');
-          return;
-        }
-        /* Several bases, one project. Switching one on or off is
-           the same reversible act as the footer's, performed from
-           a row instead — and it never touches what is in them. */
-        if (a.indexOf('kb:on:') === 0) {
-          d.moment = 'multiple'; ctx.paint();
-          ctx.announce('That knowledge base is now active in this project.');
-          return;
-        }
-        if (a.indexOf('kb:off:') === 0) {
-          d.moment = 'multiple'; ctx.paint();
-          ctx.announce('That knowledge base is no longer active here. Nothing was deleted.');
-          return;
-        }
-        /* Review is navigation, not repair: it opens the list at
-           the row that is the reason for the word. */
-        if (a === 'kb:review') {
-          d.open = true; ctx.paint();
-          ctx.announce('Showing the source that needs attention.');
-          return;
-        }
-        /* Deleting is a different act from switching off, so it
-           asks — and it asks in the simulator, where a dialog can
-           be answered. Here it only says so. */
-        if (a === 'kb:delete') {
-          ctx.announce('Deleting a knowledge base is confirmed separately. ' +
-                       'Switching one off never deletes anything.');
-          return;
-        }
-        if (a === 'kb:ask-without') {
-          d.moment = null; moveTo('ready'); ctx.paint();
-          ctx.announce('Asking without ' + nameOf() + '. The answer will not be grounded ' +
-                       'in it, and will not claim to be.');
-          return;
-        }
-
-        /* ADD. Four sources arrive, and they are not ready: three
-           named waits, because they fail in three places. */
+        /* ADD. Two sources arrive and are not ready: that is the
+           whole point of the processing state, and it is the only
+           honest way to reach it. */
         if (a === 'kb:add') {
           d.added = (d.added || []).concat([
-            { name: 'Pricing study — draft', kind: 'doc', origin: 'upload',
-              state: 'preparing', fresh: 'Uploaded just now' },
-            { name: 'Churn interviews', kind: 'pdf', origin: 'upload',
-              state: 'preparing', fresh: 'Uploaded just now' },
-            { name: 'Beta feedback log', kind: 'sheet', origin: 'upload',
-              state: 'preparing', fresh: 'Uploaded just now' }
+            { name: 'Pricing study — draft', kind: 'doc',
+              fresh: 'Uploading', state: 'uploading' },
+            { name: 'Churn interviews', kind: 'pdf',
+              fresh: 'Uploading', state: 'uploading' }
           ]);
-          d.done = false; d.moment = null;
-          moveTo(S.state === 'empty' ? 'preparing' : S.state);
-          d.open = true; ctx.paint();
-          ctx.announce('Three sources added. Preparing them.');
+          d.done = false;
+          moveTo('processing'); ctx.paint();
+          ctx.announce('Two sources added. Preparing them.');
           return ctx.wait(1100).then(function () {
-            d.added.forEach(function (x) { x.state = 'preparing'; });
-            ctx.paint();
-            return ctx.wait(1400);
+            d.added.forEach(function (x) { x.state = 'processing'; });
+            ctx.paint(); ctx.announce('Reading the new sources');
+            return ctx.wait(1300);
           }).then(function () {
-            d.added.forEach(function (x) { x.state = 'ready'; });
-            d.done = false; ctx.paint();
-            ctx.announce(nameOf() + ' is ready.');
+            d.added.forEach(function (x) {
+              x.state = 'ready'; x.fresh = 'Uploaded just now';
+            });
+            d.done = true;
+            moveTo('ready'); ctx.paint();
+            ctx.announce(K.base(c.base).name + ' is ready.');
           });
         }
 
-        /* THE ROW THAT NEEDS A PERSON. Four different recoveries,
-           because four different things are wrong. All of them
-           leave the other sources alone, which is the fact these
-           states exist to carry. */
+        /* THE FAILING ROW. Retry succeeds; replace stands in for
+           the file picker a host would open; remove takes the row
+           out. All three leave the other sources alone, which is
+           the fact this state exists to carry. */
         if (a.indexOf('kb:retry:') === 0) {
           var rn = (live()[+a.slice(9)] || {}).name;
           ctx.announce('Retrying ' + rn);
@@ -4761,51 +4121,24 @@ card + '>\n' + head +
             ctx.announce(rn + ' is ready.');
           });
         }
-        if (a.indexOf('kb:reconnect:') === 0) {
-          var cn = (live()[+a.slice(13)] || {}).name;
-          ctx.announce('Reconnecting ' + cn);
-          return ctx.wait(1100).then(function () {
-            d.back = cn; ctx.paint();
-            ctx.announce(cn + ' is available again.');
-          });
-        }
         if (a.indexOf('kb:replace:') === 0) {
           var pn = (live()[+a.slice(11)] || {}).name;
-          if (!pn) return;
           d.drop.push(pn);
           d.added = (d.added || []).concat([
             { name: pn.replace(/ — .*$/, '') + ' (unlocked)', kind: 'pdf',
-              origin: 'upload', fresh: 'Uploaded just now', state: 'ready' }
+              fresh: 'Uploaded just now', state: 'ready' }
           ]);
           ctx.paint();
           ctx.announce(pn + ' replaced.');
           return;
         }
-        /* REMOVE ASKS. Taking a source out is small, reversible in
-           practice and still worth one question, because the whole
-           point of the confirmation is the sentence saying what is
-           NOT being destroyed. */
         if (a.indexOf('kb:remove:') === 0) {
           var dn = (live()[+a.slice(10)] || {}).name;
           if (!dn) return;
-          d.asking = dn; d.moment = 'confirm'; moveTo('confirm');
-          d.open = true; ctx.paint();
-          ctx.announce('Remove ' + dn + '? The rest of ' + nameOf() + ' is unaffected.');
-          return;
-        }
-        if (a === 'kb:cancel') {
-          d.asking = null; d.moment = 'manage'; moveTo('manage'); ctx.paint();
-          ctx.announce('Nothing was removed.');
-          return;
-        }
-        if (a === 'kb:remove-ok') {
-          var gone = d.asking;
-          if (!gone) return;
-          d.drop.push(gone);
-          if (d.added) d.added = d.added.filter(function (x) { return x.name !== gone; });
-          d.asking = null; d.moment = 'manage'; moveTo('manage'); ctx.paint();
-          ctx.announce(gone + ' removed from ' + nameOf() +
-                       '. The knowledge base and its other sources are unchanged.');
+          d.drop.push(dn);
+          if (d.added) d.added = d.added.filter(function (x) { return x.name !== dn; });
+          ctx.paint();
+          ctx.announce(dn + ' removed from ' + K.base(c.base).name + '.');
           return;
         }
         if (a.indexOf('kb:refresh:') === 0) {
@@ -4821,26 +4154,23 @@ card + '>\n' + head +
            three moments of one state, because that is how it
            happens rather than three places to navigate to. */
         if (a === 'kb:use') {
-          var n = nameOf();
-          d.activity = 'Searching ' + n + '…';
-          d.usedShown = null; d.moment = 'using';
+          var name = K.base(c.base).name;
+          d.activity = 'Searching ' + name + '…';
+          d.usedShown = null;
           moveTo('using'); ctx.paint();
-          ctx.announce('Searching ' + n);
+          ctx.announce('Searching ' + name);
           return ctx.wait(1200).then(function () {
             d.activity = 'Reading 4 relevant sources…';
             ctx.paint(); ctx.announce('Reading four sources');
             return ctx.wait(1300);
           }).then(function () {
+            d.activity = 'Read 4 sources';
             d.usedShown = live().slice(0, 4);
-            /* The live line stays and changes tense. Searching and
-               using are two moments of one state, and the second
-               is the one the answer will carry. */
-            d.activity = 'Using 4 relevant sources';
-            d.moment = 'using';
             ctx.paint();
-            ctx.announce('Used four sources from ' + n + '.');
+            ctx.announce('Answered using four sources from ' + name + '.');
           });
         }
+        if (a === 'kb:peek') { ctx.paint(); return; }
       }
     },
 
@@ -5957,7 +5287,7 @@ card + '>\n' + head +
 
         var html = M.composer({
           agent: 'Aria',
-          ask: 'Ask me anything',
+          ask: 'Ask about the proposal…',
           plus: ['Upload a file', 'Upload a photo', 'Paste text'],
           atts: list
         });
@@ -6111,7 +5441,7 @@ card + '>\n' + head +
 
         var html = M.composer({
           agent: agent,
-          ask: 'Ask me anything',
+          ask: 'Ask ' + agent + ' about the feedback…',
           plus: ['Attach a file', 'Add a source'],
           modes: c.mode ? ['Balanced', 'Thorough'] : null,
           mic: true,
