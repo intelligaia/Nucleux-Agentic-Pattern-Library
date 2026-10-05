@@ -319,6 +319,44 @@ html.gnav-pending .gnav__actions { visibility: hidden; }
   background: var(--fg);
 }
 
+/* ── "Featured" badge on the Design System tab ──
+   Drawn as a pseudo-element because nav-splitflap.js rewrites the
+   link's contents; absolutely placed so it never changes the nav's
+   spacing. Sits inline after the label, vertically centred. */
+.gnav__link--featured { --gnav-badge-room: 64px; padding-right: var(--gnav-badge-room); }
+.gnav__link--featured.is-current::after { right: var(--gnav-badge-room); }
+.gnav__link--featured::before {
+  content: "Featured";
+  position: absolute;
+  /* inline, right after the label, centred on it. The link reserves the
+     room with padding-right, so the badge never overlaps its neighbours;
+     the underline (is-current ::after) stops where the text stops. */
+  left: calc(100% - var(--gnav-badge-room) + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #FFC800;
+  color: #000;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.gnav__mobile-link .gnav__badge {
+  margin-left: 8px;
+  margin-right: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #FFC800;
+  color: #000;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 /* ── Components flyout ── */
 .gnav__item--has-flyout { position: relative; }
 .gnav__item--has-flyout::before {
@@ -3718,8 +3756,10 @@ body.is-lbx-open { overflow: hidden; }
   .cats__intro { grid-template-columns: 1fr; }
   .foot__lockup { grid-template-columns: 1fr; align-items: start; }
 }
-@media (max-width: 1080px) {
+@media (max-width: 1240px) {
   .gnav__center { display: none; }
+  /* centre column is empty now — keep the actions pinned to the right edge */
+  .gnav__inner > .gnav__actions { grid-column: 3; }
 }
 @media (max-width: 720px) {
   .brand__tagline { display: none; }
@@ -3737,7 +3777,7 @@ body.is-lbx-open { overflow: hidden; }
 
 /* ============================================================
    MOBILE NAV — hamburger + slide-down panel
-   The inline centre nav collapses at ≤1080px; this hamburger +
+   The inline centre nav collapses at ≤1240px (six links since Design System); this hamburger +
    panel (built by global.js on every page) restores navigation.
    ============================================================ */
 .gnav__toggle {
@@ -3813,10 +3853,10 @@ body.is-lbx-open { overflow: hidden; }
 }
 body.nav-open { overflow: hidden; }
 
-@media (max-width: 1080px) {
+@media (max-width: 1240px) {
   .gnav__toggle { display: inline-flex; }
 }
-@media (min-width: 1081px) {
+@media (min-width: 1241px) {
   .gnav__mobile { display: none; }
 }
 

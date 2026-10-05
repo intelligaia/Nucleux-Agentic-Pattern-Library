@@ -173,17 +173,6 @@
     </div>
   </div>`,
 
-    "search-filter": () => `
-      <div class="mock" style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:6px;padding:5px 8px;background:var(--surface)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span style="font-size:11px;color:var(--fg-muted)">Search contracts…</span>
-        </div>
-        <div style="display:flex;gap:5px">
-          <span style="padding:2px 7px;border-radius:9999px;background:var(--accent-ghost);color:var(--accent);border:1px solid var(--accent);font-size:10px">Q2 2024</span>
-          <span style="padding:2px 7px;border-radius:9999px;background:var(--accent-ghost);color:var(--accent);border:1px solid var(--accent);font-size:10px">PDF</span>
-        </div>
-      </div>`,
 
     "autocomplete": () => `
       <div class="mock" style="display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:6px;padding:6px 10px;background:var(--surface)">

@@ -198,72 +198,66 @@
     'initial-cta': {
       type: ['interaction', 'component'], maturity: 'established',
       seen: ['ChatGPT', 'Claude', 'Gemini', 'Perplexity'],
-      seenWhat: 'A single prominent invitation on the empty state, which stands down the moment ' +
-                'there is work on the screen.',
+      seenWhat: 'One large, centred composer on the empty state that becomes the docked working ' +
+                'composer after the first message.',
       whenNot: 'Once there is work in progress. A large empty-state invitation next to a running ' +
                'task competes with the thing the person came back for.'
     },
     'open-input': {
       type: ['component'], maturity: 'established',
-      seen: ['ChatGPT', 'Claude', 'Gemini', 'Copilot', 'Perplexity'],
-      seenWhat: 'The canonical surface of the category: one field that accepts anything, carrying ' +
-                'its controls inline rather than in a toolbar above it.',
+      seen: ['ChatGPT', 'Claude', 'Gemini', 'Copilot', 'Perplexity', 'Cursor'],
+      seenWhat: 'The canonical surface of the category: one persistent field that accepts anything, ' +
+                'carrying its controls inside it and keeping the draft through all of them.',
       whenNot: 'When the set of things the person can ask for is genuinely small and known. A free ' +
                'text box in front of four possible actions is a guessing game with four answers.'
     },
     'suggested-prompts': {
       type: ['interaction'], maturity: 'established',
-      seen: ['ChatGPT', 'Gemini', 'Copilot', 'Perplexity'],
-      seenWhat: 'Starting questions drawn from what is actually on the screen, replaced as the ' +
-                'context changes.',
+      seen: ['ChatGPT', 'Claude', 'Gemini', 'Copilot'],
+      seenWhat: 'A few starting points on an empty conversation, drawn from the open context, ' +
+                'that fill the composer to be edited and go once the conversation begins.',
       whenNot: 'When the suggestions are generic. A context-free suggestion is worse than none: it ' +
                'occupies the space where a useful one would have gone and teaches people not to look.'
     },
     'ai-icons': {
-      type: ['signal'], maturity: 'established',
-      seen: ['Gemini', 'Copilot', 'Notion AI', 'Perplexity'],
-      seenWhat: 'The same reserved glyph used as an entry affordance &mdash; a place to press, ' +
-                'rather than a label on something already happening.',
-      whenNot: 'As a second, separate mark from the one Iconography already reserved. Two AI glyphs ' +
-               'in one product means neither is the AI glyph.'
+      type: ['signal'], maturity: 'emerging',
+      seen: ['Gemini', 'Copilot', 'Claude', 'ChatGPT', 'AWS (Cloudscape)', 'IBM (Carbon)'],
+      seenWhat: 'Separate marks for separate AI meanings: a reserved mark on AI action triggers, ' +
+                'a distinct label on AI-generated content, and activity shown only while the agent works.',
+      holdBack: 'The glyphs have not converged across products (sparkles, wands, labels), but the ' +
+                'rule has: one meaning per mark, always with words.',
+      whenNot: 'For “new”, “premium” or decoration, or as the agent’s identity. Those get words, ' +
+               'or the avatar and name.'
     },
-    'search-filter': {
-      type: ['interaction', 'workflow'], maturity: 'emerging',
-      seen: ['Perplexity', 'Notion AI', 'Linear', 'GitHub'],
-      seenWhat: 'A natural-language query that POPULATES explicit filters rather than replacing ' +
-                'them &mdash; the facets stay visible and stay editable.',
-      holdBack: 'Four products, four different answers: one parses the sentence into facets, one ' +
-                'runs the sentence alongside the facets, one uses it only to rank. Widely shipped ' +
-                'and not yet converged, which is what Emerging means.',
-      whenNot: 'As a replacement for filters. No mature product has retired its facets in favour ' +
-               'of a sentence, because a person who can see a filter can correct it and a person ' +
-               'who cannot can only rephrase and hope.'
-    },
+
+
     'autocomplete': {
       type: ['interaction', 'component'], maturity: 'established',
-      seen: ['GitHub Copilot', 'Cursor', 'Notion AI', 'Linear'],
-      seenWhat: 'Four distinct completions behind one affordance: continuing a prompt, completing ' +
-                'a command, completing a mention, and completing a tool name.',
-      whenNot: 'When a wrong acceptance is expensive. Ghost text is accepted by the same key that ' +
-               'ends a line, so it belongs where being wrong costs a keystroke, not a record.'
+      seen: ['Gmail', 'GitHub Copilot', 'Claude', 'ChatGPT', 'Cursor', 'Slack'],
+      seenWhat: 'The rest of what is being typed, offered after the caret or in a / @ menu, accepted ' +
+                'with one key that is not Enter, and never sent on accept.',
+      whenNot: 'Where a wrong completion is costly and easy to miss — contract, financial or clinical ' +
+               'wording — or before anything is typed, where Suggested Prompts belongs.'
     },
+
     'proactive': {
-      type: ['behavior'], maturity: 'emerging',
-      seen: ['GitHub Copilot', 'Notion AI', 'Copilot'],
-      seenWhat: 'The agent offering something unasked, with the reason it appeared attached to it.',
-      whenNot: 'Without dismiss, snooze and a frequency limit. A proactive pattern with no ' +
-               'suppression story is not a pattern, it is an interruption with a good intention.'
+      type: ['interaction', 'workflow'], maturity: 'established',
+      seen: ['Linear', 'Gmail', 'GitHub Copilot', 'Microsoft 365 Copilot'],
+      seenWhat: 'A suggestion raised from evidence in the work, with its reason, that the person can ' +
+                'accept, decline or ignore — and nothing applied until they do.',
+      whenNot: 'On a timer with no new evidence, or for low-value tips. A suggestion that keeps coming ' +
+               'back after being dismissed teaches people to dismiss everything.'
     },
+
     'randomize': {
-      type: ['interaction'], maturity: 'experimental',
-      seen: ['Midjourney', 'Firefly'],
-      seenWhat: 'Only in creative and image tooling, as a seed or variation shuffle. No mature ' +
-                'general-purpose agent ships a dice, and this is documented here rather than ' +
-                'promoted because the absence is itself the finding.',
-      whenNot: 'Anywhere the person has a specific outcome in mind, which is nearly everywhere ' +
-               'outside creative exploration. Randomness is only useful when the person does not ' +
-               'yet know what they want.'
+      type: ['interaction'], maturity: 'specialized',
+      seen: ['Krea', 'Scenario', 'Coolors'],
+      seenWhat: 'A one-press random starting point in creative tools — a prompt, style or palette — that ' +
+                'the person keeps, edits or regenerates.',
+      whenNot: 'In deterministic or high-stakes work — finance, legal, medical, destructive operations — ' +
+               'where a random direction has no value and invites a misleading one.'
     },
+
 
     /* ══ INITIALLY · Expressive Input ═════════════════════════ */
     'voice-input': {

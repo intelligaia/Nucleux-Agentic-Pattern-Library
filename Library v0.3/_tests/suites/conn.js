@@ -227,6 +227,35 @@ const URL = 'http://127.0.0.1:8901/material-pattern.html?id=connectors';
     }
   }
 
+  /* ── 6b · Connected is the card alone ─────────────────────
+     The user asked for the confirmation sentence above the card
+     and the account after "Connected" to go. Both are checked in
+     the Live Preview and the simulator's transcript card. */
+  {
+    const ci = scenes.findIndex(n => /^connected$/i.test(n));
+    ok('6b.1 there is a Connected scene', ci !== -1, scenes.join());
+    if (ci !== -1) {
+      await go(ci);
+      const k = await p.evaluate(() => {
+        const st = document.querySelector('.pv-stage');
+        const card = st.querySelector('.md-conn');
+        return {
+          because: st.querySelectorAll('.md-conn__because').length,
+          asked: /without being asked again|I can use/.test(st.textContent),
+          dash: st.querySelectorAll('.md-conn__dash').length,
+          jordan: st.textContent.indexOf('jordan-work') !== -1,
+          state: card && card.querySelector('.md-conn__state').textContent.trim(),
+          ctrl: [...document.querySelectorAll('[data-cfg]')].map(e => e.dataset.cfg)
+        };
+      });
+      ok('6b.2 no confirmation sentence above the card', !k.because && !k.asked, JSON.stringify(k));
+      ok('6b.3 no account after the state', !k.dash && !k.jordan, JSON.stringify(k));
+      ok('6b.4 the state reads just "Connected"', k.state === 'Connected', k.state);
+      ok('6b.5 no "Name the account" control where there is no account',
+         k.ctrl.indexOf('showAccount') === -1, k.ctrl.join());
+    }
+  }
+
   /* ── 7 · The pattern owns the stage's width ───────────────
      The stage is a grid with place-items:center, which shrink-wraps
      a block child. A wrapper added between the stage and the scene

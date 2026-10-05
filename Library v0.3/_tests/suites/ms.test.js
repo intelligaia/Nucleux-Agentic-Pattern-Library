@@ -266,7 +266,14 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
   const c1 = await custText();
   await go('Auto selected'); await p.waitForTimeout(300);
   const c2 = await custText();
+  /* The Scope control was removed (user request). "Model changed" is
+     the one state it used to appear in, so check there. */
+  await go('Model changed'); await p.waitForTimeout(300);
+  const c3 = await custText();
   await custBtn(); await p.waitForTimeout(300);
+  ok('6.7b no Scope control in the customizer, in the state it used to show in',
+     c3.length > 0 && !/Next message|This conversation|Everywhere/.test(c3) && /Acknowledge the change/.test(c3),
+     ((c3.match(/.{0,40}(Scope|Everywhere).{0,40}/) || [''])[0]));
   ok('6.7 the customizer offers no objective or recommended controls',
      c1.length > 0 && !/optimises for|recommended/i.test(c1 + c2), 'len ' + c1.length + ' ' + ((c1 + c2).match(/.{0,60}(optimises for|recommended).{0,60}/i) || [''])[0]);
 
@@ -292,16 +299,28 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
   ok('6b.4 the chip says Auto', v.chip === 'Auto' && v.chipRouter, v.chip);
   ok('6b.5 Auto still says what it weighs once the list has collapsed',
      /balancing quality and speed\./i.test(v.text));
-  await p.evaluate(() => document.querySelector('.pv-stage .md-ml__auto').click());
-  await p.waitForTimeout(120);
-  const mid = await p.evaluate(() =>
-    Math.round(document.querySelector('.pv-stage .md-ml__models').getBoundingClientRect().height));
-  await p.waitForTimeout(500);
+  /* Every frame of the opening is sampled, rather than one moment:
+     a single sample at 120ms read 0 whenever the page was slow to
+     start the frame (a busy headless renderer), which says nothing
+     about whether the list eases. */
+  const frames = await p.evaluate(() => new Promise(res => {
+    document.querySelector('.pv-stage .md-ml__auto').click();
+    const hs = [], t0 = performance.now();
+    (function tick() {
+      const el = document.querySelector('.pv-stage .md-ml__models');
+      if (el) hs.push(Math.round(el.getBoundingClientRect().height));
+      if (performance.now() - t0 < 700) requestAnimationFrame(tick); else res(hs);
+    })();
+  }));
+  await p.waitForTimeout(100);
   v = await S();
   const tall = await p.evaluate(() =>
     Math.round(document.querySelector('.pv-stage .md-ml__models').getBoundingClientRect().height));
+  /* An ease passes through the lower part of the opening; a snap (or
+     a list that was never collapsed) does not. */
+  const mid = frames.find(h => h > 0 && h < tall * 0.8) || 0;
   ok('6b.2 switching it off opens the list with an ease rather than a snap',
-     mid > 0 && mid < tall, flat + ' → ' + mid + ' → ' + tall);
+     mid > 0 && mid < tall, flat + ' → ' + mid + ' → ' + tall + ' (' + frames.length + ' frames)');
   ok('6b.6 switching it off hands the choice back to the model that was in use',
      v.collapsed === 'false' && v.chip === 'Balanced', v.chip);
 
@@ -354,19 +373,51 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
   ok('6c.12 the chip closes it again', !(await S()).slider && !(await S()).open);
 
   /* ══ 6d · one action, two screens (user wireframe) ════════
-     The chip opens the model list; a pick REPLACES it with the
-     effort screen for that model; the breadcrumb replaces it
-     back. Focus follows each swap. */
+     The chip opens the model list. The WHOLE row of a model is the
+     control: it selects it and replaces the list with that model's
+     effort screen. An 18px chevron at the row's right end says so,
+     and is part of the row, not a second button. The breadcrumb
+     replaces the effort screen with the list again. */
   await go('Resting');
   await press('ax:mode', 400);
   v = await S();
   ok('6d.1 the chip always opens on the model list', v.open && !v.slider);
-  await p.click('.pv-stage [data-act="model:pick:fast"]'); await p.waitForTimeout(450);
+  const chev = await p.evaluate(() => {
+    const items = [...document.querySelectorAll('.pv-stage .md-ml__opt')];
+    return items.map(o => {
+      const g = o.querySelector(':scope > .md-ml__chev');
+      const sv = g && g.querySelector('svg');
+      const gb = g && g.getBoundingClientRect(), ob = o.getBoundingClientRect();
+      return { dis: o.disabled, has: !!g, hidden: g && g.getAttribute('aria-hidden'),
+               sib: !!o.parentElement.querySelector(':scope > .md-ml__go, :scope > button:not(.md-ml__opt):not(.md-ml__auto)'),
+               w: sv && Math.round(sv.getBoundingClientRect().width), h: sv && Math.round(sv.getBoundingClientRect().height),
+               fill: sv && getComputedStyle(sv).fill,
+               right: gb && Math.round(ob.right - gb.right),
+               mid: gb && Math.abs((gb.top + gb.height / 2) - (ob.top + ob.height / 2)),
+               d: g && (g.querySelector('path') || {}).getAttribute && g.querySelector('path').getAttribute('d') };
+    });
+  });
+  const usable = chev.filter(c => !c.dis);
+  ok('6d.1a every usable model row has a chevron on its right', usable.length > 0 && usable.every(c => c.has), JSON.stringify(chev));
+  ok('6d.1b the chevron is 18px (user request)', usable.every(c => c.w === 18 && c.h === 18), JSON.stringify(usable.map(c => [c.w, c.h])));
+  ok('6d.1c it is keyboard_arrow_right, filled',
+     usable.every(c => c.d === 'M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z' && c.fill !== 'none'));
+  ok('6d.1d centred on its row, at the right edge',
+     usable.every(c => c.mid <= 1 && c.right >= 0 && c.right <= 12), JSON.stringify(usable.map(c => [c.mid, c.right])));
+  ok('6d.1e part of the row, not a second control', usable.every(c => c.hidden === 'true' && !c.sib));
+  ok('6d.1f a row that cannot be used has no chevron', chev.filter(c => c.dis).every(c => !c.has));
+  /* Anywhere on the row: its description, far from the chevron. */
+  await p.click('.pv-stage [data-act="model:pick:fast"] .md-ml__f'); await p.waitForTimeout(450);
   v = await S();
-  ok('6d.2 a pick replaces the list with the effort screen', !v.open && !!v.slider);
-  ok('6d.3 the breadcrumb names the model just picked, and its effort',
-     v.crumb === 'Fast High', v.crumb);
-  ok('6d.4 the model changed, and the chip says so', v.chip === 'Fast', v.chip);
+  ok('6d.2 pressing anywhere on a row replaces the list with its effort screen',
+     !v.open && !!v.slider && v.crumb === 'Fast High', v.crumb);
+  ok('6d.2b and selects that model, and the chip says so', v.chip === 'Fast', v.chip);
+  await p.click('.pv-stage .md-mle__crumb'); await p.waitForTimeout(450);
+  await p.click('.pv-stage [data-act="model:pick:balanced"] .md-ml__chev'); await p.waitForTimeout(450);
+  v = await S();
+  ok('6d.3 the chevron itself does the same (it is part of the row)',
+     !v.open && !!v.slider && v.crumb === 'Balanced High', v.crumb);
+  ok('6d.4 the chip follows', v.chip === 'Balanced', v.chip);
   ok('6d.5 focus moves onto the slider, so arrows work at once',
      await p.evaluate(() => document.activeElement &&
        document.activeElement.classList.contains('md-mle__track')));
@@ -377,7 +428,7 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
   ok('6d.7 the breadcrumb replaces it with the model list again', v.open && !v.slider);
   ok('6d.8 with focus on the selected model',
      await p.evaluate(() => { const a = document.activeElement;
-       return !!a && a.getAttribute('aria-checked') === 'true' && /Fast/.test(a.textContent); }));
+       return !!a && a.getAttribute('aria-checked') === 'true' && /Balanced/.test(a.textContent); }));
   await p.evaluate(() => document.querySelector('.pv-stage .md-ml__auto').click());
   await p.waitForTimeout(600);
   v = await S();
@@ -394,6 +445,11 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
      repaint threw away. */
   await go('Resting');
   await p.focus('.pv-stage [data-act="ax:mode"]'); await p.keyboard.press('Enter'); await p.waitForTimeout(400);
+  await p.evaluate(() => document.querySelector('.pv-stage .md-ml__opt[aria-checked="true"]').focus());
+  await p.keyboard.press('Tab'); await p.waitForTimeout(150);
+  ok('6d.11b no extra tab stop inside a row',
+     await p.evaluate(() => !document.activeElement.closest('.md-ml__opt[aria-checked="true"]') &&
+       !document.activeElement.classList.contains('md-ml__chev')));
   await p.evaluate(() => document.querySelector('.pv-stage .md-ml__opt[aria-checked="true"]').focus());
   await p.keyboard.press('Enter'); await p.waitForTimeout(450);
   ok('6d.12 a keyboard pick lands on the slider with a visible focus',
@@ -415,6 +471,9 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
   ok('7.5 no provider error text', !/\b(4\d\d|5\d\d)\b|error|failed/i.test(v.text));
   ok('7.6 the rest of the list still works',
      v.rows.filter(r => r.avail === 'ok').length >= 3);
+  ok('7.7 a row that cannot be used has no chevron to its effort',
+     await p.evaluate(() => [...document.querySelectorAll('.pv-stage .md-ml__opt:disabled')]
+       .every(o => !o.querySelector('.md-ml__chev'))));
 
   /* ══ 8 · RESTRICTED ═══════════════════════════════════════ */
   await go('Organization restricted');
@@ -510,10 +569,19 @@ const NAMES = ['Resting','Picker open','Specific model selected','Auto selected'
   if (!(await S()).open) await press('ax:mode', 400);
   const marked = await p.evaluate(() => {
     const on = document.querySelector('.pv-stage .md-ml__opt[aria-checked="true"]');
-    return { tick: !!on.querySelector('.md-ml__tick svg'), aria: on.getAttribute('aria-checked') };
+    const sv = on.querySelector('.md-ml__tick svg');
+    const t = sv && sv.getBoundingClientRect(), n = on.querySelector('.md-ml__n').getBoundingClientRect();
+    const cs = sv && getComputedStyle(sv);
+    return { tick: !!sv, aria: on.getAttribute('aria-checked'),
+             w: t && t.width, h: t && t.height, fill: cs && cs.fill, stroke: cs && cs.stroke,
+             off: t && Math.abs((t.top + t.height / 2) - (n.top + n.height / 2)) };
   });
   ok('12.1 the selected row carries a check, not just a tint', marked.tick);
   ok('12.2 and is exposed to assistive tech', marked.aria === 'true');
+  ok('12.3 the check is 24px (user request)', marked.w === 24 && marked.h === 24, JSON.stringify(marked));
+  ok('12.4 drawn filled, as a Material Symbol, not stroked hollow',
+     marked.fill !== 'none' && marked.stroke === 'none', JSON.stringify(marked));
+  ok('12.5 centred on the model name', marked.off <= 1.5, String(marked.off));
 
   /* ══ narrow layout ════════════════════════════════════════ */
   await go('Picker open');

@@ -76,6 +76,1039 @@
   var MIX = { preparing: 'preparing', partial: 'partial',
               unavailable: 'unavailable' };
 
+  /* ── Initial CTA ──────────────────────────────────────────
+     The four states in which the workspace is still EMPTY. Groups
+     that configure the invitation belong to these and nowhere else:
+     in the working state the invitation no longer exists. */
+  /* ── Open Input ───────────────────────────────────────────
+     The DEFAULT WORKING STATE of the shared composer: persistent,
+     compact, in a conversation that already exists. Everything here
+     is state on s.demo; the composer is MaterialSim.composer. */
+  var OI_PLUS = ['Attach a file', 'Add a source'];
+  var OI_WRITING = ['focused', 'typing', 'multiline', 'ready'];
+  var OI_DRAFT1 = 'Compare these risks with the previous release';
+  var OI_DRAFT2 = 'Compare these risks with the previous release\nand highlight anything new.';
+  var OI_READY = 'Compare these risks with the previous release and highlight anything new.';
+  var OI_HISTORY = [
+    { who: 'you', text: 'Summarize the biggest risks for the September release.' },
+    { who: 'aria', text: 'Three risks stand out: the payments migration is two weeks behind, the ' +
+      'Android build fails on older devices with no owner, and Legal has not signed off the ' +
+      'launch checklist.' }
+  ];
+  var OI_ANSWER = 'Two of the three are new. The August release had no payments work and no ' +
+    'Legal gate; the Android failure is the same one that slipped August by four days — it ' +
+    'still has no owner.';
+  var OI_ERR = {
+    send: 'Couldn’t send your request. It’s still here — edit it or try again.',
+    offline: 'You’re offline. Your request is kept; retry when you’re back.',
+    unavailable: 'Aria is temporarily unavailable. Your request is kept — try again in a moment.'
+  };
+
+  function oiDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.on === st) return s.demo;
+    var turns = OI_HISTORY.slice();
+    if (st === 'submitted') {
+      turns = turns.concat([{ who: 'you', text: OI_READY }, { who: 'aria', text: OI_ANSWER }]);
+    }
+    s.demo = {
+      on: st, turns: turns,
+      text: st === 'typing' ? OI_DRAFT1 : st === 'multiline' ? OI_DRAFT2
+          : st === 'ready' || st === 'error' ? OI_READY : '',
+      focus: st !== 'empty', chips: [], voice: null,
+      model: 'balanced', effort: (window.MaterialModel || {}).EFFORT_DEFAULT || 'high',
+      running: false, failed: st === 'error'
+    };
+    return s.demo;
+  }
+  function oiEntry(st) {
+    return st === 'typing' || st === 'multiline' ? 'typing'
+         : st === 'ready' || st === 'error' ? 'ready' : 'empty';
+  }
+
+  /* More than one line, by content or by wrapping. */
+  function oiLines(field) {
+    if (!field) return 1;
+    var lh = parseFloat(getComputedStyle(field).lineHeight) || 21;
+    return Math.max(field.value.split('\n').length, Math.round(field.scrollHeight / lh));
+  }
+  /* Growth is spatial motion: the composer eases to its new height
+     rather than jumping a line at a time. Reduced motion: it jumps. */
+  function oiGrow(form, before) {
+    if (reduce || !form || !form.animate) return;
+    var after = form.getBoundingClientRect().height;
+    if (Math.abs(after - before) < 2) return;
+    form.animate([{ height: before + 'px' }, { height: after + 'px' }],
+      { duration: 160, easing: 'cubic-bezier(0.2, 0, 0, 1)' });
+  }
+  function oiThread(d) {
+    return d.turns.map(function (t) {
+      if (t.who === 'you') {
+        return '<div class="sim-turn md-oi__turn">' +
+          '<span class="md-agentav md-agentav--sm md-agentav--human" aria-hidden="true">P</span>' +
+          '<div><div class="sim-turn__head"><span class="sim-turn__n">You</span></div>' +
+          '<p class="wf-text">' + esc(t.text).replace(/\n/g, '<br>') + '</p></div></div>';
+      }
+      return '<div class="sim-turn md-oi__turn">' +
+        '<span class="md-agentav md-agentav--sm' + (t.working ? ' md-agentav--thinking' : '') +
+          '" aria-hidden="true">' + mi('spark') + '</span>' +
+        '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' +
+        (t.working
+          ? '<div class="sc-working" role="status"><span class="sc-dot"></span>' +
+            '<span class="sc-dot"></span><span class="sc-dot"></span>' +
+            '<span class="sc-working__t">Comparing with the August release…</span></div>'
+          : '<p class="wf-text">' + esc(t.text) + '</p>') +
+        '</div></div>';
+    }).join('');
+  }
+  function oiGuards(c) {
+    var out = [];
+    var ph = (c.placeholder || '').trim();
+    if (!ph) out.push('No placeholder. The field keeps its label, but nothing on screen says ' +
+                      'what it takes.');
+    else if (/^(type( here)?|type something|enter (a |your )?prompt|(send a )?message( ai| aria)?|ask|search|start typing|prompt)\s*[.…!?]*$/i.test(ph))
+      out.push('“' + ph + '” names the box. Say what it is for, in this product’s nouns — ' +
+               '“Ask about this project…”.');
+    if (c.multiline === false)
+      out.push('Single line: follow-ups, edits and multi-step requests are routinely longer than ' +
+               'a line, and a field that scrolls sideways cannot be read back before it is sent.');
+    if (c.multiline !== false && +c.maxLines > 8)
+      out.push('At ' + c.maxLines + ' lines the composer starts to crowd the conversation it is ' +
+               'part of. Past the ceiling it scrolls, which is what a long request should do.');
+    if (c.showPlus !== false && c.showMic !== false && c.showModel && c.narrow === 'inline')
+      out.push('Three secondary controls on one row leave the field a sliver on a narrow panel. ' +
+               'Stack the field above the controls, or show fewer of them.');
+    return out;
+  }
+  function oiGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = oiGuards(s.cfg);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+  async function oiSend(ctx) {
+    var s = ctx.s, d = s.demo, c = s.cfg;
+    var text = ((d && d.text) || '').trim();
+    if (!text || d.running) return;
+    /* A failure keeps everything: no turn is added, nothing is
+       cleared, and the composer says what happened. */
+    if (d.fail) {
+      d.fail = false; d.failed = true; d.focus = true;
+      s.state = 'error'; d.on = 'error';
+      ctx.paint();
+      ctx.announce(OI_ERR[c.errorKind || 'send']);
+      return;
+    }
+    d.failed = false;
+    s.state = 'submitted'; d.on = 'submitted';
+    d.turns = d.turns.concat([{ who: 'you', text: d.text }, { who: 'aria', working: true }]);
+    /* Cleared only now the send has worked — and the context chips
+       went with the request, so they leave with it. */
+    d.sent = d.text; d.text = ''; d.chips = []; d.running = true; d.focus = true;
+    var run = d.run = (d.run || 0) + 1;
+    ctx.paint();
+    ctx.announce('Sent. Aria is working on it; the composer is ready for your next request.');
+    await ctx.wait(1300);
+    if (s.demo !== d || d.run !== run) return;
+    d.turns[d.turns.length - 1] = { who: 'aria', text: /compare|previous|new/i.test(d.sent) ? OI_ANSWER :
+      'This preview scripts one answer. The part that matters is below: the composer is empty, ' +
+      'focused and ready for the next request.' };
+    d.running = false;
+    ctx.paint();
+  }
+
+  /* ── Suggested Prompts ────────────────────────────────────
+     A few contextual starting points that feed INTO the shared
+     composer (Open Input). The set is data: SP_WS is demo data for
+     three workspaces, so the preview can show the same component
+     reading three different contexts. Nothing below is in the
+     component itself — MaterialSim.suggestions takes whatever set a
+     host derives from what is on screen. */
+  var SP_PLUS = ['Attach a file', 'Add a source'];
+  var SP_WS = {
+    product: {
+      label: 'Product planning', where: 'September release', kind: 'Release plan',
+      ask: 'Ask about this release…', heading: 'Suggested for the September release',
+      facts: [['Launch', '24 September'], ['Open decisions', '3'], ['Blockers in the risk log', '2'],
+              ['Last stakeholder update', '12 days ago']],
+      edit: ' and group them by owner.',
+      items: [
+        { id: 'risks', title: 'Summarize release risks', icon: 'shield', category: 'Status',
+          prompt: 'Summarize the biggest risks for the September release.',
+          description: 'What could slip the launch, from the plan and risk log.' },
+        { id: 'decisions', title: 'Find unresolved decisions', icon: 'help', category: 'Decisions',
+          prompt: 'Find the unresolved decisions blocking the September release.',
+          description: 'The three open decisions and what each waits on.' },
+        { id: 'update', title: 'Draft a stakeholder update', icon: 'edit', category: 'Writing',
+          prompt: 'Draft a stakeholder update for the September release.',
+          description: 'Progress, risks and asks since the last update.' },
+        { id: 'compare', title: 'Compare with last quarter', icon: 'history', category: 'Analysis',
+          prompt: 'Compare the September release with the Q2 release.',
+          description: 'Scope, dates and slips against the Q2 release.' },
+        { id: 'actions', title: 'List open action items', icon: 'check', category: 'Status',
+          prompt: 'List the open action items for the September release, with owners.',
+          description: 'Unassigned or overdue actions from recent meetings.' },
+        { id: 'ready', title: 'Check launch readiness', icon: 'checkCircle', category: 'Status',
+          prompt: 'Check the September release against the launch checklist.',
+          description: 'Marks what is still open on the launch checklist.' }
+      ],
+      answer: 'Three decisions are open. <b>Maya</b> — the pricing-page copy, waiting on Legal. ' +
+              '<b>Dana</b> — the beta cut-off date, waiting on the Android fix. <b>No owner</b> — ' +
+              'the minimum Android version, which has sat between Mobile and Platform since August.'
+    },
+    research: {
+      label: 'Research', where: 'Onboarding study', kind: 'Research notes',
+      ask: 'Ask about this study…', heading: 'Suggested for the onboarding study',
+      facts: [['Interviews', '12 transcripts'], ['Survey responses', '418'], ['Themes tagged', '9'],
+              ['Notes flagged as conflicting', '4']],
+      edit: ' and say which segment each comes from.',
+      items: [
+        { id: 'themes', title: 'Compare customer themes', icon: 'group', category: 'Synthesis',
+          prompt: 'Compare the customer themes across the onboarding interviews.',
+          description: 'The nine tagged themes, and where segments differ.' },
+        { id: 'contradict', title: 'Find contradictory feedback', icon: 'search', category: 'Quality',
+          prompt: 'Find feedback in the onboarding study that contradicts itself.',
+          description: 'Notes that disagree, to check before the readout.' },
+        { id: 'findings', title: 'Summarize key findings', icon: 'doc', category: 'Synthesis',
+          prompt: 'Summarize the key findings from the onboarding study.',
+          description: 'The best-evidenced findings, each with its source.' },
+        { id: 'quotes', title: 'Pull quotes for the readout', icon: 'note', category: 'Writing',
+          prompt: 'Pull the strongest quotes for the onboarding readout.',
+          description: 'Short, attributed quotes that back each finding.' },
+        { id: 'thin', title: 'Find thin evidence', icon: 'visibility', category: 'Quality',
+          prompt: 'Find findings in the onboarding study that rest on a single participant.',
+          description: 'Findings that rest on a single interview.' },
+        { id: 'survey', title: 'Compare survey and interviews', icon: 'sheet', category: 'Analysis',
+          prompt: 'Compare what the survey says with what the interviews say.',
+          description: 'Where the 418 responses and the interviews differ.' }
+      ],
+      answer: 'Four pairs disagree. Two come from the same segment — <b>small teams</b> call setup ' +
+              '“quick” in the survey and “confusing” in interviews. The other two are between ' +
+              '<b>admins</b> and <b>invited members</b>, who saw different first screens.'
+    },
+    design: {
+      label: 'Design review', where: 'Checkout flow', kind: 'Design review',
+      ask: 'Ask about this flow…', heading: 'Suggested for the checkout flow',
+      facts: [['Screens', '14'], ['Open comments', '23'], ['States designed', 'Default, loading'],
+              ['Review', 'Friday']],
+      edit: ' and rank them by severity.',
+      items: [
+        { id: 'review', title: 'Review this flow', icon: 'visibility', category: 'Review',
+          prompt: 'Review the checkout flow for friction, step by step.',
+          description: 'Walks the 14 screens and notes where people stall.' },
+        { id: 'usability', title: 'Find usability risks', icon: 'search', category: 'Review',
+          prompt: 'Find the usability risks in the checkout flow.',
+          description: 'Issues ranked by how likely they stop a purchase.' },
+        { id: 'states', title: 'Suggest missing states', icon: 'lightbulb', category: 'Coverage',
+          prompt: 'Suggest the states the checkout flow is still missing.',
+          description: 'Only default and loading are designed so far.' },
+        { id: 'comments', title: 'Summarize open comments', icon: 'forum', category: 'Feedback',
+          prompt: 'Summarize the 23 open comments on the checkout flow.',
+          description: 'Grouped by screen, with the decisions they wait on.' },
+        { id: 'a11y', title: 'Check accessibility', icon: 'check', category: 'Review',
+          prompt: 'Check the checkout flow for accessibility issues.',
+          description: 'Contrast, target size and focus order, per screen.' },
+        { id: 'copy', title: 'Tighten the error copy', icon: 'edit', category: 'Writing',
+          prompt: 'Suggest clearer copy for the checkout flow’s error messages.',
+          description: 'One clearer rewrite per error message.' }
+      ],
+      answer: 'Five risks, most severe first. <b>Card declined</b> has no error state, so people ' +
+              'retry blind. <b>Promo code</b> reflows the total mid-typing. <b>Address</b> asks for ' +
+              'the postcode twice. Two lower ones are in the comments on screens 9 and 12.'
+    }
+  };
+  var SP_COUNT_MAX = 6;
+  var SP_GENERIC = /^(write something|write anything|brainstorm( ideas)?|help( me)?( with)?( something| anything)?|tell me (a joke|something)|ask (me )?anything|what can you do\??|get started|surprise me|explain something|chat|try (it|me))\s*[.…!?]*$/i;
+
+  function spKey(c) { return SP_WS[c.workspace] ? c.workspace : 'product'; }
+  function spF(c, k, n, f) {
+    var v = c['sp_' + k + '_' + n + '_' + f];
+    return v === undefined ? SP_WS[k].items[n - 1][f === 't' ? 'title' : f === 'p' ? 'prompt' : 'description'] : v;
+  }
+  /* The set as the component receives it: plain data. */
+  function spItems(c) {
+    var k = spKey(c), n = Math.max(1, Math.min(SP_COUNT_MAX, +c.count || 3)), out = [];
+    for (var i = 1; i <= n; i++) {
+      var base = SP_WS[k].items[i - 1];
+      out.push({ id: base.id, title: spF(c, k, i, 't'), prompt: spF(c, k, i, 'p'),
+                 description: spF(c, k, i, 'd'), icon: base.icon, category: base.category });
+    }
+    return out;
+  }
+  function spLabel(c) {
+    var v = c['sp_label_' + spKey(c)];
+    return v === undefined ? SP_WS[spKey(c)].heading : v;
+  }
+  function spEdited(prompt, suffix) { return String(prompt || '').replace(/[.…!?]+\s*$/, '') + suffix; }
+
+  /* ── Icons: the vocabulary's demo, guidance and run ─────── */
+  var AII_ORIGINAL = 'We fixed a bunch of stuff in onboarding and the export thing should work ' +
+                     'better now, plus some small UI changes people asked about.';
+  var AII_REWRITE = 'Onboarding is quicker to finish, CSV export no longer times out on large ' +
+                    'projects, and three small layout fixes customers asked for are in.';
+  var AII_SUMMARY = 'Three changes: onboarding, export reliability and small layout fixes.';
+  var AII_KEY = { action: 'glyphAction', generated: 'glyphGenerated', tool: 'glyphTool' };
+  function aiiPick(c, role) {
+    var S = window.MaterialSim;
+    if (role === 'working') return 'working';
+    var v = c[AII_KEY[role]], R = S && S.AI_ROLES[role];
+    return R && R.glyphs.some(function (g) { return g[0] === v; }) ? v : (R ? R.glyphs[0][0] : v);
+  }
+  function aiiOptions(role) {
+    var S = window.MaterialSim, R = S && S.AI_ROLES && S.AI_ROLES[role];
+    return R ? R.glyphs.map(function (g) { return [g[0], g[1]]; }) : [];
+  }
+  function aiiChipCls() {
+    var S = window.MaterialSim;
+    return S && S.md3 ? S.md3.chipClass(false, false).replace('md-sp__chip', 'md-aii-chip') : '';
+  }
+  var AII_STATES_REST = ['default', 'hover', 'focus', 'pressed'];
+  function aiiDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.on === st && s.demo.kind === 'aii') return s.demo;
+    var done = st === 'generated';
+    s.demo = {
+      kind: 'aii', on: st, which: 'rewrite',
+      original: AII_ORIGINAL,
+      text: st === 'disabled' ? '' : done ? AII_REWRITE : AII_ORIGINAL,
+      phase: st === 'working' ? 'working' : done ? 'done' : 'idle',
+      rewrote: done, tool: st === 'working', toolDone: done,
+      summary: '', explain: null, run: 0
+    };
+    return s.demo;
+  }
+  async function aiiRun(ctx, which) {
+    var s = ctx.s, d = s.demo, run = (d.run || 0) + 1;
+    d.run = run; d.which = which; d.phase = 'working'; d.tool = false; d.explain = null;
+    s.state = 'working'; d.on = 'working';
+    ctx.paint();
+    ctx.announce(which === 'summarize' ? 'Aria is summarizing the draft.' : 'Aria is rewriting the draft.');
+    await wait(900);
+    if (s.demo !== d || d.run !== run) return;
+    d.tool = true; ctx.paint();
+    await wait(1300);
+    if (s.demo !== d || d.run !== run) return;
+    d.phase = 'done'; d.tool = false; d.toolDone = true;
+    if (which === 'summarize') d.summary = AII_SUMMARY;
+    else { d.original = d.text; d.text = AII_REWRITE; d.rewrote = true; }
+    s.state = 'generated'; d.on = 'generated';
+    ctx.paint();
+    ctx.announce(which === 'summarize' ? 'Summary added, generated with AI.' :
+                 'Draft rewritten, generated with AI. Undo is available.');
+  }
+  var AII_VAGUE = /^(ai|magic|ask ai|ask aria|sparkle|generate|smart|assist(ant)?|copilot|try ai|ai magic)\s*[.…!?]*$/i;
+  function aiiGuards(c) {
+    var out = [];
+    var act = (c.actionLabel || '').trim(), io = (c.iconOnlyName || '').trim();
+    if (!act) out.push(c.labels === 'tooltip'
+      ? 'Rewrite is icon-only with no name: a screen reader announces only “button”, and the tooltip is empty.'
+      : 'The AI action has no word. Either give it one, or switch to icon-with-tooltip and name it.');
+    else if (AII_VAGUE.test(act))
+      out.push('“' + act + '” names the technology, not the result. Use the verb for what happens — ' +
+               '“Rewrite”, “Summarize”, “Draft a reply”.');
+    if (!io) out.push('The icon-only action has no accessible name or tooltip. Its meaning would rest on the glyph alone.');
+    else if (!/\b(ai|aria|agent)\b/i.test(io))
+      out.push('“' + io + '” does not say AI does it. Pair an AI mark with words like “… with AI”, ' +
+               'so the name and the mark agree.');
+    if (!(c.generatedLabel || '').trim())
+      out.push('The generated-content mark is shown without its label. Provenance should not depend ' +
+               'on recognising a glyph.');
+    if (!(c.workingLabel || '').trim())
+      out.push('The working mark has no status words. A turning mark alone says “wait”, not what is happening.');
+    if (+c.size <= 16 && (c.style || 'outlined') === 'outlined')
+      out.push('Outlined marks at 16 lose their inner detail. Use Filled at 16, or 18 and up.');
+    return out;
+  }
+  function aiiGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = aiiGuards(s.cfg);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+
+  /* ── Autocomplete: demo + guidance ─────────────────────────── */
+  var AC_P = (window.MaterialSim && window.MaterialSim.ac) ? window.MaterialSim.ac.DEMO.phrases : [];
+  var AC_TEXT = {
+    empty: '', typing: 'Summari', available: 'Summarize the release',
+    accepted: 'Summarize the release risks and group them by owner',
+    ignored: 'Summarize the release ri', dismissed: 'Summarize the release',
+    irrelevant: 'Summarize the release notes'
+  };
+  function acPhrases(c) {
+    var out = [c.p1, c.p2, c.p3].map(function (x) { return String(x || '').trim(); }).filter(Boolean);
+    return out.concat(AC_P.slice(3));
+  }
+  function acProvider(c) {
+    var D = window.MaterialSim.ac.DEMO;
+    return { minChars: +c.minChars || 10, phrases: acPhrases(c), triggers: D.triggers,
+             enabled: { prompt: c.tPrompt !== false, command: c.tCommand !== false,
+                        mention: c.tMention !== false, tool: c.tTool !== false } };
+  }
+  function acDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.on === st && s.demo.kind === 'ac') return s.demo;
+    s.demo = { kind: 'ac', on: st, text: AC_TEXT[st] || '', turns: [], focus: st !== 'empty', held: st === 'dismissed' };
+    return s.demo;
+  }
+  function acGuards(c) {
+    var out = [];
+    if (c.dismiss === false) out.push('Escape no longer dismisses. The only way to get rid of a suggestion is to type ' +
+      'over it — it keeps sitting after the caret while the person writes something else.');
+    if (+c.minChars < 5) out.push('At ' + c.minChars + ' characters it suggests after a word or two, and is wrong ' +
+      'more often than it is useful. Eight to twelve is a better floor.');
+    if (c.tPrompt === false && c.tCommand === false && c.tMention === false && c.tTool === false)
+      out.push('Every completion type is off, so nothing is ever suggested.');
+    acPhrases(c).forEach(function (p) { if (p.length > 140) out.push('“' + p.slice(0, 40) + '…” is long. A completion ' +
+      'finishes a request; it should not write a paragraph the person then has to read back.'); });
+    return out;
+  }
+  function acGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = acGuards(s.cfg);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+
+  /* ── Proactive Suggestions: demo + guidance ────────────────── */
+  var PRO_REASON = '{n} release blockers have no owner since Sam Ortiz moved to Payments.';
+  var PRO_PEOPLE = ['Dana Khoury', 'Priya Shah', 'Lee Park', 'You'];
+  var PRO_ISSUES = [
+    ['ONB-112', 'Checklist skips the invite step on mobile', 'High', 'Sam Ortiz'],
+    ['EXP-210', 'CSV export drops the owner column', 'High', 'Sam Ortiz'],
+    ['PRM-601', 'Guests can see private boards', 'High', 'Priya Shah'],
+    ['NTF-501', 'Digest sends duplicate mentions', 'High', 'Dana Khoury'],
+    ['BIL-301', 'Invoice PDF shows last month’s seats', 'Medium', 'Lee Park']
+  ];
+  var PRO_NUM = ['No', 'One', 'Two', 'Three', 'Four', 'Five'];
+  function proUnowned(d) { return d.issues.filter(function (it) { return !it.owner; }); }
+  function proEvidence(d) { return proUnowned(d).map(function (it) { return it.id; }).sort().join(','); }
+  function proReason(c, n) { return String(c.reason || '').replace('{n}', PRO_NUM[n] || String(n)); }
+  function proDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.on === st && s.demo.kind === 'pro') return s.demo;
+    var d = s.demo = { kind: 'pro', on: st, samGone: st !== 'dormant', more: false,
+      issues: PRO_ISSUES.map(function (r) { return { id: r[0], title: r[1], pri: r[2], owner: r[3] }; }),
+      proposal: { 'ONB-112': 'Dana Khoury', 'EXP-210': 'Priya Shah', 'NTF-501': 'Lee Park' },
+      pro: { phase: 'dormant', evidence: null, memory: { dismissed: [], snoozeUntil: null }, clock: 0, note: null } };
+    if (st !== 'dormant') {
+      d.issues.forEach(function (it) { if (it.owner === 'Sam Ortiz') it.owner = null; });
+      d.pro.evidence = proEvidence(d);
+    }
+    var P = { suggested: 'suggested', preparing: 'preparing', accepted: 'review', dismissed: 'dismissed', snoozed: 'snoozed', irrelevant: 'irrelevant' };
+    if (P[st]) d.pro.phase = P[st];
+    if (st === 'dismissed') { d.pro.memory.dismissed = [d.pro.evidence];
+      d.pro.note = { text: 'Dismissed. Aria won’t suggest this again for these issues.', undo: true }; }
+    if (st === 'snoozed') { d.pro.memory.snoozeUntil = 24 * 60; d.pro.note = { text: 'Snoozed until tomorrow, 9:00.', undo: true }; }
+    if (st === 'irrelevant') { d.issues.forEach(function (it) { if (!it.owner) it.owner = 'You'; }); }
+    return d;
+  }
+  function proIO(ctx, s, d) {
+    var c = s.cfg;
+    return { paint: ctx.paint, announce: ctx.announce, who: 'Aria', trigger: c.trigger || 'now',
+             say: proReason(c, proUnowned(d).length) + ' ' + (c.action || ''),
+             setState: function (n) { s.state = n; d.on = n; } };
+  }
+  function proReview(d, M, S) {
+    var list = proUnowned(d);
+    return M.card('outlined',
+      '<p class="md-prov__rh">Assign owners</p>' +
+      '<p class="md-prov__rs">' + S.aiIcon('generated', {}) + 'Proposed by Aria from who owns each area. Nothing changes until you confirm.</p>' +
+      '<ul class="md-prov__rl">' + list.map(function (it) {
+        return '<li><span class="md-prov__rt"><b>' + esc(it.id) + '</b> ' + esc(it.title) + '</span>' +
+          '<span class="md-prov__ro">' + esc(d.proposal[it.id]) + '</span>' +
+          M.button({ variant: 'text', label: 'Change', attrs: { 'data-act': 'prd:change:' + it.id, 'aria-label': 'Change owner for ' + it.id } }) + '</li>';
+      }).join('') + '</ul>' +
+      '<div class="md-prov__ra">' +
+        M.button({ variant: 'filled', label: 'Assign ' + list.length + ' owner' + (list.length === 1 ? '' : 's'), attrs: { 'data-act': 'prd:confirm' } }) +
+        M.button({ variant: 'text', label: 'Cancel', attrs: { 'data-act': 'pro:cancel' } }) +
+      '</div>', 'md-prov__review', { role: 'region', 'aria-label': 'Review: assign owners' });
+  }
+  function proGuards(c) {
+    var out = [];
+    if (c.dismissible === false) out.push('Not dismissible: the only way to make it go is to do what it says. A suggestion ' +
+      'people cannot decline is a demand.');
+    if (c.showReason === false) out.push('The reason is hidden, so nothing says why it appeared. People ignore — or distrust — ' +
+      'advice that arrives without a why.');
+    if (/\b(assigned|done|completed|fixed|sent|updated|applied)\b/i.test(c.action || ''))
+      out.push('“' + c.action + '” reads as if it already happened. Phrase it as a recommendation: “Assign owners before the release?”');
+    if (/^(assign|delete|send|apply|fix|merge|approve)(\s+(all|now|owners?))?$/i.test((c.primary || '').trim()))
+      out.push('“' + c.primary + '” sounds like pressing it does the work. The primary action should open a review — “Review”.');
+    if (!(c.action || '').trim()) out.push('No suggested action: the card says what is wrong but not what to do.');
+    return out;
+  }
+  function proGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = proGuards(s.cfg);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+
+  /* ── Randomize: demo + guidance ────────────────────────────── */
+  var RND_ITEMS = (window.MaterialSim && window.MaterialSim.rnd) ? window.MaterialSim.rnd.DEMO : [];
+  var RND_FIN = [
+    { title: 'Restate revenue by region', line: 'Present the quarter grouped by an arbitrary new regional split.' },
+    { title: 'Lead with an optimistic forecast', line: 'Open the board report on next quarter instead of this one.' },
+    { title: 'Swap the margin definition', line: 'Report margin on a different basis than last quarter.' }
+  ];
+  function rndItems(c) {
+    if (c.context === 'finance') return RND_FIN;
+    return RND_ITEMS.map(function (it, i) { var t = c['v' + (i + 1)]; return t !== undefined && i < 3 ? { title: t, line: it.line } : it; });
+  }
+  function rndPrompt(c, it) {
+    return c.context === 'finance' ? 'Draft the Q3 board report: ' + it.title + ' — ' + it.line
+      : 'Draft launch messaging for Planboard 3.0 around this direction: ' + it.title + ' — ' + it.line;
+  }
+  function rndIcon(c, S) {
+    if (c.icon === 'shuffle') return mi('shuffle');
+    if (c.icon === 'dice') return mi('dice');
+    return S.aiIcon('action', {});
+  }
+  var RND_DRAFT = 'Focus the launch on teams switching from spreadsheets';
+  function rndDemo(s) {
+    var st = s.state, c = s.cfg;
+    var ctxk = c.context || 'campaign';
+    if (s.demo && s.demo.on === st && s.demo.ctx === ctxk && s.demo.kind === 'rnd') return s.demo;
+    var items = rndItems(c);
+    var d = s.demo = { kind: 'rnd', ctx: ctxk, on: st, draft: '', turns: [], focus: false,
+      rnd: { phase: 'ready', seen: [], at: 0, items: items, applied: '', run: 0 } };
+    if (st === 'generating') d.rnd.phase = 'generating';
+    if (st === 'suggestion' || st === 'confirm' || st === 'applied') { d.rnd.seen = [0]; d.rnd.at = 0; d.rnd.phase = 'suggestion'; }
+    if (st === 'another') { d.rnd.seen = [0, 1]; d.rnd.at = 1; d.rnd.phase = 'suggestion'; }
+    if (st === 'confirm') { d.draft = RND_DRAFT; d.rnd.phase = 'confirm'; }
+    if (st === 'applied') { d.draft = rndPrompt(c, items[0]); d.rnd.applied = d.draft; d.rnd.phase = 'applied'; d.focus = true; }
+    return d;
+  }
+  function rndGuards(c) {
+    var out = [];
+    if (c.context === 'finance') out.push('A board report is deterministic and high-stakes: a random “direction” has no value ' +
+      'here and invites a misleading one. Leave Randomize out of finance, legal, medical and destructive workflows.');
+    if (c.confirm === false) out.push('Without the question, “Use this” replaces whatever the person has written. Their draft ' +
+      'should never be overwritten silently.');
+    if (c.another === false) out.push('One direction and no other is a suggestion, not exploration. Let people generate another.');
+    var L = (c.label || '').trim();
+    if (!L || /^(random|randomi[sz]e|shuffle|surprise me|go|generate)$/i.test(L))
+      out.push('“' + (L || 'No label') + '” names the mechanism. Say what you get: “Try a direction”, “Another idea”.');
+    return out;
+  }
+  function rndGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = rndGuards(s.cfg);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+
+  var SP_PICKED = ['selected', 'placed', 'edited'];
+  function spDemo(s) {
+    var st = s.state, c = s.cfg, k = spKey(c);
+    if (s.demo && s.demo.on === st && s.demo.ws === k) return s.demo;
+    var items = spItems(c), pick = items[1] || items[0];
+    var edited = spEdited(pick.prompt, SP_WS[k].edit);
+    var picked = SP_PICKED.indexOf(st) !== -1;
+    s.demo = {
+      on: st, ws: k,
+      picked: picked ? pick.id : null,
+      placed: picked ? pick.prompt : '',
+      text: st === 'edited' ? edited : picked ? pick.prompt : '',
+      turns: st === 'conversation'
+        ? [{ who: 'you', text: edited }, { who: 'aria', html: SP_WS[k].answer }] : [],
+      focus: picked || st === 'conversation', chips: [], voice: null,
+      model: 'balanced', effort: (window.MaterialModel || {}).EFFORT_DEFAULT || 'high',
+      running: false
+    };
+    return s.demo;
+  }
+  function spProminence(c, d) {
+    var S = window.MaterialSim;
+    if (!S) return 'full';
+    return S.suggestionsFor(d.text, d.placed, d.turns.length > 0, c.afterPick || 'full');
+  }
+  /* Only the optional provenance — there is no key hint under this
+     composer (user request). Empty when there is nothing to say. */
+  function spNote(c, d) {
+    if (!c.provenance || !d.placed || !(d.text || '').trim() || d.turns.length) return '';
+    return d.text === d.placed ? 'From a suggestion — edit anything before you send'
+                               : 'Started from a suggestion';
+  }
+  function spThread(d) {
+    return d.turns.map(function (t) {
+      if (t.who === 'you') {
+        return '<div class="sim-turn md-oi__turn">' +
+          '<span class="md-agentav md-agentav--sm md-agentav--human" aria-hidden="true">P</span>' +
+          '<div><div class="sim-turn__head"><span class="sim-turn__n">You</span></div>' +
+          '<p class="wf-text">' + esc(t.text) + '</p></div></div>';
+      }
+      return '<div class="sim-turn md-oi__turn">' +
+        '<span class="md-agentav md-agentav--sm' + (t.working ? ' md-agentav--thinking' : '') +
+          '" aria-hidden="true">' + mi('spark') + '</span>' +
+        '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' +
+        (t.working
+          ? '<div class="sc-working" role="status"><span class="sc-dot"></span>' +
+            '<span class="sc-dot"></span><span class="sc-dot"></span>' +
+            '<span class="sc-working__t">Working on it…</span></div>'
+          : '<p class="wf-text">' + t.html + '</p>') +
+        '</div></div>';
+    }).join('');
+  }
+  /* Guidance for the configuration, measured where it has to be. */
+  function spGuards(c, m) {
+    var out = [], items = spItems(c), n = items.length;
+    if (n > 4) out.push(n + ' suggestions is a menu to read, not a shortcut to take. Three or ' +
+                        'four, each clearly different, can be taken in at a glance.');
+    items.forEach(function (it) {
+      var t = (it.title || '').trim();
+      if (!t) out.push('One suggestion has no title, so there is nothing to scan or to announce.');
+      else if (SP_GENERIC.test(t))
+        out.push('“' + t + '” would read the same in any product. Name something this workspace ' +
+                 'shows — “' + SP_WS[spKey(c)].items[1].title + '”.');
+      else if (t.length > 40)
+        out.push('“' + t.slice(0, 36) + '…” is ' + t.length + ' characters. A suggestion is ' +
+                 'scanned, not read: keep the title to a few words and let the prompt carry the detail.');
+      if (!(it.prompt || '').trim())
+        out.push('“' + (t || 'A suggestion') + '” places nothing in the composer. Every ' +
+                 'suggestion needs the request it stands for.');
+      if (c.showDesc !== false && c.layout !== 'chips' && (it.description || '').length > 70)
+        out.push('The supporting line for “' + t + '” runs to ' + it.description.length +
+                 ' characters. One line — what will happen — is enough.');
+    });
+    var seen = {};
+    items.forEach(function (it) {
+      var k = (it.title || '').trim().toLowerCase();
+      if (k && seen[k]) out.push('Two suggestions say “' + it.title + '”. Each one should lead ' +
+                                 'somewhere different.');
+      seen[k] = 1;
+    });
+    if (c.fills === false)
+      out.push('Sending on press takes the request out of the person’s hands: they cannot add a ' +
+               'detail, fix a word or change their mind, and they never see what was asked. ' +
+               'Place it in the composer instead.');
+    if (m && m.set > m.composer * 3)
+      out.push('The suggestions are ' + Math.round(m.set) + 'px tall against a ' +
+               Math.round(m.composer) + 'px composer. They are the second thing here: use chips, ' +
+               'fewer suggestions, or drop the supporting lines.');
+    return out;
+  }
+  function spGuard(root, s, m) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = spGuards(s.cfg, m);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+  async function spSend(ctx, text) {
+    var s = ctx.s, d = s.demo;
+    text = String(text || '').trim();
+    if (!text || d.running) return;
+    var k = d.ws, ws = SP_WS[k];
+    s.state = 'conversation'; d.on = 'conversation';
+    d.turns = d.turns.concat([{ who: 'you', text: text }, { who: 'aria', working: true }]);
+    d.sent = text; d.text = ''; d.chips = []; d.running = true; d.focus = true; d.advance = false;
+    var run = d.run = (d.run || 0) + 1;
+    ctx.paint();
+    ctx.announce('Sent. The suggestions are gone; the conversation has started.');
+    await ctx.wait(1200);
+    if (s.demo !== d || d.run !== run) return;
+    /* One answer is scripted per workspace — for the second
+       suggestion, the one the demo states pick. */
+    var mine = text.toLowerCase().indexOf(
+      ws.items[1].prompt.replace(/[.…!?]+$/, '').toLowerCase().slice(0, 30)) !== -1;
+    d.turns[d.turns.length - 1] = { who: 'aria', html: mine ? ws.answer :
+      'This preview scripts one answer per workspace. What matters is above and below it: the ' +
+      'request is yours, and the suggestions have stepped aside for the conversation.' };
+    d.running = false;
+    ctx.paint();
+  }
+
+
+  /* ── The composer's atmosphere, in the Live Preview ──────────
+     Every simulator draws the same three soft fields (.ax__aura)
+     behind its composer. The Live Preview draws them too, so the
+     composer looks the same wherever it is shown: the same markup,
+     the same CSS, the same drift, the same reduced-motion stop. The
+     only difference is the anchor — here the field is placed on the
+     composer itself, clipped to the stage, and it follows the composer when it moves or
+     grows. Focus gathers it, as in the simulator; while the agent
+     answers (data-running) it breathes faster. */
+  var pvAuraLast = null;
+  var pvAuraWasOn = false;
+  function pvAuraPlace(a, f, host) {
+    if (!a.isConnected || !f.isConnected) return;
+    var hr = host.getBoundingClientRect(), fr = f.getBoundingClientRect();
+    if (!fr.width) return;
+    /* The simulator's proportions: about 1.6 × the composer's width,
+       about 380px tall, and centred just below the composer. The
+       Initial CTA (user request, 1 Oct, Gemini reference) centres a
+       larger, rounder halo ON the composer instead — it is the one
+       thing in an empty workspace. */
+    /* Every composer now (user request, 1 Oct): the Initial CTA's
+       centred lilac halo, in every pattern and every state. */
+    var centre = true;
+    a.classList.add('pv-aura--centre');
+    var w = centre ? Math.min(hr.width * 1.1, fr.width * 2.1) : fr.width * 1.6;
+    var h = centre ? Math.max(fr.height * 7, 440) : fr.height + 300;
+    var x = fr.left - hr.left + fr.width / 2 - w / 2;
+    var y = centre ? fr.top - hr.top + fr.height / 2 - h * 0.46
+                   : fr.top - hr.top + fr.height - h * 0.55;
+    var field = a.firstChild;
+    field.style.left = Math.round(x) + 'px'; field.style.top = Math.round(y) + 'px';
+    field.style.width = Math.round(w) + 'px'; field.style.height = Math.round(h) + 'px';
+    pvAuraLast = { x: x, y: y, w: w, h: h };
+  }
+  function pvAuraPhase(a, f) {
+    var run = f.hasAttribute('data-running');
+    var foc = !!f.querySelector(':focus') || f.matches(':focus-within');
+    a.setAttribute('data-phase', run ? 'thinking' : foc ? 'focus' : 'idle');
+  }
+  function pvAura(root) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    [].forEach.call(stage.querySelectorAll('.pv-aura'), function (x) {
+      if (x._ro) x._ro.disconnect(); x.remove(); });
+    var f = stage.querySelector('.ax__composer');
+    /* A pattern can go without it: data-no-halo on its frame (Randomize,
+       user request, 2 Oct). */
+    if (!f || stage.querySelector('[data-no-halo]')) { stage.classList.remove('pv-aura-host', 'has-halo'); return; }
+    /* Clipped to the whole stage, not to a pattern's frame: the frames
+       have no fill or stroke, so an edge of their own would show as a
+       cut in the gradient. */
+    var host = stage;
+    host.classList.add('pv-aura-host');
+    /* Only the empty / zero state has the halo (user request, 1 Oct):
+       once there is a conversation — any turn on the stage — it is gone.
+       It fades out on the paint that starts the conversation, and is
+       simply absent after that. */
+    var off = !!stage.querySelector('.sim-turn');
+    host.classList.toggle('has-halo', !off);
+    var a = document.createElement('div');
+    a.className = 'pv-aura' + (off && !pvAuraWasOn ? ' is-off' : '');
+    a.setAttribute('aria-hidden', 'true');
+    a.innerHTML = '<div class="ax__aura is-halo"><i></i><i></i><i></i></div>';
+    host.insertBefore(a, host.firstChild);
+    /* Start where the last one was, so a composer that moved (the
+       Initial CTA handing over to working size) takes its atmosphere
+       with it rather than the atmosphere jumping. */
+    var field = a.firstChild, last = pvAuraLast;
+    pvAuraPlace(a, f, host);
+    /* Only a real move is animated (the hand-over): everything else is
+       placed at once — animating a blurred field on every repaint costs
+       the frames other motion on the page needs. */
+    var now = pvAuraLast;
+    if (last && now && !reduce && (Math.abs(now.y - last.y) > 40 || Math.abs(now.w - last.w) > 40)) {
+      field.style.left = Math.round(last.x) + 'px'; field.style.top = Math.round(last.y) + 'px';
+      field.style.width = Math.round(last.w) + 'px'; field.style.height = Math.round(last.h) + 'px';
+      void field.offsetWidth;
+      a.classList.add('is-moving');
+      pvAuraPlace(a, f, host);
+      setTimeout(function () { a.classList.remove('is-moving'); }, 540);
+    }
+    pvAuraPhase(a, f);
+    if (off && pvAuraWasOn) {
+      a.classList.add('is-fading');
+      void a.offsetWidth;
+      requestAnimationFrame(function () { a.classList.add('is-off'); });
+    }
+    pvAuraWasOn = !off;
+    if (typeof ResizeObserver !== 'undefined') {
+      a._ro = new ResizeObserver(function () { pvAuraPlace(a, f, host); });
+      a._ro.observe(f);
+    }
+    f.addEventListener('focusin', function () { pvAuraPhase(a, f); });
+    f.addEventListener('focusout', function () { setTimeout(function () { pvAuraPhase(a, f); }, 0); });
+    /* A composer can move without changing size (a set above it
+       collapsing): re-place once the motion has settled. */
+    setTimeout(function () { pvAuraPlace(a, f, host); }, 560);
+  }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', function () {
+      [].forEach.call(document.querySelectorAll('.pv-aura'), function (a) {
+        var host = a.parentNode, f = host && host.querySelector('.ax__composer');
+        if (f) pvAuraPlace(a, f, host);
+      });
+    });
+  }
+
+  /* Leaving the field is a state change (Focused → Empty, Typing →
+     Ready) only when the person left it for the WORK — not when they
+     reached for the playground's own chrome: the state list, the
+     Customize button or panel, Preview / Code. Opening the state
+     list used to blur the field and move the state out from under
+     the list that was about to show it. Pointer and keyboard both:
+     relatedTarget covers Tab, the last pointerdown covers clicks on
+     browsers that do not focus a pressed button (Safari). */
+  var PV_CHROME = '.pv-head, .pvc, .pv-doc-rows';
+  var pvDown = { t: 0, el: null };
+  if (typeof document !== 'undefined') {
+    document.addEventListener('pointerdown', function (e) {
+      pvDown = { t: Date.now(), el: e.target };
+    }, true);
+  }
+  function pvChrome(e) {
+    var to = e && e.relatedTarget;
+    if (to && to.closest && to.closest(PV_CHROME)) return true;
+    return !!(pvDown.el && pvDown.el.closest && Date.now() - pvDown.t < 600 &&
+              pvDown.el.closest(PV_CHROME));
+  }
+
+  var IC_EMPTY = ['resting', 'focused', 'typing', 'ready'];
+  var IC_PLUS = ['Attach a file', 'Add a source'];
+  var IC_DRAFT = 'Summarize the biggest risks for the September release.';
+  var IC_TYPING = 'Summarize the biggest risks for the September release,\nand who owns each one';
+  var IC_ANSWER = 'Three risks stand out. The payments migration is two weeks behind and ' +
+    'blocks checkout testing. The Android build still fails on older devices, and nobody ' +
+    'owns the fix. And Legal has not signed off the launch checklist yet.';
+  var IC_OTHER = 'This preview scripts one answer, so this is where a real one would ' +
+    'appear. What matters here is what just happened to the composer: it is the same ' +
+    'field, now at working size, with your request as the first turn above it.';
+  var IC_FOLLOW = 'Same conversation, same composer. From here on it stays at working ' +
+    'size — the invitation has done its job.';
+
+  /* Where a demonstration has got to lives on s.demo, never on
+     s.cfg. It survives moving between the four empty states by
+     hand (icLive keeps `on` in step), and resets when a state is
+     picked from the list. */
+  function icDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.on === st) return s.demo;
+    s.demo = {
+      on: st,
+      text: st === 'typing' ? IC_TYPING : st === 'ready' ? IC_DRAFT : '',
+      focus: st === 'focused' || st === 'typing' || st === 'ready',
+      chips: [], model: 'balanced', voice: null,
+      turns: st === 'working'
+        ? [{ who: 'you', text: IC_DRAFT }, { who: 'aria', text: IC_ANSWER }] : [],
+      next: ''
+    };
+    return s.demo;
+  }
+  function icEntry(st, text) {
+    if (st === 'typing') return 'typing';
+    if (st === 'ready') return 'ready';
+    return (text || '').trim() ? 'ready' : 'empty';
+  }
+
+  function icThread(d) {
+    return (d.turns || []).map(function (t) {
+      if (t.who === 'you') {
+        return '<div class="sim-turn md-icta__turn">' +
+          '<span class="md-agentav md-agentav--sm md-agentav--human" aria-hidden="true">P</span>' +
+          '<div><div class="sim-turn__head"><span class="sim-turn__n">You</span></div>' +
+          '<p class="wf-text">' + esc(t.text).replace(/\n/g, '<br>') + '</p></div></div>';
+      }
+      return '<div class="sim-turn md-icta__turn">' +
+        '<span class="md-agentav md-agentav--sm' + (t.working ? ' md-agentav--thinking' : '') +
+          '" aria-hidden="true">' + mi('spark') + '</span>' +
+        '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' +
+        (t.working
+          ? '<div class="sc-working" role="status"><span class="sc-dot"></span>' +
+            '<span class="sc-dot"></span><span class="sc-dot"></span>' +
+            '<span class="sc-working__t">Reading the release plan and the risk log…</span></div>'
+          : '<p class="wf-text">' + esc(t.text) + '</p>') +
+        '</div></div>';
+    }).join('');
+  }
+  /* The field is sized to its content, up to the ceiling the host
+     chose, exactly as the simulator's composer does it. */
+  function icFit(el) {
+    if (!el || el.tagName !== 'TEXTAREA') return;
+    var cs = getComputedStyle(el);
+    var lines = +el.getAttribute('data-max-lines');
+    var cap = lines
+      ? lines * (parseFloat(cs.lineHeight) || 22) +
+        (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0)
+      : 72;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, cap) + 'px';
+  }
+  /* Spatial continuity: the working composer starts where the large
+     one was, at its size, and travels to its place. One element's
+     journey, on the emphasized curve — no overshoot, because the
+     SYSTEM moved it. Under reduced motion it is simply there. */
+  function icFlip(box, form, f) {
+    if (reduce || !form.animate) return;
+    var b = box.getBoundingClientRect(), r = form.getBoundingClientRect();
+    var dx = f.x - (r.left - b.left), dy = f.y - (r.top - b.top);
+    form.animate([
+      { transform: 'translate(' + dx + 'px,' + dy + 'px)', width: f.w + 'px',
+        maxWidth: f.w + 'px', height: f.h + 'px' },
+      { transform: 'none', width: r.width + 'px', maxWidth: r.width + 'px', height: r.height + 'px' }
+    ], { duration: 500, easing: 'cubic-bezier(0.2, 0, 0, 1)' });
+    [].forEach.call(box.querySelectorAll('.md-icta__turn'), function (t, i) {
+      t.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 260, delay: 220 + i * 90, easing: 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+          fill: 'backwards' });
+    });
+  }
+  /* Moving between the four empty states happens WHILE somebody is
+     typing, so it cannot repaint. The component's own attributes,
+     the state read-out, the state list and the code pane are brought
+     up to date in place. */
+  function icLive(root, s, next) {
+    if (s.state === next) return;
+    var box = root.querySelector('.pv-stage .md-icta');
+    if (box) {
+      box.setAttribute('data-state', next);
+      var form = box.querySelector('.ax__composer');
+      if (form && form.hasAttribute('data-entry')) {
+        form.setAttribute('data-entry', icEntry(next, s.demo && s.demo.text));
+      }
+    }
+    pvLive(root, s, 'initial-cta', next);
+  }
+  /* A state change that happens under somebody's caret. The state,
+     the demo's own `on`, the state list, the read-out and the code
+     pane are brought up to date in place; the stage is left alone,
+     because rebuilding it would take the field out of their hand. */
+  function pvLive(root, s, id, next) {
+    var def = PATTERNS[id], st = def.states[next];
+    s.state = next;
+    if (s.demo) s.demo.on = next;
+    var v = root.querySelector('.pv-select__v');
+    if (v) v.textContent = st.label;
+    var sb = root.querySelector('.pv-select__btn');
+    if (sb) sb.setAttribute('aria-label', 'Preview state: ' + st.label);
+    var rows = root.querySelector('.pv-doc-rows');
+    if (rows) rows.innerHTML = [['State', st.label], ['Trigger', st.trigger],
+        ['Behaviour', st.behaviour], ['Next', st.action]].map(function (r) {
+      return '<div class="pv-row"><dt class="pv-row__k">' + r[0] + '</dt>' +
+             '<dd class="pv-row__v">' + r[1] + '</dd></div>';
+    }).join('');
+    var pre = root.querySelector('.pv-code code');
+    if (pre) pre.innerHTML = highlight(prettyPrintHtml(def.view(s)));
+  }
+  function icSubmit(root, s, initial) {
+    var d = s.demo;
+    if (!d) return;
+    var t = initial ? d.text : d.next;
+    if (!(t || '').trim()) return;
+    d.pending = initial ? 'send' : 'reply';
+    var b = root.querySelector('.pv-stage [data-act="ic:sync"]');
+    if (b) b.click();
+  }
+  async function icSend(ctx) {
+    var s = ctx.s, d = s.demo;
+    var text = ((d && d.text) || '').trim();
+    if (!text) return;
+    var box = document.querySelector('.pv-stage .md-icta');
+    var form = box && box.querySelector('.ax__composer');
+    var flip = null;
+    if (box && form) {
+      var b = box.getBoundingClientRect(), r = form.getBoundingClientRect();
+      flip = { x: r.left - b.left, y: r.top - b.top, w: r.width, h: r.height };
+    }
+    s.state = 'working';
+    var nd = s.demo = {
+      on: 'working', chips: [], model: d.model, voice: null, next: '',
+      focus: true, flip: flip,
+      turns: [{ who: 'you', text: text }, { who: 'aria', working: true }]
+    };
+    ctx.paint();
+    ctx.announce('Sent. Aria is working on it, and the composer has moved to the bottom, ' +
+                 'ready for a follow-up.');
+    await ctx.wait(1300);
+    if (s.demo !== nd || s.state !== 'working') return;
+    nd.turns[1] = { who: 'aria', text: /risk/i.test(text) ? IC_ANSWER : IC_OTHER };
+    ctx.paint();
+  }
+  async function icReply(ctx) {
+    var s = ctx.s, d = s.demo;
+    var text = ((d && d.next) || '').trim();
+    if (!text) return;
+    d.turns = d.turns.concat([{ who: 'you', text: text }, { who: 'aria', working: true }]);
+    d.next = ''; d.focus = true;
+    ctx.paint();
+    await ctx.wait(1100);
+    if (s.demo !== d) return;
+    d.turns[d.turns.length - 1] = { who: 'aria', text: IC_FOLLOW };
+    ctx.paint();
+  }
+  /* Guidance, not prevention. Each check is a way the customisation
+     can quietly undo the pattern; the preview says so beside the
+     component and leaves the choice where it is. Drawn in the stage
+     rather than in the component markup, so the code pane never
+     carries it. */
+  function icGuards(c, st) {
+    var out = [];
+    if (st === 'working') return out;
+    var ph = (c.placeholder || '').trim();
+    if (!ph) {
+      out.push('No placeholder. The field is still labelled for assistive tech, but nothing ' +
+               'on screen suggests what kind of request it expects.');
+    } else if (/^(type( here)?|type something|enter (a |your )?prompt|(send a )?message( ai| aria)?|ask( me)? anything|ask|search|start typing|prompt)\s*[.…!?]*$/i.test(ph)) {
+      out.push('“' + ph + '” names the box rather than the work. Suggest what somebody can ' +
+               'do here — “What would you like to work on?”, “Ask about this project…”.');
+    } else if (ph.length > 72) {
+      out.push('This placeholder is turning into instructions, and it disappears on the first ' +
+               'keystroke. Keep it to one suggestion; context belongs in the supporting line.');
+    }
+    if (c.showPlus !== false && c.showMic !== false && c.showModel) {
+      out.push('Three secondary controls around one field start to compete with it. Keep the ' +
+               'ones a first request here actually needs.');
+    }
+    if (c.showLead !== false && (c.lead || '').length > 120) {
+      out.push('The supporting line has become a paragraph. One short line; the field is the ' +
+               'thing to read.');
+    }
+    if (c.multiline === false) {
+      out.push('Single line: a first request is usually a sentence or two, and a field that ' +
+               'scrolls sideways cannot be read back before it is sent.');
+    }
+    return out;
+  }
+  function icGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = icGuards(s.cfg, s.state);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+
+
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -2763,16 +3796,14 @@ card + '>\n' + head +
        its pattern can get wrong, because that is the state a
        reader actually needs to reach by hand:
 
-         initial-cta       is the label about this screen, or
-                           about the product?
+         initial-cta       is the empty workspace's one way in the
+                           same composer that carries the work after?
          open-input        what does it look like while it is
                            busy — and is your draft still there?
          suggested-prompts does choosing one fill the composer,
                            or fire it?
          ai-icons          does the glyph appear anywhere a model
                            does not run?
-         search-filter     can you see, and correct, what the
-                           sentence was understood as?
          autocomplete      can the offer be committed by accident?
          proactive         does it lead with what it noticed?
          randomize         can you roll again without losing what
@@ -2780,878 +3811,1914 @@ card + '>\n' + head +
        ══════════════════════════════════════════════════════════ */
 
     /* ── Initial CTA ────────────────────────────────────────
-       The empty state is the most expensive screen in the
-       product. Turn the specificity off and read the same
-       layout: it becomes an advertisement for an assistant. */
+       The main agent entry point when the workspace has NO
+       activity: the shared prompt composer in its INITIAL size.
+       Not a button, not a hero, not a second composer. The
+       component on this page is the same `MaterialSim.composer`
+       every simulator docks at the bottom of its workspace; the
+       pattern is one attribute (`size: 'initial'`) and the moment
+       it goes away.
+
+       Five states and all of them are reached BY USING it: focus
+       the field, type, pause, send. The state list is a shortcut
+       to the same places, not a gallery of drawings. */
     'initial-cta': {
-      initial: 'invitation',
+      initial: 'resting',
 
       customize: {
+        api: {
+          name: 'PromptComposer',
+          props: function (c) {
+            return {
+              mode: 'initial',
+              placeholder: c.placeholder,
+              supportingText: c.showLead !== false ? c.lead : null,
+              multiline: c.multiline !== false,
+              maxLines: c.multiline === false ? 1 : +c.maxLines,
+              sendKey: c.sendKey,
+              showAddContext: c.showPlus !== false,
+              showVoice: c.showMic !== false,
+              showModel: !!c.showModel,
+              emphasis: c.emphasis,
+              density: c.density,
+              workingPlaceholder: c.workingPlaceholder
+            };
+          }
+        },
+
         groups: [
-          { id: 'copy', label: 'The invitation', states: ['invitation'],
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'invite', label: 'What it suggests', section: 'content',
+            states: IC_EMPTY,
+            note: 'Active words that suggest the kind of request, in the product’s own terms. ' +
+                  'Not a tutorial, and not the name of the box.',
             controls: [
-              { id: 'title', label: 'Action', type: 'text', value: 'Summarise this thread',
-                hint: 'A verb applied to what is on screen. “Get started” is the failure.' },
-              { id: 'desc', label: 'What happens', type: 'text',
-                value: 'Aria reads ticket #4821 and gives you the disagreement in two lines.' },
-              { id: 'primary', label: 'Primary label', type: 'text', value: 'Summarise it' },
-              { id: 'secondary', label: 'Other way in', type: 'toggle', value: true,
-                capability: true,
-                hint: 'For people who arrived already knowing what they wanted.' },
-              { id: 'secondaryLabel', label: 'Secondary label', type: 'text',
-                value: 'Ask something else',
-                visibleWhen: function (c) { return !!c.secondary; } }
+              { id: 'placeholder', label: 'Placeholder', type: 'text',
+                value: 'What would you like to work on?',
+                hint: 'A suggestion of what to do. “Type here”, “Enter prompt” and “Ask me ' +
+                      'anything” name the box and leave the hard part — what to ask — to the ' +
+                      'reader. It is never the field’s only label.' },
+              { id: 'showLead', label: 'Supporting line', type: 'toggle', value: true,
+                hint: 'One short line of context above the field: where this is, and what the ' +
+                      'agent can reach. Second in the hierarchy, never a headline competing with it.' },
+              { id: 'lead', label: 'Supporting text', type: 'text',
+                value: 'Start with a task or a question. Aria works from this project’s files.',
+                visibleWhen: function (c) { return c.showLead !== false; } }
             ] },
 
-          { id: 'form', label: 'Form', states: ['invitation', 'generic'],
+          { id: 'after', label: 'After the first request', section: 'content',
+            states: ['working'],
+            note: 'The invitation is gone. What is left is the working composer every other ' +
+                  'screen uses, and its placeholder is about continuing, not starting.',
             controls: [
-              { id: 'ground', label: 'Ground', type: 'segment', value: 'filled',
-                options: [['filled', 'Filled'], ['quiet', 'Quiet']] },
-              { id: 'glyph', label: 'Carry the reserved glyph', type: 'toggle', value: true }
+              { id: 'workingPlaceholder', label: 'Working placeholder', type: 'text',
+                value: 'Reply, or add to the request' }
             ] },
 
-          { id: 'generic', label: 'Written generically', states: ['generic'],
-            note: 'The same component with the specificity removed. This is what most products ship.',
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'entry', label: 'Writing the request', section: 'behavior',
             controls: [
-              { id: 'genericTitle', label: 'Action', type: 'text', value: 'Ask me anything' },
-              { id: 'genericDesc', label: 'What happens', type: 'text',
-                value: 'Your AI assistant is here to help.' }
+              { id: 'multiline', label: 'Grow to several lines', type: 'toggle', value: true,
+                hint: 'A first request is usually a sentence or two. The field grows with it, ' +
+                      'up to a ceiling, and then scrolls.' },
+              { id: 'maxLines', label: 'Grows to at most', type: 'range', value: 8,
+                min: 3, max: 12, step: 1, unit: ' lines',
+                visibleWhen: function (c) { return c.multiline !== false; },
+                hint: 'Past this the field scrolls rather than pushing the workspace away.' },
+              { id: 'sendKey', label: 'Send with', type: 'segment', value: 'enter',
+                options: [['enter', 'Enter'], ['mod', '⌘ / Ctrl + Enter']],
+                visibleWhen: function (c) { return c.multiline !== false; },
+                hint: 'Match the host. Enter sends with Shift + Enter for a new line in most ' +
+                      'assistants; products where long requests are normal send on ⌘ / Ctrl + ' +
+                      'Enter instead. The line under the field always says which.' }
             ] },
 
-          { id: 'retired', label: 'Retired', states: ['retired'],
-            note: 'What replaces it once the screen has content. An invitation that never leaves is an advertisement.',
+          { id: 'actions', label: 'Secondary actions', section: 'behavior',
+            note: 'Everything here stays subordinate to the field. The invitation is the one ' +
+                  'primary thing on an empty workspace.',
             controls: [
-              { id: 'retiredText', label: 'Note', type: 'text',
-                value: 'The surface has work on it now, so the invitation is gone and the ' +
-                       'composer carries the way in.' }
+              { id: 'showPlus', label: 'Add context', type: 'toggle', value: true },
+              { id: 'showMic', label: 'Voice', type: 'toggle', value: true,
+                hint: 'Voice is a mode of this same composer, not another surface.' },
+              { id: 'showModel', label: 'Model control', type: 'toggle', value: false,
+                hint: 'Only where the host lets people choose. It is the Model Selection chip, ' +
+                      'unchanged.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Presence', section: 'appearance',
+            states: IC_EMPTY,
+            controls: [
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['tonal', 'Tonal']] },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
             ] }
         ]
       },
 
       states: {
-        invitation: { label: 'Invitation',
-                      trigger: 'The surface is empty and the agent has produced nothing yet.',
-                      behaviour: 'One oversized entry point naming what the agent will do to ' +
-                                 'the material already on screen, with a quieter second way in.',
-                      action: 'Compare it with the generic wording' },
-        generic:    { label: 'Written generically',
-                      trigger: 'The same component, written about the product instead of the screen.',
-                      behaviour: 'Identical layout, no information. The user still has to work ' +
-                                 'out what to ask, which is the problem the pattern exists to solve.',
-                      action: 'Go back' },
-        retired:    { label: 'Retired',
-                      trigger: 'The surface now has real content on it.',
-                      behaviour: 'The invitation is gone. A call to action competing with work ' +
-                                 'is noise, and a permanent one reads as an advertisement.',
-                      action: 'Reset' }
+        resting: { label: 'Resting',
+                   trigger: 'The workspace has no conversation, task or history yet.',
+                   behaviour: 'The large composer is the focal point, with its placeholder ' +
+                              'suggesting what to do. Send is unavailable because there is ' +
+                              'nothing to send. Secondary actions stay quiet around it.',
+                   action: 'Click or tab into the field.' },
+        focused: { label: 'Focused',
+                   trigger: 'The field receives focus — a click, a tap, or Tab.',
+                   behaviour: 'The outline takes the primary colour and the corner squares up ' +
+                              'a step. The placeholder stays until the first keystroke and the ' +
+                              'send key is named underneath. The layout does not move.',
+                   action: 'Start typing.' },
+        typing:  { label: 'Typing',
+                   trigger: 'Text is being entered.',
+                   behaviour: 'The placeholder is gone and the field grows line by line up to ' +
+                              'its ceiling. Send is available at a secondary emphasis while ' +
+                              'keys are moving; nothing else competes with the text.',
+                   action: 'Pause, or keep writing.' },
+        ready:   { label: 'Ready to submit',
+                   trigger: 'A request is in the field and the person has paused.',
+                   behaviour: 'Send takes the primary fill. The request is still fully ' +
+                              'editable, and nothing is sent until the person sends it.',
+                   action: 'Send it — Enter, or the send button.' },
+        working: { label: 'Active conversation',
+                   trigger: 'The first request is sent.',
+                   behaviour: 'The request enters the workspace as the first turn, the agent ' +
+                              'starts, and the SAME composer shrinks and moves to its working ' +
+                              'place at the bottom. From here on it is the normal composer.',
+                   action: 'Keep going in the working composer, or pick Resting to start over.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        if (s.state === 'retired') {
+        var c = s.cfg, st = s.state;
+        var S = window.MaterialSim, M = window.MaterialModel;
+        if (!S || !S.composer) return '';
+        var d = icDemo(s);
+        var multiline = c.multiline !== false;
+        var maxL = multiline ? (+c.maxLines || 8) : 1;
+        var sendKey = multiline ? (c.sendKey || 'enter') : 'enter';
+
+        var common = {
+          agent: 'Aria',
+          plus: c.showPlus === false ? false : IC_PLUS,
+          plusOpen: !!d.plusOpen, chips: d.chips,
+          mic: c.showMic !== false,
+          mode: d.voice ? 'voice' : 'text', voice: d.voice || null,
+          sendKey: sendKey
+        };
+        if (c.showModel && M) {
+          common.models = M.MODELS; common.model = d.model; common.effort = null;
+          common.modesOpen = !!d.modesOpen;
+          common.modelOpts = { showAuto: true, showFor: true, showEffort: false,
+                               modelsHeading: 'Models' };
+        }
+        var sync = '<button type="button" hidden tabindex="-1" data-act="ic:sync"></button>';
+
+        if (st === 'working') {
           return '' +
-'<div class="pv-card pv-card--quiet">\n' +
-'  <p class="md-body-medium">Ticket #4821 — 3 messages</p>\n' +
-'  <p class="pv-card__meta md-body-small">' + esc(c.retiredText) + '</p>\n' +
+'<div class="md-icta" data-surface="working" data-state="working">' +
+  '<div class="md-icta__thread">' + icThread(d) + '</div>' +
+  '<div class="md-icta__dock">' +
+    S.composer(Object.assign({}, common, {
+      ask: c.workingPlaceholder || 'Reply, or add to the request',
+      label: 'Reply to Aria',
+      text: d.next || '',
+      maxLines: multiline ? 3 : 1
+    })) +
+  '</div>' + sync +
 '</div>';
         }
-        var generic = s.state === 'generic';
-        var title = generic ? c.genericTitle : c.title;
-        var desc  = generic ? c.genericDesc  : c.desc;
+
+        var lead = c.showLead !== false && (c.lead || '').trim();
         return '' +
-'<section class="md-cta' + (c.ground === 'quiet' ? ' md-cta--quiet' : '') +
-   '" aria-labelledby="cta-t">\n' +
-   (c.glyph
-? '  <svg class="md-cta__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' : '') +
-'  <h2 class="md-cta__t md-headline-small" id="cta-t">' + esc(title) + '</h2>\n' +
-'  <p class="md-cta__d md-body-medium">' + esc(desc) + '</p>\n' +
-'  <div class="md-cta__foot">\n' +
-'    <button class="md-button md-button--filled" type="button"\n' +
-'            data-act="use">' + esc(c.primary) + '</button>\n' +
-   (c.secondary
-? '    <button class="md-button md-button--text" type="button">' +
-     esc(c.secondaryLabel) + '</button>\n' : '') +
-'  </div>\n' +
-'</section>';
+'<div class="md-icta" data-surface="initial" data-state="' + st + '" ' +
+     'data-emphasis="' + (c.emphasis || 'outlined') + '" ' +
+     'data-density="' + (c.density || 'comfortable') + '">' +
+  '<div class="md-icta__center">' +
+    (lead ? '<p class="md-icta__lead" id="icta-lead">' + esc(lead) + '</p>' : '') +
+    S.composer(Object.assign({}, common, {
+      size: 'initial',
+      ask: c.placeholder,
+      label: 'Start a task with Aria',
+      text: d.text || '',
+      entry: icEntry(st, d.text),
+      maxLines: maxL
+    })) +
+  '</div>' + sync +
+'</div>';
+      },
+
+      /* Everything that happens between two repaints: focus,
+         typing, pausing, Enter. None of it repaints — a repaint
+         would take the caret out of somebody's hand — so the state
+         read-out, the state list and the code pane are patched in
+         place instead (icLive). Sending is the one real context
+         change, and it goes through the act below. */
+      mounted: function (root, s) {
+        var box = root.querySelector('.pv-stage .md-icta');
+        var d = s.demo;
+        if (!box || !d) return;
+        icGuard(root, s);
+
+        var form = box.querySelector('.ax__composer');
+        var field = box.querySelector('[data-ax-field]');
+        var initial = box.getAttribute('data-surface') === 'initial';
+        icFit(field);
+
+        if (d.flip && form) { icFlip(box, form, d.flip); d.flip = null; }
+        if (field && d.focus) {
+          field.focus({ preventScroll: true });
+          var n = field.value.length;
+          try { field.setSelectionRange(n, n); } catch (e) {}
+        }
+        if (!field || field.dataset.icBound) return;
+        field.dataset.icBound = '1';
+
+        var timer = null;
+        field.addEventListener('focus', function () {
+          d.focus = true;
+          if (initial && s.state === 'resting') icLive(root, s, 'focused');
+        });
+        field.addEventListener('blur', function (e) {
+          var to = e.relatedTarget;
+          if (to && form && form.contains(to)) return;
+          if (pvChrome(e)) return;
+          /* A repaint removes the focused field, and removing it
+             fires blur too. That is not the person leaving, so it
+             must not undo their place — look again once the DOM
+             has settled. */
+          setTimeout(function () {
+            if (!field.isConnected || s.demo !== d) return;
+            if (document.activeElement === field) return;
+            d.focus = false;
+            clearTimeout(timer);
+            if (!initial) return;
+            if (!(d.text || '').trim()) icLive(root, s, 'resting');
+            else if (s.state === 'typing') icLive(root, s, 'ready');
+          }, 0);
+        });
+        field.addEventListener('input', function () {
+          icFit(field);
+          var v = field.value;
+          if (initial) d.text = v; else d.next = v;
+          var send = form && form.querySelector('.ax__cbtn--send');
+          if (send) send.disabled = !v.trim();
+          if (!initial) return;
+          clearTimeout(timer);
+          if (!v.trim()) { icLive(root, s, 'focused'); return; }
+          icLive(root, s, 'typing');
+          timer = setTimeout(function () {
+            if (field.isConnected && s.state === 'typing') icLive(root, s, 'ready');
+          }, (window.MaterialSim && window.MaterialSim.ENTRY_PAUSE) || 650);
+        });
+        field.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter') return;
+          var mod = form && form.getAttribute('data-send-key') === 'mod';
+          if (mod ? !(e.metaKey || e.ctrlKey) : e.shiftKey) return;
+          /* A single-line field never takes a new line. */
+          if (field.getAttribute('data-max-lines') === '1' && e.shiftKey) {
+            e.preventDefault(); return;
+          }
+          e.preventDefault();
+          icSubmit(root, s, initial);
+        });
+        if (form) form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          icSubmit(root, s, initial);
+        });
       },
 
       act: function (a, ctx) {
-        if (a === 'use') { ctx.s.state = 'retired'; ctx.paint();
-                           ctx.announce('Invitation taken, and retired'); }
+        var s = ctx.s, d = icDemo(s), M = window.MaterialModel;
+        if (a === 'ic:sync') {
+          var p = d.pending; d.pending = null;
+          if (p === 'send')  return icSend(ctx);
+          if (p === 'reply') return icReply(ctx);
+          return;
+        }
+        /* The composer's own controls, doing what they do in every
+           simulator: Add context adds a chip, voice switches the SAME
+           composer into its voice mode, the model chip opens the
+           Model Selection menu. None of them are drawings. */
+        if (a === 'ax:plus') { d.plusOpen = !d.plusOpen; d.modesOpen = false; ctx.paint(); return; }
+        if (a.indexOf('ax:add:') === 0) {
+          d.plusOpen = false;
+          d.chips = (d.chips || []).concat([IC_PLUS[+a.slice(7)]]);
+          ctx.paint(); ctx.announce(IC_PLUS[+a.slice(7)] + ' added to the request.'); return;
+        }
+        if (a.indexOf('ax:unchip:') === 0) {
+          d.chips = (d.chips || []).filter(function (_, i) { return i !== +a.slice(10); });
+          ctx.paint(); return;
+        }
+        if (a === 'voice:start') { d.voice = 'listening'; d.plusOpen = d.modesOpen = false;
+                                   ctx.paint(); ctx.announce('Listening.'); return; }
+        if (a === 'voice:mute')  { d.voice = d.voice === 'muted' ? 'listening' : 'muted';
+                                   ctx.paint(); return; }
+        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
+          d.voice = null; d.focus = true; ctx.paint();
+          ctx.announce('Voice off. The field is ready for typing.'); return;
+        }
+        if (a === 'ax:mode') { d.modesOpen = !d.modesOpen; d.plusOpen = false; ctx.paint(); return; }
+        if (a.indexOf('model:pick:') === 0) {
+          d.model = a.slice(11); d.modesOpen = false; ctx.paint();
+          ctx.announce(((M && M.byId(M.MODELS, d.model)) || {}).label + ' selected.'); return;
+        }
+        if (a === 'model:auto:on')  { d.model = 'default'; d.modesOpen = false; ctx.paint(); return; }
+        if (a === 'model:auto:off') { d.model = 'balanced'; ctx.paint(); return; }
       }
     },
 
     /* ── Open Input ─────────────────────────────────────────
-       The composer is the most-used control in the product and
-       the one most often shipped in a single state. Busy is the
-       state worth reaching: the send control changes, the field
-       does not, and the draft is still there. */
+       The standard working composer, during a conversation that
+       already exists: the shared MaterialSim.composer at its default
+       size. Seven states, every one reached by using it — focus,
+       type, wrap, pause, send, fail. What never happens in any of
+       them: the person's text being cleared by anything other than a
+       send that worked. */
     'open-input': {
-      initial: 'rest',
+      initial: 'empty',
 
       customize: {
+        api: {
+          name: 'PromptComposer',
+          props: function (c) {
+            return {
+              mode: 'working',
+              placeholder: c.placeholder,
+              multiline: c.multiline !== false,
+              maxLines: c.multiline === false ? 1 : +c.maxLines,
+              sendKey: c.sendKey,
+              showAddContext: c.showPlus !== false,
+              showVoice: c.showMic !== false,
+              showModel: !!c.showModel,
+              emphasis: c.emphasis,
+              density: c.density,
+              narrowLayout: c.narrow,
+              errorMessages: { send: c.errSend, offline: c.errOffline, unavailable: c.errDown }
+            };
+          }
+        },
+
         groups: [
-          { id: 'field', label: 'The field', states: ['rest', 'typing', 'busy'],
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'What it says', section: 'content',
             controls: [
               { id: 'placeholder', label: 'Placeholder', type: 'text',
-                value: 'Ask Aria about #4821',
-                hint: 'Name what THIS field is for, in the product’s own nouns.' },
-              { id: 'glyph', label: 'Carry the reserved glyph', type: 'toggle', value: true },
-              { id: 'hint', label: 'Show the send hint', type: 'toggle', value: true,
-                capability: true },
-              { id: 'hintText', label: 'Hint', type: 'text',
-                value: 'Enter to send · Shift + Enter for a new line',
-                visibleWhen: function (c) { return !!c.hint; } }
+                value: 'Ask about this project…',
+                hint: 'What this field is for, in the product’s own nouns. It disappears on the ' +
+                      'first keystroke, and it is never the field’s only label.' }
+            ] },
+          { id: 'failure', label: 'When a send fails', section: 'content',
+            states: ['error'],
+            note: 'Human words, the request kept, and one way on. Never an error code, and never ' +
+                  'an empty field.',
+            controls: [
+              { id: 'errorKind', label: 'Failure', type: 'segment', value: 'send',
+                options: [['send', 'Couldn’t send'], ['offline', 'Offline'],
+                          ['unavailable', 'Agent unavailable']],
+                hint: 'Three different causes, three different sentences. Agent unavailable ' +
+                      'holds Send until Retry, because sending again would only fail again.' },
+              { id: 'errSend', label: 'Couldn’t send', type: 'text', value: OI_ERR.send,
+                visibleWhen: function (c) { return (c.errorKind || 'send') === 'send'; } },
+              { id: 'errOffline', label: 'Offline', type: 'text', value: OI_ERR.offline,
+                visibleWhen: function (c) { return c.errorKind === 'offline'; } },
+              { id: 'errDown', label: 'Agent unavailable', type: 'text', value: OI_ERR.unavailable,
+                visibleWhen: function (c) { return c.errorKind === 'unavailable'; } }
             ] },
 
-          { id: 'typed', label: 'What is typed', states: ['typing', 'busy'],
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'entry', label: 'Writing a request', section: 'behavior',
             controls: [
-              { id: 'typed', label: 'Draft', type: 'text',
-                value: 'Where did Q2 renewals actually land?' }
+              { id: 'multiline', label: 'Grow to several lines', type: 'toggle', value: true,
+                hint: 'Follow-ups, edits and multi-step requests are often longer than a line.' },
+              { id: 'maxLines', label: 'Grows to at most', type: 'range', value: 6,
+                min: 3, max: 10, step: 1, unit: ' lines',
+                visibleWhen: function (c) { return c.multiline !== false; },
+                hint: 'Past this the field scrolls inside itself. The conversation stays in view.' },
+              { id: 'sendKey', label: 'Send with', type: 'segment', value: 'enter',
+                options: [['enter', 'Enter'], ['mod', '⌘ / Ctrl + Enter']],
+                visibleWhen: function (c) { return c.multiline !== false; },
+                hint: 'The host’s rule, not the pattern’s. Coding and writing tools increasingly ' +
+                      'let Enter make a new line and ⌘ / Ctrl + Enter send.' }
+            ] },
+          { id: 'controls', label: 'Secondary controls', section: 'behavior',
+            note: 'Only the ones this product supports, and all of them secondary to the field. ' +
+                  'Using any of them never touches what is typed.',
+            controls: [
+              { id: 'showPlus', label: 'Add context', type: 'toggle', value: true },
+              { id: 'showMic', label: 'Voice', type: 'toggle', value: true },
+              { id: 'showModel', label: 'Model and effort', type: 'toggle', value: false,
+                hint: 'The Model Selection chip, unchanged — including its effort screen.' }
             ] },
 
-          { id: 'busy', label: 'While it works', states: ['busy'],
-            note: 'The busy state belongs to the action, never to the reader’s text.',
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Presence', section: 'appearance',
             controls: [
-              { id: 'keepEditable', label: 'Field stays editable', type: 'toggle', value: true,
-                hint: 'Disabling it takes away the draft somebody was still writing.' },
-              { id: 'stoppable', label: 'Send becomes stop', type: 'toggle', value: true,
-                hint: 'A wait with no way out is the commonest composer bug.' }
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['tonal', 'Tonal']] },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
+              { id: 'narrow', label: 'On narrow panels', type: 'segment', value: 'stack',
+                options: [['stack', 'Field above controls'], ['inline', 'One row']],
+                hint: 'Side panels and phones. Stacking gives the words the whole width.' }
             ] }
         ]
       },
 
       states: {
-        rest:   { label: 'Rest',
-                  trigger: 'Nothing typed yet.',
-                  behaviour: 'A capsule field with its placeholder. No send control, because ' +
-                             'there is nothing to send — an empty press is impossible rather ' +
-                             'than merely ignored.',
-                  action: 'Type something' },
-        typing: { label: 'Typing',
-                  trigger: 'The field has content.',
-                  behaviour: 'Send appears as the only filled element in the row. The outline ' +
-                             'takes primary on focus: one property, one state.',
-                  action: 'Send it' },
-        busy:   { label: 'Working',
-                  trigger: 'A request is in flight.',
-                  behaviour: 'Send becomes stop; the field stays live and keeps its text. ' +
-                             'Nothing the reader wrote is taken away by a wait.',
-                  action: 'Reset' }
+        empty:     { label: 'Empty',
+                     trigger: 'The conversation is running and nothing is typed.',
+                     behaviour: 'The working composer at its compact size, docked under the ' +
+                                'conversation, placeholder showing. Send is unavailable. Not an ' +
+                                'invitation — the conversation is the focus.',
+                     action: 'Click or tab into the field. Next: Focused.' },
+        focused:   { label: 'Focused',
+                     trigger: 'The field receives focus.',
+                     behaviour: 'Primary outline, the corner squares up a step, the caret is ' +
+                                'there. The placeholder stays until the first keystroke. Nothing ' +
+                                'moves.',
+                     action: 'Start typing. Next: Typing.' },
+        typing:    { label: 'Typing',
+                     trigger: 'Text is entered.',
+                     behaviour: 'The placeholder goes and the text is the focus. Send is ' +
+                                'available at a secondary emphasis while keys are moving; the ' +
+                                'other controls still work and leave the text alone.',
+                     action: 'Keep typing or edit. Next: Multi-line, or Ready to send.' },
+        multiline: { label: 'Multi-line',
+                     trigger: 'The request wraps, or Shift + Enter adds a line.',
+                     behaviour: 'The composer eases taller a line at a time, controls anchored ' +
+                                'to the bottom row, up to its maximum — then the field scrolls ' +
+                                'inside itself.',
+                     action: 'Continue typing, edit, or send. Next: Ready to send, or Empty.' },
+        ready:     { label: 'Ready to send',
+                     trigger: 'Valid content is in the field and the person has paused.',
+                     behaviour: 'Send takes the primary fill. The request is still fully ' +
+                                'editable; nothing sends until the host’s send key or the ' +
+                                'button.',
+                     action: 'Send. Next: Submitted — or Error, if it fails.' },
+        submitted: { label: 'Submitted',
+                     trigger: 'The send went through.',
+                     behaviour: 'The request is the newest turn; only now is the field cleared. ' +
+                                'The composer stays where it is, empty and focused. While Aria ' +
+                                'answers, Send is Stop and the field is still live.',
+                     action: 'Write the next request. Next: Focused, Typing.' },
+        error:     { label: 'Error / unavailable',
+                     trigger: 'The send did not go through.',
+                     behaviour: 'One sentence in human words, inside the composer, with Retry. ' +
+                                'The request is exactly as it was and still editable. No code, ' +
+                                'no cleared field.',
+                     action: 'Edit, then Retry or send. Next: Submitted.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        var busy = s.state === 'busy';
-        var typing = s.state === 'typing' || busy;
-        var G =
-'    <svg class="md-entry__glyph mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n';
+        var c = s.cfg, st = s.state, S = window.MaterialSim, M = window.MaterialModel;
+        if (!S || !S.composer) return '';
+        var d = oiDemo(s);
+        var multiline = c.multiline !== false;
+        var kind = c.errorKind || 'send';
+        var errText = kind === 'offline' ? c.errOffline : kind === 'unavailable' ? c.errDown : c.errSend;
+        var o = {
+          agent: 'Aria', ask: c.placeholder, label: 'Message Aria',
+          plus: c.showPlus === false ? false : OI_PLUS,
+          plusOpen: !!d.plusOpen, chips: d.chips,
+          mic: c.showMic !== false,
+          mode: d.voice ? 'voice' : 'text', voice: d.voice || null,
+          text: d.text || '',
+          entry: oiEntry(st),
+          maxLines: multiline ? (+c.maxLines || 6) : 1,
+          sendKey: multiline ? (c.sendKey || 'enter') : 'enter',
+          running: !!d.running, stopAct: 'oi:stop',
+          grow: true,
+          /* With the model chip in the row, the field gets its own line
+             rather than being squeezed between controls. */
+          /* One row, model chip or not (user request, 1 Oct). */
+          error: d.failed ? { kind: kind, text: errText, retryAct: 'oi:retry',
+                              hold: kind === 'unavailable' } : null
+        };
+        if (c.showModel && M) {
+          o.models = M.MODELS; o.model = d.model; o.effort = d.effort;
+          o.modesOpen = !!d.modesOpen; o.effortOpen = !!d.effortOpen;
+          o.modelOpts = { showAuto: true, showFor: true, showEffort: true, modelsHeading: 'Models' };
+        }
         return '' +
-'<form class="md-entry' + (busy ? ' md-entry--busy' : '') + '">\n' +
-   (c.glyph ? G : '') +
-'  <input class="md-entry__input md-body-medium" type="text"\n' +
-'         value="' + (typing ? esc(c.typed) : '') + '"\n' +
-'         placeholder="' + esc(c.placeholder) + '" aria-label="Ask Aria"' +
-   (busy && !c.keepEditable ? ' disabled' : '') + ' />\n' +
-   (typing
-? (busy && c.stoppable
-? '  <button class="md-entry__send md-entry__send--stop" type="button"\n' +
-  '          data-act="stop" aria-label="Stop">\n' +
-  '    <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M300-660v360-360Zm-60 420v-480h480v480H240Zm60-60h360v-360H300v360Z"/></svg>\n' +
-  '  </button>\n'
-: busy
-? ''
-: '  <button class="md-entry__send" type="button" data-act="send" aria-label="Send">\n' +
-  '    <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M450-160v-526L202-438l-42-42 320-320 320 320-42 42-248-248v526h-60Z"/></svg>\n' +
-  '  </button>\n')
-: '') +
-'</form>' +
-   (c.hint
-? '\n<span class="md-entry__hint md-body-small">' + esc(c.hintText) + '</span>'
-: '');
+'<div class="md-oi" data-state="' + st + '" data-emphasis="' + (c.emphasis || 'outlined') + '" ' +
+     'data-density="' + (c.density || 'comfortable') + '" data-narrow="' + (c.narrow || 'stack') + '">' +
+  '<div class="md-oi__thread">' + oiThread(d) + '</div>' +
+  '<div class="md-oi__dock">' +
+    S.composer(o) +
+  '</div>' +
+  '<button type="button" hidden tabindex="-1" data-act="oi:sync"></button>' +
+'</div>';
+      },
+
+      mounted: function (root, s) {
+        var d = s.demo;
+        var box = root.querySelector('.pv-stage .md-oi');
+        if (!box || !d) return;
+        oiGuard(root, s);
+        if (window.MaterialModel && window.MaterialModel.animate) window.MaterialModel.animate(root);
+        var th = box.querySelector('.md-oi__thread');
+        if (th) th.scrollTop = th.scrollHeight;
+        var form = box.querySelector('.ax__composer');
+        var field = box.querySelector('[data-ax-field]');
+        if (!field) return;
+        icFit(field);
+        if (d.focus && !d.modesOpen && !d.effortOpen && !d.plusOpen) {
+          field.focus({ preventScroll: true });
+          try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+        }
+        if (field.dataset.oiBound) return;
+        field.dataset.oiBound = '1';
+        var timer = null;
+        function where() {
+          if (s.state === 'error' || s.state === 'submitted' && d.running) return null;
+          var v = field.value;
+          if (!v.trim()) return document.activeElement === field ? 'focused' : 'empty';
+          return oiLines(field) > 1 ? 'multiline' : 'typing';
+        }
+        function to(next) {
+          if (!next || s.state === next) return;
+          box.setAttribute('data-state', next);
+          if (form && form.hasAttribute('data-entry')) form.setAttribute('data-entry', oiEntry(next));
+          pvLive(root, s, 'open-input', next);
+        }
+        field.addEventListener('focus', function () {
+          d.focus = true;
+          if (s.state === 'empty' || s.state === 'submitted' && !d.running && !field.value.trim()) to('focused');
+        });
+        field.addEventListener('blur', function (e) {
+          if (e.relatedTarget && form && form.contains(e.relatedTarget)) return;
+          if (pvChrome(e)) return;
+          setTimeout(function () {
+            if (!field.isConnected || s.demo !== d || document.activeElement === field) return;
+            d.focus = false; clearTimeout(timer);
+            if (s.state === 'focused' && !field.value.trim()) to('empty');
+            else if (s.state === 'typing' || s.state === 'multiline') to('ready');
+          }, 0);
+        });
+        field.addEventListener('input', function () {
+          var before = form.getBoundingClientRect().height;
+          icFit(field);
+          oiGrow(form, before);
+          d.text = field.value;
+          var send = form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (send) send.disabled = !field.value.trim() || send.hasAttribute('data-hold');
+          clearTimeout(timer);
+          var next = where();
+          if (!next) return;
+          to(next);
+          if (next === 'typing' || next === 'multiline') {
+            timer = setTimeout(function () {
+              if (field.isConnected && (s.state === 'typing' || s.state === 'multiline')) to('ready');
+            }, (window.MaterialSim && window.MaterialSim.ENTRY_PAUSE) || 650);
+          }
+        });
+        function submit(e) {
+          if (e) e.preventDefault();
+          var send = form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (!send || send.disabled || !(d.text || '').trim()) return;
+          d.pending = 'send';
+          var b = root.querySelector('.pv-stage [data-act="oi:sync"]');
+          if (b) b.click();
+        }
+        form.addEventListener('submit', submit);
+        field.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter') return;
+          var single = field.getAttribute('data-max-lines') === '1';
+          var mod = !single && form.getAttribute('data-send-key') === 'mod';
+          if (single && e.shiftKey) { e.preventDefault(); return; }
+          if (mod ? !(e.metaKey || e.ctrlKey) : e.shiftKey) return;
+          submit(e);
+        });
       },
 
       act: function (a, ctx) {
-        if (a === 'send') { ctx.s.state = 'busy'; ctx.paint(); ctx.announce('Sent, working'); return; }
-        if (a === 'stop') { ctx.s.state = 'typing'; ctx.paint();
-                            ctx.announce('Stopped, and your text is still here'); }
+        var s = ctx.s, d = oiDemo(s), M = window.MaterialModel;
+        if (a === 'oi:sync') {
+          var p = d.pending; d.pending = null;
+          if (p === 'send') return oiSend(ctx);
+          return;
+        }
+        if (a === 'oi:retry') {
+          /* Retry is the send, again, with the text as it now is. */
+          return oiSend(ctx);
+        }
+        if (a === 'oi:stop') {
+          /* Withdrawn before it was answered: the request goes back
+             into the field if the field is empty, and nothing that was
+             being written is replaced. */
+          d.run = (d.run || 0) + 1; d.running = false;
+          d.turns = d.turns.slice(0, -2);
+          if (!(d.text || '').trim()) d.text = d.sent || '';
+          s.state = 'ready'; d.on = 'ready'; d.focus = true;
+          ctx.paint(); ctx.announce('Stopped. Your request is back in the field.');
+          return;
+        }
+        /* Every other control on the composer: each changes its own
+           thing and leaves d.text exactly as it was. */
+        if (a === 'ax:plus') { d.plusOpen = !d.plusOpen; d.modesOpen = d.effortOpen = false; ctx.paint(); return; }
+        if (a.indexOf('ax:add:') === 0) {
+          d.plusOpen = false; d.focus = true;
+          d.chips = (d.chips || []).concat([OI_PLUS[+a.slice(7)]]);
+          ctx.paint(); ctx.announce(OI_PLUS[+a.slice(7)] + ' added. Your text is unchanged.'); return;
+        }
+        if (a.indexOf('ax:unchip:') === 0) {
+          d.chips = (d.chips || []).filter(function (_, i) { return i !== +a.slice(10); });
+          ctx.paint(); return;
+        }
+        if (a === 'voice:start') { d.voice = 'listening'; d.plusOpen = d.modesOpen = d.effortOpen = false;
+                                   ctx.paint(); ctx.announce('Listening.'); return; }
+        if (a === 'voice:mute')  { d.voice = d.voice === 'muted' ? 'listening' : 'muted'; ctx.paint(); return; }
+        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
+          d.voice = null; d.focus = true; ctx.paint();
+          ctx.announce('Voice off. Your text is where you left it.'); return;
+        }
+        if (!M) return;
+        if (a === 'ax:mode') {
+          if (d.modesOpen || d.effortOpen) { d.modesOpen = d.effortOpen = false; d.focus = true; }
+          else d.modesOpen = true;
+          d.plusOpen = false; ctx.paint(); return;
+        }
+        if (a === 'model:effort:focus') return;
+        if (a.indexOf('model:pick:') === 0) {
+          d.model = a.slice(11); d.modesOpen = false; d.effortOpen = true;
+          if (M.holdTrack) M.holdTrack();
+          ctx.paint(); ctx.announce(((M.byId(M.MODELS, d.model)) || {}).label + ' selected. Now set the effort.');
+          return;
+        }
+        if (a.indexOf('model:effort:') === 0) {
+          var eid = a.slice(13);
+          if (!M.EFFORT.some(function (x) { return x.id === eid; })) return;
+          d.effort = eid; ctx.paint(); return;
+        }
+        if (a === 'model:back') { d.effortOpen = false; d.modesOpen = true;
+                                  if (M.holdMenu) M.holdMenu(); ctx.paint(); return; }
+        if (a === 'model:auto:on')  { d.model = 'default'; d.modesOpen = false; d.effortOpen = true;
+                                      if (M.holdTrack) M.holdTrack(); ctx.paint(); return; }
+        if (a === 'model:auto:off') { d.model = 'balanced'; ctx.paint(); }
       }
     },
 
     /* ── Suggested Prompts ──────────────────────────────────
-       The single decision this pattern has is what happens when
-       one is pressed. Landing in the composer teaches phrasing;
-       firing straight off hides it. */
+       A few contextual starting points that feed INTO the shared
+       composer. Choosing one places its prompt in the field as
+       ordinary, editable text; nothing is sent until the person
+       sends it. The set steps back the moment the person writes,
+       and is gone once the conversation has begun. */
     'suggested-prompts': {
-      initial: 'offered',
+      initial: 'available',
 
       customize: {
-        groups: [
-          { id: 'set', label: 'The set', states: ['offered', 'chosen'],
-            controls: [
-              { id: 'p1', label: 'First', type: 'text', value: 'What is this ticket about?' },
-              { id: 'p2', label: 'Second', type: 'text', value: 'Where did Q2 renewals land?' },
-              { id: 'p3', label: 'Third', type: 'text', value: 'Draft a reply to Dana' },
-              { id: 'fourth', label: 'A fourth', type: 'toggle', value: false, capability: true,
-                hint: 'Three or four. A wall of chips is the menu this pattern replaces.' },
-              { id: 'p4', label: 'Fourth', type: 'text', value: 'Who else has touched this?',
-                visibleWhen: function (c) { return !!c.fourth; } }
-            ] },
+        api: {
+          name: 'SuggestedPrompts',
+          props: function (c) {
+            return {
+              suggestions: spItems(c).map(function (it) {
+                return { id: it.id, title: it.title, prompt: it.prompt,
+                         description: it.description, icon: it.icon, category: it.category };
+              }),
+              label: spLabel(c),
+              layout: c.layout,
+              showDescription: c.showDesc !== false,
+              showIcons: c.showIcons !== false,
+              showCategory: !!c.showCat,
+              emphasis: c.emphasis,
+              density: c.density,
+              arrangement: c.arrange,
+              narrowLayout: c.narrow,
+              onSelect: c.fills === false ? 'send' : 'placeInComposer',
+              afterSelect: c.afterPick,
+              showProvenance: !!c.provenance,
+              composer: 'PromptComposer'
+            };
+          }
+        },
 
-          { id: 'behaviour', label: 'On choosing one', states: ['offered', 'chosen'],
-            controls: [
-              { id: 'fills', label: 'Lands in the composer', type: 'toggle', value: true,
-                hint: 'Off, it sends immediately — and the reader never sees the request they made.' },
-              { id: 'refresh', label: 'Offer a refresh', type: 'toggle', value: true,
-                capability: true },
-              { id: 'refreshLabel', label: 'Refresh label', type: 'text', value: 'Other ideas',
-                visibleWhen: function (c) { return !!c.refresh; } }
-            ] },
+        groups: (function () {
+          var ws = Object.keys(SP_WS);
+          var itemControls = [];
+          ws.forEach(function (k) {
+            for (var n = 1; n <= SP_COUNT_MAX; n++) {
+              (function (k, n) {
+                var base = SP_WS[k].items[n - 1];
+                var on = function (c) { return spKey(c) === k && n <= (+c.count || 3); };
+                itemControls.push(
+                  { id: 'sp_' + k + '_' + n + '_t', label: n + ' · Title', type: 'text',
+                    value: base.title, visibleWhen: on,
+                    hint: n === 1 ? 'An action, in a few words, naming something this workspace ' +
+                                    'shows. What the person scans.' : undefined },
+                  { id: 'sp_' + k + '_' + n + '_p', label: n + ' · Prompt it places', type: 'text',
+                    value: base.prompt, visibleWhen: on,
+                    hint: n === 1 ? 'The request that lands in the composer — fuller than the ' +
+                                    'title, and still the person’s to edit.' : undefined },
+                  { id: 'sp_' + k + '_' + n + '_d', label: n + ' · Supporting line', type: 'text',
+                    value: base.description,
+                    visibleWhen: function (c) { return on(c) && c.showDesc !== false && c.layout !== 'chips'; } });
+              })(k, n);
+            }
+          });
+          return [
+            /* ══ CONTENT ═══════════════════════════════════════ */
+            { id: 'context', label: 'Where it appears', section: 'content',
+              note: 'Demo data. The component takes any set — switch the workspace and the same ' +
+                    'component reads another context.',
+              controls: [
+                { id: 'workspace', label: 'Workspace', type: 'segment', value: 'product',
+                  options: ws.map(function (k) { return [k, SP_WS[k].label]; }),
+                  hint: 'Every suggestion should be explainable from what this workspace shows ' +
+                        '— its release plan, study or flow.' }
+              ].concat(ws.map(function (k) {
+                return { id: 'sp_label_' + k, label: 'Set name (screen readers)', type: 'text',
+                         value: SP_WS[k].heading,
+                         visibleWhen: function (c) { return spKey(c) === k; },
+                         hint: 'No heading is drawn; this names the set for assistive technology. ' +
+                               'Say where the suggestions come from.' };
+              })) },
+            { id: 'items', label: 'The suggestions', section: 'content',
+              note: 'Title, the prompt it places, and an optional supporting line.',
+              controls: itemControls },
 
-          { id: 'quiet', label: 'While typing', states: ['quiet'],
-            note: 'Ideas must never compete with the sentence somebody is already writing.',
-            controls: [
-              { id: 'quietText', label: 'Note', type: 'text',
-                value: 'Suggestions are withdrawn while the field has content of its own.' }
-            ] }
-        ]
+            /* ══ BEHAVIOR ══════════════════════════════════════ */
+            { id: 'set', label: 'The set', section: 'behavior',
+              controls: [
+                { id: 'count', label: 'Suggestions shown', type: 'range', value: 3,
+                  min: 2, max: SP_COUNT_MAX, step: 1, unit: '',
+                  hint: 'Three or four. More becomes a catalogue to read.' }
+              ] },
+            { id: 'choose', label: 'Choosing one', section: 'behavior',
+              controls: [
+                { id: 'fills', label: 'Place it in the composer to edit', type: 'toggle', value: true,
+                  visibleWhen: function (c, st) { return st === 'available' || st === 'selected'; },
+                  hint: 'Off, a press sends the request at once — flagged, because the person ' +
+                        'never sees or adjusts what was asked.' },
+                { id: 'afterPick', label: 'The other suggestions', type: 'segment', value: 'full',
+                  options: [['full', 'Stay, to choose another'], ['quiet', 'Stay, quietly'],
+                            ['hide', 'Step aside']],
+                  visibleWhen: function (c, st) {
+                    return c.fills !== false && (st === 'selected' || st === 'placed'); },
+                  hint: 'By default the set stays, the chosen one marked, so another can be ' +
+                        'chosen — it swaps the untouched text. Quietly: small plain chips, no ' +
+                        'icons. Either way, once you edit, they go.' },
+                { id: 'provenance', label: 'Say it started from a suggestion', type: 'toggle',
+                  value: false,
+                  visibleWhen: function (c, st) { return st === 'placed' || st === 'edited'; },
+                  hint: 'One quiet phrase under the composer. Off by default: the text is simply ' +
+                        'the person’s now.' }
+              ] },
+
+            /* ══ APPEARANCE ════════════════════════════════════ */
+            { id: 'look', label: 'Presentation', section: 'appearance',
+              controls: [
+                { id: 'layout', label: 'Shown as', type: 'segment', value: 'chips',
+                  options: [['chips', 'Chips'], ['list', 'List'], ['cards', 'Compact cards']],
+                  hint: 'Chips carry a title only. A list or cards can add the supporting line.' },
+                { id: 'showDesc', label: 'Supporting line', type: 'toggle', value: true,
+                  visibleWhen: function (c) { return c.layout === 'list' || c.layout === 'cards'; } },
+                { id: 'showIcons', label: 'Icons', type: 'toggle', value: true },
+                { id: 'showCat', label: 'Category label', type: 'toggle', value: false,
+                  visibleWhen: function (c) { return c.layout === 'list' || c.layout === 'cards'; } },
+                { id: 'emphasis', label: 'Chip style', type: 'segment', value: 'outlined',
+                  options: [['outlined', 'Outlined'], ['elevated', 'Elevated']],
+                  visibleWhen: function (c) { return (c.layout || 'chips') === 'chips'; } },
+                { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                  options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+              ] },
+            { id: 'arrange', label: 'Arrangement', section: 'appearance',
+              controls: [
+                { id: 'arrange', label: 'On wide surfaces', type: 'segment', value: 'row',
+                  options: [['row', 'Row / grid'], ['stacked', 'Stacked']],
+                  visibleWhen: function (c) { return c.layout !== 'list'; } },
+                { id: 'narrow', label: 'On narrow panels', type: 'segment', value: 'stack',
+                  options: [['stack', 'Wrap'], ['scroll', 'Scroll sideways']],
+                  visibleWhen: function (c) { return (c.layout || 'chips') === 'chips'; },
+                  hint: 'Side panels and phones. Wrapping shows every choice; one scrolling row ' +
+                        'keeps the composer closer to the conversation.' }
+              ] }
+          ];
+        })()
       },
 
       states: {
-        offered: { label: 'Offered',
-                   trigger: 'The composer is empty and the surface has material worth asking about.',
-                   behaviour: 'Three or four outlined capsules, worded against what is on ' +
-                              'screen, staggered in on emphasized easing because the system ' +
-                              'raised them.',
-                   action: 'Choose one' },
-        chosen:  { label: 'Chosen',
-                   trigger: 'The reader presses one.',
-                   behaviour: 'Its text moves into the composer, editable and unsent — one ' +
-                              'surface becoming another, rather than a request fired on their behalf.',
-                   action: 'Reset' },
-        quiet:   { label: 'Withdrawn',
-                   trigger: 'The reader starts typing.',
-                   behaviour: 'The set is withdrawn. Offering ideas beside a half-written ' +
-                              'sentence competes with the thought already in progress.',
-                   action: 'Reset' }
+        available:    { label: 'Suggestions available',
+                        trigger: 'The workspace has context worth asking about and nothing is typed.',
+                        behaviour: 'Three suggestions just below the composer, each an action named ' +
+                                   'from what is on screen. The composer is level one and works on ' +
+                                   'its own; the set is level two.',
+                        action: 'Choose one, or ignore them and type. Next: Suggestion selected — ' +
+                                'or Prompt edited.' },
+        selected:     { label: 'Suggestion selected',
+                        trigger: 'The person activates a suggestion (click, tap, Enter or Space).',
+                        behaviour: 'The suggestion takes the secondary-container fill and its text ' +
+                                   'travels into the composer. Nothing is sent. Focus moves to the ' +
+                                   'field, and the placement is announced.',
+                        action: 'Let it land. Next: Prompt placed in composer.' },
+        placed:       { label: 'Prompt placed in composer',
+                        trigger: 'The chosen prompt has landed in the field.',
+                        behaviour: 'Ordinary composer text with the caret at the end — not a chip, ' +
+                                   'not locked. Send is ready. The set stays, the chosen one ' +
+                                   'marked, so another can be chosen instead: it replaces the ' +
+                                   'untouched text.',
+                        action: 'Edit, choose another, add context, change the model, or send. ' +
+                                'Next: Prompt edited, Suggestion selected, or the conversation.' },
+        edited:       { label: 'Prompt edited',
+                        trigger: 'The person changes the placed text — or writes their own instead.',
+                        behaviour: 'It is simply their request now. No preset styling, no lock; the ' +
+                                   'set steps aside, so no suggestion can overwrite their words. ' +
+                                   'Clear the field and the suggestions come back.',
+                        action: 'Send. Next: Conversation started.' },
+        conversation: { label: 'Conversation started',
+                        trigger: 'The request was sent.',
+                        behaviour: 'The request is the first turn and Aria answers. The suggestions ' +
+                                   'do not come back: they are an entry aid, not navigation. The ' +
+                                   'composer stays, empty and ready.',
+                        action: 'Continue in the composer. Reset from the state list.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        if (s.state === 'quiet') {
-          return '' +
-'<form class="md-entry">\n' +
-'  <input class="md-entry__input md-body-medium" type="text"\n' +
-'         value="Can you check the renewal figure agai" aria-label="Ask Aria" />\n' +
-'</form>\n' +
-'<!-- ' + esc(c.quietText) + ' -->';
-        }
-        if (s.state === 'chosen') {
-          return '' +
-'<form class="md-entry">\n' +
-'  <input class="md-entry__input md-body-medium" type="text"\n' +
-'         value="' + esc(c.fills ? c.p2 : '') + '" aria-label="Ask Aria" />\n' +
-'  <button class="md-entry__send" type="button" aria-label="Send">\n' +
-'    <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M450-160v-526L202-438l-42-42 320-320 320 320-42 42-248-248v526h-60Z"/></svg>\n' +
-'  </button>\n' +
-'</form>';
-        }
-        var items = [c.p1, c.p2, c.p3].concat(c.fourth ? [c.p4] : []);
+        var c = s.cfg, st = s.state, S = window.MaterialSim, M = window.MaterialModel;
+        if (!S || !S.composer || !S.suggestions) return '';
+        var d = spDemo(s), k = d.ws, ws = SP_WS[k];
+        var o = {
+          agent: 'Aria', ask: ws.ask, label: 'Message Aria',
+          plus: SP_PLUS, plusOpen: !!d.plusOpen, chips: d.chips,
+          mic: true, mode: d.voice ? 'voice' : 'text', voice: d.voice || null,
+          text: d.text || '',
+          entry: (d.text || '').trim() ? 'ready' : 'empty',
+          /* One row, exactly as Open Input's composer (user request):
+             Add context, the field, voice, send. */
+          maxLines: 6, grow: true,
+          describedBy: c.provenance ? 'sp-prov' : '',
+          running: !!d.running, stopAct: 'sp:stop'
+        };
+        /* Selected is the moment of choosing: the set is still there,
+           the chosen one lit, while its text lands. */
+        var prom = st === 'selected' ? 'full' : spProminence(c, d);
         return '' +
-'<div class="md-suggests" role="group" aria-label="Suggested questions">\n' +
-   items.map(function (t, i) {
-     return '  <button class="md-suggest md-body-small" type="button"' +
-            (i === 1 ? ' data-act="choose"' : '') + '>' + esc(t) + '</button>\n';
-   }).join('') +
-   (c.refresh
-? '  <button class="md-suggest md-suggest__refresh md-body-small" type="button">' +
-  esc(c.refreshLabel) + '</button>\n' : '') +
+'<div class="md-spv" data-state="' + st + '" data-workspace="' + k + '">' +
+  '<div class="md-spv__body">' +
+    (d.turns.length ? '<div class="md-spv__thread">' + spThread(d) + '</div>' : '') +
+  '</div>' +
+  '<div class="md-spv__dock">' +
+    /* The composer first, the suggestions below it (user request). */
+    S.composer(o) +
+    (c.provenance ? '<p class="ax__cnote md-oi__keys md-spv__prov" id="sp-prov">' + esc(spNote(c, d)) + '</p>' : '') +
+    S.suggestions({
+      id: 'sp', items: spItems(c), label: spLabel(c), layout: c.layout || 'chips', showLabel: false,
+      prominence: prom, picked: d.picked,
+      /* Marked while it lands — and afterwards too, while the set stays
+         up, so it is clear which one is in the field. */
+      emphasize: st === 'selected' || (st === 'placed' && (c.afterPick || 'full') === 'full'),
+      showDescription: c.showDesc !== false, showIcons: c.showIcons !== false,
+      showCategory: !!c.showCat, emphasis: c.emphasis, density: c.density,
+      arrange: c.arrange, narrow: c.narrow
+    }) +
+  '</div>' +
+  '<button type="button" hidden tabindex="-1" data-act="sp:sync"></button>' +
 '</div>';
       },
 
-      act: function (a, ctx) {
-        if (a === 'choose') {
-          ctx.s.state = 'chosen'; ctx.paint();
-          ctx.announce(ctx.s.cfg.fills ? 'Placed in the composer, unsent' : 'Sent immediately');
+      mounted: function (root, s) {
+        var d = s.demo, c = s.cfg, S = window.MaterialSim;
+        var box = root.querySelector('.pv-stage .md-spv');
+        if (!box || !d || !S) return;
+        if (window.MaterialModel && window.MaterialModel.animate) window.MaterialModel.animate(root);
+        var set = box.querySelector('.md-sp');
+        var form = box.querySelector('.ax__composer');
+        var field = box.querySelector('[data-ax-field]');
+        var th = box.querySelector('.md-spv__thread');
+        if (th) th.scrollTop = th.scrollHeight;
+        function guard() {
+          var m = null;
+          if (set && form && set.getAttribute('data-prominence') === 'full') {
+            m = { set: set.getBoundingClientRect().height, composer: form.getBoundingClientRect().height };
+          }
+          spGuard(root, s, m);
         }
+        guard();
+        if (!field) return;
+        icFit(field);
+        if (d.focus && !d.modesOpen && !d.effortOpen && !d.plusOpen) {
+          field.focus({ preventScroll: true });
+          try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+        }
+        /* The flight is started from the act, after the repaint. */
+        if (d.fly) { var f = d.fly; d.fly = null; S.flyPrompt(f, field); }
+        function to(next) {
+          if (!next || s.state === next) return;
+          box.setAttribute('data-state', next);
+          pvLive(root, s, 'suggested-prompts', next);
+        }
+        function sync() {
+          S.setProminence(set, spProminence(c, d));
+          var note = box.querySelector('#sp-prov');
+          if (note) note.textContent = spNote(c, d);
+        }
+        /* Selected lasts as long as the motion: then the text is simply
+           in the composer. Picked from the state list, it holds. */
+        if (d.advance && s.state === 'selected') {
+          d.advance = false;
+          setTimeout(function () {
+            if (s.demo !== d || s.state !== 'selected' || !box.isConnected) return;
+            if ((c.afterPick || 'full') !== 'full') {
+              var chosen = box.querySelector('.md-sp__item.is-chosen');
+              if (chosen) chosen.classList.remove('is-chosen');
+            }
+            to('placed'); sync();
+          }, window.MaterialSim.ENTRY_PAUSE || 650);
+        }
+        if (field.dataset.spBound) return;
+        field.dataset.spBound = '1';
+        field.addEventListener('input', function () {
+          var before = form.getBoundingClientRect().height;
+          icFit(field);
+          oiGrow(form, before);
+          d.text = field.value;
+          var send = form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (send) send.disabled = !field.value.trim() || send.hasAttribute('data-hold');
+          if (form.hasAttribute('data-entry')) {
+            form.setAttribute('data-entry', field.value.trim() ? 'ready' : 'empty');
+          }
+          if (d.turns.length) { sync(); return; }
+          if (!field.value.trim()) {
+            /* Nothing left of what they wrote: the set comes back. */
+            d.picked = null; d.placed = '';
+            [].forEach.call(box.querySelectorAll('.md-sp__cell[data-chosen]'), function (x) {
+              x.removeAttribute('data-chosen'); });
+            [].forEach.call(box.querySelectorAll('.md-sp__item.is-chosen'), function (x) {
+              x.classList.remove('is-chosen'); });
+            to('available');
+          } else if (d.placed && d.text === d.placed) {
+            to('placed');
+          } else {
+            to('edited');
+          }
+          sync();
+        });
+        function submit(e) {
+          if (e) e.preventDefault();
+          var send = form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (!send || send.disabled || !(d.text || '').trim()) return;
+          d.pending = 'send';
+          var b = root.querySelector('.pv-stage [data-act="sp:sync"]');
+          if (b) b.click();
+        }
+        form.addEventListener('submit', submit);
+        field.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' || e.shiftKey) return;
+          submit(e);
+        });
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = s.cfg, d = spDemo(s), M = window.MaterialModel, S = window.MaterialSim;
+        if (a === 'sp:sync') {
+          var p = d.pending; d.pending = null;
+          if (p === 'send') return spSend(ctx, d.text);
+          return;
+        }
+        if (a.indexOf('sp:pick:') === 0) {
+          var id = a.slice(8);
+          var it = spItems(c).filter(function (x) { return x.id === id; })[0];
+          if (!it) return;
+          /* The anti-pattern, when configured: fired on the person's
+             behalf, never seen and never adjusted. */
+          if (c.fills === false) return spSend(ctx, it.prompt);
+          /* A suggestion never overwrites what the person wrote. The set
+             is hidden once they have, so this only guards the edge. */
+          if ((d.text || '').trim() && d.text !== d.placed) return;
+          var btn = document.querySelector('.pv-stage .md-sp__item[data-sp-id="' + id + '"]');
+          d.fly = S && S.measureSuggestion ? S.measureSuggestion(btn) : null;
+          d.picked = id; d.placed = it.prompt; d.text = it.prompt;
+          d.focus = true; d.advance = true;
+          s.state = 'selected'; d.on = 'selected';
+          ctx.paint();
+          ctx.announce('“' + it.title + '” placed in the message field: ' + it.prompt +
+                       ' Edit it or send it.');
+          return;
+        }
+        if (a === 'sp:stop') {
+          d.run = (d.run || 0) + 1; d.running = false;
+          d.turns = d.turns.slice(0, -2);
+          if (!(d.text || '').trim()) d.text = d.sent || '';
+          s.state = d.turns.length ? 'conversation' : (d.placed && d.text === d.placed ? 'placed' : 'edited');
+          d.on = s.state; d.focus = true;
+          ctx.paint(); ctx.announce('Stopped. Your request is back in the field.');
+          return;
+        }
+        /* Every composer control changes its own thing and leaves the
+           text — placed or edited — exactly as it was. */
+        if (a === 'ax:plus') { d.plusOpen = !d.plusOpen; d.modesOpen = d.effortOpen = false; ctx.paint(); return; }
+        if (a.indexOf('ax:add:') === 0) {
+          d.plusOpen = false; d.focus = true;
+          d.chips = (d.chips || []).concat([SP_PLUS[+a.slice(7)]]);
+          ctx.paint(); ctx.announce(SP_PLUS[+a.slice(7)] + ' added. Your text is unchanged.'); return;
+        }
+        if (a.indexOf('ax:unchip:') === 0) {
+          d.chips = (d.chips || []).filter(function (_, i) { return i !== +a.slice(10); });
+          d.focus = true; ctx.paint(); return;
+        }
+        if (a === 'voice:start') { d.voice = 'listening'; d.plusOpen = d.modesOpen = d.effortOpen = false;
+                                   ctx.paint(); ctx.announce('Listening.'); return; }
+        if (a === 'voice:mute')  { d.voice = d.voice === 'muted' ? 'listening' : 'muted'; ctx.paint(); return; }
+        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
+          d.voice = null; d.focus = true; ctx.paint();
+          ctx.announce('Voice off. Your text is where you left it.'); return;
+        }
+        if (!M) return;
+        if (a === 'ax:mode') {
+          if (d.modesOpen || d.effortOpen) { d.modesOpen = d.effortOpen = false; d.focus = true; }
+          else d.modesOpen = true;
+          d.plusOpen = false; ctx.paint(); return;
+        }
+        if (a === 'model:effort:focus') return;
+        if (a.indexOf('model:pick:') === 0) {
+          d.model = a.slice(11); d.modesOpen = false; d.effortOpen = true;
+          if (M.holdTrack) M.holdTrack();
+          ctx.paint(); return;
+        }
+        if (a.indexOf('model:effort:') === 0) {
+          var eid = a.slice(13);
+          if (!M.EFFORT.some(function (x) { return x.id === eid; })) return;
+          d.effort = eid; ctx.paint(); return;
+        }
+        if (a === 'model:back') { d.effortOpen = false; d.modesOpen = true;
+                                  if (M.holdMenu) M.holdMenu(); ctx.paint(); return; }
+        if (a === 'model:auto:on')  { d.model = 'default'; d.modesOpen = false; d.effortOpen = true;
+                                      if (M.holdTrack) M.holdTrack(); ctx.paint(); return; }
+        if (a === 'model:auto:off') { d.model = 'balanced'; ctx.paint(); }
       }
     },
 
     /* ── Icons ──────────────────────────────────────────────
-       "Reserved" is a claim about a whole screen, so the state
-       worth reaching is the audit — and the one that proves the
-       cost is the misuse. */
+       SEMANTIC AI ICONOGRAPHY (user brief, 1 Oct). Not a glyph
+       picker: a small, stable vocabulary — one mark per meaning —
+       shown where it is used. A release-note editor with ordinary
+       controls beside two AI actions; pressing one shows the
+       working mark and a tool line, and the result carries the
+       generated-content mark. Hover, focus and press are real (the
+       read-out follows them) and can also be held from the list. */
     'ai-icons': {
-      initial: 'inline',
+      initial: 'default',
 
       customize: {
+        api: {
+          name: 'AiIcon',
+          props: function (c) {
+            return {
+              vocabulary: {
+                action: aiiPick(c, 'action'), generated: aiiPick(c, 'generated'),
+                working: 'working', tool: aiiPick(c, 'tool')
+              },
+              style: c.style || 'outlined',
+              size: +c.size || 18,
+              emphasis: c.emphasis || 'primary',
+              actionLabel: c.labels === 'tooltip' ? 'tooltip' : 'visible',
+              labels: {
+                action: c.actionLabel, iconOnly: c.iconOnlyName,
+                generated: c.generatedLabel, working: c.workingLabel, tool: c.toolLabel
+              },
+              explainGenerated: c.explain !== false,
+              stopWhileWorking: c.stop !== false
+            };
+          }
+        },
         groups: [
-          { id: 'placement', label: 'Placement', states: ['inline', 'toolbar', 'iconOnly'],
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'semantics', label: 'Semantics', section: 'content',
+            note: 'Four meanings, four marks. Pick a role to see every place it appears.',
             controls: [
-              { id: 'label', label: 'Field label', type: 'text', value: 'Reply to Dana' },
-              { id: 'action', label: 'Accessible name', type: 'text',
-                value: 'Draft this with Aria',
-                hint: 'Say what pressing it does, not what the picture is.' }
+              { id: 'focusRole', label: 'Role in focus', type: 'segment', value: 'all',
+                options: [['all', 'All'], ['action', 'AI action'], ['generated', 'Generated'],
+                          ['working', 'Working'], ['tool', 'Tool use']],
+                hint: 'Outlines each instance of the role in the editor, so you can check the same ' +
+                      'meaning always uses the same mark.' }
+            ] },
+          { id: 'words', label: 'The words with each mark', section: 'content',
+            controls: [
+              { id: 'actionLabel', label: 'AI action · label', type: 'text', value: 'Rewrite',
+                hint: 'A verb for what happens. Not “AI”, “Magic” or “Ask AI”.' },
+              { id: 'iconOnlyName', label: 'Icon-only action · name and tooltip', type: 'text',
+                value: 'Summarize with AI',
+                hint: 'Read by screen readers and shown as the tooltip. Say what it does, and that ' +
+                      'AI does it.' },
+              { id: 'generatedLabel', label: 'Generated content · label', type: 'text',
+                value: 'Generated with AI',
+                visibleWhen: function (c, st) { return st === 'generated' || st === 'default'; } },
+              { id: 'workingLabel', label: 'Agent working · status', type: 'text',
+                value: 'Aria is rewriting…',
+                visibleWhen: function (c, st) { return st === 'working'; } },
+              { id: 'toolLabel', label: 'Tool use · line', type: 'text', value: 'Checked the style guide',
+                visibleWhen: function (c, st) { return st === 'working' || st === 'generated'; } }
             ] },
 
-          { id: 'word', label: 'The word beside it', states: ['toolbar'],
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'labelling', label: 'Labels and tooltips', section: 'behavior',
             controls: [
-              { id: 'withWord', label: 'Pair the glyph with a word', type: 'toggle', value: true,
-                hint: 'Icon-only belongs to dense rows where the neighbours are icons too.' },
-              { id: 'wordText', label: 'Word', type: 'text', value: 'Draft with Aria',
-                visibleWhen: function (c) { return !!c.withWord; } }
+              { id: 'labels', label: 'Rewrite shows', type: 'segment', value: 'word',
+                options: [['word', 'Icon and word'], ['tooltip', 'Icon, with a tooltip']],
+                hint: 'Keep the word wherever someone could press it by mistake. Icon-only belongs ' +
+                      'in dense toolbars, and always carries a tooltip and an accessible name.' }
+            ] },
+          { id: 'while', label: 'While and after it works', section: 'behavior',
+            controls: [
+              { id: 'stop', label: 'Offer Stop while working', type: 'toggle', value: true,
+                visibleWhen: function (c, st) { return st === 'working'; } },
+              { id: 'explain', label: 'The generated mark explains itself', type: 'toggle', value: true,
+                visibleWhen: function (c, st) { return st === 'generated'; },
+                hint: 'Pressing it says what the AI did and offers Undo — the same way every time ' +
+                      'it appears.' }
             ] },
 
-          { id: 'state', label: 'Agent state', states: ['inline', 'toolbar'],
-            note: 'Thinking is a hue rotation, never a spin: a spinner says wait, a hue shift says the agent is doing something.',
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Marks', section: 'appearance',
+            note: 'The four shapes differ, so no meaning rests on colour alone.',
             controls: [
-              { id: 'thinking', label: 'Working', type: 'toggle', value: false }
+              { id: 'size', label: 'Inline mark size', type: 'segment', value: '18',
+                options: [['16', '16'], ['18', '18'], ['20', '20'], ['24', '24']],
+                hint: 'Status lines, the generated mark and the vocabulary. Buttons keep their ' +
+                      'component sizes: 18 in a button, 24 in an icon button.' },
+              { id: 'style', label: 'Style', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['filled', 'Filled']],
+                hint: 'Filled holds up better at 16 and below.' },
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'primary',
+                options: [['primary', 'Primary'], ['neutral', 'Neutral']] }
             ] },
-
-          { id: 'misuse', label: 'Spent elsewhere', states: ['misuse'],
-            note: 'The whole cost of the pattern, in one screen: once the mark means two things it means nothing.',
+          { id: 'glyphs', label: 'Approved glyphs', section: 'appearance',
+            note: 'Choose once per product. The lists do not overlap, so two meanings can never ' +
+                  'share a mark — and there is no upload.',
             controls: [
-              { id: 'misuseLabel', label: 'The other use', type: 'text', value: 'New' }
+              { id: 'glyphAction', label: 'AI action', type: 'segment', value: 'spark',
+                options: aiiOptions('action') },
+              { id: 'glyphGenerated', label: 'Generated content', type: 'segment', value: 'aiInfo',
+                options: aiiOptions('generated') },
+              { id: 'glyphTool', label: 'Tool use', type: 'segment', value: 'tool',
+                options: aiiOptions('tool') }
             ] }
         ]
       },
 
       states: {
-        inline:   { label: 'In a field',
-                    trigger: 'The agent can fill this particular field.',
-                    behaviour: 'The glyph sits at the end of the input it acts on, carrying ' +
-                               'primary and an accessible name that says what pressing it does.',
-                    action: 'Try the other placements' },
-        toolbar:  { label: 'In a toolbar',
-                    trigger: 'The agent can act on the whole surface.',
-                    behaviour: 'The glyph rides on a labelled button, because anywhere a person ' +
-                               'might press by mistake deserves a word.',
-                    action: 'Drop the word' },
-        iconOnly: { label: 'Icon only',
-                    trigger: 'A dense row where every neighbour is also an icon.',
-                    behaviour: 'The glyph alone, with the word carried by a tooltip and an ' +
-                               'accessible name — never by the glyph doing extra work.',
-                    action: 'Reset' },
-        misuse:   { label: 'Spent on “new”',
-                    trigger: 'Somebody uses the mark for something a model does not do.',
-                    behaviour: 'Both uses stop being legible at once. This is why the rule is ' +
-                               'one glyph, one meaning, and why the audit is worth running.',
-                    action: 'Reset' }
+        default:   { label: 'Default',
+                     trigger: 'The editor is open with a draft in it.',
+                     behaviour: 'Ordinary controls (link, attach) carry ordinary icons. The two AI ' +
+                                'actions carry the AI-action mark: Rewrite with its word, Summarize ' +
+                                'as an icon button whose name says “with AI”.',
+                     action: 'Point at, tab to, or press an AI action. Next: Hover, Focus or Pressed.' },
+        hover:     { label: 'Hover',
+                     trigger: 'A pointer rests on an AI action.',
+                     behaviour: 'The 8% state layer. The icon-only action shows its tooltip, so its ' +
+                                'meaning is never a guess.',
+                     action: 'Move away (Default) or press (Pressed).' },
+        focus:     { label: 'Focus',
+                     trigger: 'An AI action receives keyboard focus.',
+                     behaviour: 'The visible focus ring and the 12% layer; the tooltip shows on ' +
+                                'focus as on hover, and Escape hides it.',
+                     action: 'Enter or Space to press. Tab on (Default).' },
+        pressed:   { label: 'Pressed',
+                     trigger: 'An AI action is being pressed.',
+                     behaviour: 'The 12% pressed layer. Releasing it starts the work.',
+                     action: 'Release. Next: Agent working.' },
+        working:   { label: 'Agent working',
+                     trigger: 'An AI action was pressed.',
+                     behaviour: 'The working mark turns beside a status line, and the tool mark ' +
+                                'names what the agent used. The action is disabled while it runs; ' +
+                                'the draft stays readable.',
+                     action: 'Wait, or Stop. Next: Generated content — or Default if stopped.' },
+        generated: { label: 'Generated content',
+                     trigger: 'The agent finished.',
+                     behaviour: 'The result carries the generated-content mark and its label — a ' +
+                                'different shape from the action that made it. Pressing the mark ' +
+                                'says what happened and offers Undo.',
+                     action: 'Keep it, edit it, or Undo. Next: Default.' },
+        disabled:  { label: 'Disabled',
+                     trigger: 'There is nothing for the AI to act on (the draft is empty).',
+                     behaviour: 'The AI actions dim to 38% but stay focusable, and their tooltip ' +
+                                'says why: “Write something first”.',
+                     action: 'Write in the draft. Next: Default.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        var think = c.thinking ? ' md-glyph--thinking' : '';
-        var G = function (cls) {
-          return '<svg class="md-glyph mi' + (cls || '') + '" viewBox="0 -960 960 960" aria-hidden="true">' +
-                 '<path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>';
+        var c = s.cfg, st = s.state, S = window.MaterialSim;
+        if (!S || !S.md3) return '';
+        var d = aiiDemo(s), M = S.md3;
+        var I = function (role, extra) {
+          return S.aiIcon(role, Object.assign({ style: c.style || 'outlined', pick: aiiPick(c, role) }, extra || {}));
         };
-        if (s.state === 'toolbar') {
-          return '' +
-'<div class="md-iconrow">\n' +
-'  <button class="md-button md-button--filled md-button--sm" type="button">\n' +
-'    ' + G(think) + '\n' +
-   (c.withWord ? '    ' + esc(c.wordText) + '\n' : '') +
-'  </button>\n' +
-'  <button class="md-button md-button--text md-button--sm" type="button">Add a note</button>\n' +
-'</div>';
-        }
-        if (s.state === 'iconOnly') {
-          return '' +
-'<div class="md-iconrow">\n' +
-'  <button class="md-icononly" type="button" aria-label="' + esc(c.action) + '">\n' +
-'    ' + G('') + '\n' +
-'  </button>\n' +
-'  <span class="md-caveat-tip md-body-small" role="tooltip">' + esc(c.action) + '</span>\n' +
-'</div>';
-        }
-        if (s.state === 'misuse') {
-          return '' +
-'<div class="md-iconrow">\n' +
-'  <button class="md-button md-button--filled md-button--sm" type="button">\n' +
-'    ' + G('') + '\n' +
-'    Draft with Aria\n' +
-'  </button>\n' +
-'  <!-- the same mark, on something no model touches -->\n' +
-'  <span class="md-assist-chip md-assist-chip--tonal">\n' +
-'    <svg class="md-assist-chip__icon mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    ' + esc(c.misuseLabel) + '\n' +
-'  </span>\n' +
-'</div>';
-        }
-        return '' +
-'<label class="md-field">\n' +
-'  <span class="md-field__label md-body-small">' + esc(c.label) + '</span>\n' +
-'  <span class="md-field__row">\n' +
-'    <input class="md-field__input md-body-medium" type="text"\n' +
-'           placeholder="Write a reply, or let Aria draft it" />\n' +
-'    <button class="md-field-glyph" type="button" aria-label="' + esc(c.action) + '">\n' +
-'      ' + G(think) + '\n' +
-'    </button>\n' +
-'  </span>\n' +
-'</label>';
-      },
+        var empty = !(d.text || '').trim();
+        var busy = d.phase === 'working';
+        var off = empty || busy;
+        var why = empty ? 'Write something first' : busy ? 'Aria is working' : '';
+        var force = function (k) { return st === k && !busy && !empty ? ' is-' + k : ''; };
+        var focus = c.focusRole || 'all';
+        var R = function (role) { return ' data-ai-role="' + role + '"' + (focus === role ? ' data-ai-focus' : ''); };
 
-      act: function () {}
-    },
-
-    /* ── Searching & Filtering ──────────────────────────────
-       The pattern is not language replacing filters. It is the
-       translation being made visible — and correctable. */
-    'search-filter': {
-      initial: 'understood',
-
-      customize: {
-        groups: [
-          { id: 'query', label: 'The query', states: ['asked', 'understood', 'partial'],
-            controls: [
-              { id: 'query', label: 'Typed', type: 'text',
-                value: 'open enterprise tickets from this week' }
-            ] },
-
-          { id: 'reading', label: 'What it was understood as', states: ['understood', 'partial'],
-            note: 'Chips rather than a sentence: a filter you can remove is a translation you can correct.',
-            controls: [
-              { id: 'f1', label: 'First filter', type: 'text', value: 'status: open' },
-              { id: 'f2', label: 'Second filter', type: 'text', value: 'tier: enterprise' },
-              { id: 'f3', label: 'Third filter', type: 'text', value: 'opened: last 7 days' },
-              { id: 'count', label: 'Show the result count', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Before the results, so a wrong reading is obvious at a glance.' },
-              { id: 'countText', label: 'Count', type: 'text', value: '7 tickets',
-                visibleWhen: function (c) { return !!c.count; } }
-            ] },
-
-          { id: 'partial', label: 'What it could not read', states: ['partial'],
-            note: 'A clause silently dropped is the failure people never forgive.',
-            controls: [
-              { id: 'ignored', label: 'Said out loud', type: 'text',
-                value: '“that Dana cares about” was ignored — there is no field behind it.' }
-            ] },
-
-          { id: 'manual', label: 'The manual way', states: ['asked', 'understood', 'partial'],
-            controls: [
-              { id: 'manual', label: 'Keep the filter controls reachable', type: 'toggle',
-                value: true,
-                hint: 'This is an addition to the filter panel, not a replacement for it.' }
-            ] }
-        ]
-      },
-
-      states: {
-        asked:      { label: 'Asked',
-                      trigger: 'A sentence is typed and sent.',
-                      behaviour: 'The query field alone. Nothing has been claimed yet, so ' +
-                                 'there is nothing to check.',
-                      action: 'See how it was read' },
-        understood: { label: 'Understood',
-                      trigger: 'The sentence is translated into the product’s own filters.',
-                      behaviour: 'Each clause becomes a removable chip at 8dp — sharp, because ' +
-                                 'it is evidence — with the result count before the results.',
-                      action: 'Try a clause it cannot read' },
-        partial:    { label: 'Partly understood',
-                      trigger: 'Part of the sentence has no field behind it.',
-                      behaviour: 'What was ignored is said out loud beside what was applied. ' +
-                                 'A dropped clause the reader never learns about is the ' +
-                                 'failure that costs the feature its user.',
-                      action: 'Reset' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        var field = '' +
-'<form class="md-nlsearch">\n' +
-'  <svg class="md-nlsearch__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M796-121 533-384q-30 26-70 40.5T378-329q-108 0-183-75t-75-181q0-106 75-181t182-75q106 0 180.5 75T632-585q0 43-14 83t-42 75l264 262-44 44ZM377-389q81 0 138-57.5T572-585q0-81-57-138.5T377-781q-82 0-139.5 57.5T180-585q0 81 57.5 138.5T377-389Z"/></svg>\n' +
-'  <input class="md-nlsearch__input md-body-medium" type="text"\n' +
-'         value="' + esc(c.query) + '" aria-label="Search in your own words" />\n' +
-'</form>';
-
-        if (s.state === 'asked') return field;
-
-        var chip = function (t, n) {
-          return '  <span class="md-fchip md-body-small">' + esc(t) + '\n' +
-                 '    <button type="button" aria-label="Remove ' + esc(t) + '">&times;</button>\n' +
-                 '  </span>\n';
+        /* Rewrite: the labelled AI action (or icon-only, with tooltip). */
+        var rwName = (c.actionLabel || '').trim();
+        var rewrite = c.labels === 'tooltip'
+          ? M.tooltip({ id: 'aii-tip-rw', content: esc(off ? why : (rwName ? rwName + ' with AI' : '')),
+              cls: 'md-aiiv__tipw' + force('pressed'),
+              trigger: M.iconButton({ variant: 'standard', icon: I('action'),
+                label: rwName ? rwName + ' with AI' : '', cls: 'md-aiiv__act' + force('pressed'),
+                attrs: { 'data-act': 'aii:rewrite', 'aria-describedby': 'aii-tip-rw',
+                         'aria-disabled': off ? 'true' : null, 'data-ai-role': 'action',
+                         'data-ai-focus': focus === 'action' ? true : null } }) })
+          : M.button({ variant: 'tonal', label: esc(rwName), icon: I('action'),
+              cls: 'md-aiiv__act' + force('pressed'),
+              attrs: { 'data-act': 'aii:rewrite', 'aria-disabled': off ? 'true' : null,
+                       'aria-describedby': off ? 'aii-why' : null, 'data-ai-role': 'action',
+                       'data-ai-focus': focus === 'action' ? true : null } });
+        /* Summarize: always icon-only — a dense toolbar slot. */
+        var smName = (c.iconOnlyName || '').trim();
+        var summarize = M.tooltip({ id: 'aii-tip-sm', content: esc(off ? why : smName),
+          cls: 'md-aiiv__tipw' + force('hover') + force('focus'),
+          trigger: M.iconButton({ variant: 'standard', icon: I('action'), label: smName,
+            cls: 'md-aiiv__act' + force('hover') + force('focus'),
+            attrs: { 'data-act': 'aii:summarize', 'aria-describedby': 'aii-tip-sm',
+                     'aria-disabled': off ? 'true' : null, 'data-ai-role': 'action',
+                     'data-ai-focus': focus === 'action' ? true : null } }) });
+        /* Ordinary controls: ordinary icons, never the AI mark. */
+        var plain = function (icon, name, id) {
+          return M.tooltip({ id: id, content: name,
+            trigger: M.iconButton({ variant: 'standard', icon: mi(icon), label: name,
+              attrs: { 'data-act': 'aii:noop', 'aria-describedby': id } }) });
         };
-        return field + '\n' +
-'<div class="md-applied" role="group" aria-label="Filters applied">\n' +
-'  <span class="md-applied__k md-body-small">Understood as</span>\n' +
-   chip(c.f1) + chip(c.f2) + chip(c.f3) +
-   (c.count
-? '  <span class="md-applied__n md-body-small">' + esc(c.countText) + '</span>\n' : '') +
-'</div>' +
-   (s.state === 'partial'
-? '\n<p class="md-ignored md-body-small">' + esc(c.ignored) + '</p>'
-: '') +
-   (c.manual
-? '\n<p class="md-ignored md-body-small">\n' +
-  '  <button class="md-button md-button--text md-button--sm" type="button">\n' +
-  '    Use the filter panel instead\n' +
-  '  </button>\n' +
-  '</p>'
-: '');
-      },
 
-      act: function () {}
-    },
+        var status = busy
+          ? '<div class="md-aiiv__status" role="status"' + R('working') + '>' +
+              I('working') +
+              '<span class="md-aiiv__st">' + esc(d.which === 'summarize'
+                ? (c.workingLabel || '').replace(/rewriting/i, 'summarizing') : c.workingLabel) + '</span>' +
+              (c.stop !== false
+                ? M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'aii:stop' } }) : '') +
+            '</div>'
+          : '';
+        var toolLine = (busy && d.tool) || (d.phase === 'done' && d.toolDone)
+          ? '<p class="md-aiiv__tool"' + R('tool') + '>' + I('tool') +
+              '<span>' + esc(c.toolLabel) + '</span></p>'
+          : '';
+        var gen = function (key) {
+          var label = (c.generatedLabel || '').trim();
+          var chip = '<button type="button" class="md3-chip md-aiiv__gen ' + aiiChipCls() + '"' +
+              ' data-act="' + (c.explain !== false ? 'aii:explain:' + key : 'aii:noop') + '"' +
+              (c.explain !== false ? ' aria-expanded="' + (d.explain === key) + '" aria-controls="aii-why-' + key + '"' : '') +
+              (label ? '' : ' aria-label="Generated with AI"') + R('generated') + '>' +
+              '<span class="relative shrink-0">' + I('generated') + '</span>' +
+              (label ? '<span class="relative">' + esc(label) + '</span>' : '') + '</button>';
+          if (c.explain === false) return chip;
+          return M.tooltip({ id: 'aii-why-' + key, rich: true, cls: 'md-aiiv__whyw' + (d.explain === key ? ' is-open' : ''),
+            title: key === 'summary' ? 'About this summary' : 'About this text',
+            content: key === 'summary'
+              ? 'Aria wrote this summary from the draft below. Nothing in the draft changed.'
+              : 'Aria rewrote your draft for clarity. Your version is kept.',
+            actions: M.button({ variant: 'text', label: key === 'summary' ? 'Remove' : 'Undo',
+                       attrs: { 'data-act': 'aii:undo:' + key } }),
+            trigger: chip });
+        };
 
-    /* ── Autocomplete ───────────────────────────────────────
-       The whole pattern is keeping the offer separate from the
-       sentence until the moment it is taken. */
-    autocomplete: {
-      initial: 'offered',
+        var legend = '<ul class="md-aiiv__vocab" aria-label="The AI icon vocabulary">' +
+          ['action', 'generated', 'working', 'tool'].map(function (r) {
+            var A = S.AI_ROLES[r];
+            return '<li class="md-aiiv__term' + (focus === r ? ' is-focus' : '') + '">' +
+              I(r, { cls: r === 'working' ? 'is-still' : '' }) +
+              '<span class="md-aiiv__tn">' + A.name + '</span>' +
+              '<span class="md-aiiv__tm">' + A.means + '</span></li>';
+          }).join('') + '</ul>';
 
-      customize: {
-        groups: [
-          { id: 'text', label: 'The line', states: ['offered', 'accepted', 'rejected'],
-            controls: [
-              { id: 'typed', label: 'Typed', type: 'text',
-                value: 'Thanks Dana — Q2 closed at' },
-              { id: 'ghost', label: 'Offered', type: 'text',
-                value: '£4.1m, 6% ahead of plan.' }
-            ] },
-
-          { id: 'form', label: 'How it reads', states: ['offered'],
-            note: 'Same face, same size, lower emphasis — a different size would move the caret, which is worse than no suggestion.',
-            controls: [
-              { id: 'distinct', label: 'Offer is visibly not theirs', type: 'toggle', value: true,
-                hint: 'Off, the offer renders as typed text — and gets sent as the reader’s own.' },
-              { id: 'hint', label: 'Say which key takes it', type: 'toggle', value: true,
-                capability: true },
-              { id: 'key', label: 'Accept key', type: 'segment', value: 'Tab',
-                options: [['Tab', 'Tab'], ['→', 'Right arrow']],
-                visibleWhen: function (c) { return !!c.hint; } }
-            ] },
-
-          { id: 'rejected', label: 'Typed past', states: ['rejected'],
-            note: 'Any other keystroke retires it, silently and without comment.',
-            controls: [
-              { id: 'own', label: 'What they wrote instead', type: 'text',
-                value: '£4.1m — figures attached.' }
-            ] }
-        ]
-      },
-
-      states: {
-        offered:  { label: 'Offered',
-                    trigger: 'The next few words are predictable from what is typed and what ' +
-                             'is on screen.',
-                    behaviour: 'One continuation ahead of the caret at lower emphasis. Enter ' +
-                               'still sends what was typed; only the accept key takes the offer.',
-                    action: 'Accept it, or type past it' },
-        accepted: { label: 'Accepted',
-                    trigger: 'The reader presses the accept key.',
-                    behaviour: 'The ghost hardens to full emphasis in 180ms — the boundary of ' +
-                               'certainty resolving as the words stop being the agent’s.',
-                    action: 'Reset' },
-        rejected: { label: 'Typed past',
-                    trigger: 'The reader keeps typing.',
-                    behaviour: 'The offer disappears without comment, and the same completion ' +
-                               'is not offered again for this sentence.',
-                    action: 'Reset' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        if (s.state === 'rejected') {
-          return '' +
-'<div class="md-ghostfield">\n' +
-'  <p class="md-ghostfield__line md-body-medium">\n' +
-'    <span>' + esc(c.typed) + ' ' + esc(c.own) + '</span>\n' +
-'    <span class="md-ghostfield__caret" aria-hidden="true"></span>\n' +
-'  </p>\n' +
-'</div>';
-        }
-        var taken = s.state === 'accepted';
         return '' +
-'<div class="md-ghostfield">\n' +
-'  <p class="md-ghostfield__line md-body-medium">\n' +
-'    <span class="md-ghostfield__typed">' + esc(c.typed) + '</span>\n' +
-   (taken ? '' :
-'    <span class="md-ghostfield__caret" aria-hidden="true"></span>\n') +
-'    <span class="md-ghostfield__ghost' +
-     (taken || !c.distinct ? ' md-ghostfield__ghost--taken' : '') + '">' +
-     esc(c.ghost) + '</span>\n' +
-   (taken ?
-'    <span class="md-ghostfield__caret" aria-hidden="true"></span>\n' : '') +
-'  </p>\n' +
-   (!taken && c.hint
-? '  <p class="md-ghostfield__hint md-body-small">\n' +
-  '    <kbd class="md-kbd">' + esc(c.key) + '</kbd> to accept\n' +
-  '  </p>\n' : '') +
-   (!taken
-? '  <div class="md-cta__foot" style="justify-content:flex-start;margin-top:12px">\n' +
-  '    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-  '            data-act="accept">Accept</button>\n' +
-  '    <button class="md-button md-button--text md-button--sm" type="button"\n' +
-  '            data-act="reject">Keep typing</button>\n' +
-  '  </div>\n' : '') +
+'<div class="md-aiiv" data-state="' + st + '" data-size="' + (c.size || '18') + '" ' +
+     'data-emphasis="' + (c.emphasis || 'primary') + '" data-focus-role="' + focus + '">' +
+  M.card('outlined',
+    '<div class="md-aiiv__bar" role="toolbar" aria-label="Release note tools">' +
+      '<span class="md-aiiv__title">Release note · September</span>' +
+      '<span class="md-aiiv__tools">' +
+        plain('link', 'Add a link', 'aii-tip-ln') + plain('attach', 'Attach a file', 'aii-tip-at') +
+        '<span class="md-aiiv__sep" aria-hidden="true"></span>' +
+        summarize + rewrite +
+      '</span>' +
+    '</div>' +
+    (off && !busy ? '<span class="md-aiiv__why" id="aii-why">' + esc(why) + '</span>' : '') +
+    (d.summary
+      ? '<div class="md-aiiv__summary"><p class="md-aiiv__sumt">' + esc(d.summary) + '</p>' + gen('summary') + '</div>'
+      : '') +
+    status + toolLine +
+    '<div class="md-aiiv__doc' + (d.phase === 'done' && d.rewrote ? ' is-generated' : '') + '">' +
+      M.textArea({ id: 'aii-draft', label: 'What changed', value: d.text || '', rows: 3,
+        cls: 'md-aiiv__field', attrs: { 'data-aii-field': true, readonly: busy } }) +
+      (d.phase === 'done' && d.rewrote ? '<div class="md-aiiv__genrow">' + gen('text') + '</div>' : '') +
+    '</div>',
+    'md-aiiv__card') +
+  legend +
+  '<button type="button" hidden tabindex="-1" data-act="aii:sync"></button>' +
 '</div>';
+      },
+
+      mounted: function (root, s) {
+        var box = root.querySelector('.pv-stage .md-aiiv');
+        var d = s.demo;
+        if (!box || !d) return;
+        aiiGuard(root, s);
+        var field = box.querySelector('[data-aii-field]');
+        if (d.focusField && field) {
+          d.focusField = false;
+          field.focus({ preventScroll: true });
+          try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+        }
+        if (d.focusAct) {
+          var fa = box.querySelector('[data-act="' + d.focusAct + '"]');
+          d.focusAct = null;
+          if (fa) fa.focus({ preventScroll: true });
+        }
+        function to(next) {
+          if (!next || s.state === next) return;
+          box.setAttribute('data-state', next);
+          pvLive(root, s, 'ai-icons', next);
+        }
+        /* Real hover, focus and press move the read-out; the states
+           held from the list do not fight them. */
+        var resting = function () { return d.phase !== 'working' && (d.text || '').trim(); };
+        [].forEach.call(box.querySelectorAll('.md-aiiv__act'), function (b) {
+          b.addEventListener('pointerenter', function () {
+            if (resting() && (s.state === 'default' || s.state === 'focus')) to('hover'); });
+          b.addEventListener('pointerleave', function () {
+            if (resting() && (s.state === 'hover' || s.state === 'pressed')) to('default'); });
+          b.addEventListener('pointerdown', function () { if (resting()) to('pressed'); });
+          b.addEventListener('focus', function () {
+            if (resting() && b.matches(':focus-visible') && s.state !== 'pressed') to('focus'); });
+          b.addEventListener('blur', function () { if (resting() && s.state === 'focus') to('default'); });
+        });
+        /* Escape hides a tooltip without moving focus (WCAG 1.4.13). */
+        box.addEventListener('keydown', function (e) {
+          if (e.key !== 'Escape') return;
+          var w = e.target.closest && e.target.closest('.md3-tip');
+          if (w) { w.classList.add('is-dismissed'); }
+          if (d.explain) { d.explain = null; var b = root.querySelector('.pv-stage [data-act="aii:sync"]'); if (b) b.click(); }
+        });
+        box.addEventListener('focusout', function (e) {
+          var w = e.target.closest && e.target.closest('.md3-tip');
+          if (w) w.classList.remove('is-dismissed');
+        });
+        if (!field || field.dataset.aiiBound) return;
+        field.dataset.aiiBound = '1';
+        field.addEventListener('input', function () {
+          d.text = field.value;
+          var empty = !field.value.trim();
+          /* The actions follow the draft in place, with no repaint, so
+             the caret stays where it is. */
+          [].forEach.call(box.querySelectorAll('.md-aiiv__act'), function (b) {
+            if (empty) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
+          });
+          [].forEach.call(box.querySelectorAll('.md-aiiv__tipw [role="tooltip"]'), function (t) {
+            var trg = t.parentNode.querySelector('.md-aiiv__act');
+            if (trg) t.textContent = empty ? 'Write something first'
+              : (trg.getAttribute('aria-label') || t.textContent);
+          });
+          if (empty) to('disabled');
+          else if (s.state === 'disabled' || s.state === 'generated') to('default');
+        });
       },
 
       act: function (a, ctx) {
-        if (a === 'accept') { ctx.s.state = 'accepted'; ctx.paint();
-                              ctx.announce('Accepted — the words are yours now'); return; }
-        if (a === 'reject') { ctx.s.state = 'rejected'; ctx.paint();
-                              ctx.announce('Offer retired'); }
+        var s = ctx.s, d = aiiDemo(s);
+        if (a === 'aii:noop' || a === 'aii:sync') { if (a === 'aii:sync') ctx.paint(); return; }
+        if (a === 'aii:rewrite' || a === 'aii:summarize') {
+          if (d.phase === 'working' || !(d.text || '').trim()) return;
+          return aiiRun(ctx, a === 'aii:rewrite' ? 'rewrite' : 'summarize');
+        }
+        if (a === 'aii:stop') {
+          d.run = (d.run || 0) + 1; d.phase = 'idle'; d.tool = false;
+          s.state = 'default'; d.on = 'default'; d.focusAct = 'aii:' + (d.which || 'rewrite');
+          ctx.paint(); ctx.announce('Stopped. Your draft is unchanged.');
+          return;
+        }
+        if (a.indexOf('aii:explain:') === 0) {
+          var k = a.slice(12);
+          d.explain = d.explain === k ? null : k;
+          ctx.paint(); return;
+        }
+        if (a.indexOf('aii:undo:') === 0) {
+          var which = a.slice(9);
+          if (which === 'summary') { d.summary = ''; }
+          else { d.text = d.original; d.rewrote = false; }
+          d.explain = null;
+          if (!d.summary && !d.rewrote) { d.phase = 'idle'; d.toolDone = false; s.state = 'default'; d.on = 'default'; }
+          d.focusField = true;
+          ctx.paint();
+          ctx.announce(which === 'summary' ? 'Summary removed.' : 'Your original draft is back.');
+        }
       }
     },
 
     /* ── Proactive Suggestions ──────────────────────────────
-       The only pattern in the category where the agent speaks
-       first, which makes it the one with the highest cost of
-       being wrong. */
-    proactive: {
-      initial: 'observed',
+       System-initiated (user brief, 1 Oct): the agent noticed
+       something during ongoing work and offers one next step. A
+       recommendation, never an action taken: Review opens a review the
+       person confirms; Dismiss remembers; Snooze waits; it withdraws
+       when the reason stops being true. Shared component + controller:
+       MaterialSim.pro. Demo events make it happen by USING it. */
+    'proactive': {
+      initial: 'dormant',
 
       customize: {
+        api: {
+          name: 'ProactiveSuggestion',
+          props: function (c) {
+            return { reason: c.reason, action: c.action, primaryLabel: c.primary,
+                     dismissLabel: c.dismissLabel, snoozeLabel: c.snoozeLabel,
+                     dismissible: c.dismissible !== false, snooze: c.snooze !== false,
+                     showReason: c.showReason !== false, trigger: c.trigger || 'now',
+                     emphasis: c.emphasis || 'tonal', density: c.density || 'comfortable',
+                     placement: c.placement || 'inline', rememberDismissal: 'per evidence',
+                     onAccept: 'openReview — nothing changes until confirmed' };
+          }
+        },
         groups: [
-          { id: 'content', label: 'What it says', states: ['observed', 'quiet'],
-            note: 'Observation first. Reverse the two lines and the card is an advertisement.',
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'obs', label: 'What changed', type: 'text',
-                value: 'Two renewals closed since you last looked.' },
-              { id: 'offer', label: 'What it means', type: 'text',
-                value: 'The £4.1m in your draft to Dana is now out of date.' },
-              { id: 'accept', label: 'Action', type: 'text', value: 'Update the figure' }
+              { id: 'reason', label: 'Reason', type: 'text', value: PRO_REASON,
+                hint: 'Why it appeared, from what the agent noticed. {n} is the count.' },
+              { id: 'action', label: 'Suggested action', type: 'text', value: 'Assign owners before the release?',
+                hint: 'A recommendation — a question or “Suggest…”, never past tense.' },
+              { id: 'primary', label: 'Primary action', type: 'text', value: 'Review',
+                hint: 'Opens the review. The consequential step is confirmed there.' },
+              { id: 'dismissLabel', label: 'Dismiss', type: 'text', value: 'Dismiss',
+                visibleWhen: function (c) { return c.dismissible !== false; } },
+              { id: 'snoozeLabel', label: 'Snooze', type: 'text', value: 'Remind me tomorrow',
+                visibleWhen: function (c) { return c.snooze !== false; } }
             ] },
-
-          { id: 'form', label: 'Form', states: ['observed'],
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'control', label: 'The person’s control', section: 'behavior',
             controls: [
-              { id: 'dismissible', label: 'Can be dismissed', type: 'toggle', value: true,
-                capability: true,
-                hint: 'A proactive agent with no off switch is a notification system.' },
-              { id: 'dismissLabel', label: 'Decline', type: 'text', value: 'Dismiss',
-                visibleWhen: function (c) { return !!c.dismissible; } },
-              { id: 'offSwitch', label: 'Show where to turn the category off', type: 'toggle',
-                value: true,
-                visibleWhen: function (c) { return !!c.dismissible; } }
+              { id: 'dismissible', label: 'Dismissible', type: 'toggle', value: true },
+              { id: 'snooze', label: 'Offer snooze', type: 'toggle', value: true },
+              { id: 'showReason', label: 'Show the reason', type: 'toggle', value: true }
             ] },
-
-          { id: 'unearned', label: 'Unearned', states: ['unearned'],
-            note: 'The same component with nothing behind it. This is what trains people to dismiss without reading.',
+          { id: 'when', label: 'When it appears', section: 'behavior',
             controls: [
-              { id: 'unearnedText', label: 'What it says', type: 'text',
-                value: 'Did you know Aria can draft replies for you?' }
+              { id: 'trigger', label: 'Trigger', type: 'segment', value: 'now',
+                options: [['now', 'When it is noticed'], ['pause', 'At the next pause']],
+                hint: 'At the next pause waits until the person stops interacting, so it never lands mid-action.' }
             ] },
-
-          { id: 'quiet', label: 'Quiet form', states: ['quiet'],
-            note: 'For surfaces too dense for a card: the same observation on one line.',
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Presentation', section: 'appearance',
             controls: [
-              { id: 'quietAction', label: 'Action', type: 'text', value: 'Update it' }
+              { id: 'placement', label: 'Placement', type: 'segment', value: 'inline',
+                options: [['inline', 'Inline, where the work is'], ['floating', 'Floating']] },
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
+                options: [['tonal', 'Tonal'], ['outlined', 'Outlined']] },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
             ] }
         ]
       },
 
       states: {
-        observed: { label: 'Raised on evidence',
-                    trigger: 'Something changed in the reader’s own data that bears on what ' +
-                             'they are doing.',
-                    behaviour: 'A rounded primary-container card arriving from below on ' +
-                               'emphasized easing — never a spring, because the reader did not ' +
-                               'cause it. The observation leads; the offer follows.',
-                    action: 'See it unearned' },
-        unearned: { label: 'Unearned',
-                    trigger: 'The same card fired on a timer instead of on evidence.',
-                    behaviour: 'Identical component, no observation to justify it. This is the ' +
-                               'version that teaches people to dismiss without reading, which ' +
-                               'disables the mechanism permanently.',
-                    action: 'Go back' },
-        quiet:    { label: 'Quiet form',
-                    trigger: 'The surface is too dense for a card.',
-                    behaviour: 'One line carrying the same observation and the same action, ' +
-                               'costing no vertical space and no attention.',
-                    action: 'Reset' },
-        dismissed:{ label: 'Dismissed',
-                    trigger: 'The reader says no.',
-                    behaviour: 'Gone, and gone for this class of suggestion. Ignoring it was ' +
-                               'free; dismissing it is permanent.',
-                    action: 'Reset' }
+        dormant:    { label: 'Dormant',
+                      trigger: 'Nothing worth raising — or the reason has been dealt with.',
+                      behaviour: 'Nothing is shown. The agent watches the work, silently.',
+                      action: 'Simulate “Sam Ortiz moves to Payments”. Next: Suggested.' },
+        suggested:  { label: 'Suggested',
+                      trigger: 'The agent noticed something: two release blockers lost their owner.',
+                      behaviour: 'A compact card where the work is: who suggests it, why it appeared, what it ' +
+                                 'recommends — as a question — and Review, Remind me tomorrow, Dismiss. Nothing ' +
+                                 'has changed; the list is fully usable.',
+                      action: 'Review, snooze, dismiss — or fix it yourself. Next: Action preparing, Snoozed, ' +
+                              'Dismissed, No longer relevant.' },
+        preparing:  { label: 'Action preparing',
+                      trigger: 'The person pressed Review.',
+                      behaviour: 'The working mark and “Preparing a review — nothing has changed yet.”',
+                      action: 'Wait a moment. Next: Accepted.' },
+        accepted:   { label: 'Accepted',
+                      trigger: 'The review is ready.',
+                      behaviour: 'The proposed owners, each changeable, and one confirming action. Nothing is ' +
+                                 'assigned until the person confirms.',
+                      action: 'Change, confirm (Undo stays available) or cancel. Next: Dormant.' },
+        dismissed:  { label: 'Dismissed',
+                      trigger: 'The person pressed Dismiss.',
+                      behaviour: 'It goes, with Undo. It is remembered for these issues: the same evidence ' +
+                                 'never brings it back — only something new does.',
+                      action: 'Carry on. Next: Dormant — or Suggested on new evidence.' },
+        snoozed:    { label: 'Snoozed',
+                      trigger: 'The person chose Remind me tomorrow.',
+                      behaviour: 'It goes until tomorrow, 9:00, with Undo. It returns then only if the reason ' +
+                                 'is still true.',
+                      action: 'Simulate “A day passes”. Next: Suggested, or Dormant if resolved.' },
+        irrelevant: { label: 'No longer relevant',
+                      trigger: 'The reason stopped being true — the person assigned the owners themselves.',
+                      behaviour: 'It says so briefly and withdraws on its own.',
+                      action: 'Nothing. Next: Dormant.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        if (s.state === 'dismissed') {
-          return '' +
-'<div class="pv-card pv-card--quiet" role="status">\n' +
-'  <p class="md-body-medium">Nothing raised.</p>\n' +
-'  <p class="pv-card__meta md-body-small">Dismissed for this class of suggestion. Ignoring it\n' +
-'     was free; dismissing it is permanent.</p>\n' +
-'</div>';
+        var c = s.cfg, S = window.MaterialSim;
+        if (!S || !S.pro) return '';
+        var d = proDemo(s), M = S.md3, n = proUnowned(d).length;
+        var card = S.pro.render({
+          id: 'prov', phase: d.pro.phase === 'review' ? 'review' : d.pro.phase,
+          reason: proReason(c, n), action: c.action, primary: c.primary,
+          dismissLabel: c.dismissLabel, snoozeLabel: c.snoozeLabel,
+          showReason: c.showReason !== false, dismissible: c.dismissible !== false, snooze: c.snooze !== false,
+          emphasis: c.emphasis, density: c.density, placement: c.placement, who: 'Aria',
+          resolved: 'Resolved — every release blocker has an owner now.', note: d.pro.note });
+        var rows = d.issues.map(function (it) {
+          return { headline: esc(it.title), supporting: esc(it.id + ' · ' + it.pri + ' priority'),
+            trailing: it.owner ? '<span class="md-prov__own">' + esc(it.owner) + '</span>'
+              : M.button({ variant: 'text', label: 'Assign to me', attrs: { 'data-act': 'prd:mine:' + it.id,
+                  'aria-label': 'Assign ' + it.id + ' to me' } }) };
+        });
+        var review = d.pro.phase === 'review' ? proReview(d, M, S) : '';
+        return '<div class="md-prov" data-state="' + s.state + '" data-placement="' + (c.placement || 'inline') + '">' +
+          '<div class="md-prov__demo" role="group" aria-label="Simulate what the agent notices">' +
+            '<span class="md-prov__dk">Simulate</span>' +
+            M.button({ variant: 'outlined', label: 'Sam Ortiz moves to Payments', attrs: { 'data-act': 'prd:sam', 'aria-disabled': d.samGone ? 'true' : null } }) +
+            M.button({ variant: 'outlined', label: 'Another blocker loses its owner', attrs: { 'data-act': 'prd:more', 'aria-disabled': d.more ? 'true' : null } }) +
+            M.button({ variant: 'outlined', label: 'A day passes', attrs: { 'data-act': 'prd:day' } }) +
+          '</div>' +
+          '<div class="md-prov__frame">' +
+            '<p class="md-prov__h">Release blockers &middot; September</p>' +
+            (c.placement !== 'floating' ? card : '') +
+            S.md3.list(rows, { 'aria-label': 'Release blockers' }) +
+            review +
+            (c.placement === 'floating' ? '<div class="md-prov__float">' + card + '</div>' : '') +
+          '</div>' +
+        '</div>';
+      },
+
+      mounted: function (root, s) {
+        var d = s.demo; if (!d) return;
+        proGuard(root, s);
+        if (d.focusTo) {
+          var el = root.querySelector('.pv-stage [data-act="' + d.focusTo + '"]') || root.querySelector('.pv-stage .md-pro [data-act]');
+          d.focusTo = null; if (el) el.focus({ preventScroll: true });
         }
-        if (s.state === 'quiet') {
-          return '' +
-'<span class="md-proactive--line md-body-small" role="status">\n' +
-'  <svg class="md-proactive__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'  ' + esc(c.obs) + '\n' +
-'  <button class="md-button md-button--text md-button--sm" type="button">' +
-   esc(c.quietAction) + '</button>\n' +
-'</span>';
-        }
-        var unearned = s.state === 'unearned';
-        return '' +
-'<aside class="md-proactive" role="status">\n' +
-'  <div class="md-proactive__head">\n' +
-'    <svg class="md-proactive__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    <p class="md-proactive__obs md-body-medium">' +
-   esc(unearned ? c.unearnedText : c.obs) + '</p>\n' +
-'  </div>\n' +
-   (unearned ? '' :
-'  <p class="md-proactive__offer md-body-small">' + esc(c.offer) + '</p>\n') +
-'  <div class="md-proactive__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button">' +
-   esc(unearned ? 'Try it' : c.accept) + '</button>\n' +
-   (c.dismissible
-? '    <button class="md-button md-button--text md-button--sm" type="button"\n' +
-  '            data-act="dismiss">' + esc(c.dismissLabel) + '</button>\n' : '') +
-   (c.dismissible && c.offSwitch && !unearned
-? '    <button class="md-button md-button--text md-button--sm" type="button">\n' +
-  '      Turn these off\n' +
-  '    </button>\n' : '') +
-'  </div>\n' +
-'</aside>';
       },
 
       act: function (a, ctx) {
-        if (a === 'dismiss') { ctx.s.state = 'dismissed'; ctx.paint();
-                               ctx.announce('Dismissed for this class of suggestion'); }
+        var s = ctx.s, d = proDemo(s), S = window.MaterialSim, io = proIO(ctx, s, d);
+        if (a === 'prd:sam') { if (d.samGone) return;
+          d.samGone = true; d.issues.forEach(function (it) { if (it.owner === 'Sam Ortiz') it.owner = null; });
+          ctx.paint(); return S.pro.notice(d.pro, proEvidence(d), io); }
+        if (a === 'prd:more') { if (d.more) return;
+          d.more = true; d.issues.forEach(function (it) { if (it.id === 'NTF-501') it.owner = null; });
+          ctx.paint(); return S.pro.notice(d.pro, proEvidence(d), io); }
+        if (a === 'prd:day') {
+          d.pro.clock = (d.pro.clock || 0) + 24 * 60;
+          ctx.announce('A day passes.');
+          var ev = proEvidence(d);
+          if (!ev) { ctx.paint(); return; }
+          return S.pro.notice(d.pro, ev, io);
+        }
+        if (a.indexOf('prd:mine:') === 0) {
+          var id = a.slice(9);
+          d.issues.forEach(function (it) { if (it.id === id) it.owner = 'You'; });
+          var ev2 = proEvidence(d);
+          if (!ev2) return S.pro.resolve(d.pro, io);
+          d.pro.evidence = ev2; ctx.paint(); return;
+        }
+        if (a.indexOf('prd:change:') === 0) {
+          var pid = a.slice(11), cur = d.proposal[pid], i = PRO_PEOPLE.indexOf(cur);
+          d.proposal[pid] = PRO_PEOPLE[(i + 1) % PRO_PEOPLE.length]; d.focusTo = a; ctx.paint();
+          ctx.announce(pid + ': ' + d.proposal[pid] + '.'); return;
+        }
+        if (a === 'prd:confirm') {
+          var before = d.issues.map(function (it) { return it.owner; });
+          var done = proUnowned(d);
+          done.forEach(function (it) { it.owner = d.proposal[it.id]; });
+          d.pro.phase = 'dormant'; d.pro.evidence = null; s.state = 'dormant'; d.on = 'dormant';
+          d.pro.note = { text: done.length + ' owners assigned — you confirmed Aria’s proposal.', undo: true };
+          d.pro.undo = function () { d.issues.forEach(function (it, k) { it.owner = before[k]; }); d.pro.phase = 'review'; s.state = 'accepted'; d.on = 'accepted'; };
+          ctx.paint(); ctx.announce(d.pro.note.text); return;
+        }
+        if (a === 'pro:undo' && d.pro.undo && d.pro.phase === 'dormant') {
+          d.pro.undo(); d.pro.undo = null; d.pro.note = null; d.pro.evidence = proEvidence(d); ctx.paint(); ctx.announce('Undone. Nothing is assigned.'); return;
+        }
+        if (a === 'pro:accept' || a === 'pro:dismiss' || a === 'pro:snooze') d.focusTo = a === 'pro:accept' ? 'prd:confirm' : 'prd:sam';
+        return S.pro.act(a, d.pro, io);
       }
     },
 
-    /* ── Randomize ──────────────────────────────────────────
-       A way in for somebody with no intent at all. The two
-       things it must never do: produce a fragment, and destroy
-       what the reader already had. */
-    randomize: {
+    /* ── Randomize ───────────────────────────────────────────
+       A new starting direction, for exploratory work only (user brief,
+       1 Oct). Generate, generate another, step back, then "Use this"
+       puts an editable prompt into the SHARED composer — asking first
+       if the composer holds the person's own words. MaterialSim.rnd. */
+    'randomize': {
       initial: 'ready',
 
       customize: {
+        api: {
+          name: 'Randomize',
+          props: function (c) {
+            return { label: c.label, supportingText: c.support, variations: rndItems(c).map(function (x) { return x.title; }),
+                     confirmBeforeReplace: c.confirm !== false, place: c.usePlace || 'use',
+                     generateAnother: c.another !== false, icon: c.icon || 'ai', emphasis: c.emphasis || 'tonal',
+                     density: c.density || 'comfortable', target: 'PromptComposer', executes: false };
+          }
+        },
         groups: [
-          { id: 'control', label: 'The control', states: ['ready', 'rolled', 'guarded'],
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'label', label: 'Label', type: 'text', value: 'Surprise me' },
-              { id: 'ico', label: 'Show the dice', type: 'toggle', value: true }
+              { id: 'label', label: 'Control label', type: 'text', value: 'Try a direction',
+                hint: 'Say what you get — a direction, an idea, a style — not “Random”.' },
+              { id: 'support', label: 'Supporting text', type: 'text',
+                value: 'A random starting point for the launch — edit it before you use it.' },
+              { id: 'context', label: 'Where it is offered', type: 'segment', value: 'campaign',
+                options: [['campaign', 'Campaign concepts'], ['finance', 'Quarterly finance report']],
+                hint: 'Randomize belongs to exploratory work. Switch to the finance report to see why it does not belong there.' }
             ] },
-
-          { id: 'result', label: 'The roll', states: ['rolled'],
-            note: 'Complete and plausible, never a fragment — and editable, so the result teaches the shape of a good request.',
+          { id: 'variations', label: 'Example variations', section: 'content',
+            note: 'Local demo data — a real product generates these.',
+            controls: [0, 1, 2].map(function (i) {
+              return { id: 'v' + (i + 1), label: 'Direction ' + (i + 1), type: 'text', value: RND_ITEMS[i].title };
+            }) },
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Using a direction', section: 'behavior',
             controls: [
-              { id: 'roll', label: 'What came up', type: 'text',
-                value: 'Which renewals are at risk this quarter, and why?' },
-              { id: 'useLabel', label: 'Take it', type: 'text', value: 'Use this' },
-              { id: 'again', label: 'Can be rolled again', type: 'toggle', value: true,
-                capability: true,
-                hint: 'One press. A dice you cannot re-roll is a slot machine.' },
-              { id: 'againLabel', label: 'Roll again', type: 'text', value: 'Roll again',
-                visibleWhen: function (c) { return !!c.again; } },
-              { id: 'back', label: 'Keep a way back to the last roll', type: 'toggle',
-                value: true,
-                visibleWhen: function (c) { return !!c.again; } }
+              { id: 'usePlace', label: 'Placing it', type: 'segment', value: 'use',
+                options: [['use', '“Use this”'], ['auto', 'Place automatically']],
+                hint: 'Automatic placement only fills an empty composer; with a draft it still asks.' },
+              { id: 'confirm', label: 'Ask before replacing a draft', type: 'toggle', value: true },
+              { id: 'another', label: 'Generate another', type: 'toggle', value: true }
             ] },
-
-          { id: 'guarded', label: 'When the field has work in it', states: ['guarded'],
-            note: 'The roll goes somewhere the reader can compare it. Overwriting is the one unforgivable behaviour here.',
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Control', section: 'appearance',
             controls: [
-              { id: 'existing', label: 'What was already there', type: 'text',
-                value: 'Can you check the renewal figure before Thursday?' }
+              { id: 'icon', label: 'Icon', type: 'segment', value: 'ai',
+                options: [['ai', 'AI action mark'], ['shuffle', 'Shuffle'], ['dice', 'Dice']],
+                hint: 'The AI action mark follows the Icons vocabulary: it runs a model. Shuffle and dice say “another one”.' },
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
+                options: [['tonal', 'Tonal'], ['text', 'Text']] },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
             ] }
         ]
       },
 
       states: {
-        ready:   { label: 'Ready',
-                   trigger: 'An empty surface and a reader with no particular intent.',
-                   behaviour: 'A single capsule control. Cheap to press, and the only playful ' +
-                              'motion in the system — one spring and rotate, while nothing ' +
-                              'else on screen moves.',
-                   action: 'Roll it' },
-        rolled:  { label: 'Rolled',
-                   trigger: 'The reader presses it.',
-                   behaviour: 'A complete, editable request arrives on emphasized easing. It ' +
-                              'settles from a tinted, soft-edged ground into a defined ' +
-                              'container — a roll is uncertain until it is a result.',
-                   action: 'See what happens with work in the field' },
-        guarded: { label: 'Work already there',
-                   trigger: 'The composer is not empty when the dice is pressed.',
-                   behaviour: 'The roll lands beside what the reader wrote rather than over it, ' +
-                              'so the two can be compared and either kept.',
-                   action: 'Reset' }
+        ready:      { label: 'Ready',
+                      trigger: 'An exploratory workspace — campaign concepts for the Planboard 3.0 launch.',
+                      behaviour: 'One optional control above the composer, saying what it gives: a random ' +
+                                 'starting direction. The composer works on its own.',
+                      action: 'Press Try a direction — or just type. Next: Generating.' },
+        generating: { label: 'Generating',
+                      trigger: 'Try a direction (or Generate another) was pressed.',
+                      behaviour: 'The working mark and “Finding a different direction…”. Nothing else changes.',
+                      action: 'Wait a moment. Next: New suggestion.' },
+        suggestion: { label: 'New suggestion',
+                      trigger: 'A direction came back.',
+                      behaviour: 'One direction — a title and a line — marked as generated, with Use this and ' +
+                                 'Generate another. Nothing is placed or run yet.',
+                      action: 'Use it, or generate another. Next: Applied, Generate another.' },
+        another:    { label: 'Generate another',
+                      trigger: 'The person asked for another.',
+                      behaviour: 'A different direction — never a repeat this round — with “2 of 2” and a way ' +
+                                 'back to the previous one.',
+                      action: 'Keep going, step back, or use one. Next: Applied.' },
+        confirm:    { label: 'Replace confirmation',
+                      trigger: 'Use this, while the composer holds the person’s own words.',
+                      behaviour: 'It asks: replace the draft, add the direction below it, or cancel. Their words ' +
+                                 'are never silently replaced.',
+                      action: 'Choose. Next: Applied, or back to the suggestion.' },
+        applied:    { label: 'Applied to composer',
+                      trigger: 'The direction was placed.',
+                      behaviour: 'An editable prompt in the shared composer, focus and caret there. Nothing is sent.',
+                      action: 'Edit it, then send — or try another direction. Next: the conversation.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        var dice = '' +
-'<button class="md-dice" type="button" data-act="roll">\n' +
-   (c.ico
-? '  <svg class="md-dice__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M422.5-103.5Q399-127 399-161h162q0 34-23.5 57.5T480-80q-34 0-57.5-23.5ZM318-223v-60h324v60H318Zm5-121q-66-43-104.5-107.5T180-597q0-122 89-211t211-89q122 0 211 89t89 211q0 81-38 145.5T637-344H323Zm22-60h271q48-32 76-83t28-110q0-99-70.5-169.5T480-837q-99 0-169.5 70.5T240-597q0 59 28 110t77 83Zm135 0Z"/></svg>\n' : '') +
-'  ' + esc(c.label) + '\n' +
-'</button>';
-
-        if (s.state === 'ready') return dice;
-
-        if (s.state === 'guarded') {
-          return dice + '\n' +
-'<form class="md-entry" style="margin-top:16px">\n' +
-'  <input class="md-entry__input md-body-medium" type="text"\n' +
-'         value="' + esc(c.existing) + '" aria-label="Ask Aria" />\n' +
-'</form>\n' +
-'<div class="md-roll">\n' +
-'  <p class="md-roll__k md-body-small">Rolled — your own is still above</p>\n' +
-'  <p class="md-roll__v md-body-large">' + esc(c.roll) + '</p>\n' +
-'  <div class="md-roll__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button">Use this instead</button>\n' +
-'    <button class="md-button md-button--text md-button--sm" type="button">Keep mine</button>\n' +
-'  </div>\n' +
-'</div>';
-        }
-
-        return dice + '\n' +
-'<div class="md-roll">\n' +
-'  <p class="md-roll__k md-body-small">Rolled for you</p>\n' +
-'  <p class="md-roll__v md-body-large">' + esc(c.roll) + '</p>\n' +
-'  <div class="md-roll__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button">' +
-   esc(c.useLabel) + '</button>\n' +
-   (c.again
-? '    <button class="md-button md-button--text md-button--sm" type="button"\n' +
-  '            data-act="roll">' + esc(c.againLabel) + '</button>\n' : '') +
-   (c.again && c.back
-? '    <button class="md-button md-button--text md-button--sm" type="button">Last roll</button>\n'
-: '') +
-'  </div>\n' +
-'</div>';
+        var c = s.cfg, S = window.MaterialSim;
+        if (!S || !S.rnd) return '';
+        var d = rndDemo(s), it = d.rnd.seen.length ? rndItems(c)[d.rnd.seen[d.rnd.at]] : null;
+        var fin = c.context === 'finance';
+        return '<div class="md-rndv" data-no-halo data-state="' + s.state + '" data-context="' + (c.context || 'campaign') + '">' +
+          '<p class="md-rndv__ctx">' + (fin ? 'Finance &middot; Q3 report for the board' : 'Campaign &middot; Planboard 3.0 launch &middot; directions') + '</p>' +
+          S.rnd.render({ id: 'rndv', phase: d.rnd.phase, item: it, index: d.rnd.at, total: d.rnd.seen.length,
+            label: c.label, support: c.support, icon: rndIcon(c, S), emphasis: c.emphasis, density: c.density,
+            allowAnother: c.another !== false, usePlace: c.usePlace }) +
+          S.composer({ agent: 'Aria', ask: fin ? 'Ask about the Q3 figures' : 'Describe the campaign direction', label: 'Message Aria',
+            plus: ['Attach a file'], mic: true, text: d.draft || '', entry: (d.draft || '').trim() ? 'ready' : 'empty',
+            maxLines: 6, grow: true }) +
+          (d.turns.length ? '<p class="md-rndv__sent" role="status">Sent: “' + esc(d.turns[d.turns.length - 1].slice(0, 80)) + '…”</p>' : '') +
+          '<button type="button" hidden tabindex="-1" data-act="rndv:sync"></button>' +
+        '</div>';
       },
 
-      /* The roll is the one place motion is allowed to be playful, so
-         the spin runs on the live button and the repaint waits for it.
-         Repainting first would destroy the element mid-spin, which is
-         the same mistake as animating a popup in beside a control
-         instead of transforming the control itself. */
+      mounted: function (root, s) {
+        var box = root.querySelector('.pv-stage .md-rndv'), d = s.demo;
+        if (!box || !d) return;
+        rndGuard(root, s);
+        var field = box.querySelector('[data-ax-field]'), form = box.querySelector('.ax__composer');
+        if (!field) return;
+        icFit(field);
+        if (d.focus) { d.focus = false; field.focus({ preventScroll: true }); try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {} }
+        if (d.focusTo) { var el = box.querySelector('[data-act="' + d.focusTo + '"]'); d.focusTo = null; if (el) el.focus({ preventScroll: true }); }
+        if (field.dataset.rndBound) return;
+        field.dataset.rndBound = '1';
+        field.addEventListener('input', function () {
+          d.draft = field.value; icFit(field);
+          var send = form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (send) send.disabled = !field.value.trim();
+          form.setAttribute('data-entry', field.value.trim() ? 'ready' : 'empty');
+        });
+        function submit(e) { if (e) e.preventDefault(); if (!(d.draft || '').trim()) return;
+          d.pending = 'send'; var b = root.querySelector('.pv-stage [data-act="rndv:sync"]'); if (b) b.click(); }
+        form.addEventListener('submit', submit);
+        field.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) submit(e); });
+      },
+
       act: function (a, ctx) {
-        if (a !== 'roll') return;
-        return ctx.morph('rolled', function (stage) {
-          var btn = stage.querySelector('.md-dice');
-          if (btn) btn.classList.add('is-rolling');
-        }).then(function () { ctx.announce('Rolled — and nothing you had was overwritten'); });
+        var s = ctx.s, d = rndDemo(s), c = s.cfg, S = window.MaterialSim;
+        if (a === 'rndv:sync') {
+          if (d.pending !== 'send') return; d.pending = null;
+          d.turns.push(d.draft.trim()); d.draft = ''; d.rnd.applied = ''; d.focus = true;
+          s.state = 'ready'; d.on = 'ready'; d.rnd.phase = 'ready'; ctx.paint(); ctx.announce('Sent.'); return;
+        }
+        if (a.indexOf('rnd:') !== 0) return;
+        if (a === 'rnd:go' || a === 'rnd:another') d.focusTo = 'rnd:use';
+        return S.rnd.act(a, d.rnd, {
+          paint: ctx.paint, announce: ctx.announce, confirm: c.confirm !== false, usePlace: c.usePlace || 'use',
+          setState: function (n) { s.state = n; d.on = n; },
+          getDraft: function () { return d.draft || ''; },
+          placeDraft: function (t) { d.draft = t; d.focus = true; },
+          prompt: function (it) { return rndPrompt(c, it); }
+        });
       }
     },
 
-    /* ══════════════════════════════════════════════════════════
-       INITIALLY · EXPRESSIVE INPUT
+    /* ── Autocomplete ───────────────────────────────────────
+       Finishes what the person is already writing (user brief,
+       1 Oct). The shared composer, with MaterialSim.ac attached to its
+       field after every paint: inline ghost text for prompts, and a
+       listbox for / commands, @ mentions and # tools. The suggestion
+       is never in the field's value, never submitted, and is announced
+       separately from what was typed. */
+    'autocomplete': {
+      initial: 'empty',
 
-       Every one of these is a guess about what somebody meant, so
-       every playground here is built around the same question in
-       five different materials: can you SEE the guess before it
-       becomes a fact, and can you fix it in one move?
+      customize: {
+        api: {
+          name: 'Autocomplete',
+          props: function (c) {
+            return {
+              target: 'PromptComposer',
+              types: { prompt: c.tPrompt !== false, command: c.tCommand !== false,
+                       mention: c.tMention !== false, tool: c.tTool !== false },
+              acceptKey: c.accept || 'tab', dismissWithEscape: c.dismiss !== false,
+              minChars: +c.minChars || 10, treatment: c.treatment || 'inline',
+              emphasis: c.emphasis || 'subtle', submitsOnAccept: false,
+              completions: acPhrases(c)
+            };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'phrases', label: 'Completions', section: 'content',
+            note: 'Demo data: the requests people in this workspace often finish the same way.',
+            controls: [
+              { id: 'p1', label: 'Completion 1', type: 'text', value: AC_P[0],
+                hint: 'Type the beginning of one in the composer — “Summarize the release” — to see it offered.' },
+              { id: 'p2', label: 'Completion 2', type: 'text', value: AC_P[1] },
+              { id: 'p3', label: 'Completion 3', type: 'text', value: AC_P[2] }
+            ] },
 
-         voice-input       what happens when nothing was heard
-         visual-input      does it say which part it read, and
-                           which part it could not
-         handwriting       does the ink survive the reading
-         gesture           is there a visible control doing the
-                           same job
-         structured-input  can you tell a pinned value from prose
-       ══════════════════════════════════════════════════════════ */
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'types', label: 'Completion types', section: 'behavior',
+            controls: [
+              { id: 'tPrompt', label: 'Prompt completion (inline)', type: 'toggle', value: true },
+              { id: 'tCommand', label: 'Commands after “/”', type: 'toggle', value: true },
+              { id: 'tMention', label: 'Mentions after “@”', type: 'toggle', value: true },
+              { id: 'tTool', label: 'Tools after “#”', type: 'toggle', value: true }
+            ] },
+          { id: 'accepting', label: 'Accepting and dismissing', section: 'behavior',
+            controls: [
+              { id: 'accept', label: 'Accept with', type: 'segment', value: 'tab',
+                options: [['tab', 'Tab'], ['right', '→ at the end'], ['both', 'Tab or →']],
+                hint: 'Host-defined. Never Enter: Enter sends what you wrote. A tap on the suggestion ' +
+                      'accepts it too; ⌘/Ctrl + → takes one word.' },
+              { id: 'dismiss', label: 'Escape dismisses the suggestion', type: 'toggle', value: true },
+              { id: 'minChars', label: 'Characters before suggesting', type: 'range', value: 10,
+                min: 3, max: 20, step: 1, unit: '',
+                hint: 'Too early and it guesses; too late and it saves nothing.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Suggestion', section: 'appearance',
+            controls: [
+              { id: 'treatment', label: 'Prompt completions shown', type: 'segment', value: 'inline',
+                options: [['inline', 'Inline, after the caret'], ['menu', 'In a menu below']] },
+              { id: 'emphasis', label: 'Suggestion emphasis', type: 'segment', value: 'subtle',
+                options: [['subtle', 'Subtle'], ['standard', 'Standard']],
+                hint: 'Either way it is a different colour from your text, and the key to accept sits at its end.' }
+            ] }
+        ]
+      },
+
+      states: {
+        empty:      { label: 'Empty / no suggestion',
+                      trigger: 'Nothing typed.',
+                      behaviour: 'The composer as usual. Nothing is suggested before the person starts ' +
+                                 '— that would be Suggested Prompts, not autocomplete.',
+                      action: 'Start typing. Next: Typing.' },
+        typing:     { label: 'Typing',
+                      trigger: 'Text is entered, but not enough to finish usefully — or nothing matches.',
+                      behaviour: 'No suggestion. The composer behaves exactly as without autocomplete.',
+                      action: 'Keep typing. Next: Suggestion available.' },
+        available:  { label: 'Suggestion available',
+                      trigger: 'What is typed is the start of a known request.',
+                      behaviour: 'The rest appears after the caret in a lighter colour with its key ' +
+                                 '(Tab) at the end. It is not in the field: a screen reader hears ' +
+                                 '“Suggestion: …”, separately from the text.',
+                      action: 'Tab (or tap it) to accept, Escape to dismiss, or keep typing. Next: ' +
+                              'Accepted, Ignored, Dismissed, No longer relevant.' },
+        accepted:   { label: 'Suggestion accepted',
+                      trigger: 'Tab, →, or a tap on the suggestion.',
+                      behaviour: 'It becomes ordinary editable text with the caret at the end. Nothing ' +
+                                 'is sent; Send is ready for when the person is.',
+                      action: 'Edit it, or send. Next: Typing, or the conversation.' },
+        ignored:    { label: 'Suggestion ignored',
+                      trigger: 'The person keeps typing the same words instead of accepting.',
+                      behaviour: 'The suggestion follows along, shortening as they type — never ' +
+                                 'overwriting a character they wrote.',
+                      action: 'Keep typing, or accept the rest. Next: Accepted, No longer relevant.' },
+        dismissed:  { label: 'Suggestion dismissed',
+                      trigger: 'Escape.',
+                      behaviour: 'It goes, and does not come back for this request while the person ' +
+                                 'keeps writing the same words.',
+                      action: 'Keep typing. Next: Typing.' },
+        irrelevant: { label: 'No longer relevant',
+                      trigger: 'What is typed stops matching the suggestion.',
+                      behaviour: 'It disappears at once. The person’s words are untouched.',
+                      action: 'Keep typing. Next: Typing, or a new suggestion.' }
+      },
+
+      view: function (s) {
+        var c = s.cfg, S = window.MaterialSim;
+        if (!S || !S.composer) return '';
+        var d = acDemo(s);
+        return '<div class="md-acv" data-state="' + s.state + '">' +
+          (d.turns.length ? '<div class="md-acv__thread">' + d.turns.map(function (t) {
+            return '<div class="sim-turn md-oi__turn"><span class="md-agentav md-agentav--sm md-agentav--human" aria-hidden="true">P</span>' +
+              '<div><div class="sim-turn__head"><span class="sim-turn__n">You</span></div><p class="wf-text">' + esc(t) + '</p></div></div>';
+          }).join('') + '</div>' : '') +
+          S.composer({ agent: 'Aria', ask: 'Ask Aria about the release', label: 'Message Aria',
+            plus: ['Attach a file', 'Add from Drive'], mic: true, text: d.text || '',
+            entry: (d.text || '').trim() ? 'ready' : 'empty', maxLines: 6, grow: true }) +
+          '<button type="button" hidden tabindex="-1" data-act="ac:sync"></button>' +
+        '</div>';
+      },
+
+      mounted: function (root, s) {
+        var box = root.querySelector('.pv-stage .md-acv'), d = s.demo, c = s.cfg, S = window.MaterialSim;
+        if (!box || !d || !S) return;
+        acGuard(root, s);
+        var field = box.querySelector('[data-ax-field]'), form = box.querySelector('.ax__composer');
+        if (!field) return;
+        icFit(field);
+        var live = function (m) { s.said = m; var el = root.querySelector('.pv-live'); if (el) el.textContent = m; };
+        function to(next) { if (next && s.state !== next) { box.setAttribute('data-state', next); pvLive(root, s, 'autocomplete', next); } }
+        var api = S.ac.attach(field, {
+          id: 'acv', provider: acProvider(c), accept: c.accept || 'tab', dismiss: c.dismiss !== false,
+          treatment: c.treatment || 'inline', emphasis: c.emphasis || 'subtle', announce: live,
+          onState: function (n) { d.text = field.value; to(n); }
+        });
+        if (d.focus) {
+          d.focus = false; field.focus({ preventScroll: true });
+          try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+          api.refresh();
+        }
+        if (s.state === 'dismissed' && d.held) { api.dismiss(); }
+        if (field.dataset.acvBound) return;
+        field.dataset.acvBound = '1';
+        field.addEventListener('input', function () {
+          d.text = field.value; icFit(field);
+          var send = form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (send) send.disabled = !field.value.trim();
+          form.setAttribute('data-entry', field.value.trim() ? 'ready' : 'empty');
+        });
+        function submit(e) {
+          if (e) e.preventDefault();
+          if (!(d.text || '').trim()) return;
+          d.pending = 'send'; var b = root.querySelector('.pv-stage [data-act="ac:sync"]'); if (b) b.click();
+        }
+        form.addEventListener('submit', submit);
+        /* Enter sends WHAT WAS TYPED — never the suggestion. (While a
+           completion menu is open the module takes Enter first.) */
+        field.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) submit(e); });
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, d = acDemo(s);
+        if (a === 'ac:sync') {
+          if (d.pending !== 'send') return; d.pending = null;
+          var t = (d.text || '').trim(); if (!t) return;
+          d.turns = d.turns.concat([t]); d.text = ''; d.focus = true; d.held = false;
+          s.state = 'empty'; d.on = 'empty'; ctx.paint();
+          ctx.announce('Sent: ' + t); return;
+        }
+        if (a === 'ax:plus' || a.indexOf('ax:add:') === 0 || a.indexOf('voice:') === 0) return;
+      }
+    },
 
     /* ── Model selection ────────────────────────────────────
        Eight states of the composer's own chip and the menu behind
@@ -3688,7 +5755,6 @@ card + '>\n' + head +
               unavailableText: c.unavailableCopy,
               restrictedLabel: c.restrictedLabel,
               restrictedText: c.restrictedCopy,
-              scope: c.scope,
               density: c.density,
               selectedEmphasis: c.emphasis
             };
@@ -3786,24 +5852,11 @@ card + '>\n' + head +
                       'furniture. Worth it when somebody has a reason to care whose model runs.' }
             ] },
 
+          /* The Scope control (next message / conversation / everywhere)
+             was removed at the user's request. The line always states
+             the per-request scope, which is what the demo does. */
           { id: 'when', label: 'When a change takes effect', section: 'behavior',
-            note: 'A fact about the host product, so the component is told rather than guessing. ' +
-                  'Exactly one shipping product answers this at all.',
             controls: [
-              { id: 'scope', label: 'Scope', type: 'segment', value: 'request',
-                options: [['request', 'Next message'], ['conversation', 'This conversation'],
-                          ['workspace', 'Everywhere']],
-                /* Written in two places and only two: the note
-                   under the picker, and the line acknowledging a
-                   change. */
-                /* Only where the scope sentence is the one on
-                   screen. Under Auto the line says what the router
-                   does instead, so there is nothing here to word. */
-                visibleWhen: function (c, s) {
-                  return c.showSaid !== false && s === 'changed';
-                },
-                hint: 'Say only what the product actually does. Claiming a workspace default ' +
-                      'that is really per-request is the kind of lie people discover late.' },
               { id: 'showSaid', label: 'Acknowledge the change', type: 'toggle',
                 value: true, capability: true,
                 visibleWhen: function (c, s) { return s === 'changed' || s === 'auto'; },
@@ -3967,7 +6020,7 @@ card + '>\n' + head +
           html += M.changed({ text: 'Auto picks a model for each request.' });
         } else if (d.said && st !== 'fallback') {
           html += M.changed({
-            text: M.scopeNote(c.scope || 'request',
+            text: M.scopeNote('request',
               (M.byId(models, cur) || {}).label || '')
           });
         }
@@ -4104,16 +6157,18 @@ card + '>\n' + head +
             ctx.announce(labelOf(id) + ' cannot be used.');
             return;
           }
-          /* A pick replaces the list with the effort screen for
-             that model, rather than closing — the second value is
-             set in the same gesture, one screen on. */
           d.model = id; d.open = false; d.said = true;
-          if (effortOn) { d.effortOpen = true; if (M.holdTrack) M.holdTrack(); }
+          /* The whole row leads on: a pick replaces the list with
+             the effort screen for that model. With effort off it
+             closes, and focus goes back to the chip. */
+          var toEffort = effortOn;
+          if (toEffort) { d.effortOpen = true; if (M.holdTrack) M.holdTrack(); }
+          else if (M.holdChip) M.holdChip();
           moveTo(id === 'default' ? 'auto' : 'changed');
           ctx.paint();
           ctx.announce(labelOf(id) + ' selected. ' +
-            M.scopeNote(c.scope || 'request', labelOf(id)) +
-            (effortOn ? ' Now set the effort.' : ''));
+            M.scopeNote('request', labelOf(id)) +
+            (toEffort ? ' Now set the effort.' : ''));
           return;
         }
 
@@ -4231,6 +6286,7 @@ card + '>\n' + head +
               allowUngrounded: c.allowUngrounded,
               groupSources: c.group,
               collapseAfter: c.maxRows === 'six' ? 6 : 0,
+              scrollAfter: (c.maxRows || 'scroll') === 'scroll' ? 5 : 0,
               showErrorDetail: c.showDetail,
               layout: c.layout,
               statusStyle: c.statusStyle,
@@ -4430,8 +6486,9 @@ card + '>\n' + head +
                 options: [['none', 'Flat'], ['status', 'By status']],
                 hint: 'By status puts the rows that need somebody at the top. Worth it past ' +
                       'roughly twenty sources; noise below that.' },
-              { id: 'maxRows', label: 'Long lists', type: 'segment', value: 'all',
-                options: [['all', 'Show all'], ['six', 'First six']],
+              { id: 'maxRows', label: 'Long lists', type: 'segment', value: 'scroll',
+                options: [['scroll', 'Scroll after five'], ['six', 'First six'],
+                          ['all', 'Show all']],
                 /* Only where there is a long list. Capping six rows
                    at six moves nothing, and a control that moves
                    nothing in front of you is a control you stop
@@ -4439,9 +6496,10 @@ card + '>\n' + head +
                 visibleWhen: function (c, s) {
                   var K = window.MaterialKB;
                   if (!K) return true;
-                  return K.sources(c.base, MIX[s] || null).length > 6;
+                  return K.sources(c.base, MIX[s] || null).length > 5;
                 },
-                hint: 'Capped, trouble is promoted above the fold rather than truncated ' +
+                hint: 'Scrolling keeps the panel five rows tall and the rest one scroll away. ' +
+                      'Capped, trouble is promoted above the fold rather than truncated ' +
                       'below it — a cap that hides the broken row hides the only row anybody ' +
                       'needed.' },
               { id: 'layout', label: 'Row layout', type: 'segment', value: 'rows',
@@ -4650,6 +6708,7 @@ card + '>\n' + head +
           allowUngrounded: c.allowUngrounded !== false,
           group: c.group || 'none',
           maxRows: c.maxRows === 'six' ? 6 : 0,
+          scrollAfter: (c.maxRows || 'scroll') === 'scroll' ? 5 : 0,
           layout: c.layout || 'rows',
           statusStyle: c.statusStyle || 'badge',
           density: c.density || 'comfortable'
@@ -5317,7 +7376,9 @@ card + '>\n' + head +
                 hint: 'What the connection will be able to do, listed before it is granted. ' +
                       'Off, the reader is agreeing to a service name.' },
               { id: 'showAccount', label: 'Name the account', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st !== 'access' && st !== 'connecting'; },
+                visibleWhen: function (c, st) {
+                  return st !== 'access' && st !== 'connecting' &&
+                         !(st === 'connected' && !c.accessChanged); },
                 hint: 'Which account this is connected as. People hold more than one, and ' +
                       'the wrong one is the failure that is hardest to see.' },
               { id: 'showTechnical', label: 'Offer the technical reason', type: 'toggle',
@@ -5437,7 +7498,7 @@ card + '>\n' + head +
                       action: 'See it connected' },
         connected: { label: 'Connected',
                      trigger: 'The service confirms.',
-                     behaviour: 'The word, the account and a dot, in that order, plus a plain ' +
+                     behaviour: 'The word and a dot, in that order, plus a plain ' +
                                 'statement of what the agent can now reach &mdash; bounded, ' +
                                 'never &ldquo;all of GitHub.&rdquo;',
                      action: 'Ask something that needs it' },
@@ -5628,9 +7689,7 @@ card + '>\n' + head +
           }
           return C.card({
             inline: inline, name: svc.name, logo: svc.logo, state: 'connected',
-            because: inline ? 'Connected. I can use ' + svc.name +
-              ' from now on without being asked again.' : '',
-            useLine: svc.useLine, account: acct(svc.account)
+            useLine: svc.useLine
           });
         }
 
@@ -7168,6 +9227,11 @@ card + '>\n' + head +
       if (v === true)  return '  ' + k;
       if (v === false) return '  ' + k + '={false}';
       if (typeof v === 'number') return '  ' + k + '={' + v + '}';
+      /* Data props — a set of suggestions, a map of messages — are
+         written as the value they are, not as "[object Object]". */
+      if (v && typeof v === 'object') {
+        return '  ' + k + '={' + JSON.stringify(v, null, 2).replace(/\n/g, '\n  ') + '}';
+      }
       return '  ' + k + '="' + String(v).replace(/"/g, '&quot;') + '"';
     }).join('\n') + '\n/>';
   }
@@ -7629,6 +9693,8 @@ card + '>\n' + head +
          was writing to, so anything script-driven has to be
          re-attached to the new one. */
       if (def.mounted) def.mounted(root, s);
+      pvAura(root);
+      if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
     }
 
     function row(k, v) {
@@ -7710,6 +9776,8 @@ card + '>\n' + head +
          at, and it is not part of the component. */
       if (pre)   pre.innerHTML = highlight(prettyPrintHtml(code));
       if (def.mounted) def.mounted(root, s);
+      pvAura(root);
+      if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
       var dot = root.querySelector('.pv-edit__dot');
       var dirty = anyDirty(def, s.cfg);
       if (dirty && !dot) {

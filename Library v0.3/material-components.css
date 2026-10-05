@@ -1310,30 +1310,125 @@
   color: var(--md-sys-color-on-surface-variant);
 }
 
-/* ── Suggested Prompts ────────────────────────────────────
-   Outlined, never filled: they are offers, and the filled weight
-   in this row belongs to send. */
-.md-suggests { display: flex; gap: 8px; flex-wrap: wrap; max-width: 560px; }
-.md-suggest {
+/* ── Suggestion chip (M3) ─────────────────────────────────
+   Kit Chips · Suggestion: 32dp, Corner/Small (8dp), Label Large in
+   on-surface-variant, optional 18dp leading icon in primary (the
+   padding drops to 8dp on the icon side), 48dp touch target.
+   Outlined (1dp outline-variant) or Elevated (surface-container-low,
+   level 1, no outline). States from the kit: an on-surface-variant
+   layer at 8% hover, 10% focus, 10% pressed; level 2 on hover for
+   Elevated; disabled at 38% / 12%. */
+.md-suggestion-chip {
+  position: relative; isolation: isolate; box-sizing: border-box;
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  height: 32px; padding: 0 16px; margin: 0;
   border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--md-sys-shape-corner-full);
-  background: var(--md-sys-color-surface-container-lowest);
-  color: var(--md-sys-color-on-surface);
-  padding: 8px 14px; font: inherit; cursor: pointer; text-align: left;
-  animation: md-suggest-in 380ms var(--md-sys-motion-easing-emphasized) both;
-  transition: background 180ms var(--md-sys-motion-easing-standard),
-              transform var(--mx-motion-spatial-duration) var(--mx-motion-spatial-easing);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: transparent; color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  white-space: nowrap; cursor: pointer; text-align: left;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
 }
-.md-suggest:nth-child(2) { animation-delay: 40ms; }
-.md-suggest:nth-child(3) { animation-delay: 80ms; }
-.md-suggest:nth-child(4) { animation-delay: 120ms; }
-.md-suggest:hover  { background: var(--md-sys-color-surface-container-high); }
-.md-suggest:active { transform: scale(0.97); }
+.md-suggestion-chip--icon { padding-left: 8px; }
+.md-suggestion-chip > .mi.mi {
+  width: 18px; height: 18px; flex: 0 0 auto; fill: var(--md-sys-color-primary);
+}
+.md-suggestion-chip > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.md-suggestion-chip--elevated {
+  border-color: transparent;
+  background: var(--md-sys-color-surface-container-low);
+  box-shadow: var(--md-sys-elevation-1);
+}
+.md-suggestion-chip--elevated:hover { box-shadow: var(--md-sys-elevation-2); }
+
+/* Entrance used by the filter chips below. */
 @keyframes md-suggest-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
-.md-suggest__refresh { color: var(--md-sys-color-primary); }
+
+/* ── List item, interactive (M3) ─────────────────────────
+   Kit Lists: one-line 56dp / two-line 72dp, 16dp leading and 24dp
+   trailing padding, 16dp between a 24dp leading icon
+   (on-surface-variant) and the text; headline Body Large in
+   on-surface, supporting Body Medium in on-surface-variant. The whole
+   row is the control; an on-surface layer at 8 / 10 / 10%. */
+.md-list-row {
+  position: relative; isolation: isolate; box-sizing: border-box;
+  display: flex; align-items: center; gap: 16px; width: 100%;
+  min-height: 56px; padding: 8px 24px 8px 16px; margin: 0;
+  border: 0; border-radius: var(--md-sys-shape-corner-medium);
+  background: transparent; color: var(--md-sys-color-on-surface);
+  font-family: var(--md-ref-typeface-plain); text-align: left; cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+.md-list-row > .mi.mi {
+  width: 24px; height: 24px; flex: 0 0 auto; fill: var(--md-sys-color-on-surface-variant);
+}
+
+/* ── Card, outlined and actionable (M3) ──────────────────
+   Kit Cards · Outlined: Corner/Medium (12dp), 1dp outline-variant on
+   surface. The whole card is one control: an on-surface layer at
+   8 / 10 / 10%, and the kit's 3dp focus ring. */
+.md-card {
+  position: relative; isolation: isolate; box-sizing: border-box;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface);
+}
+.md-card--outlined { border: 1px solid var(--md-sys-color-outline-variant); }
+.md-card--action {
+  display: flex; align-items: flex-start; gap: 12px; width: 100%; margin: 0;
+  padding: 12px 16px; font-family: var(--md-ref-typeface-plain);
+  text-align: left; cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+.md-card--action > .mi.mi {
+  width: 24px; height: 24px; flex: 0 0 auto; fill: var(--md-sys-color-primary);
+}
+
+/* The three share their states: a pseudo-element layer in the
+   content colour, so it sits over any container colour. */
+.md-suggestion-chip::before, .md-list-row::before, .md-card--action::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: currentColor; opacity: 0; pointer-events: none;
+  transition: opacity var(--mx-motion-fast-duration, 120ms) var(--md-sys-motion-easing-standard);
+}
+.md-suggestion-chip::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 48px;
+  transform: translateY(-50%);
+}
+.md-suggestion-chip:hover::before, .md-list-row:hover::before, .md-card--action:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+/* Outlined suggestion chip, hover (user request, 1 Oct): a solid
+   surface-container-high fill with the same outline-variant stroke,
+   in place of the grey state layer. Focus and pressed keep their layer. */
+.md-suggestion-chip:not(.md-suggestion-chip--elevated):not(:disabled):hover {
+  background: var(--md-sys-color-surface-container-high);
+  border-color: var(--md-sys-color-outline-variant);
+}
+.md-suggestion-chip:not(.md-suggestion-chip--elevated):not(:disabled):hover:not(:active):not(:focus-visible)::before { opacity: 0; }
+.md-suggestion-chip:focus-visible::before, .md-list-row:focus-visible::before,
+.md-card--action:focus-visible::before { opacity: var(--md-sys-state-focus-opacity); }
+.md-suggestion-chip:active::before, .md-list-row:active::before,
+.md-card--action:active::before { opacity: var(--md-sys-state-pressed-opacity); }
+.md-suggestion-chip:focus-visible, .md-list-row:focus-visible, .md-card--action:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px;
+}
+.md-suggestion-chip:disabled, .md-list-row:disabled, .md-card--action:disabled {
+  cursor: default; color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+.md-suggestion-chip:disabled::before, .md-list-row:disabled::before,
+.md-card--action:disabled::before { opacity: 0; }
 
 /* ── Icons ────────────────────────────────────────────────
    One glyph, one meaning. Violet wherever it is genuinely the
@@ -1540,10 +1635,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .md-cta__ico, .md-suggest, .md-fchip, .md-proactive,
+  .md-cta__ico, .md-fchip, .md-proactive,
   .md-glyph--thinking, .md-ghostfield__caret,
   .md-dice.is-rolling .md-dice__ico { animation: none; }
-  .md-entry__send, .md-suggest, .md-field-glyph, .md-dice,
+  .md-entry__send, .md-suggestion-chip, .md-list-row, .md-card--action,
+  .md-suggestion-chip::before, .md-list-row::before, .md-card--action::before,
+  .md-field-glyph, .md-dice,
   .md-roll, .md-ghostfield__ghost, .md-fchip button { transition: none; }
 }
 

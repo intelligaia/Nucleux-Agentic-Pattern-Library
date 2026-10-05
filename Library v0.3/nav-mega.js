@@ -117,10 +117,14 @@
      over the primary slot after it. Done here rather than in fifteen
      documents for the same reason as the flyout: one definition, no drift.
      ══════════════════════════════════════════════════════════ */
-  var PHONE_SVG =
+  /* Contact is email only — there is no call to book — so the
+     Contact Us control carries an envelope, not a phone. Same size,
+     stroke and caps as the other line icons in the cluster. */
+  var MAIL_SVG =
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
     'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M6.6 3.5 8.9 3.9c.5.1.9.5 1 1l.5 2.4c.1.5-.1 1-.5 1.3L8.3 10a12 12 0 0 0 5.7 5.7l1.4-1.6c.3-.4.8-.6 1.3-.5l2.4.5c.5.1.9.5 1 1l.4 2.3c.1.7-.4 1.4-1.1 1.5-1 .2-2 .2-2.6.1C10.2 18.2 5.8 13.8 4.5 7.2c-.1-.6-.1-1.6.1-2.6.1-.7.8-1.2 1.5-1.1Z"/>' +
+    '<rect x="3" y="5" width="18" height="14" rx="2.5"/>' +
+    '<path d="m4 7 8 6 8-6"/>' +
     '</svg>';
 
   /* The X wordmark. `fill: currentColor` rather than a stroke, so it
@@ -381,7 +385,7 @@
       cta.setAttribute('aria-label', ctaText);
       cta.textContent = '';
       cta.classList.add('gnav__iconx');
-      cta.appendChild(iconxShell(ctaText, PHONE_SVG));
+      cta.appendChild(iconxShell(ctaText, MAIL_SVG));
       sizeIconx(cta);
     }
 

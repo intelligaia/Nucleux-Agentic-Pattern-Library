@@ -826,48 +826,6 @@
       }
     },
 
-    /* ── Searching & Filtering ──────────────────────────────
-       The rail is a list, so the pattern goes where a list is
-       actually narrowed: over the inbox. */
-    'search-filter': {
-      note: 'Ask for the set you want in words. What comes back is not a sentence explaining ' +
-            'itself &mdash; it is filters you can remove.',
-      opts: { shown: true },
-      controls: function (s) {
-        return [toggle('Show what it was understood as', 'opt:shown', s.opts.shown)];
-      },
-      /* Above the ticket rather than inside it: this is the pattern
-         that decides WHICH work you are looking at. */
-      banner: function (s) {
-        return '<form class="md-nlsearch">' +
-            '<svg class="md-nlsearch__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-              'stroke-width="1.8" aria-hidden="true">' +
-              '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>' +
-            '<input class="md-nlsearch__input md-body-medium" type="text" ' +
-              'value="open enterprise tickets from this week" ' +
-              'aria-label="Search in your own words" readonly>' +
-          '</form>' +
-          (s.opts.shown
-            ? '<div class="md-applied" role="group" aria-label="Filters applied">' +
-                '<span class="md-applied__k md-body-small">Understood as</span>' +
-                ['status: open', 'tier: enterprise', 'opened: last 7 days'].map(function (t) {
-                  return '<span class="md-fchip md-body-small">' + t +
-                    '<button type="button" data-act="noop" aria-label="Remove ' + t +
-                    '">&times;</button></span>';
-                }).join('') +
-                '<span class="md-applied__n md-body-small">3 tickets</span>' +
-              '</div>'
-            : '<p class="md-ignored md-body-small">3 tickets</p>');
-      },
-      hint: function (s) {
-        return s.opts.shown
-          ? 'Three chips instead of a paragraph. A wrong reading is one press to fix, without ' +
-            'retyping the sentence.'
-          : 'A result count and nothing else. The reader cannot tell what was applied, what was ' +
-            'ignored, or which of the two is wrong.';
-      }
-    },
-
     /* ── Autocomplete ───────────────────────────────────────
        The composer is where a completion actually happens, so the
        ghost goes in the draft the agent just wrote. */

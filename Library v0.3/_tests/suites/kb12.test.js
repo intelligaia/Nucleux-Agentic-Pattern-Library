@@ -269,6 +269,39 @@ const NAMES = ['Empty','Preparing','Available','Active','Being used',
   ok('13.4 usable at phone width', over <= 1, String(over));
   await p.setViewportSize({ width: 1400, height: 1700 });
 
+  /* ── 16 · A long list scrolls after five rows ─────────────
+     The user asked: show five upfront and the rest in a scroll,
+     rather than the panel growing to the height of every source. */
+  await go('Active');
+  await press('kb:open', 600);
+  const sc = await p.evaluate(() => {
+    const u = document.querySelector('.pv-stage .md-kb__srcs');
+    const r = [...u.querySelectorAll(':scope > .md-kb__src')];
+    const ub = u.getBoundingClientRect();
+    const seen = r.filter(x => { const b = x.getBoundingClientRect();
+      return b.top >= ub.top - 1 && b.bottom <= ub.bottom + 1; }).length;
+    const cs = getComputedStyle(u);
+    return { scroll: u.classList.contains('md-kb__srcs--scroll'), rows: r.length, seen,
+             oy: cs.overflowY, over: u.scrollHeight > u.clientHeight + 1,
+             more: u.classList.contains('is-more'), tab: u.tabIndex,
+             fifth: Math.abs((r[4].offsetTop + r[4].offsetHeight) - u.clientHeight) };
+  });
+  ok('16.1 Active with more than five sources scrolls in place',
+     sc.scroll && sc.oy === 'auto' && sc.over, JSON.stringify(sc));
+  ok('16.2 exactly five rows show upfront', sc.seen === 5 && sc.fifth <= 1, JSON.stringify(sc));
+  ok('16.3 the rest are in the list, one scroll away', sc.rows > 5, String(sc.rows));
+  ok('16.4 the edge says there is more', sc.more);
+  ok('16.5 the scroll region is reachable by keyboard', sc.tab === 0);
+  const end = await p.evaluate(async () => {
+    const u = document.querySelector('.pv-stage .md-kb__srcs');
+    u.scrollTop = u.scrollHeight; await new Promise(r => setTimeout(r, 120));
+    return { more: u.classList.contains('is-more'), top: u.scrollTop };
+  });
+  ok('16.6 at the end, the fade goes', !end.more && end.top > 0, JSON.stringify(end));
+  await press('kb:open', 400);  /* a repaint */
+  const kept = await p.evaluate(() => document.querySelector('.pv-stage .md-kb__srcs').scrollTop);
+  ok('16.7 a repaint keeps the scroll position', kept > 0, String(kept));
+
   /* reduced motion */
   const rm = await b.newPage({ viewport: { width: 1400, height: 1200 } });
   await rm.emulateMedia({ reducedMotion: 'reduce' });

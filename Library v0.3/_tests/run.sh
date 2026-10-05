@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run the Nucleux pattern-library regression suites.
 #
-#   ./_tests/run.sh              all twelve suites
+#   ./_tests/run.sh              all nineteen suites
 #   ./_tests/run.sh ms.test.js   one suite
 #   ./_tests/run.sh probes/spark.js
 #
@@ -40,7 +40,10 @@ curl -s -o /dev/null "http://127.0.0.1:$PORT/" || {
 trap '[ "$MINE" = 1 ] && pkill -f "http.server $PORT" 2>/dev/null; true' EXIT
 
 SUITES=(ms.test.js mssim.test.js kb12.test.js kbsim3.test.js conn.js
-        connsim2.test.js mcp.js disc.js toolbar.js modstate.js dline.js onb.js)
+        connsim2.test.js mcp.js disc.js toolbar.js modstate.js dline.js onb.js
+        ic.test.js icsim.test.js oi.test.js sp.test.js spsim.test.js aura.test.js nokeys.js
+        aii.test.js aiisim.test.js
+        ac.test.js acsim.test.js pro.test.js prosim.test.js rnd.test.js rndsim.test.js)
 
 run () {
   local f="$1" path="$HERE/suites/$1"

@@ -1115,50 +1115,6 @@ Scope: renewal forecasting, account health, outreach.</pre>
               ]
             },
             {
-              id: "search-filter", name: "Searching & Filtering",
-              oneline: "Natural-language search replacing click-driven filters.",
-              value: "high", sub: "Entry",
-              what: "A search bar that accepts full sentences and resolves intent into structured filters, showing the user what it inferred as editable chips.",
-              why: "Multi-step filter menus create friction; letting users type intent the way they speak dramatically lowers discovery cost for complex queries.",
-              when: "Any list, library, or data surface with more than one filterable dimension — files, tasks, records, messages, assets.",
-              how: "Parse intent into named chips (type, owner, date) and surface them so users can see and correct what the AI inferred before results load.",
-              composed: ["Input", "Chip", "Badge", "Popover", "List"],
-              code: `<div class="nl-search" role="search">
-  <label class="nl-search__label" for="nl-search-input">Search</label>
-  <div class="nl-search__wrap">
-    <input
-      class="nl-search__input"
-      id="nl-search-input"
-      type="search"
-      placeholder="Find accounts at risk this quarter…"
-      aria-label="Search with natural language"
-    />
-    <button class="nl-search__submit" type="submit" aria-label="Search">
-      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-        <path d="m21 21-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
-  </div>
-</div>`,
-              related: ["autocomplete", "suggested-prompts", "structured-input"],
-              variants: [
-                { id: "nl-search-bar", name: "Natural-language search bar", note: "A search box that accepts a full sentence: 'docs about pricing edited this month by Sam'.",
-                  mock: `<div style="border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);padding:10px 14px;display:flex;align-items:center;gap:10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg><span style="flex:1;font-size:13px;color:var(--fg)">docs about pricing edited this month by Sam</span><span style="padding:3px 8px;border-radius:9999px;background:var(--accent-ghost);color:var(--accent);font-size:10.5px;font-weight:600">AI</span></div>` },
-                { id: "parsed-chips", name: "Parsed-into chips", note: "The agent reads the sentence and surfaces the filters it inferred — editable, transparent.",
-                  mock: `<div style="display:flex;flex-wrap:wrap;gap:5px;padding:10px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface)"><span style="padding:4px 10px;border-radius:6px;background:var(--accent-ghost);color:var(--accent);font-size:11px;font-weight:600">type: doc</span><span style="padding:4px 10px;border-radius:6px;background:var(--accent-ghost);color:var(--accent);font-size:11px;font-weight:600">about: pricing</span><span style="padding:4px 10px;border-radius:6px;background:var(--accent-ghost);color:var(--accent);font-size:11px;font-weight:600">edited: this month</span><span style="padding:4px 10px;border-radius:6px;background:var(--accent-ghost);color:var(--accent);font-size:11px;font-weight:600">by: Sam</span></div>` },
-                { id: "type-ahead-results", name: "Results-as-you-type", note: "Results appear under the bar as the user types — no submit, just live narrowing.",
-                  mock: `<div><div style="border:1px solid var(--border-strong);border-radius:10px 10px 0 0;background:var(--surface);padding:10px 14px;font-size:13px;color:var(--fg)">deals at risk this quarter…</div><div style="border:1px solid var(--border-strong);border-top:none;border-radius:0 0 10px 10px;background:var(--surface);padding:6px"><div style="padding:8px 10px;font-size:12px;color:var(--fg);border-radius:6px">📄 Q2 Pipeline Health — 3 deals flagged</div><div style="padding:8px 10px;font-size:12px;color:var(--fg-mid);border-radius:6px">📄 Renewal risk model — 2026 v3</div></div></div>` }
-              ],
-              placements: [
-                { template: "chat",      variantId: "nl-search-bar",     note: "As the command palette — type intent, get an action or an answer." },
-                { template: "rightrail", variantId: "parsed-chips",      note: "When the assistant returns from a query, shows what filters it actually applied." },
-                { template: "creative",  variantId: "nl-search-bar",     note: "For asset search across the library: 'logos used in last quarter's decks'." },
-                { template: "code",      variantId: "type-ahead-results", note: "Codebase search — results appear inline so developers don't break flow." },
-                { template: "email",     variantId: "nl-search-bar",     note: "Inbox search: 'attachments from Sam mentioning renewal'." }
-              ]
-            },
-            {
               id: "autocomplete", name: "Autocomplete",
               oneline: "Ghost text that anticipates and completes user actions.",
               value: "med", sub: "Entry",
@@ -1188,7 +1144,7 @@ Scope: renewal forecasting, account health, outreach.</pre>
     Tab ↹
   </button>
 </div>`,
-              related: ["open-input", "suggestions", "search-filter"],
+              related: ["open-input", "suggestions"],
               variants: [
                 { id: "ghost-suffix", name: "Ghost suffix", note: "Faded text after the cursor — Tab to accept, keep typing to ignore.",
                   mock: `<div style="border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);padding:12px 14px;font-size:13px;color:var(--fg);font-family:var(--font-mono)">Hi Sam, following up on <span style="color:var(--fg-muted);font-style:italic">our conversation last Tuesday about the renewal</span><span style="display:inline-block;width:8px;height:14px;background:var(--fg);margin-left:2px;vertical-align:middle;animation:blink 1s infinite"></span></div>` },
@@ -3582,7 +3538,7 @@ Scope: renewal forecasting, account health, outreach drafts.</textarea>
     <p class="filter-panel__count">3 results · 2 sources active</p>
   </div>
 </div>`,
-              related: ["parameters", "search-filter", "knowledge-base"],
+              related: ["parameters", "knowledge-base"],
               variants: [
                 { id: "filter-chip-row", name: "Filter chip row", note: "Horizontal row of toggleable chips — quickest filter UI for power users.",
                   mock: `<div style="display:flex;flex-wrap:wrap;gap:5px">${[['Docs',true],['Slack',true],['Email',false],['Calendar',false]].map(([t,a])=>`<span style="padding:5px 11px;border-radius:9999px;background:${a?'var(--accent-ghost)':'var(--surface)'};border:1px solid ${a?'var(--accent)':'var(--border-strong)'};color:${a?'var(--accent)':'var(--fg-mid)'};font-size:11px;font-weight:${a?'600':'400'}">${a?'✓ ':''}${t}</span>`).join('')}</div>` },

@@ -177,7 +177,7 @@
     var MI = window.MaterialIcons, out = {};
     var USE = { chev: 'chevDown', tick: 'check', auto: 'spark',
                 warn: 'warning', block: 'block', info: 'info',
-                effort: 'bolt', help: 'help', back: 'chevLeft' };
+                effort: 'bolt', help: 'help', back: 'chevLeft', go: 'chevRight' };
     for (var k in USE) out[k] = MI ? MI.icon(USE[k]) : '';
     return out;
   })();
@@ -343,7 +343,16 @@
       ? (a.kind === 'denied' ? (o.restrictedCopy || '') : (o.unavailableCopy || ''))
       : (o.showNote ? (m.note || '') : '');
 
-    return '<button class="md-ml__opt" type="button" role="menuitemradio" ' +
+    /* The WHOLE row is the control: pressing it selects the model
+       and moves on to that model's effort. The chevron at its right
+       end only says so — it is part of the row, not a second
+       button, so it is hidden from assistive tech and the row's
+       own name carries the meaning. Only when the host offers
+       effort, and never on a row that cannot be used. */
+    var go = o.showEffort !== false && !blocked;
+
+    return '<button class="md-ml__opt' + (go ? ' md-ml__opt--go' : '') +
+        '" type="button" role="menuitemradio" ' +
         'aria-checked="' + on + '" data-act="model:pick:' + m.id + '"' +
         (blocked ? ' disabled aria-disabled="true"' : '') +
         ' data-avail="' + (m.availability || 'ok') + '"' +
@@ -356,6 +365,7 @@
       '</span>' +
       (meta.length && !blocked
         ? '<span class="md-ml__meta">' + esc(meta.join(' · ')) + '</span>' : '') +
+      (go ? '<span class="md-ml__chev" aria-hidden="true">' + ICONS.go + '</span>' : '') +
     '</button>';
   }
 
@@ -768,7 +778,16 @@
 
   var lastCollapsed = null;
   var menuHeld = false;
+  /* A plain pick closes the flyout, so the row that had focus is
+     gone; focus goes back to the chip that opened it. */
+  var chipHeld = false;
+  function holdChip() { chipHeld = true; }
   function animate(root) {
+    if (chipHeld) {
+      chipHeld = false;
+      var chip = root && root.querySelector('[data-act="ax:mode"]');
+      if (chip) chip.focus({ preventScroll: true });
+    }
     wireTrack(root);
     wireGlow(root);
     wireSparks(root);
@@ -805,6 +824,6 @@
     menu: menu, option: option, credit: credit,
     changed: changed, fallback: fallback,
     byId: byId, avail: avail, usable: usable, scopeNote: scopeNote,
-    animate: animate
+    animate: animate, holdChip: holdChip
   };
 })();

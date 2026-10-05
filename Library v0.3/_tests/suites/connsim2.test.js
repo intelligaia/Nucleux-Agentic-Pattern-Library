@@ -127,6 +127,14 @@ function probe(page) {
   const landed = await probe(p);
   ok('A6.1 it resolves into the compact connected card',
      landed.cards.indexOf('connected') !== -1, landed.cards.join());
+  const bare = await p.evaluate(() => {
+    const c = document.querySelector('[data-sim-root] .md-conn[data-state="connected"], [data-sim-root] .md-conn--connected');
+    return c ? { dash: c.querySelectorAll('.md-conn__dash').length,
+                 because: c.querySelectorAll('.md-conn__because').length,
+                 state: (c.querySelector('.md-conn__state') || {}).textContent } : null;
+  });
+  ok('A6.1b the connected card is just "Connected" — no account, no sentence above',
+     bare && !bare.dash && !bare.because && bare.state === 'Connected', JSON.stringify(bare));
   ok('A6.2 the big review surface is gone',
      landed.cards.indexOf('authorise') === -1, landed.cards.join());
   ok('A6.3 the source joins the composer', landed.scopes.join() === 'Google Drive');
@@ -347,7 +355,7 @@ function probe(page) {
       module: !!C && typeof C.card === 'function' && typeof C.sourceGroups === 'function',
       classes: [...r.querySelectorAll('.md-conn')].every(e => e.className.indexOf('md-conn') === 0),
       fakes: r.querySelectorAll('[class*="sim-conn"],[class*="demo-conn"],[class*="fake"]').length,
-      fromTable: r.textContent.indexOf(C.SERVICES.googledrive.account) !== -1,
+      fromTable: r.textContent.indexOf(C.SERVICES.googledrive.useLine) !== -1,
       order: C.SERVICE_ORDER.join()
     };
   });

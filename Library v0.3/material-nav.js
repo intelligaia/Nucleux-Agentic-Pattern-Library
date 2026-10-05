@@ -26,7 +26,7 @@
                /* Initially · Entry Points — in tree order, so prev/next
                   walks the sidebar rather than the order they were built. */
                'initial-cta', 'open-input', 'suggested-prompts', 'ai-icons',
-               'search-filter', 'autocomplete', 'proactive', 'randomize',
+               'autocomplete', 'proactive', 'randomize',
                /* Initially · Expressive Input */
                'voice-input', 'visual-input', 'handwriting', 'gesture', 'structured-input',
                /* Initially · Context Expansion */
@@ -106,7 +106,6 @@
           { id: "open-input", name: "Open Input", oneline: "Free-form text box for any natural-language ask." },
           { id: "suggested-prompts", name: "Suggested Prompts", oneline: "Smart, context-aware preset actions to jumpstart engagement." },
           { id: "ai-icons", name: "Icons", oneline: "Visual symbols that signal the AI's presence on a screen." },
-          { id: "search-filter", name: "Searching & Filtering", oneline: "Natural-language search replacing click-driven filters." },
           { id: "autocomplete", name: "Autocomplete", oneline: "Ghost text that anticipates and completes user actions." },
           { id: "proactive", name: "Proactive Suggestions", oneline: "Invisible AI moments that arrive exactly when needed." },
           { id: "randomize", name: "Randomize", oneline: "A 'dice' that kickstarts the experience with a fun result." }

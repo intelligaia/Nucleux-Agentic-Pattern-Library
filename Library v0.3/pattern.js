@@ -1542,52 +1542,6 @@
         </div>
       </div>`,
 
-    "search-filter": () => `
-      <div class="mock mock--lg" style="padding:20px;max-width:460px">
-        <style>
-          .sf-wrap { display:flex;flex-direction:column;gap:8px; }
-          .sf-bar { display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #0f172a;border-radius:10px;background:var(--surface);box-shadow:0 1px 4px rgba(15,23,42,0.08); }
-          .sf-icon { flex-shrink:0;color:var(--fg-muted); }
-          .sf-query { flex:1;font-size:13px;color:var(--fg); }
-          .sf-ai-badge { padding:2px 7px;border-radius:5px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:700;flex-shrink:0; }
-          .sf-chips { display:flex;flex-wrap:wrap;gap:5px;padding:2px 0; }
-          .sf-chip { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;background:#f1f5f9;color:#0f172a;font-size:11px;font-weight:600;cursor:pointer;border:none;transition:background 0.12s; }
-          .sf-chip:hover { background:#e2e8f0; }
-          .sf-chip-x { opacity:0.45;font-size:12px; }
-          .sf-results { display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden; }
-          .sf-result { display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--surface);font-size:12.5px;color:var(--fg);border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s; }
-          .sf-result:last-child { border-bottom:none; }
-          .sf-result:hover { background:var(--ink-25); }
-          .sf-result-icon { font-size:14px;flex-shrink:0; }
-          .sf-result-name { flex:1; }
-          .sf-result-meta { font-size:10.5px;color:var(--fg-muted); }
-        </style>
-        <div class="sf-wrap">
-          <div class="sf-bar">
-            <svg class="sf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-            <span class="sf-query">docs about pricing edited this month by Sam</span>
-            <span class="sf-ai-badge">AI</span>
-          </div>
-          <div class="sf-chips" id="sf-chips">
-            <button class="sf-chip" onclick="sfRemove(this)">type: doc <span class="sf-chip-x">×</span></button>
-            <button class="sf-chip" onclick="sfRemove(this)">about: pricing <span class="sf-chip-x">×</span></button>
-            <button class="sf-chip" onclick="sfRemove(this)">edited: this month <span class="sf-chip-x">×</span></button>
-            <button class="sf-chip" onclick="sfRemove(this)">by: Sam <span class="sf-chip-x">×</span></button>
-          </div>
-          <div class="sf-results">
-            <div class="sf-result"><span class="sf-result-icon">📄</span><span class="sf-result-name">Q2 Pricing Strategy</span><span class="sf-result-meta">Sam · Jun 14</span></div>
-            <div class="sf-result"><span class="sf-result-icon">📄</span><span class="sf-result-name">Renewal Pricing Tiers</span><span class="sf-result-meta">Sam · Jul 2</span></div>
-            <div class="sf-result"><span class="sf-result-icon">📄</span><span class="sf-result-name">Competitive Pricing Analysis</span><span class="sf-result-meta">Sam · Jul 18</span></div>
-          </div>
-        </div>
-        <script>
-          function sfRemove(el) {
-            el.style.transition = 'opacity 0.15s';
-            el.style.opacity = '0';
-            setTimeout(() => el.remove(), 150);
-          }
-        </script>
-      </div>`,
 
     "autocomplete": () => `
       <div class="mock mock--lg" style="padding:20px;max-width:460px">

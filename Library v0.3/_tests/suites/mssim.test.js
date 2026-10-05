@@ -90,9 +90,14 @@ const R = '[data-sim-root] ';
      await p.$('[data-sim-root] [data-act^="model:aim:"]') === null);
 
   /* effort is a separate axis, set on its own screen of the one
-     flyout: open, pick a model, and the list becomes the slider */
+     flyout: open, press a model's row (the chevron at its end only
+     says so), and the list becomes the slider */
   await press('reset', 400);
   await press('ax:mode', 400);
+  ok('4.0 each usable model row carries an 18px chevron, inside the row',
+     await p.evaluate(() => [...document.querySelectorAll('[data-sim-root] .md-ml__opt')]
+       .every(o => { const g = o.querySelector(':scope > .md-ml__chev svg');
+         return o.disabled ? !g : !!g && Math.round(g.getBoundingClientRect().width) === 18; })));
   await press('model:pick:balanced', 450);
   ok('4.1 picking a model replaces the list with a slider',
      await p.evaluate(() => {

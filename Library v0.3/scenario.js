@@ -19,7 +19,7 @@
       archetype: "chat",
       version: "v1.0",
       components: 23,
-      patterns: ["model-selection", "knowledge-base", "voice-input", "data-ownership", "suggested-prompts", "memory", "citations", "footprints", "search-filter", "attachments"],
+      patterns: ["model-selection", "knowledge-base", "voice-input", "data-ownership", "suggested-prompts", "memory", "citations", "footprints", "attachments"],
       sandbox: "medha",
       duration: "1:48"
     },

@@ -1232,36 +1232,118 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'The large, inviting input that anchors the empty state.',
-      intent: 'The one obvious way in on a screen that has nothing on it yet — large enough to answer &ldquo;what now?&rdquo;, and specific enough to be worth pressing.',
-      what: 'The primary invitation on an empty or first-run surface: a single oversized entry point that says what the agent will do <em>on this screen</em>, rather than announcing that an agent exists.',
-      why: 'The empty state is the most expensive screen in an agentic product, because it is where most people decide the thing is not for them. A generic “Ask me anything” hands the hardest problem — knowing what to ask — straight back to the user. A call to action written against the material already on screen answers it for them, and costs one press.',
-      when: 'On any surface where the agent has produced nothing yet, and only while that is true. Retire it the moment there is real work on the screen: an invitation competing with content is noise, and a permanent one reads as an advertisement.',
-      how: 'One per screen, and make it the largest interactive thing on it. Write the label as a verb applied to what the reader is looking at — “Summarise this thread”, not “Get started”. Carry the disclosure on it, because this is first contact. Give it a secondary way in for people who already know what they want, and let the primary action be pressed with the keyboard.',
-      expressive: 'Capsule, because it is the human&rsquo;s action and nothing the agent produces is capsule-shaped &mdash; that one rule lets a reader tell what is theirs to press without reading anything. Primary at tone 60 with the reserved glyph, on a neutral ground: this is the single saturated element in an otherwise empty view, which is what makes an empty state read as an invitation rather than a failure. The press spends the <b>spatial</b> motion role &mdash; a spring, because the user physically caused it; the answer that follows arrives on the <b>effects</b> role from below, because the agent did and a fade that overshoots lies about what kind of change it is. Idle carries a very slow ambient breath on the glyph only &mdash; 18s, stopped entirely under reduced motion &mdash; so the surface reads as awake without asking for attention.',
-      composed: ['Button', 'Text Field', 'Icon', 'Card'],
-      related: [['open-input', 'Open Input'], ['suggested-prompts', 'Suggested Prompts'], ['example-gallery', 'Example Gallery']],
+      oneline: "The large, inviting composer that is the one place to start when the workspace has no activity.",
+      intent: "Answer &ldquo;where do I start?&rdquo; with a field, not a button &mdash; and let that field become the working composer the moment work begins.",
+      what: "The main agent entry point for an empty workspace: the shared prompt composer drawn at its <em>initial</em> size, as the single focal point on the screen. It suggests the kind of request it expects, takes the keyboard the moment it is focused, grows with a multi-line request, and after the first send moves and shrinks into the ordinary working composer. It is a state of that one composer, not a component of its own.",
+      why: "On a screen with nothing on it, the only useful thing to show is where to begin. Every mature assistant converged on the same answer &mdash; a centred, generous input, not a &ldquo;Get started&rdquo; button, a gallery or a hero &mdash; because a button only adds a step before the field, and a gallery answers a question the person has not asked. Making it the same composer as the working one matters as much: the person learns one control, the text they typed is never handed from one component to another, and the change of size is itself the signal that the workspace has gone from empty to working.",
+      when: "Whenever the main agent workspace has no conversation, task or history to show &mdash; a new conversation, a fresh project, a cleared thread. For people who already know agentic products as much as for anyone: this is not a tutorial, it is the empty state of the work surface.",
+      whenNot: "Once there is meaningful activity. Leaving the oversized input in place beside a conversation turns an invitation into furniture competing with the work. Not as a marketing CTA, a sign-up prompt or a first-run explainer, and not as a replacement for Suggested Prompts &mdash; those are separate patterns and they stay visually secondary if they appear at all.",
+      how: "Render the shared composer with <code>size: 'initial'</code> in the middle of the empty workspace and give it nothing to compete with: at most one short supporting line above it, and its own secondary controls &mdash; Add context, voice, the model chip &mdash; at their usual, quiet emphasis. Write the placeholder as an active suggestion (&ldquo;What would you like to work on?&rdquo;) and give the field a real label besides it. Send is unavailable while the field is empty, secondary while keys are moving, primary once the person pauses with a request in it &mdash; and a pause never sends anything. On the first send, put the request in the workspace as the first turn, start the agent, and let the same composer travel to its working place at working size.",
+      expressive: "Expression here is scale and one transition, and almost nothing else. The invitation looks exactly like Open Input&rsquo;s composer &mdash; one row (Add context, the field, voice, send) with the same padding, corner, field type and height &mdash; so the invitation and the composer it becomes are visibly one object; what makes it the focal point is position, not size. Focus is a shape change rather than a halo: the outline takes the primary colour and the corner squares up a step, the same &ldquo;this is now a working surface&rdquo; move the working composer makes. The one expressive moment is the hand-over: the composer shrinks and moves to its docked place over 500&nbsp;ms on the <b>emphasized</b> curve, without overshoot, because the system moved it rather than the person; the turns that caused it arrive a beat later on the <b>effects</b> role, from below. Under reduced motion the composer is simply in its new place.",
+
+      precedent: [
+        { name: "ChatGPT",
+          url: "https://chatgpt.com/",
+          what: "A new chat is a greeting and one <b>centred composer</b>; after the first message the composer sits at the bottom under the conversation. Add context, voice and model live inside the composer, not around it." },
+        { name: "Claude",
+          url: "https://claude.ai/",
+          what: "The new-conversation screen is dominated by a <b>large, multi-line composer</b> with its controls on a row beneath the text. It becomes the docked working composer once the conversation starts." },
+        { name: "Gemini",
+          url: "https://gemini.google.com/",
+          what: "A short greeting and a <b>single prompt field</b> as the only primary element; suggestions, where shown, sit below and quieter than the field." },
+        { name: "Perplexity",
+          url: "https://www.perplexity.ai/",
+          what: "The home page is <b>one prominent input</b>; the first query becomes a thread with a follow-up field at the bottom &mdash; the invitation and the working input are the same control at two sizes." },
+        { name: "Hugging Face Chat UI",
+          url: "https://github.com/huggingface/chat-ui/commit/819df0a6a6761cbe1b2120835f06f9ce797519fa",
+          what: "An open implementation of the same behaviour: the composer is <b>centred on a fresh chat and docks to the bottom</b> after the first message &mdash; and on touch devices it docks while focused, so the on-screen keyboard cannot cover it." },
+        { name: "Shape of AI &mdash; Initial CTA",
+          url: "https://www.shapeof.ai/patterns/cta",
+          what: "Frames the pattern as a prominent input that captures intent with little friction, and makes the case for a <b>forgiving first step</b>. Scaffolding such as galleries is a separate decision &mdash; here it is left to Suggested Prompts." },
+        { name: "Material 3 &mdash; Text fields",
+          url: "https://m3.material.io/components/text-fields/accessibility",
+          what: "The accessibility rule the pattern leans on: <b>placeholder text is not a label</b>. The field keeps a real accessible name whatever the placeholder says." }
+      ],
+
+      anatomy: [
+        { part: "PromptComposer · initial",
+          role: "The shared composer at its initial size &mdash; the same form every simulator docks, in one row &mdash; Add context, the field, voice, send &mdash; with the same padding, corner, type and height as Open Input&rsquo;s composer. Container-aware: it fills a narrow surface and caps at a comfortable measure on a wide one." },
+        { part: "Field",
+          role: "A textarea with a real accessible name (&ldquo;Start a task with Aria&rdquo;) and an active placeholder. It grows line by line to a ceiling the host chooses, then scrolls." },
+        { part: "SupportingLine",
+          role: "Optional, one short line above the field: where this is and what the agent can reach. Second in the hierarchy; never a headline." },
+        { part: "SecondaryActions",
+          role: "Add context, voice and the Model Selection chip, each at the working composer&rsquo;s own emphasis. Add context on the left; model, voice and send on the right." },
+        { part: "Send",
+          role: "The kit&rsquo;s filled icon button. Disabled while empty, secondary emphasis while typing, primary once the request is ready. Named with its key shortcut." },
+        { part: "Hand-over",
+          role: "On the first send: the request becomes the first turn, the agent starts, and the same composer moves and shrinks into the dock &mdash; measured before the repaint, animated from where it was." }
+      ],
+
+      flow: [
+        "The workspace has no conversation, task or history, so the large composer is the focal point and the only primary element.",
+        "The person clicks, taps or tabs into it. The outline takes the primary colour, the corner squares up a step, and the send key is named. Nothing else moves.",
+        "They type. The placeholder goes, the field grows with the request, and Send becomes available at a secondary emphasis.",
+        "They pause with a request in the field. Send takes the primary fill. Nothing is sent until they send it.",
+        "They send. The request enters the workspace as the first turn and the agent starts.",
+        "The same composer shrinks and moves to its working place at the bottom. The typed text is the first turn &mdash; nothing is lost in the hand-over &mdash; and focus is in the working field.",
+        "The conversation continues through the ordinary working composer. The invitation does not come back until the workspace is empty again."
+      ],
+
+      statesList: [
+        { name: "Resting", desc: "No activity. The large composer is the focal point, its placeholder suggesting what to do; Send is unavailable because there is nothing to send. <em>Next:</em> focus the field." },
+        { name: "Focused", desc: "The field has focus. Primary outline and a squared-up corner say it is ready; the placeholder stays until the first keystroke and the send key is named. <em>Next:</em> type." },
+        { name: "Typing", desc: "Text is being entered. The field grows up to its ceiling; Send is available at secondary emphasis; the person&rsquo;s text is the primary focus. <em>Next:</em> pause, or keep writing." },
+        { name: "Ready to submit", desc: "A request is in the field and the person has paused. Send takes the primary fill; the request stays editable and is never sent by the pause. <em>Next:</em> send." },
+        { name: "Active conversation", desc: "The first request is sent. It enters the workspace, the agent starts, and the same composer is now the working composer in its docked place. <em>Next:</em> continue there." }
+      ],
+
+      variants: [
+        { name: "Tonal", desc: "A filled container instead of an outline, for hosts whose surfaces are already outlined. Focus still draws the primary edge." },
+        { name: "Modifier to send", desc: "&#8984; / Ctrl + Enter sends and Enter is a new line, for products where long, structured first requests are the norm. The send button carries the shortcut (aria-keyshortcuts); nothing is printed under the composer." },
+        { name: "Anchored low", desc: "On phone-width containers the invitation sits near the bottom, where the thumb and the on-screen keyboard are, instead of floating mid-screen. Not the desktop layout shrunk." },
+        { name: "With the model chip", desc: "Where the host lets people choose, the Model Selection chip sits in the right-hand group, unchanged. Worth it only if choosing before the first request is common." }
+      ],
+      content: [
+        "Write the placeholder as an action the person could take: &ldquo;What would you like to work on?&rdquo;, &ldquo;Ask about this project&hellip;&rdquo;, &ldquo;Start with a task or question&hellip;&rdquo;.",
+        "Never name the box: &ldquo;Type here&rdquo;, &ldquo;Enter prompt&rdquo;, &ldquo;Message AI&rdquo; and &ldquo;Ask me anything&rdquo; all hand the hard part &mdash; knowing what to ask &mdash; back to the reader.",
+        "One suggestion, not a tutorial. The placeholder disappears on the first keystroke, so anything that must stay readable belongs in the supporting line.",
+        "Keep the supporting line to one sentence of context &mdash; where this is, what the agent can reach &mdash; or leave it out.",
+        "Say which key sends, once, under the field. People move between assistants that disagree about Enter.",
+        "After the hand-over, the working placeholder is about continuing (&ldquo;Reply, or add to the request&rdquo;), not starting."
+      ],
+
+      a11y: [
+        "The field has an accessible name of its own; the placeholder is a suggestion and is never the only label (Material 3 text-field guidance).",
+        "The key hint is tied to the field with <code>aria-describedby</code>, and Send carries <code>aria-keyshortcuts</code> for whichever key the host uses.",
+        "Focus is visible as a colour and a shape change, not a colour alone.",
+        "Every control is a 48dp target &mdash; the kit&rsquo;s Small icon buttons &mdash; including on the compact density.",
+        "Sending moves focus into the working field, so a keyboard user carries on where they were; the hand-over is announced through a polite live region.",
+        "The typed text is never lost in the transition: it becomes the first turn, and text typed into the working composer while the agent works stays in the field.",
+        "Under reduced motion the hand-over is instant; nothing about the state change depends on seeing it move."
+      ],
+
+      donts: [
+        "Don&rsquo;t put a &ldquo;Get started&rdquo; button in front of the field. It adds a step before the only thing there is to do.",
+        "Don&rsquo;t build a second composer for the empty state. One composer, two sizes &mdash; or the person learns two controls and their text has to be handed between them.",
+        "Don&rsquo;t leave the oversized input on screen after work begins. It becomes furniture competing with the conversation.",
+        "Don&rsquo;t surround it with several equally prominent actions. Secondary means secondary.",
+        "Don&rsquo;t turn it into a suggested-prompts gallery. If suggestions appear, they are their own pattern and they sit below and quieter.",
+        "Don&rsquo;t submit on a pause, and don&rsquo;t animate for decoration &mdash; no bounce, no glow, no ambient drift.",
+        "Don&rsquo;t let it grow without limit. A ceiling, then scroll."
+      ],
+
+      metrics: [
+        "Time from the empty workspace to the first sent request, and how many sessions end without one.",
+        "How often the first request is abandoned after typing starts &mdash; a sign the placeholder promised something the field does not do.",
+        "The share of first requests that use a secondary action (context, voice, model). High means one of them may deserve more room; near zero means it may not deserve a place.",
+        "Share of first requests that are multi-line, which is the case for the ceiling you chose."
+      ],
+
+      composed: ['Text Field', 'Icon Button', 'Menu', 'Chip'],
+      related: [['open-input', 'Open Input'], ['suggested-prompts', 'Suggested Prompts'], ['model-selection', 'Model Selection'], ['voice-input', 'Voice Input']],
       pkg: 'nucleux-m3-initial-cta',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<section class=\"md-cta\" aria-labelledby=\"cta-t\">\n  <svg class=\"md-cta__ico\"><!-- reserved glyph --></svg>\n  <h2 class=\"md-cta__t\" id=\"cta-t\">Summarise this thread</h2>\n  <p class=\"md-cta__d\">Aria reads the ticket and gives you the disagreement in two lines.</p>\n  <div class=\"md-cta__foot\">\n    <button class=\"md-button md-button--filled\">Summarise it</button>\n    <button class=\"md-button md-button--text\">Ask something else</button>\n  </div>\n</section>",
-      examples: [
-        {
-          id: 'cta-anchored',
-          title: 'The invitation, written against the screen',
-          note: 'The label names what happens to the thing the reader is already looking at. A second, quieter way in sits beside it for people who arrived knowing what they wanted.',
-          code:
-'<section class="md-cta" aria-labelledby="cta-t">\n' +
-'  <svg class="md-cta__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'  <h2 class="md-cta__t md-headline-small" id="cta-t">Summarise this thread</h2>\n' +
-'  <p class="md-cta__d md-body-medium">\n' +
-'    Aria reads ticket #4821 and gives you the disagreement in two lines.\n' +
-'  </p>\n' +
-'  <div class="md-cta__foot">\n' +
-'    <button class="md-button md-button--filled" type="button">Summarise it</button>\n' +
-'    <button class="md-button md-button--text" type="button">Ask something else</button>\n' +
-'  </div>\n' +
-'</section>'
-        }
-      ]
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- ONE composer. On an empty workspace it carries data-size=\"initial\"\n     so the states and the hand-over can find it; it looks exactly like\n     Open Input's composer: one row. There is no InitialComposer component. -->\n<section class=\"md-icta\" data-surface=\"initial\" aria-label=\"New conversation\">\n  <!-- Level 2: one short line of context. Optional. -->\n  <p class=\"md-icta__lead\" id=\"icta-lead\">\n    Start with a task or a question. Aria works from this project's files.\n  </p>\n\n  <form class=\"ax__composer\" data-size=\"initial\" data-entry=\"empty\">\n    <button class=\"ax__cbtn md-icon-button md-icon-button--standard\" type=\"button\"\n            aria-label=\"Add context\"><!-- add --></button>\n    <!-- The accessible name is the label, never the placeholder. -->\n    <textarea class=\"ax__field\" rows=\"1\" data-max-lines=\"8\"\n              aria-label=\"Start a task with Aria\"\n              placeholder=\"What would you like to work on?\"></textarea>\n    <button class=\"ax__cbtn ax__cbtn--mic md-icon-button md-icon-button--standard\" type=\"button\"\n            aria-label=\"Speak instead of typing\"><!-- mic --></button>\n    <!-- Disabled while empty; secondary emphasis while typing\n         (data-entry=\"typing\"); primary once ready (data-entry=\"ready\"). -->\n    <button class=\"ax__cbtn ax__cbtn--send md-icon-button md-icon-button--filled\" type=\"submit\"\n            aria-label=\"Send\" aria-keyshortcuts=\"Enter\" disabled><!-- send --></button>\n  </form>\n</section>\n\n<!-- After the first request: the SAME form, without data-size, docked\n     under the conversation. Nothing is replaced; one attribute goes. -->\n<div class=\"ax__dock\">\n  <form class=\"ax__composer\">\n    <!-- … identical controls … -->\n    <textarea class=\"ax__field\" aria-label=\"Reply to Aria\"\n              placeholder=\"Reply, or add to the request\"></textarea>\n  </form>\n</div>\n\n<script>\n  // React / Nucleux: one component, a mode prop.\n  // <PromptComposer mode={hasActivity ? 'working' : 'initial'}\n  //   placeholder=\"What would you like to work on?\"\n  //   supportingText=\"Start with a task or a question.\"\n  //   maxLines={8} sendKey=\"enter\" />\n</script>"
     },
 
     /* ══════════════════════════════════════════════════════════
@@ -1274,30 +1356,120 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'Free-form text box for any natural-language ask.',
-      intent: 'The one field that accepts anything, and is honest about what it will do with it — including while it is busy, and when the ask is one it cannot take.',
-      what: 'The composer: a free-form field where a request is typed in the user’s own words, with the controls that belong to sending one — submit, stop, and whatever the product attaches to a request.',
-      why: 'It is the most-used control in the product and the one most often shipped in one state. A composer that looks identical while idle, while sending and while the model is mid-answer teaches people to press again, and a composer that goes disabled during a wait takes away the draft they were writing. The states are the pattern.',
-      when: 'Wherever a request can be made. It is the fallback behind every other entry point in this category — a suggestion, a template or a dice roll should all end up here, editable, rather than firing straight off.',
-      how: 'Keep the field editable while the agent works; put the busy state on the send control, which becomes stop. Swap send in only when there is something to send. Never clear what somebody typed without giving it back. Say what the field accepts in the placeholder, in the product’s own nouns, and keep Enter to send with Shift-Enter for a newline — reversing those is the most reliable way to send half a sentence.',
-      expressive: 'The field is a capsule with a 1px outline-variant edge that takes primary at tone 60 on focus &mdash; one property, one state, no glow. Send is the only filled element in the row, so the primary action is unmistakable when the field has content and absent when it does not. While a reply is in flight the send control becomes stop and the field stays live: the busy state belongs to the action, never to the reader&rsquo;s text. Focus and colour move on standard easing at 180ms; the reply that comes back rises from below on emphasized easing, so what the user did and what the system did never share a curve.',
-      composed: ['Text Field', 'Button', 'Icon', 'Progress'],
-      related: [['initial-cta', 'Initial CTA'], ['autocomplete', 'Autocomplete'], ['suggested-prompts', 'Suggested Prompts']],
+      oneline: "The persistent, general-purpose composer where people ask for anything in their own words.",
+      intent: "The default way to talk to the agent once work is under way — free-form, always there, and never careless with what someone has typed.",
+      what: "The shared prompt composer in its default working state: compact, docked under the conversation or task, and available after every response. It takes questions, instructions, follow-ups, edits and multi-step requests, short or long; grows with the request up to a ceiling and then scrolls; carries only the secondary controls the product supports; and keeps the person&rsquo;s text through every other control, and through a failed send.",
+      why: "It is the most-used control in any agentic product and the one most often shipped in a single state. The losses are small and constant: a half-written follow-up wiped by opening the model menu, a long request sent by an Enter meant as a new line, a failed send that clears the field and makes someone type it all again. Every mature assistant converged on the same working composer for the same reasons, and it is expensive to rediscover them one bug report at a time.",
+      when: "Wherever a person can make a request in words during ongoing work &mdash; conversational agents, task and coding agents, research tools, support agents, project workspaces, side panels &mdash; as the default entry point after the first request. Before any activity, the same composer is drawn at its larger Initial CTA size.",
+      whenNot: "Not as the empty-state invitation (that is Initial CTA, the same composer at another size), not as a structured form when the request genuinely has fixed fields, and not as a command-only or search-only box. If the set of things a person can ask for is small and known, buttons beat a blank field.",
+      how: "Dock the shared composer under the work at its working size and keep it there &mdash; it never disappears after a send. Give the field a real label, and a placeholder in the product&rsquo;s own nouns. Let it grow line by line to a ceiling (about six lines) and then scroll inside itself, with the controls anchored to the bottom line. Keep Send disabled until there is something to send; follow the host&rsquo;s send key (Enter, or &#8984; / Ctrl + Enter); the send button carries the shortcut (aria-keyshortcuts), and no hint line is printed under the composer. Clear the field only after a send succeeds; on failure keep the text, say what happened in human words and offer Retry. Every other control &mdash; context, model and effort, voice &mdash; changes its own thing and leaves the text alone.",
+      expressive: "Restrained on purpose: this is furniture somebody uses hundreds of times a day. Expression is spent only where it carries state. Focus is a shape change &mdash; the outline takes the primary colour and the corner squares up a step &mdash; not a glow. Growth eases the composer taller over 160&nbsp;ms on the emphasized curve instead of jumping a line at a time. Ready gives Send the primary fill; while typing it is available at a secondary emphasis. A failure takes the error colour on the edge and one error-container row inside the composer, above the untouched text. Under reduced motion the growth and the error row simply appear.",
+
+      precedent: [
+        { name: "ChatGPT",
+          url: "https://chatgpt.com/",
+          what: "One working composer at the bottom of every conversation, with Add context, voice and model in it rather than around it. It grows with the request and stays put after each response." },
+        { name: "Claude",
+          url: "https://claude.ai/",
+          what: "A multi-line composer whose controls sit on a row beneath the text, so a long request never shares its line with buttons. Enter sends and Shift + Enter makes a new line." },
+        { name: "Gemini",
+          url: "https://gemini.google.com/",
+          what: "The same field serves questions, follow-ups and edits for the whole conversation; tools and model choices are secondary controls inside it." },
+        { name: "Perplexity",
+          url: "https://www.perplexity.ai/",
+          what: "The follow-up field under every thread is the same input as the home page, at a smaller size &mdash; the invitation and the working composer are one control." },
+        { name: "Microsoft Copilot",
+          url: "https://copilot.microsoft.com/",
+          what: "A persistent composer with its mode and attachment controls kept inside the field, so changing them never moves or clears the draft." },
+        { name: "Cursor &mdash; send key",
+          url: "https://forum.cursor.com/t/add-setting-to-change-chat-input-behavior-enter-for-new-line-cmd-enter-to-send/107342",
+          what: "Why the send key is a host setting: users of a coding agent asked for <b>Enter for a new line and &#8984; + Enter to send</b>, because &ldquo;it&rsquo;s easy to accidentally send incomplete messages by pressing Enter while composing longer text&rdquo; &mdash; and the setting shipped." },
+        { name: "Material 3 &mdash; Text fields",
+          url: "https://m3.material.io/components/text-fields/accessibility",
+          what: "<b>Placeholder text is not a label.</b> The field keeps its own accessible name whatever the placeholder says." }
+      ],
+
+      anatomy: [
+        { part: "PromptComposer · working",
+          role: "The shared composer at its default size &mdash; the form every simulator docks and the Initial CTA hands over to. Compact (56px on one line), capped at the standard composer width, persistent." },
+        { part: "Field",
+          role: "A textarea with a real label (&ldquo;Message Aria&rdquo;) and a placeholder in the product&rsquo;s nouns. Grows to a ceiling, then scrolls inside itself." },
+        { part: "AddContext",
+          role: "Left: the + menu for files and sources. Adds a chip to the request; never touches the text." },
+        { part: "SecondaryActions",
+          role: "Right, before Send: the Model Selection chip (model and effort) and Voice, only where the product supports them." },
+        { part: "Send / Stop",
+          role: "The kit&rsquo;s filled icon button. Disabled until there is something to send; secondary while typing; primary when ready. While the agent answers it becomes Stop, in the same slot." },
+        { part: "ErrorRow",
+          role: "A failed send, inside the composer above the untouched text: an icon, one sentence in human words, and Retry. Announced as an alert; the field is marked aria-invalid." }
+      ],
+
+      flow: [
+        "A conversation is under way and the composer is docked under it, empty, placeholder showing.",
+        "The person focuses it: primary outline, a squared-up corner, the caret. Nothing moves.",
+        "They type. The placeholder goes; Send becomes available at a secondary emphasis.",
+        "The request wraps. The composer eases taller a line at a time, controls on the bottom line, up to its ceiling &mdash; then the field scrolls.",
+        "Halfway through they open +, change the model or its effort, or try voice. The text is exactly where they left it.",
+        "They pause: Send takes the primary fill. They send with the host&rsquo;s key or the button.",
+        "The send works: the request becomes the newest turn, and only now is the field cleared. The composer stays, empty and focused; while the agent answers, Send is Stop.",
+        "Or the send fails: nothing is cleared, the composer says what happened, and Retry sends the request as it now is &mdash; after any edits."
+      ],
+
+      statesList: [
+        { name: "Empty", desc: "<em>Trigger:</em> nothing typed. <em>Behaviour:</em> compact working composer, placeholder, Send unavailable. <em>Action:</em> focus it. <em>Next:</em> Focused." },
+        { name: "Focused", desc: "<em>Trigger:</em> click, tap or Tab. <em>Behaviour:</em> primary outline and a squared-up corner; the placeholder stays until the first keystroke; no layout jump. <em>Action:</em> type. <em>Next:</em> Typing." },
+        { name: "Typing", desc: "<em>Trigger:</em> text entered. <em>Behaviour:</em> the text is primary; Send available at secondary emphasis; other controls usable and harmless to the text. <em>Action:</em> type or edit. <em>Next:</em> Multi-line or Ready to send." },
+        { name: "Multi-line", desc: "<em>Trigger:</em> the request wraps or gets a new line. <em>Behaviour:</em> the composer eases taller up to its maximum, then scrolls inside; controls stay anchored. <em>Action:</em> continue, edit or send. <em>Next:</em> Ready to send or Empty." },
+        { name: "Ready to send", desc: "<em>Trigger:</em> valid content and a pause. <em>Behaviour:</em> Send takes the primary fill; still fully editable; nothing sends until asked. <em>Action:</em> send. <em>Next:</em> Submitted, or Error." },
+        { name: "Submitted", desc: "<em>Trigger:</em> the send went through. <em>Behaviour:</em> the request is the newest turn; the field clears only now; the composer stays, empty and focused; Stop while the agent answers. <em>Action:</em> write the next request. <em>Next:</em> Focused or Typing." },
+        { name: "Error / unavailable", desc: "<em>Trigger:</em> the send failed, the connection dropped, or the agent is unavailable. <em>Behaviour:</em> one human sentence and Retry inside the composer; the text kept and editable; no codes. Agent unavailable holds Send until Retry. <em>Action:</em> edit, then Retry. <em>Next:</em> Submitted." }
+      ],
+
+      variants: [
+        { name: "&#8984; / Ctrl + Enter to send", desc: "Enter makes a new line. For coding and writing tools where long requests are the norm. The send button carries the shortcut; no hint line is printed." },
+        { name: "Stacked", desc: "The field on its own line with the controls beneath &mdash; the default on narrow panels. On wider surfaces the composer is one row, model chip included." },
+        { name: "Tonal", desc: "A filled container instead of an outline, for hosts whose surfaces are already outlined. Focus and error still draw their edges." },
+        { name: "Compact", desc: "Less padding for dense tools and side panels. The kit&rsquo;s 48dp targets are unchanged." },
+        { name: "Single line", desc: "Supported, and flagged: follow-ups and edits are routinely longer than a line." }
+      ],
+      content: [
+        "Say what the field is for in the product&rsquo;s nouns: &ldquo;Ask about this project&hellip;&rdquo;, &ldquo;Reply to the customer&hellip;&rdquo;, &ldquo;Describe the change&hellip;&rdquo;.",
+        "Don&rsquo;t name the box: &ldquo;Type here&rdquo;, &ldquo;Enter prompt&rdquo; and &ldquo;Message AI&rdquo; tell nobody anything.",
+        "Write failures as what happened and what is kept: &ldquo;Couldn&rsquo;t send your request. It&rsquo;s still here &mdash; edit it or try again.&rdquo;",
+        "Word the three causes apart. A failed send can be retried now; offline waits for the connection; an unavailable agent waits for the agent &mdash; and never show a status code by default."
+      ],
+
+      a11y: [
+        "The field has its own accessible name; the placeholder is never the only label.",
+        "Send reports its state as disabled or enabled, and carries aria-keyshortcuts for the host&rsquo;s key. No hint line is printed under the composer.",
+        "A failure is announced as an alert, linked to the field with aria-describedby, and the field is marked aria-invalid. The text is not cleared.",
+        "Focus is visible as colour and shape; every control is a 48dp target, at either density.",
+        "Opening a menu, changing the model or effort, and entering or leaving voice all return focus to the field with the caret at the end of the text.",
+        "Multi-line editing works with the keyboard alone: Shift + Enter (or Enter, in &#8984; / Ctrl + Enter mode) for a new line.",
+        "Under reduced motion the growth and the error row appear without animating."
+      ],
+
+      donts: [
+        "Don&rsquo;t clear the field when a menu opens, a model changes or voice ends.",
+        "Don&rsquo;t clear it on failure. Nobody should have to rebuild a request because a network call did not return.",
+        "Don&rsquo;t make it one line only, and don&rsquo;t let it grow without limit.",
+        "Don&rsquo;t turn it into a toolbar with a small field in the middle. Stack the field above the controls when they crowd it.",
+        "Don&rsquo;t hard-code Enter. Follow the host, and say which key sends.",
+        "Don&rsquo;t make it look like the Initial CTA. It is the same composer, at its working size.",
+        "Don&rsquo;t expose backend processing states or error codes in it."
+      ],
+
+      metrics: [
+        "Sends followed within seconds by an edit of the same request &mdash; the sign of an accidental Enter.",
+        "Failed sends that are retried versus abandoned. Abandonment means the text or the way on was lost.",
+        "How often a secondary control is used mid-draft, and whether the draft survives it (it always should).",
+        "Share of requests that are multi-line, which is the case for the ceiling you chose."
+      ],
+
+      composed: ['Text Field', 'Icon Button', 'Button', 'Menu', 'Chip'],
+      related: [['initial-cta', 'Initial CTA'], ['model-selection', 'Model Selection'], ['voice-input', 'Voice Input'], ['attachments', 'Attachments'], ['suggested-prompts', 'Suggested Prompts']],
       pkg: 'nucleux-m3-open-input',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<form class=\"md-entry\">\n  <svg class=\"md-entry__glyph\"><!-- reserved glyph --></svg>\n  <input class=\"md-entry__input\" placeholder=\"Ask Aria about #4821\" />\n  <!-- send is present only when there is something to send;\n       while a reply is in flight it becomes stop -->\n  <button class=\"md-entry__send\" aria-label=\"Send\"><!-- ▶ --></button>\n</form>",
-      examples: [
-        {
-          id: 'composer-rest',
-          title: 'The composer, ready',
-          note: 'The placeholder names what this particular field is for. Send is absent until there is something to send, so an empty press is impossible rather than merely ignored.',
-          code:
-'<form class="md-entry">\n' +
-'  <svg class="md-entry__glyph mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'  <input class="md-entry__input md-body-medium" type="text"\n' +
-'         placeholder="Ask Aria about #4821" aria-label="Ask Aria" />\n' +
-'</form>'
-        }
-      ]
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- The shared prompt composer in its DEFAULT working state: docked under\n     the conversation, compact, persistent. Not a second component — the\n     Initial CTA is the same form with data-size=\"initial\". -->\n<div class=\"ax__dock\">\n  <form class=\"ax__composer\" data-entry=\"empty\" data-grow=\"smooth\">\n    <button class=\"ax__cbtn md-icon-button md-icon-button--standard\" type=\"button\"\n            aria-label=\"Add context\"><!-- add --></button>\n    <!-- A real label; the placeholder is only a suggestion. -->\n    <textarea class=\"ax__field\" rows=\"1\" data-max-lines=\"6\"\n              aria-label=\"Message Aria\"\n              placeholder=\"Ask about this project…\"></textarea>\n    <button class=\"ax__cbtn ax__cbtn--mic md-icon-button md-icon-button--standard\" type=\"button\"\n            aria-label=\"Speak instead of typing\"><!-- mic --></button>\n    <!-- Disabled until there is something to send; secondary while typing\n         (data-entry=\"typing\"), primary when ready (data-entry=\"ready\"). -->\n    <button class=\"ax__cbtn ax__cbtn--send md-icon-button md-icon-button--filled\" type=\"submit\"\n            aria-label=\"Send\" aria-keyshortcuts=\"Enter\" disabled><!-- send --></button>\n  </form>\n</div>\n\n<!-- A send that failed: the request stays, said in words, with Retry. -->\n<form class=\"ax__composer\" data-error=\"send\">\n  <div class=\"ax__err\" role=\"alert\" id=\"ax-err\">\n    <!-- error --><span class=\"ax__err__t\">Couldn’t send your request. It’s still here — edit it or try again.</span>\n    <button class=\"md-button md-button--text md-button--small ax__err__retry\" type=\"button\">Retry</button>\n  </div>\n  <!-- … the same controls, the text untouched, aria-invalid on the field … -->\n</form>\n\n<!-- While the agent answers: the field stays live; Send is Stop. -->\n<form class=\"ax__composer\" data-running=\"true\">\n  <!-- … -->\n  <button class=\"ax__cbtn ax__cbtn--send ax__cbtn--stop md-icon-button md-icon-button--filled\"\n          type=\"button\" aria-label=\"Stop\"><!-- stop --></button>\n</form>\n\n<script>\n  // <PromptComposer mode=\"working\" placeholder=\"Ask about this project…\"\n  //   maxLines={6} sendKey=\"enter\" onSend={send} error={sendError} onRetry={retry} />\n</script>"
     },
 
     /* ══════════════════════════════════════════════════════════
@@ -1310,28 +1482,137 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'Smart, context-aware preset actions to jumpstart engagement.',
-      intent: 'A short row of things worth asking about what is actually on screen — pressed to fill the composer, not to fire.',
-      what: 'A small set of ready-made requests offered beside the composer, derived from the current surface rather than from a fixed list.',
-      why: 'Most people do not fail to use an agent because they cannot type; they fail because they do not know what it is good for. Suggestions answer that in the only way that scales — by example, on the reader’s own material. A static row of three generic prompts answers nothing and becomes furniture within a week.',
-      when: 'When the composer is empty, and after an answer where an obvious next step exists. Not while the user is typing: the ideas they are offered should never compete with the sentence they are already writing.',
-      how: 'Derive them from what is on screen and say so in their wording. Cap at three or four — a wall of chips is a menu, and a menu is what this pattern exists to replace. Land the chosen one in the composer, editable, so it teaches phrasing rather than hiding it. Offer a refresh only if the set genuinely changes. Retire suggestions a user never takes.',
-      expressive: 'Outlined capsules on the neutral ground, deliberately NOT filled: they are offers, and the filled weight in this row belongs to send. They stagger in on emphasized easing at 40ms intervals when the system raises them, and the one that is pressed springs, because that transition is the reader&rsquo;s. Choosing a chip moves its text into the composer rather than replacing the view &mdash; one surface becoming another, which is the whole reason the set is anchored to the field it fills.',
-      composed: ['Chip', 'Button', 'Icon'],
-      related: [['open-input', 'Open Input'], ['templates', 'Templates'], ['example-gallery', 'Example Gallery']],
+      oneline: 'A few ready-made requests, drawn from what is on screen, that start a useful action without writing it from scratch.',
+      intent: 'Answer &ldquo;what should I ask?&rdquo; with three or four real actions from this workspace &mdash; and hand the chosen one to the composer as the person&rsquo;s own, editable text.',
+      what: 'A small, scannable set of contextual suggestions shown just below the shared composer before the conversation starts. Each is an action with a title (and, where there is room, one supporting line). Choosing one places its fuller prompt in the composer&rsquo;s field as ordinary text: nothing is sent, nothing is locked, and every composer control still works. The rest of the set stays in view, the chosen one marked, so the person can choose another instead &mdash; it replaces the untouched text. The set steps aside as soon as the person writes or edits, and is gone once the conversation has begun.',
+      why: 'An empty field asks people to know what the agent is good for before they have seen it do anything. A few specific starting points answer that by example, on the person&rsquo;s own material &mdash; but only if they are specific, few, and still the person&rsquo;s to adjust. Generic examples (&ldquo;Brainstorm ideas&rdquo;) are ignored within a week; suggestions that send on press ask a request nobody read; and a wall of cards above the field becomes a menu competing with the thing it was meant to lead into.',
+      when: 'On an empty or new conversation in a workspace with visible context worth asking about &mdash; a release plan, a research study, a design file, a ticket, a document &mdash; and in side panels opened next to that context. Wherever people hesitate over the first request.',
+      whenNot: 'Not as autocomplete (that completes what someone is already typing), not as proactive suggestions (the agent raising a next step because of something that happened), not as templates (structured scaffolds with fields), and not as a prompt library, marketplace or command menu. Not throughout a conversation: once it has started, the suggestions have done their job.',
+      how: 'Derive three or four suggestions from what the workspace visibly shows, and word each as an action naming it: &ldquo;Find unresolved decisions&rdquo;, not &ldquo;Ask a question&rdquo;. Give each a short title and the fuller prompt it stands for. Place the set directly below the composer, never wider than it and never taller than it needs to be. On selection, put the prompt in the composer&rsquo;s field with the caret at the end, move focus there, and announce it &mdash; do not send. From then on it is ordinary composer text: the person edits it, adds context, changes the model and sends it the normal way. Keep the other suggestions in view, with the chosen one marked, so they can switch before they have written anything; choosing another replaces the untouched text. Withdraw the set as soon as they type or edit (a suggestion must never overwrite their words), bring it back if they clear the field, and remove it for good once the first request is sent.',
+      expressive: 'Quiet on purpose: the composer is level one, the suggestions level two. Suggestion chips are the Nucleux <code>Md3Chip</code> (<code>@nucleux/md3-chip</code>, suggestion variant): outlined (or elevated), with an 18dp Material Symbol in primary; hover is a solid surface fill that keeps the stroke, and focus and press are the chip&rsquo;s state layers. The one expressive moment is the hand-over: the chosen suggestion takes the secondary-container fill, and its title travels into the field over 420&nbsp;ms on the emphasized-decelerate curve while the field&rsquo;s own text fades in under it. When the person starts writing, the set collapses over 300&nbsp;ms and leaves the tab order. Under reduced motion the text is simply there and the set simply goes.',
+
+      precedent: [
+        { name: "ChatGPT",
+          url: "https://chatgpt.com/",
+          what: "Starter suggestions on the empty home screen that disappear once a conversation begins &mdash; the entry aid is never kept as navigation." },
+        { name: "Claude",
+          url: "https://claude.ai/",
+          what: "On a new chat, a short row of starting points beneath the composer; choosing one puts an editable request in the field rather than sending it." },
+        { name: "Gemini in Google Workspace",
+          url: "https://support.google.com/docs/answer/14355406",
+          what: "The side panel offers suggested prompts next to the open document: <b>select a suggestion, replace the example text, then press Enter</b>. The suggestion is a starting point that is edited before it is sent." },
+        { name: "Microsoft 365 Copilot",
+          url: "https://support.microsoft.com/help/5029876",
+          what: "Suggested prompts presented as things to adjust &mdash; &ldquo;copy and paste these prompts or adjust them to fit your needs&rdquo; &mdash; rather than as finished requests." },
+        { name: "Perplexity",
+          url: "https://www.perplexity.ai/",
+          what: "A clear contrast: its related questions under an answer are <b>follow-ups that search at once</b>. That is the proactive-suggestion pattern, and it is why this one places rather than sends." },
+        { name: "Shape of AI &mdash; Suggestions",
+          url: "https://shapeof.ai/patterns/suggestions",
+          what: "Contextual over static; &ldquo;three to six relevant options&rdquo;; and the Typeform failure &mdash; suggestions shown before the user has given any context &ldquo;are likely to be irrelevant&rdquo;." },
+        { name: "MUI X Chat &amp; assistant-ui",
+          url: "https://mui.com/x/react-chat/behavior/suggestions/",
+          what: "Two component libraries converging on the same default: a suggestion <b>pre-fills the composer for review</b>, with sending on press an opt-in; shown while the thread is empty." }
+      ],
+
+      anatomy: [
+        { part: "SuggestedPrompts",
+          role: "The set: a section directly below the shared composer, no wider than it, named for assistive technology (no visible heading). Data-driven &mdash; it renders whatever suggestions the host derives from the workspace." },
+        { part: "Set name",
+          role: "Says where the suggestions come from (&ldquo;Suggested for the September release&rdquo;). Not drawn: it is the set&rsquo;s accessible name (aria-label), so the chips speak for themselves on screen." },
+        { part: "Suggestion",
+          role: "One button: an 18dp icon (optional), a short action title, and &mdash; in the list or card layout &mdash; one supporting line saying what will happen. A Material suggestion chip, list row or compact outlined card." },
+        { part: "Prompt",
+          role: "The fuller request a suggestion stands for (&ldquo;Find the unresolved decisions blocking the September release.&rdquo;). What lands in the composer; never shown as a locked preset." },
+        { part: "PromptComposer · working",
+          role: "The shared Open Input composer, unchanged. The suggestion only ever puts words in its field; sending, context, model and voice are all the composer&rsquo;s own." },
+        { part: "Provenance (optional)",
+          role: "One quiet phrase under the composer &mdash; &ldquo;Started from a suggestion&rdquo;. Off by default. There is no key-hint line under this composer." },
+        { part: "Announcement",
+          role: "A polite live-region message when a prompt is placed: what was placed, and that it can be edited or sent." }
+      ],
+
+      flow: [
+        "A workspace with context is open, and the conversation has not started. Three suggestions sit below the composer, each naming something on screen.",
+        "The person ignores them and types: the set collapses and leaves the tab order. Clear the field, and it comes back.",
+        "Or they choose one &mdash; click, tap, Enter or Space. It takes the selected fill and its text travels into the composer. Nothing is sent.",
+        "The prompt is in the field as ordinary text, caret at the end, focus there, and a screen reader hears what was placed. The other suggestions are still there, the chosen one marked.",
+        "They change their mind and choose another: it replaces the untouched text, and the mark moves with it.",
+        "They edit it &mdash; &ldquo;&hellip; and group them by owner.&rdquo; It is simply their request now, with nothing marking it as a preset.",
+        "They add context, change the model, or use voice: the text is untouched.",
+        "They send it the normal way. It is the first turn, the agent answers, and the suggestions do not come back."
+      ],
+
+      statesList: [
+        { name: "Suggestions available", desc: "<em>Trigger:</em> the workspace has visible context and nothing is typed. <em>Behaviour:</em> three or four action suggestions below the composer; the composer works on its own. <em>Action:</em> choose one, or type. <em>Next:</em> Suggestion selected, or Prompt edited." },
+        { name: "Suggestion selected", desc: "<em>Trigger:</em> a suggestion is activated (click, tap, Enter, Space). <em>Behaviour:</em> it takes the secondary-container fill; its text travels into the composer; focus moves to the field; the placement is announced; nothing is sent. <em>Action:</em> let it land. <em>Next:</em> Prompt placed in composer." },
+        { name: "Prompt placed in composer", desc: "<em>Trigger:</em> the chosen prompt has landed. <em>Behaviour:</em> ordinary, editable composer text with the caret at the end; Send ready; the set stays, the chosen one marked, so another can be chosen &mdash; it replaces the untouched text. <em>Action:</em> edit, choose another, add context, change the model, or send. <em>Next:</em> Prompt edited, Suggestion selected, or Conversation started." },
+        { name: "Prompt edited", desc: "<em>Trigger:</em> the person changes the placed text &mdash; or writes their own instead. <em>Behaviour:</em> it is their request; no preset styling or lock; the set steps aside so nothing can overwrite it; clearing the field brings it back. <em>Action:</em> send. <em>Next:</em> Conversation started." },
+        { name: "Conversation started", desc: "<em>Trigger:</em> the request was sent. <em>Behaviour:</em> it is the first turn and the agent answers; the suggestions do not return; the composer stays, empty and ready. <em>Action:</em> continue in the composer." }
+      ],
+
+      variants: [
+        { name: "Chips", desc: "The default. Nucleux Md3Chip suggestion chips, title only &mdash; the lightest weight, for wide workspaces and side panels alike." },
+        { name: "List", desc: "Material list rows with one supporting line each, for suggestions whose outcome needs a sentence. Still no containers." },
+        { name: "Compact cards", desc: "Outlined cards, two to a row where there is room. The heaviest variant: flagged when the set grows taller than the composer can hold its own against." },
+        { name: "Stay, quietly", desc: "After a choice, the others remain as small plain chips under &ldquo;Or start from&rdquo; instead of the full set. Picking one swaps the untouched text; they go the moment the person types." },
+        { name: "Step aside", desc: "After a choice, the whole set collapses at once, for surfaces too tight to keep it. The person can still clear the field to bring it back." },
+        { name: "Scroll sideways", desc: "On narrow panels, chips on one row that scrolls, keeping the composer close to the conversation. The default wraps." }
+      ],
+
+      content: [
+        "Write each title as an action on something visible: &ldquo;Find unresolved decisions&rdquo;, &ldquo;Compare customer themes&rdquo;, &ldquo;Suggest missing states&rdquo;.",
+        "Keep titles to a few words; the prompt carries the detail. Keep a supporting line to one line &mdash; what will happen.",
+        "Make each one lead somewhere different. Three variations of &ldquo;summarize&rdquo; are one suggestion.",
+        "Avoid generic prompts &mdash; &ldquo;Write something&rdquo;, &ldquo;Brainstorm ideas&rdquo;, &ldquo;Help me&rdquo; &mdash; unless the product genuinely has nothing more specific to offer.",
+        "Name the set by its source for screen readers (&ldquo;Suggested for the September release&rdquo;), not &ldquo;Try asking:&rdquo;. No visible heading: the chips are self-explanatory under the composer.",
+        "Never base a suggestion on something the person cannot see or would not expect the product to know."
+      ],
+
+      a11y: [
+        "The set is a section named with aria-label (no visible heading); each suggestion is a native button, so Tab, Enter and Space all work. Arrow keys, Home and End also move between suggestions.",
+        "Each suggestion&rsquo;s accessible name is its title; the supporting line and one shared sentence (&ldquo;Places the request in the message field, to edit before you send&rdquo;) are its description.",
+        "Choosing one moves focus to the composer&rsquo;s field with the caret at the end, and a polite live region announces what was placed.",
+        "The selected emphasis is a change of fill as well as colour, and the result is text in the field, so nothing relies on colour alone.",
+        "When the set steps aside it leaves the tab order and the accessibility tree, not just the screen.",
+        "Every suggestion is a 48dp target at either density; focus is the kit&rsquo;s visible ring.",
+        "Under reduced motion the hand-over and the collapse happen without animating."
+      ],
+
+      donts: [
+        "Don&rsquo;t send a suggestion when it is pressed. Place it, and let the person send.",
+        "Don&rsquo;t lock it: once placed, it is ordinary composer text.",
+        "Don&rsquo;t replace or hide the composer behind the suggestions. It works on its own at every moment.",
+        "Don&rsquo;t show more than four, or a catalogue, marketplace or menu of prompts.",
+        "Don&rsquo;t keep them through the conversation. They are a way in, not navigation.",
+        "Don&rsquo;t overwrite what someone has typed with a suggestion.",
+        "Don&rsquo;t build a second composer or send path for suggestions.",
+        "Don&rsquo;t confuse this with autocomplete, proactive suggestions or templates."
+      ],
+
+      metrics: [
+        "Share of first requests that start from a suggestion &mdash; and how many of those are edited before sending (edits mean the suggestion was a starting point, as intended).",
+        "Suggestions chosen and then cleared, which means the title promised something the prompt did not.",
+        "Which suggestions are never chosen: the candidates for replacing with something more specific.",
+        "Time from opening an empty workspace to the first request, with and without suggestions."
+      ],
+
+      composed: ['Chip', 'List', 'Card', 'Text Field', 'Icon Button'],
+      related: [['open-input', 'Open Input'], ['initial-cta', 'Initial CTA'], ['autocomplete', 'Autocomplete'], ['proactive', 'Proactive Suggestions'], ['templates', 'Templates']],
       pkg: 'nucleux-m3-suggested-prompts',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<div class=\"md-suggests\" role=\"group\" aria-label=\"Suggested questions\">\n  <button class=\"md-suggest\">What is this ticket about?</button>\n  <button class=\"md-suggest\">Where did Q2 renewals land?</button>\n  <button class=\"md-suggest\">Draft a reply to Dana</button>\n</div>\n<!-- pressing one fills the composer; it does not send -->",
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/components.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n<!-- Md3Chip utilities: Tailwind built from the @nucleux/tokens preset -->\n<link rel=\"stylesheet\" href=\"nucleux-md3.css\" />\n\n<!-- The set, directly below the shared composer. Its content is data the\n     host derives from the workspace: { id, title, prompt, description, icon, category }. -->\n<section class=\"md-sp\" data-layout=\"chips\" data-prominence=\"full\" aria-label=\"Suggested for the September release\">\n  <div class=\"md-sp__in\">\n    <span class=\"md-sp__how\" id=\"sp-how\">Places the request in the message field, to edit before you send.</span>\n    <ul class=\"md-sp__set\" role=\"list\">\n      <li class=\"md-sp__cell\">\n        <button class=\"md-sp__item md3-chip md-sp__chip … border border-md-outline-variant bg-transparent text-md-on-surface-variant\" type=\"button\"\n                data-sp-id=\"decisions\" aria-labelledby=\"sp-t-decisions\" aria-describedby=\"sp-how\">\n          <!-- help icon, 18dp -->\n          <span class=\"md-sp__title\" id=\"sp-t-decisions\">Find unresolved decisions</span>\n        </button>\n      </li>\n      <!-- … two or three more … -->\n    </ul>\n  </div>\n</section>\n\n<!-- The SAME working composer as Open Input. Choosing a suggestion puts its\n     prompt in this field, as ordinary text. Nothing is sent. -->\n<form class=\"ax__composer\" data-entry=\"ready\" data-layout=\"stack\">\n  <textarea class=\"ax__field\" aria-label=\"Message Aria\"\n            placeholder=\"Ask about this release…\">Find the unresolved decisions blocking the September release.</textarea>\n  <!-- + , model, voice, send: unchanged -->\n</form>\n\n<script>\n  // import { Md3Chip } from \"@nucleux/md3-chip\";   // each suggestion: <Md3Chip variant=\"suggestion\" icon={<MaterialSymbol … />}>\n  // <SuggestedPrompts\n  //   suggestions={fromWorkspace(release)}          // 3–4, each explainable from the screen\n  //   label=\"Suggested for the September release\"\n  //   onSelect={s => composer.place(s.prompt)}      // place, focus, announce — never send\n  //   hidden={composer.hasText || thread.started}   // step aside once the person writes\n  // />\n  // <PromptComposer mode=\"working\" … />\n</script>",
       examples: [
         {
-          id: 'suggests-row',
-          title: 'Three, about what is on screen',
-          note: 'Each one names the ticket’s own material. Pressing one fills the composer rather than firing it, so the reader can see and change the request they are about to make.',
+          id: 'sp-chips',
+          title: 'Three, from what is on screen',
+          note: 'Each names something the release plan shows. Pressing one places the fuller prompt in the composer, unsent and editable.',
           code:
-'<div class="md-suggests" role="group" aria-label="Suggested questions">\n' +
-'  <button class="md-suggest md-body-small" type="button">What is this ticket about?</button>\n' +
-'  <button class="md-suggest md-body-small" type="button">Where did Q2 renewals land?</button>\n' +
-'  <button class="md-suggest md-body-small" type="button">Draft a reply to Dana</button>\n' +
-'</div>'
+'<!-- Md3Chip (@nucleux/md3-chip), variant="suggestion": the package\'s static markup -->\n' +
+'<ul class="md-sp__set" role="list" style="display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0">\n' +
+'  <li><button class="md3-chip md-sp__chip relative inline-flex h-8 items-center gap-1.5 overflow-hidden rounded-md-sm px-3 text-sm font-medium transition-colors [&_svg]:size-[18px] outline-none focus-visible:ring-2 focus-visible:ring-md-primary disabled:pointer-events-none disabled:opacity-[0.38] before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[\'\'] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12] border border-md-outline-variant bg-transparent text-md-on-surface-variant" type="button"><span class="relative">Summarize release risks</span></button></li>\n' +
+'  <li><button class="md3-chip md-sp__chip relative inline-flex h-8 items-center gap-1.5 overflow-hidden rounded-md-sm px-3 text-sm font-medium transition-colors [&_svg]:size-[18px] outline-none focus-visible:ring-2 focus-visible:ring-md-primary disabled:pointer-events-none disabled:opacity-[0.38] before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[\'\'] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12] border border-md-outline-variant bg-transparent text-md-on-surface-variant" type="button"><span class="relative">Find unresolved decisions</span></button></li>\n' +
+'  <li><button class="md3-chip md-sp__chip relative inline-flex h-8 items-center gap-1.5 overflow-hidden rounded-md-sm px-3 text-sm font-medium transition-colors [&_svg]:size-[18px] outline-none focus-visible:ring-2 focus-visible:ring-md-primary disabled:pointer-events-none disabled:opacity-[0.38] before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[\'\'] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12] border border-md-outline-variant bg-transparent text-md-on-surface-variant" type="button"><span class="relative">Draft a stakeholder update</span></button></li>\n' +
+'</ul>'
         }
       ]
     },
@@ -1346,78 +1627,129 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'Visual symbols that signal the AI’s presence on a screen.',
-      intent: 'The reserved glyph used as a door: the smallest possible entry point, placed where the work is, and never used for anything that is not the agent.',
-      what: 'The agent’s glyph deployed as an affordance — in a toolbar, at the end of a field, on a row in a menu — marking the places on an existing screen where the agent can be reached.',
-      why: 'Most agentic capability is added to a product that already exists, and it cannot all live in one composer. The glyph is how a person finds it in situ. That only works while the mark means exactly one thing: the moment it is spent on “new” or “premium”, every genuine use stops being legible, and the cost is paid on every screen at once.',
-      when: 'Wherever the agent can act on something specific — a field it can fill, a thread it can summarise, a record it can explain. Not as decoration on a feature that happens to be recent.',
-      how: 'One glyph, one meaning, no variants. Pair it with a word anywhere a person might press it by mistake; icon-only is for dense surfaces where the neighbours are also icon-only. Give it an accessible name that says what it does, not what it is. Audit the whole screen periodically — if the mark appears somewhere no model runs, the system is already broken.',
-      expressive: 'The glyph is the one shape the product reserves, and it carries primary at tone 60 wherever it is genuinely the agent &mdash; which makes an audit trivial: anything violet that is not the agent is a bug. It never spins. A hover lifts the state layer only; a press springs the container by 4%; while the agent is working the glyph rotates its hue toward tertiary rather than rotating in space, because a spinner says &ldquo;wait&rdquo; and a hue shift says &ldquo;thinking&rdquo;. In an icon-only row the label is carried by a tooltip, never by the glyph doing extra work.',
-      composed: ['Icon', 'Icon Button', 'Tooltip', 'Menu'],
-      related: [['iconography', 'Iconography'], ['color', 'Color'], ['proactive', 'Proactive Suggestions']],
-      pkg: 'nucleux-m3-ai-icons',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<!-- in a toolbar, with its word -->\n<button class=\"md-button md-button--filled md-button--sm\">\n  <svg class=\"md-glyph\"><!-- reserved glyph --></svg>\n  Draft with Aria\n</button>\n\n<!-- at the end of a field, where the agent can fill it -->\n<button class=\"md-field-glyph\" aria-label=\"Draft this with Aria\">\n  <svg class=\"md-glyph\"><!-- reserved glyph --></svg>\n</button>",
-      examples: [
-        {
-          id: 'icons-inline',
-          title: 'The glyph where the work is',
-          note: 'At the end of the field it can fill, with an accessible name that says what pressing it does. The word is carried by the label in dense rows and by a tooltip where there is no room for one.',
-          code:
-'<label class="md-field">\n' +
-'  <span class="md-field__label md-body-small">Reply to Dana</span>\n' +
-'  <span class="md-field__row">\n' +
-'    <input class="md-field__input md-body-medium" type="text" />\n' +
-'    <button class="md-field-glyph" type="button" aria-label="Draft this with Aria">\n' +
-'      <svg class="md-glyph mi" viewBox="0 -960 960 960" aria-hidden="true">\n' +
-'        <path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/>\n' +
-'      </svg>\n' +
-'    </button>\n' +
-'  </span>\n' +
-'</label>'
-        }
-      ]
-    },
+      oneline: 'A small, stable icon vocabulary that tells people where AI is involved and what kind of thing to expect.',
+      intent: 'Give each AI meaning its own mark &mdash; run AI, made by AI, the agent is working, the agent used a tool &mdash; and keep each mark for that meaning only, everywhere in the product.',
+      what: 'Four semantic roles, each drawn with one approved Material Symbol: <b>AI action</b> on the controls that run AI, <b>Generated with AI</b> on content AI wrote or changed, <b>Agent working</b> beside a status while the agent runs, and <b>Tool use</b> on the lines that say what the agent used. Every mark travels with words &mdash; a label, a tooltip or an accessible name.',
+      why: 'People scan a screen for two questions before they act: <em>which of these will run AI?</em> and <em>which of this did AI write?</em> One sparkle on everything answers neither. When the action, the provenance and the activity each have a shape of their own, the answer is visible at a glance, the habit transfers from one screen to the next, and the generated-content mark keeps its value as a signal of where to check.',
+      when: 'Wherever a product mixes AI capability with ordinary controls and content: toolbars and menus with AI actions, fields the agent can fill, documents and records holding AI-written text, and any surface where the agent works in the background or reaches into other systems.',
+      whenNot: 'Not for &ldquo;new&rdquo;, &ldquo;premium&rdquo; or &ldquo;beta&rdquo; &mdash; those get words. Not as decoration on a feature that happens to be recent. Not as the agent&rsquo;s identity (that is the avatar and name), and not as a substitute for a label where a mistaken press matters.',
+      how: 'Choose one approved glyph per role, once, for the whole product; the approved lists do not overlap, so two meanings cannot share a mark. Put the AI-action mark only on controls that actually invoke a model, with a verb (&ldquo;Rewrite&rdquo;) or, when icon-only, a tooltip and accessible name that say &ldquo;&hellip; with AI&rdquo;. Mark AI-written content with the generated mark and its label, and let the mark explain itself. Show the working mark only while the agent is working, with a status line; name each tool the agent used with the tool mark.',
+      expressive: 'One mark moves, and only while it means &ldquo;now&rdquo;: the working mark turns steadily beside its status line &mdash; no pulse, no shimmer, no sparkle burst. The AI-action mark carries the emphasis colour (primary by default) in every control, so it differs from ordinary controls in colour <em>and</em> shape; the generated mark sits in an outlined Md3Chip with its label. Status and tool lines rise in over 300&nbsp;ms on emphasized-decelerate; rewritten text fades in. Hover and focus are the components&rsquo; own 8% / 12% state layers; tooltips fade in 150&nbsp;ms. Under reduced motion nothing turns or rises: the words carry the state.',
 
-    /* ══════════════════════════════════════════════════════════
-       SEARCHING & FILTERING
-       ══════════════════════════════════════════════════════════ */
-    'search-filter': {
-      id: 'search-filter',
-      name: 'Searching & Filtering',
-      stage: 'Initially',
-      stageId: 'initially',
-      sub: 'Entry Points',
-      subId: 'entry-points',
-      oneline: 'Natural-language search replacing click-driven filters.',
-      intent: 'Ask for the set you want in words, and see the filters it was understood as — as controls you can correct, not a sentence you have to trust.',
-      what: 'A search field that takes a plain-language description of a set and turns it into the product’s own filters, shown afterwards as removable chips over the result.',
-      why: 'Filter panels are precise and unusable; natural language is usable and imprecise. The pattern is not one replacing the other — it is the translation being made visible. A result list with no statement of what was applied cannot be trusted or corrected, and the first wrong answer costs the feature its user.',
-      when: 'On any list, table or library big enough that people give up on the filter panel. Especially where the useful query spans two or three dimensions at once, which is exactly where click-driven filtering collapses.',
-      how: 'Show the interpretation as real filter chips, each removable, and let a wrong one be deleted without retyping the sentence. Say what was ignored — an unparsed clause silently dropped is the failure mode people never forgive. Keep the manual controls reachable; this is an addition, not a replacement. Show the result count before the results, so a mistake is obvious in one glance.',
-      expressive: 'The query field is a capsule; the chips it produces are 8px &mdash; sharp, because they are data the reader can verify, and the shape rule says data is not capsule-shaped. Nothing else on the surface is 8px, which is what makes the shape do the work: in this palette Material&rsquo;s tertiary is already spent on Caveat&rsquo;s caution tone, and a second meaning on the same hue is precisely the failure the Iconography page argues against &mdash; so evidence is carried by edge and corner rather than by colour. They arrive on emphasized easing, staggered, since the system produced them; removing one springs, since the reader did. The result count updates in place rather than the list flashing, so a correction reads as a refinement rather than a new search.',
-      composed: ['Text Field', 'Chip', 'List', 'Badge'],
-      related: [['open-input', 'Open Input'], ['autocomplete', 'Autocomplete'], ['proactive', 'Proactive Suggestions']],
-      pkg: 'nucleux-m3-search-filter',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<form class=\"md-nlsearch\">\n  <input class=\"md-nlsearch__input\"\n         placeholder=\"Open enterprise tickets from this week\" />\n</form>\n\n<!-- what it was understood as, as controls -->\n<div class=\"md-applied\" role=\"group\" aria-label=\"Filters applied\">\n  <span class=\"md-applied__k\">Understood as</span>\n  <span class=\"md-fchip\">status: open<button aria-label=\"Remove\">&times;</button></span>\n  <span class=\"md-fchip\">tier: enterprise<button aria-label=\"Remove\">&times;</button></span>\n  <span class=\"md-fchip\">opened: last 7 days<button aria-label=\"Remove\">&times;</button></span>\n</div>",
+      precedent: [
+        { name: 'Cloudscape (AWS) &mdash; Gen-AI iconography',
+          url: 'https://cloudscape.design/gen-ai/foundation/iconography/',
+          what: 'The sparkle is &ldquo;reserved to communicate generative AI-powered action triggers only&rdquo;; separate logos or avatars identify individual models; &ldquo;avoid introducing unnecessary icons that reduce the impact and recognition of the sparkle&rdquo;; fill it below 16px.' },
+        { name: 'IBM Carbon &mdash; AI label',
+          url: 'https://carbondesignsystem.com/components/ai-label/usage/',
+          what: 'A separate mark for <b>AI-generated content</b>: it opens an explanation, and turns into Revert when a person edits the content. &ldquo;Don&rsquo;t use the AI label as a trigger for AI actions&rdquo; and &ldquo;don&rsquo;t use it as decoration&rdquo;.' },
+        { name: 'Red Hat / PatternFly &mdash; AI iconography',
+          url: 'https://www.patternfly.org/ai/guidelines/iconography',
+          what: 'Two families: <b>information</b> icons (&ldquo;generated by AI&rdquo;) and <b>action</b> icons (edit, search, filter with AI). AI icons are &ldquo;always paired with text &hellip; &lsquo;&hellip;with AI&rsquo;&rdquo;; don&rsquo;t use sparkles to mean &ldquo;new&rdquo;; don&rsquo;t use brains or robots.' },
+        { name: 'Shape of AI &mdash; Iconography',
+          url: 'https://www.shapeof.ai/patterns/iconography',
+          what: 'The vocabulary is still converging (sparkles, wands, pencil-plus-sparkle); overused sparkles &ldquo;lose meaning&rdquo;; pair icons with text where clarity matters and stay consistent within a product.' },
+        { name: 'Gemini, Claude &amp; ChatGPT',
+          url: 'https://gemini.google.com/',
+          what: 'Activity is shown while the model works and only then &mdash; a turning or animated mark beside a status &mdash; and tool use is named in its own line (&ldquo;Searched the web&rdquo;, &ldquo;Used &hellip;&rdquo;), separate from the answer.' },
+        { name: 'Microsoft 365 Copilot',
+          url: 'https://support.microsoft.com/copilot',
+          what: 'AI-written content is labelled where it lands (&ldquo;AI-generated content may be incorrect&rdquo;), distinct from the controls that invoke Copilot.' }
+      ],
+
+      anatomy: [
+        { part: 'AI action mark', role: 'On controls that run AI on something specific. Shine star (<code>star_shine</code>) by default; Wand (<code>wand_shine</code>) approved. Carries the emphasis colour; never on content or decoration.' },
+        { part: 'Generated-content mark', role: 'On content AI wrote or changed, in an outlined Md3Chip with its label (&ldquo;Generated with AI&rdquo;). Info bubble (<code>chat_info</code>) by default; Inserted (<code>import_spark</code>) approved. Pressing it explains what happened and offers Undo.' },
+        { part: 'Working mark', role: 'Beside a status line while the agent is running (&ldquo;Aria is rewriting&hellip;&rdquo;), with Stop. <code>progress_activity</code>, turning. Gone the moment the work ends.' },
+        { part: 'Tool-use mark', role: 'Leads the line naming a tool or system the agent used (&ldquo;Looked up 2 tickets in Helpdesk&rdquo;). Wrench (<code>build</code>) by default; Tools (<code>handyman</code>) approved.' },
+        { part: 'Words', role: 'A verb label, a tooltip plus accessible name (&ldquo;Summarize with AI&rdquo;), a status, or a provenance label. The mark never carries meaning alone.' },
+        { part: 'Md3 components', role: 'Md3Button (tonal) and Md3IconButton for actions, Md3Tooltip (plain, and rich for the explanation), Md3Chip for the generated mark, Md3TextField and Md3Card around them &mdash; all from the Nucleux MCP, with Material Symbols in place of the packages&rsquo; Lucide icons.' }
+      ],
+
+      flow: [
+        'The editor is open. Link and Attach carry ordinary icons; Rewrite and Summarize carry the AI-action mark &mdash; Rewrite with its word, Summarize as an icon button.',
+        'The pointer rests on Summarize: its tooltip says &ldquo;Summarize with AI&rdquo;. Tabbing to it shows the same tooltip with a focus ring; Escape hides it.',
+        'They press Rewrite. The actions disable, the working mark turns beside &ldquo;Aria is rewriting&hellip;&rdquo;, and a tool line names what was checked.',
+        'The rewritten text arrives with the generated mark and its label &mdash; a different shape from the action that produced it.',
+        'They press the generated mark: it says what Aria did, and offers Undo.',
+        'They clear the draft: the AI actions dim but stay focusable, and their tooltip says why &mdash; &ldquo;Write something first&rdquo;.'
+      ],
+
+      statesList: [
+        { name: 'Default', desc: '<em>Trigger:</em> a surface with AI actions, at rest. <em>Behaviour:</em> AI actions carry the action mark in the emphasis colour; ordinary controls carry ordinary icons. <em>Action:</em> point, tab or press. <em>Next:</em> Hover, Focus, Pressed.' },
+        { name: 'Hover', desc: '<em>Trigger:</em> a pointer rests on an AI action. <em>Behaviour:</em> the 8% state layer; an icon-only action shows its tooltip. <em>Action:</em> move away or press. <em>Next:</em> Default or Pressed.' },
+        { name: 'Focus', desc: '<em>Trigger:</em> keyboard focus on an AI action. <em>Behaviour:</em> the visible focus ring and 12% layer; the tooltip shows on focus too; Escape hides it. <em>Action:</em> Enter or Space. <em>Next:</em> Pressed or Default.' },
+        { name: 'Pressed', desc: '<em>Trigger:</em> an AI action is pressed. <em>Behaviour:</em> the 12% pressed layer. <em>Action:</em> release. <em>Next:</em> Agent working.' },
+        { name: 'Agent working', desc: '<em>Trigger:</em> an AI action was released. <em>Behaviour:</em> the working mark turns beside a status line; tool lines name what the agent used; the actions disable; the content stays readable. <em>Action:</em> wait or Stop. <em>Next:</em> Generated content, or Default when stopped.' },
+        { name: 'Generated content', desc: '<em>Trigger:</em> the agent finished. <em>Behaviour:</em> the result carries the generated mark and label; pressing it explains and offers Undo. <em>Action:</em> keep, edit or Undo. <em>Next:</em> Default.' },
+        { name: 'Disabled', desc: '<em>Trigger:</em> nothing to act on, or the agent is busy. <em>Behaviour:</em> AI actions at 38%, still focusable, with a tooltip saying why. <em>Action:</em> provide something to act on. <em>Next:</em> Default.' }
+      ],
+
+      variants: [
+        { name: 'Icon and word', desc: 'The default for an AI action: the mark leads a verb. Wherever a mistaken press would matter.' },
+        { name: 'Icon with tooltip', desc: 'Icon-only for dense toolbars and inline field actions; the tooltip and accessible name say what happens and that AI does it.' },
+        { name: 'Outlined / Filled', desc: 'Material Symbols Outlined by default; Filled for 16px and below, where outlined marks lose their inner detail.' },
+        { name: 'Primary / Neutral emphasis', desc: 'Primary by default. Neutral (on-surface-variant) for very dense surfaces &mdash; the shapes still differ, so nothing rests on colour.' },
+        { name: 'Approved glyphs', desc: 'One alternative per role (Wand for actions, Inserted for generated content, Tools for tool use), chosen once per product. No uploads, no free choice of glyph.' }
+      ],
+
+      content: [
+        'Label AI actions with the verb for what happens &mdash; &ldquo;Rewrite&rdquo;, &ldquo;Summarize account&rdquo;, &ldquo;Suggest a next step&rdquo; &mdash; not &ldquo;AI&rdquo;, &ldquo;Magic&rdquo; or &ldquo;Ask AI&rdquo;.',
+        'Name icon-only AI actions &ldquo;&hellip; with AI&rdquo; (or with the agent&rsquo;s name), so the mark and the name agree.',
+        'Label generated content plainly: &ldquo;Generated with AI&rdquo;, &ldquo;Summarized by Aria&rdquo;. Say what was used when it matters.',
+        'Write working status as what the agent is doing now: &ldquo;Aria is reading the account&hellip;&rdquo;, not &ldquo;Thinking&hellip;&rdquo;.',
+        'Name tools by the system and the act: &ldquo;Looked up 2 tickets in Helpdesk&rdquo;.',
+        'Mark new features with the word &ldquo;New&rdquo;, never with an AI mark.'
+      ],
+
+      a11y: [
+        'Marks are decorative (aria-hidden) inside controls and labels; the meaning is in the label, the accessible name or the status text.',
+        'Every icon-only AI action has an accessible name and a tooltip referenced by aria-describedby; tooltips show on hover and on keyboard focus, and Escape hides them without moving focus.',
+        'Disabled AI actions use aria-disabled, so they stay focusable and can say why they are unavailable.',
+        'The working status is a polite live region; starting, finishing and stopping are announced.',
+        'The generated mark is a button with aria-expanded; its explanation is a rich tooltip that holds its own actions (Undo).',
+        'Each role has its own shape, so no meaning relies on colour; marks are 16&ndash;24px with 40&ndash;48px targets around them.',
+        'Under reduced motion the working mark does not turn and lines do not rise.'
+      ],
+
+      donts: [
+        'Don&rsquo;t use one sparkle for every AI meaning.',
+        'Don&rsquo;t put the AI-action mark on content, on &ldquo;new&rdquo;, &ldquo;premium&rdquo; or &ldquo;beta&rdquo;, or on controls where no model runs.',
+        'Don&rsquo;t let a mark carry meaning alone: no unlabelled, untooltipped AI icons.',
+        'Don&rsquo;t animate the action or generated marks. Only the working mark moves, and only while working.',
+        'Don&rsquo;t let teams pick or upload their own AI glyphs per screen; choose once, product-wide.',
+        'Don&rsquo;t use robots or brains for AI features; they promise a persona the feature isn&rsquo;t.'
+      ],
+
+      metrics: [
+        'Audit: count AI marks on a screen that are not on an AI action, AI content, agent activity or a tool line. The target is zero.',
+        'First-use error rate on AI actions (pressed expecting something else), with and without the word.',
+        'Share of generated-content marks opened: low means it is ignored; very high may mean people do not trust what is unmarked.',
+        'In usability tests: can people say, for each control, whether it runs AI, and for each block, whether AI wrote it?'
+      ],
+
+      composed: ['Md3Button', 'Md3IconButton', 'Md3Tooltip', 'Md3Chip', 'Md3TextField', 'Md3Card'],
+      related: [['iconography', 'Iconography'], ['proactive', 'Proactive Suggestions'], ['suggested-prompts', 'Suggested Prompts']],
+      pkg: 'nucleux-m3-ai-icons',
+      usage: "<!-- Nucleux Md3 components + the Tailwind build from @nucleux/tokens -->\n<link rel=\"stylesheet\" href=\"nucleux-md3.css\" />\n\n<!-- 1 · AI action: the action mark, with its verb -->\n<button type=\"button\" class=\"md3-btn … bg-md-secondary-container text-md-on-secondary-container\">\n  <span class=\"relative shrink-0\"><svg class=\"md-aii md-aii--action mi\"><!-- star_shine --></svg></span>\n  <span class=\"relative\">Rewrite</span>\n</button>\n\n<!-- 2 · Icon-only AI action: name + tooltip say \"with AI\" -->\n<span class=\"md3-tip relative inline-flex\">\n  <button type=\"button\" class=\"md3-iconbtn …\" aria-label=\"Summarize with AI\" aria-describedby=\"tip-sum\">…</button>\n  <span role=\"tooltip\" id=\"tip-sum\" class=\"md3-tip__pop …\">Summarize with AI</span>\n</span>\n\n<!-- 3 · Agent working: the working mark, only while it works -->\n<div role=\"status\"><svg class=\"md-aii md-aii--working mi\"><!-- progress_activity --></svg> Aria is rewriting…</div>\n\n<!-- 4 · Generated content: its own mark and label -->\n<button type=\"button\" class=\"md3-chip …\" aria-expanded=\"false\">\n  <svg class=\"md-aii md-aii--generated mi\"><!-- chat_info --></svg> Generated with AI\n</button>\n\n<script>\n  // <AiIcon role=\"action\" />  <AiIcon role=\"generated\" />  <AiIcon role=\"working\" />  <AiIcon role=\"tool\" />\n  // vocabulary={{ action: 'spark', generated: 'aiInfo', working: 'working', tool: 'tool' }}  — set once per product\n</script>",
       examples: [
         {
-          id: 'nlsearch-applied',
-          title: 'The interpretation, as controls',
-          note: 'Three chips instead of a sentence explaining itself. Each one can be removed without retyping the query, which is the difference between a translation the reader can correct and one they have to trust.',
+          id: 'icons-roles',
+          title: 'Four meanings, four marks',
+          note: 'The action that runs AI, the content it produced, the agent at work and the tool it used &mdash; each in its own shape, each with words.',
           code:
-'<div class="md-applied" role="group" aria-label="Filters applied">\n' +
-'  <span class="md-applied__k md-body-small">Understood as</span>\n' +
-'  <span class="md-fchip md-body-small">status: open\n' +
-'    <button type="button" aria-label="Remove status filter">&times;</button>\n' +
-'  </span>\n' +
-'  <span class="md-fchip md-body-small">tier: enterprise\n' +
-'    <button type="button" aria-label="Remove tier filter">&times;</button>\n' +
-'  </span>\n' +
-'  <span class="md-fchip md-body-small">opened: last 7 days\n' +
-'    <button type="button" aria-label="Remove date filter">&times;</button>\n' +
-'  </span>\n' +
-'  <span class="md-applied__n md-body-small">7 tickets</span>\n' +
-'</div>'
+'<div role="toolbar" aria-label="Release note tools">\n' +
+'  <button type="button" class="md3-btn">  <!-- AI action -->\n' +
+'    <svg class="md-aii md-aii--action mi" aria-hidden="true"><!-- star_shine --></svg> Rewrite\n' +
+'  </button>\n' +
+'</div>\n' +
+'<div role="status">\n' +
+'  <svg class="md-aii md-aii--working mi" aria-hidden="true"><!-- progress_activity --></svg> Aria is rewriting…\n' +
+'</div>\n' +
+'<p><svg class="md-aii md-aii--tool mi" aria-hidden="true"><!-- build --></svg> Checked the style guide</p>\n' +
+'<button type="button" class="md3-chip" aria-expanded="false">\n' +
+'  <svg class="md-aii md-aii--generated mi" aria-hidden="true"><!-- chat_info --></svg> Generated with AI\n' +
+'</button>'
         }
       ]
     },
@@ -1432,33 +1764,111 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'Ghost text that anticipates and completes user actions.',
-      intent: 'A continuation offered inside the field the user is already typing in — visibly not theirs until they take it, and never committed by accident.',
-      what: 'An inline prediction rendered ahead of the caret in the same field, accepted with one key and dismissed by simply continuing to type.',
-      why: 'It is the lowest-friction help in the product and the easiest to make hostile. Text the user did not write, in the same colour as text they did, is a trap: it gets sent, signed and filed as theirs. The pattern is entirely about keeping the offer visually and mechanically separate from the sentence until the moment it is accepted.',
-      when: 'In fields where the next few words are genuinely predictable from what has been typed and what is on screen. Never in a field where a wrong value is expensive and hard to notice — amounts, addresses, identifiers.',
-      how: 'Render the suggestion at reduced emphasis so a glance separates it from typed text. Accept on Tab or right-arrow only; Enter must send what the user wrote, never what was offered. Any other keystroke retires it silently. Offer one continuation, not a list. Say once, near the field, which key accepts it — and never re-offer the same completion the user has just typed past.',
-      expressive: 'The ghost is the same face and size as the typed text at on-surface-variant, so it aligns to the pixel and separates purely by weight of colour &mdash; a different size would shift the caret, which is worse than no suggestion at all. It does not fade in; it is either there or not, because a fading completion invites a press mid-fade. Accepting it is the one moment with motion: the ghost hardens to on-surface in 180ms on standard easing, the visual form of the fluidity rule &mdash; the boundary of certainty resolving as the text stops being the agent&rsquo;s and starts being the reader&rsquo;s.',
-      composed: ['Text Field', 'Keyboard Hint', 'Icon'],
-      related: [['open-input', 'Open Input'], ['suggested-prompts', 'Suggested Prompts'], ['caveat', 'Caveat']],
+      oneline: 'Finishes the request someone is already writing — offered after the caret, accepted with a key, never sent for them.',
+      intent: 'Save typing on requests people make often, without taking any of the final instruction out of their hands.',
+      what: 'While someone types in the shared composer, the likely rest of a familiar request appears after the caret in a lighter colour, with the key that accepts it. Typing &ldquo;/&rdquo;, &ldquo;@&rdquo; or &ldquo;#&rdquo; opens a short menu of commands, people and files, or tools instead. Accepting inserts ordinary, editable text; nothing is sent until the person sends it.',
+      why: 'Many requests start the same way and end the same way. Finishing them saves time only if it costs no control: the suggestion has to be unmistakably not-yet-typed, easy to ignore, quick to dismiss, and, once taken, just text. Products that got this right (Smart Compose, Copilot) made accept a single key and kept Enter for sending what was written.',
+      when: 'In a composer or field where people repeat requests, refer to commands, people, files or tools by name, and where a completion can be predicted from what they have typed so far.',
+      whenNot: 'Not before anything is typed (that is Suggested Prompts). Not for the agent raising something on its own (that is Proactive Suggestions). Not for structured scaffolds with fields (Templates). Not where a wrong completion is costly and hard to spot &mdash; legal, financial or medical wording.',
+      how: 'Suggest only once enough is typed to be useful (8&ndash;12 characters) and only what continues the text exactly. Draw the rest after the caret, in a lighter colour, outside the field&rsquo;s value; put the accept key at its end. Accept with Tab (or a host-chosen key, never Enter), a tap on the suggestion, or &#8984;/Ctrl + &rarr; for one word. Escape dismisses it and it stays away for that request. Let it follow along while the person types the same words, and drop it the moment they diverge. Announce it once, separately: &ldquo;Suggestion: &hellip;. Tab to accept.&rdquo; Accepting never submits.',
+      expressive: 'Quiet by design: the suggestion fades in over 150&nbsp;ms in on-surface-variant at reduced opacity (Subtle) or full (Standard) &mdash; a different colour from what was typed either way &mdash; with a small outlined key at its end. Menus are Md3Menu listboxes that open above a docked composer. No shimmer, no typing animation: the text is simply there, or simply gone. Under reduced motion it does not fade.',
+
+      precedent: [
+        { name: 'Gmail &mdash; Smart Compose', url: 'https://support.google.com/mail/answer/9116836',
+          what: 'Suggestions appear as you type; <b>press Tab to accept</b>; writing suggestions can be turned off in Settings.' },
+        { name: 'GitHub Copilot in VS Code', url: 'https://code.visualstudio.com/docs/copilot/ai-powered-suggestions',
+          what: '&ldquo;Dimmed ghost text suggestions as you type&rdquo;; Tab accepts; &#8984;/Ctrl + &rarr; accepts the next word; suggestions can be snoozed.' },
+        { name: 'Claude, ChatGPT, Cursor, Slack', url: 'https://claude.ai/',
+          what: '&ldquo;/&rdquo; for commands and &ldquo;@&rdquo; for people, files or context open a short menu in the composer; Enter or Tab inserts the item, and the request is still sent by the person.' },
+        { name: 'GitHub Copilot Chat', url: 'https://code.visualstudio.com/docs/copilot/chat/copilot-chat',
+          what: '&ldquo;#&rdquo; references tools and context in the chat input, completed from a menu.' },
+        { name: 'WAI-ARIA &mdash; combobox with autocomplete', url: 'https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-both/',
+          what: 'aria-autocomplete, aria-activedescendant and a listbox popup: how completions are exposed without moving focus out of the field.' }
+      ],
+
+      anatomy: [
+        { part: 'Shared composer', role: 'The same Open Input composer. Autocomplete attaches to its field; it adds nothing else.' },
+        { part: 'Suggestion (inline)', role: 'The rest of the request after the caret, in an aria-hidden overlay laid over the field &mdash; never in its value. Tappable to accept.' },
+        { part: 'Accept key', role: 'A small outlined key at the end of the suggestion (Tab, or &rarr;). It appears only with a suggestion.' },
+        { part: 'Completion menu', role: 'For /, @ and #: an Md3Menu listbox above the composer, with a heading (Commands, Mention, Tools); arrows move, Enter or Tab inserts, Escape closes. Focus stays in the field (aria-activedescendant).' },
+        { part: 'Announcement', role: 'A polite message when a suggestion first appears and when one is accepted or dismissed, kept separate from the typed text.' },
+        { part: 'Provider', role: 'Data the host supplies: phrases to complete, and the items for each trigger. The module has no product content.' }
+      ],
+
+      flow: [
+        'They start typing in the composer. Nothing appears until enough is typed to be useful.',
+        '&ldquo;Compare onboarding feedback&rdquo; &mdash; the rest, &ldquo;with the previous quarter and highlight new issues&rdquo;, appears after the caret, lighter, with Tab at its end. A screen reader hears &ldquo;Suggestion: &hellip;&rdquo;.',
+        'They keep typing the same words: it follows along, shorter each time. They type something else: it disappears.',
+        'They press Tab: it becomes their text, caret at the end. Nothing is sent.',
+        'They add &ldquo;&hellip;and group the issues by severity.&rdquo; and press Enter. Exactly that is sent.',
+        'Or they type &ldquo;@Re&rdquo;: a short menu offers the release plan and the research notes; Enter inserts the mention, without sending.'
+      ],
+
+      statesList: [
+        { name: 'Empty / no suggestion', desc: '<em>Trigger:</em> nothing typed. <em>Behaviour:</em> the composer as usual; nothing is suggested. <em>Action:</em> type. <em>Next:</em> Typing.' },
+        { name: 'Typing', desc: '<em>Trigger:</em> text, but too little or no match. <em>Behaviour:</em> no suggestion. <em>Action:</em> keep typing. <em>Next:</em> Suggestion available.' },
+        { name: 'Suggestion available', desc: '<em>Trigger:</em> the typed text starts a known request (or /, @, #). <em>Behaviour:</em> the rest after the caret with its key, or a menu; announced once. <em>Action:</em> accept, dismiss, or keep typing. <em>Next:</em> Accepted, Ignored, Dismissed, No longer relevant.' },
+        { name: 'Suggestion accepted', desc: '<em>Trigger:</em> Tab / &rarr; / a tap, or Enter in a menu. <em>Behaviour:</em> ordinary editable text, caret at the end; nothing sent. <em>Action:</em> edit or send. <em>Next:</em> Typing, or the conversation.' },
+        { name: 'Suggestion ignored', desc: '<em>Trigger:</em> the person keeps typing the same words past where it appeared. <em>Behaviour:</em> it follows along, shortening; never overwrites a typed character. <em>Next:</em> Accepted, No longer relevant.' },
+        { name: 'Suggestion dismissed', desc: '<em>Trigger:</em> Escape. <em>Behaviour:</em> it goes and stays away for this request while the same words continue. <em>Next:</em> Typing.' },
+        { name: 'No longer relevant', desc: '<em>Trigger:</em> the typed text stops matching. <em>Behaviour:</em> it disappears at once; the typed text is untouched. <em>Next:</em> Typing, or a new suggestion.' }
+      ],
+
+      variants: [
+        { name: 'Prompt completion', desc: 'The default: the rest of a familiar request, inline after the caret.' },
+        { name: 'Command (/), Mention (@), Tool (#)', desc: 'The same module with a trigger character: a short menu of commands, people and files, or tools. Each can be turned off.' },
+        { name: 'Inline / Menu', desc: 'Prompt completions inline after the caret (default) or as a single item in a menu below, for fields where inline text would be mistaken for typed text.' },
+        { name: 'Accept key', desc: 'Tab (default), &rarr; at the end of the line, or either. Never Enter.' }
+      ],
+
+      content: [
+        'Completions finish requests in the person&rsquo;s own phrasing; keep them short &mdash; a clause, not a paragraph.',
+        'Menu items: the command or name first, a short descriptor after (&ldquo;summarize &middot; Summarize a doc or thread&rdquo;).',
+        'Announcements: &ldquo;Suggestion: &hellip;. Tab to accept.&rdquo;; &ldquo;Accepted. Not sent.&rdquo;; &ldquo;Suggestion dismissed.&rdquo;'
+      ],
+
+      a11y: [
+        'The suggestion is not in the field&rsquo;s value and the overlay is aria-hidden; the field has aria-autocomplete, and a polite live region announces the suggestion once, prefixed &ldquo;Suggestion:&rdquo;.',
+        'Menus are listboxes; the field keeps focus and points at the active option with aria-activedescendant and aria-expanded; arrows move, Enter or Tab inserts, Escape closes.',
+        'Accept is a single key that is not Enter, plus a tap target on the suggestion and its key; &#8984;/Ctrl + &rarr; takes one word.',
+        'The suggestion differs from typed text in colour and is labelled by its key, and is announced in words.',
+        'Under reduced motion it appears without fading.'
+      ],
+
+      donts: [
+        'Don&rsquo;t send on accept, and don&rsquo;t accept with Enter.',
+        'Don&rsquo;t put the suggestion in the field&rsquo;s value before it is accepted.',
+        'Don&rsquo;t suggest before anything is typed, or after a single word.',
+        'Don&rsquo;t keep suggesting after Escape for the same request.',
+        'Don&rsquo;t overwrite or reorder what the person typed.',
+        'Don&rsquo;t announce on every keystroke.'
+      ],
+
+      metrics: [
+        'Acceptance rate, and how often accepted text is then edited before sending.',
+        'Dismissals per suggestion shown (high means it guesses too early or too often).',
+        'Characters saved per request.',
+        'Sends that include text accepted and not read back (look for quick accept-then-send on long completions).'
+      ],
+
+      composed: ['Md3Menu', 'PromptComposer', 'Material Symbols'],
+      related: [['suggested-prompts', 'Suggested Prompts'], ['open-input', 'Open Input'], ['proactive', 'Proactive Suggestions']],
       pkg: 'nucleux-m3-autocomplete',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<div class=\"md-ghostfield\">\n  <p class=\"md-ghostfield__line\">\n    <span class=\"md-ghostfield__typed\">Thanks Dana — Q2 closed at</span>\n    <span class=\"md-ghostfield__caret\"></span>\n    <span class=\"md-ghostfield__ghost\">£4.1m, 6% ahead of plan.</span>\n  </p>\n  <p class=\"md-ghostfield__hint\">Tab to accept</p>\n</div>",
+      usage: "<!-- The shared composer, plus the completion module -->\n<link rel=\"stylesheet\" href=\"nucleux-md3.css\" />\n\n<script>\n  // After the composer is on screen:\n  MaterialSim.ac.attach(document.querySelector('[data-ax-field]'), {\n    provider: {\n      minChars: 10,\n      phrases: ['Summarize the release risks and group them by owner', /* … */],\n      triggers: { '/': { type: 'command', items: [/* … */] },\n                  '@': { type: 'mention', items: [/* … */] },\n                  '#': { type: 'tool',    items: [/* … */] } }\n    },\n    accept: 'tab',          // 'tab' | 'right' | 'both' — never Enter\n    dismiss: true,          // Escape\n    treatment: 'inline',    // or 'menu'\n    announce: msg => liveRegion.textContent = msg,\n    onState: name => {}     // empty | typing | available | ignored | accepted | dismissed | irrelevant\n  });\n  // Accepting inserts editable text and moves the caret to the end. It never submits.\n</script>",
       examples: [
         {
-          id: 'ghost-offered',
-          title: 'Offered, not committed',
-          note: 'The continuation sits in the field at lower emphasis, aligned to the same baseline. Enter still sends what was typed; only Tab takes the offer.',
+          id: 'ac-ghost',
+          title: 'Typed text, and the suggestion after it',
+          note: 'The suggestion lives in an aria-hidden overlay, not in the field. A screen reader hears it once, as a suggestion.',
           code:
-'<div class="md-ghostfield">\n' +
-'  <p class="md-ghostfield__line md-body-medium">\n' +
-'    <span class="md-ghostfield__typed">Thanks Dana — Q2 closed at</span>\n' +
-'    <span class="md-ghostfield__caret" aria-hidden="true"></span>\n' +
-'    <span class="md-ghostfield__ghost">£4.1m, 6% ahead of plan.</span>\n' +
-'  </p>\n' +
-'  <p class="md-ghostfield__hint md-body-small">\n' +
-'    <kbd class="md-kbd">Tab</kbd> to accept\n' +
-'  </p>\n' +
-'</div>'
+'<form class="ax__composer">\n' +
+'  <textarea data-ax-field aria-autocomplete="inline">Summarize the release</textarea>\n' +
+'  <div class="ac-ghost" aria-hidden="true">\n' +
+'    <span class="ac-ghost__typed">Summarize the release</span>\n' +
+'    <span class="ac-ghost__s"> risks and group them by <span class="ac-ghost__end">owner<kbd class="ac-ghost__k">Tab</kbd></span></span>\n' +
+'  </div>\n' +
+'</form>\n' +
+'<p role="status" aria-live="polite">Suggestion: risks and group them by owner. Tab to accept.</p>'
         }
       ]
     },
@@ -1473,40 +1883,107 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'Invisible AI moments that arrive exactly when needed.',
-      intent: 'The agent opening the conversation, on evidence, in a form that costs nothing to ignore — and says what it noticed, not just what it wants.',
-      what: 'An offer raised by the product rather than requested by the user, triggered by something that actually changed in their data and stating that trigger as part of the offer.',
-      why: 'This is the only pattern in the category where the agent speaks first, which makes it the one with the highest cost of being wrong. Done on evidence it is the most valuable thing an agent does — it catches what a person would have missed. Done on a timer it is an advertisement inside a tool the user is paying for, and it trains people to dismiss without reading, which disables the mechanism permanently.',
-      when: 'When something changed that the user would want to know about, and when acting on it is cheap. Never during an error, a payment, or a task requiring concentration — and never more than one at a time.',
-      how: 'Lead with the observation, not the offer: “two renewals closed since you looked” earns the sentence that follows. Make ignoring it free and dismissing it permanent for that class of suggestion. Anchor it near what it is about. Keep an honest frequency cap and show the user where to turn the category off — a proactive agent with no off switch is a notification system.',
-      expressive: 'It arrives on emphasized easing from below, never with a spring: the reader did not cause this, and a spring on a system-initiated event is what makes proactivity feel like an interruption. The container is a low-tone primary surface at 18px &mdash; rounded, not capsule, because it is the agent speaking rather than an action of the reader&rsquo;s. The observation carries tertiary as evidence; the action beside it is the only capsule in the card. It holds still once it has landed: no pulse, no repeat entrance, nothing that asks twice.',
-      composed: ['Card', 'Chip', 'Button', 'Icon'],
-      related: [['nudges', 'Nudges'], ['ai-icons', 'Icons'], ['suggested-prompts', 'Suggested Prompts']],
+      oneline: 'The agent notices something during the work and offers one useful next step — with the reason, and nothing done until the person says so.',
+      intent: 'Surface an opportunity or a problem the person would otherwise have to go looking for, as a recommendation they can review, snooze or dismiss — never as an action already taken.',
+      what: 'A compact card, placed where the work is, that says who is suggesting, why it appeared (&ldquo;Two release blockers have no owner since Sam Ortiz moved to Payments&rdquo;), what it recommends (&ldquo;Assign owners before the release?&rdquo;) and three ways out: Review, Remind me tomorrow, Dismiss. Review opens the relevant workflow with a proposal the person confirms.',
+      why: 'Agents see more of the workspace than a person scanning it, so they can catch what is about to go wrong. That only helps if the suggestion explains itself, never acts on its own, and goes away when told to: products that nag train people to ignore them, and products that act unasked lose trust the first time they are wrong.',
+      when: 'During ongoing work, when a specific, checkable condition becomes true and there is a clear next step: unowned blockers before a release, an unanswered email, a duplicate issue, a missed deadline, a step left out of a checklist.',
+      whenNot: 'Not to start a conversation (that is Suggested Prompts) or to finish what someone is typing (Autocomplete). Not for low-value or speculative tips, not on a timer with no new evidence, and not as a modal that interrupts the task. Never as a disguised action: if it would change something, it is a review first.',
+      how: 'Raise it only on evidence, and say the evidence. Phrase the action as a recommendation. Place it inline next to the thing it is about (or floating, for app-wide observations), never as a dialog. Make the primary action open a review with the proposal, and do the consequential step only on confirmation, with Undo. Make Dismiss one press, and remember it for that evidence &mdash; the same facts never bring it back, only new ones. Offer a snooze where timing is the issue. Withdraw it, saying so, when the reason stops being true.',
+      expressive: 'It arrives, it does not interrupt: the card rises in over 400&nbsp;ms on emphasized-decelerate, in secondary-container (tonal) or outlined, at comfortable or compact density. The provenance line uses the generated-content mark from the Icons vocabulary &mdash; this text came from the agent &mdash; and &ldquo;Preparing a review&rdquo; uses the working mark. When the reason goes away it says &ldquo;Resolved&rdquo; and fades over two seconds; dismissing is instant. Under reduced motion nothing rises or fades.',
+
+      precedent: [
+        { name: 'Linear &mdash; Triage Intelligence', url: 'https://linear.app/docs/triage-intelligence',
+          what: 'Suggestions for assignee, labels or duplicates that people can &ldquo;accept, decline, or view more information about why a suggestion was made before making a decision&rdquo;; admins choose whether each kind appears, is hidden or is auto-applied.' },
+        { name: 'Gmail &mdash; Nudges', url: 'https://mailmeteor.com/blog/gmail-nudges',
+          what: 'A short reason under the message (&ldquo;Sent 4 days ago. Follow up?&rdquo;), dismissible in place, and a setting to turn each kind off.' },
+        { name: 'Microsoft HAX Toolkit', url: 'https://www.microsoft.com/en-us/haxtoolkit/',
+          what: 'Guidelines this pattern follows: time services based on context, support efficient dismissal, make clear why the system did what it did, and remember recent interactions.' },
+        { name: 'GitHub Copilot &mdash; next edit suggestions', url: 'https://code.visualstudio.com/docs/copilot/ai-powered-suggestions',
+          what: 'The system predicts a change elsewhere and marks where it would go; nothing is applied until the person accepts it.' }
+      ],
+
+      anatomy: [
+        { part: 'Provenance', role: 'Who is suggesting (&ldquo;Suggested by Aria&rdquo;), with the generated-content mark.' },
+        { part: 'Reason', role: 'Why it appeared, from what was noticed &mdash; specific and checkable.' },
+        { part: 'Suggested action', role: 'The recommendation, phrased as one (&ldquo;Assign owners before the release?&rdquo;), never in the past tense.' },
+        { part: 'Primary action', role: 'Md3Button: Review. Opens the workflow with a proposal; changes nothing by itself.' },
+        { part: 'Snooze / Dismiss', role: 'Md3Buttons (text). Snooze hides it until a time and returns only if still true; Dismiss removes it and is remembered for that evidence, with Undo.' },
+        { part: 'Review', role: 'The host&rsquo;s own workflow (here, an Md3Card listing proposed owners, each changeable) and one confirming action, with Undo afterwards.' },
+        { part: 'Status line', role: 'A polite note for what just happened &mdash; dismissed, snoozed, resolved, done &mdash; with Undo where it applies.' }
+      ],
+
+      flow: [
+        'The person is working through the release blockers. Nothing is suggested.',
+        'Sam Ortiz moves to Payments; two blockers lose their owner. A moment later a card appears above the list: Suggested by Aria &mdash; why &mdash; &ldquo;Assign owners before the release?&rdquo; &mdash; Review, Remind me tomorrow, Dismiss.',
+        'They press Review. &ldquo;Preparing a review &mdash; nothing has changed yet.&rdquo; Then the proposed owners appear, each changeable, with Assign 2 owners.',
+        'They change one owner and confirm. The owners are assigned; &ldquo;2 owners assigned &mdash; you confirmed Aria&rsquo;s proposal&rdquo;, with Undo.',
+        'Or they dismiss it. It goes, with Undo, and does not come back for those two issues &mdash; even a day later. Only a new unowned blocker would raise it again.',
+        'Or they assign the owners themselves. The card says &ldquo;Resolved&rdquo; and withdraws.'
+      ],
+
+      statesList: [
+        { name: 'Dormant', desc: '<em>Trigger:</em> nothing worth raising. <em>Behaviour:</em> nothing shown. <em>Next:</em> Suggested, on evidence.' },
+        { name: 'Suggested', desc: '<em>Trigger:</em> a specific condition became true. <em>Behaviour:</em> the card, inline or floating; the work stays fully usable. <em>Action:</em> Review, snooze, dismiss, or fix it directly. <em>Next:</em> Action preparing, Snoozed, Dismissed, No longer relevant.' },
+        { name: 'Action preparing', desc: '<em>Trigger:</em> Review pressed. <em>Behaviour:</em> working mark, &ldquo;nothing has changed yet&rdquo;. <em>Next:</em> Accepted.' },
+        { name: 'Accepted', desc: '<em>Trigger:</em> the review is ready. <em>Behaviour:</em> the proposal, changeable, and one confirming action; nothing applied before it. <em>Next:</em> Dormant (done, with Undo) or Suggested (cancel).' },
+        { name: 'Dismissed', desc: '<em>Trigger:</em> Dismiss. <em>Behaviour:</em> gone, with Undo; remembered for this evidence. <em>Next:</em> Dormant; Suggested only on new evidence.' },
+        { name: 'Snoozed', desc: '<em>Trigger:</em> Remind me tomorrow. <em>Behaviour:</em> gone until then, with Undo; returns only if still true. <em>Next:</em> Suggested or Dormant.' },
+        { name: 'No longer relevant', desc: '<em>Trigger:</em> the reason stopped being true. <em>Behaviour:</em> says &ldquo;Resolved&rdquo; and withdraws. <em>Next:</em> Dormant.' }
+      ],
+
+      variants: [
+        { name: 'Inline', desc: 'The default: next to the thing it is about, pushing nothing out of reach.' },
+        { name: 'Floating', desc: 'Bottom of the surface, for observations about the whole workspace; still never a dialog.' },
+        { name: 'Tonal / Outlined', desc: 'Secondary-container fill to be noticed, or outlined to stay quieter in busy surfaces.' },
+        { name: 'At the next pause', desc: 'Waits until the person stops interacting before it appears, so it never lands mid-action.' }
+      ],
+
+      content: [
+        'Reason: the evidence, specifically &mdash; counts, names, dates. &ldquo;Two release blockers have no owner since Sam Ortiz moved to Payments.&rdquo;',
+        'Action: a recommendation &mdash; a question or &ldquo;Suggest&hellip;&rdquo;. Never past tense; never &ldquo;Fixed&rdquo;.',
+        'Primary: Review (or Open, See options). The verb that changes things belongs in the review: &ldquo;Assign 2 owners&rdquo;.',
+        'After: say what happened and who decided &mdash; &ldquo;you confirmed Aria&rsquo;s proposal&rdquo; &mdash; with Undo.'
+      ],
+
+      a11y: [
+        'The card is a region named &ldquo;Suggestion from Aria&rdquo;; the primary action is described by the reason and the recommendation.',
+        'Appearing, preparing, dismissing, snoozing, resolving and finishing are announced in a polite live region; nothing steals focus when it appears.',
+        'Every action is a native button with a 40dp+ target; Undo is reachable from the keyboard right after.',
+        'The review is a labelled region; each &ldquo;Change&rdquo; is named for its issue.',
+        'Under reduced motion it neither rises nor fades.'
+      ],
+
+      donts: [
+        'Don&rsquo;t act because the agent noticed something. Review, then confirm.',
+        'Don&rsquo;t hide the reason, or phrase the suggestion as if it were done.',
+        'Don&rsquo;t make it hard to dismiss, or bring it back for the same evidence.',
+        'Don&rsquo;t use a dialog or anything that blocks the work for a low-risk suggestion.',
+        'Don&rsquo;t keep showing it after the reason has gone away.'
+      ],
+
+      metrics: [
+        'Acceptance rate per kind of suggestion, and how often the proposal is changed before confirming.',
+        'Dismissals per suggestion shown (high means it is not useful, or arrives at the wrong time).',
+        'Snoozes that end in acceptance.',
+        'Undo after confirming (a proposal that looked right but was not).'
+      ],
+
+      composed: ['Md3Card', 'Md3Button', 'Md3List'],
+      related: [['suggested-prompts', 'Suggested Prompts'], ['ai-icons', 'Icons'], ['nudges', 'Nudges']],
       pkg: 'nucleux-m3-proactive',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<aside class=\"md-proactive\" role=\"status\">\n  <p class=\"md-proactive__obs\">Two renewals closed since you last looked.</p>\n  <p class=\"md-proactive__offer\">The figure in your draft to Dana is now out of date.</p>\n  <div class=\"md-proactive__foot\">\n    <button class=\"md-button md-button--filled md-button--sm\">Update the figure</button>\n    <button class=\"md-button md-button--text md-button--sm\">Dismiss</button>\n  </div>\n</aside>",
+      usage: "<link rel=\"stylesheet\" href=\"nucleux-md3.css\" />\n\n<section class=\"md-pro md3-card …\" role=\"region\" aria-label=\"Suggestion from Aria\">\n  <div class=\"md-pro__by\"><svg class=\"md-aii md-aii--generated mi\"><!-- chat_info --></svg> Suggested by Aria</div>\n  <p class=\"md-pro__why\" id=\"why\">Two release blockers have no owner since Sam Ortiz moved to Payments.</p>\n  <p class=\"md-pro__t\" id=\"what\">Assign owners before the release?</p>\n  <div class=\"md-pro__acts\">\n    <button class=\"md3-btn …\" aria-describedby=\"why what\">Review</button>\n    <button class=\"md3-btn …\">Remind me tomorrow</button>\n    <button class=\"md3-btn …\">Dismiss</button>\n  </div>\n</section>\n\n<script>\n  // const st = { phase: 'dormant', memory: { dismissed: [], snoozeUntil: null } };\n  // MaterialSim.pro.notice(st, evidenceKey, io);   // shows it — unless dismissed for this evidence or snoozed\n  // MaterialSim.pro.act('pro:accept' | 'pro:dismiss' | 'pro:snooze' | 'pro:undo', st, io);\n  // MaterialSim.pro.resolve(st, io);               // the reason went away\n</script>",
       examples: [
         {
-          id: 'proactive-observed',
-          title: 'Observation first, offer second',
-          note: 'The first line is something that happened in the user’s data; the second is what it means for what they are doing. Reverse them and the card is an advertisement.',
+          id: 'pro-card',
+          title: 'Reason, recommendation, three ways out',
+          note: 'A suggestion — not an action. Review opens a proposal to confirm; dismissal is remembered for these issues.',
           code:
-'<aside class="md-proactive" role="status">\n' +
-'  <div class="md-proactive__head">\n' +
-'    <svg class="md-proactive__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    <p class="md-proactive__obs md-body-medium">\n' +
-'      Two renewals closed since you last looked.\n' +
-'    </p>\n' +
-'  </div>\n' +
-'  <p class="md-proactive__offer md-body-small">\n' +
-'    The £4.1m in your draft to Dana is now out of date.\n' +
-'  </p>\n' +
-'  <div class="md-proactive__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button">\n' +
-'      Update the figure\n' +
-'    </button>\n' +
-'    <button class="md-button md-button--text md-button--sm" type="button">Dismiss</button>\n' +
-'  </div>\n' +
-'</aside>'
+'<section class="md-pro" role="region" aria-label="Suggestion from Aria">\n' +
+'  <p class="md-pro__why">Two release blockers have no owner since Sam Ortiz moved to Payments.</p>\n' +
+'  <p class="md-pro__t">Assign owners before the release?</p>\n' +
+'  <button>Review</button> <button>Remind me tomorrow</button> <button>Dismiss</button>\n' +
+'</section>'
         }
       ]
     },
@@ -1521,32 +1998,98 @@
       stageId: 'initially',
       sub: 'Entry Points',
       subId: 'entry-points',
-      oneline: 'A “dice” that kickstarts the experience with a fun result.',
-      intent: 'A way in for someone with no intent at all — cheap to press, cheap to re-roll, and incapable of destroying anything the user already had.',
-      what: 'A single control that produces a complete, valid starting point at random, so the reader has something concrete to react to instead of a blank field.',
-      why: 'Reacting is far easier than originating. For a whole class of user the fastest route to a good request is a bad one they can correct, and a dice gives them that in one press with no fear of getting it wrong. It is also the only entry point that works when someone genuinely does not know what the product is for.',
-      when: 'On empty and exploratory surfaces, and in creative work where the space is large and taste is the real input. Never as the primary path on a surface where the user arrived with a specific job.',
-      how: 'Produce something complete and plausible, never a fragment. Make re-rolling one press and make it obvious. Never overwrite existing work — if the field has content, the roll goes somewhere the user can compare it. Show what was rolled in editable form, so the result teaches the shape of a good request. Keep a way back to the previous roll.',
-      expressive: 'The dice is the one place in the system where motion is allowed to be playful, and the restraint rule is what keeps that from spreading: it springs and rotates once on press, 180ms, and nothing else on the screen moves. The result arrives on emphasized easing as the agent&rsquo;s output. While it is settling it sits on a tinted ground with a soft, undefined edge, and the container resolves to a defined 18px boundary as it lands &mdash; the fluidity rule made literal: a roll is uncertain until it is a result.',
-      composed: ['Button', 'Icon', 'Card', 'Text Field'],
-      related: [['suggested-prompts', 'Suggested Prompts'], ['example-gallery', 'Example Gallery'], ['initial-cta', 'Initial CTA']],
+      oneline: 'A different starting direction on demand, for exploratory work — editable before it is used, and never run on its own.',
+      intent: 'Help people explore alternatives — campaign angles, ideas, styles, presets — without inventing every one themselves, while the composer stays theirs.',
+      what: 'One optional control (&ldquo;Try a direction&rdquo;) beside the shared composer. Pressing it shows one generated direction: a title and a line, with Use this and Generate another, and a way back to the previous one. Use this puts an editable prompt in the composer &mdash; asking first if the composer already holds the person&rsquo;s words.',
+      why: 'A blank page is hardest exactly where there is no right answer: brainstorming, creative briefs, styles. A random starting point breaks the blank page cheaply. It only helps if it stays a starting point &mdash; editable, optional, and never allowed to overwrite what someone has already written.',
+      when: 'Creative and exploratory work where variety is the point and nothing is at stake: campaign directions, naming, ideas, visual styles, presets, prompt inspiration, starting configurations for generative tools.',
+      whenNot: 'Not in finance, legal, medical, safety, destructive or otherwise deterministic workflows, where a random &ldquo;direction&rdquo; has no value and may mislead. Not as a replacement for open input, and not as a disguised way to run something.',
+      how: 'Offer it as one labelled, optional control that says what you get. Show one direction at a time, marked as generated; let people generate another (never a repeat this round) and step back. Place it on Use this as ordinary, editable composer text, focus there, and send nothing. If the composer has the person&rsquo;s own words, ask: replace, add below, or cancel. Constrain the generator so every direction is usable.',
+      expressive: 'Ready &rarr; generating &rarr; new result, and nothing more: the working mark with &ldquo;Finding a different direction&hellip;&rdquo;, then the direction card rises in over 400&nbsp;ms on emphasized-decelerate. The control carries the AI-action mark by default (it runs a model, per the Icons vocabulary), or shuffle or dice; the result carries the generated-content mark. No dice animation, no confetti. Under reduced motion it simply appears.',
+
+      precedent: [
+        { name: 'Shape of AI &mdash; Randomize', url: 'https://www.shapeof.ai/patterns/randomize',
+          what: 'Lowers the barrier of a blank prompt with a one-click random start; &ldquo;constrain outputs thoughtfully&rdquo;; move people from randomizers towards structured templates once they find direction.' },
+        { name: 'Krea', url: 'https://www.krea.ai/',
+          what: 'Random selection extended to the style gallery &mdash; a random preset as a starting point, still editable.' },
+        { name: 'Scenario', url: 'https://www.scenario.com/',
+          what: 'A dice randomizer in the prompt box that fills the prompt, which the person then edits and runs.' },
+        { name: 'Coolors', url: 'https://coolors.co/',
+          what: 'Generate another with one key, and step back through history &mdash; the same loop of generate, compare, keep.' }
+      ],
+
+      anatomy: [
+        { part: 'Control', role: 'Md3Button (tonal or text) with its icon and a label that says what you get (&ldquo;Try a direction&rdquo;), plus one supporting line.' },
+        { part: 'Direction', role: 'A compact card: &ldquo;Generated direction &middot; 2 of 3&rdquo; with the generated mark and a Previous button; the title; one line.' },
+        { part: 'Use this / Generate another', role: 'Md3Buttons. Use this places the prompt; Generate another replaces the card with a new direction.' },
+        { part: 'Replace confirmation', role: 'Inline, in the card: &ldquo;Replace your draft with this direction?&rdquo; &mdash; Replace draft, Add below my draft, Cancel.' },
+        { part: 'Shared composer', role: 'The Open Input composer, unchanged. The direction lands there as editable text; the person sends it.' }
+      ],
+
+      flow: [
+        'Exploring campaign directions for a launch. Above the composer: Try a direction &mdash; a random starting point you can edit.',
+        'They press it. &ldquo;Finding a different direction&hellip;&rdquo;, then &ldquo;Launch through customer stories&rdquo; with one line.',
+        'They generate another: &ldquo;Turn onboarding failures into a challenge campaign&rdquo; &mdash; 2 of 2, with a way back.',
+        'They choose Use this. The prompt is in the composer, editable, focused. Nothing is sent.',
+        'They add &ldquo;for teams over 50&rdquo; and send.',
+        'Had they already written something, Use this would have asked: replace it, add the direction below, or cancel.'
+      ],
+
+      statesList: [
+        { name: 'Ready', desc: '<em>Trigger:</em> an exploratory workspace. <em>Behaviour:</em> one optional control; the composer works alone. <em>Next:</em> Generating.' },
+        { name: 'Generating', desc: '<em>Trigger:</em> the control or Generate another. <em>Behaviour:</em> the working mark, briefly. <em>Next:</em> New suggestion.' },
+        { name: 'New suggestion', desc: '<em>Trigger:</em> a direction came back. <em>Behaviour:</em> one direction, marked generated; Use this, Generate another. <em>Next:</em> Applied, Generate another.' },
+        { name: 'Generate another', desc: '<em>Trigger:</em> asked for another. <em>Behaviour:</em> a different direction (never a repeat this round), with a count and Previous. <em>Next:</em> Applied.' },
+        { name: 'Replace confirmation', desc: '<em>Trigger:</em> Use this while the composer holds the person&rsquo;s words. <em>Behaviour:</em> replace, add below, or cancel. <em>Next:</em> Applied, or back.' },
+        { name: 'Applied to composer', desc: '<em>Trigger:</em> placed. <em>Behaviour:</em> editable prompt, focus and caret there; nothing sent. <em>Next:</em> the conversation.' }
+      ],
+
+      variants: [
+        { name: '“Use this” / Place automatically', desc: 'Automatic placement fills an empty composer as each direction arrives; with a draft it still asks.' },
+        { name: 'Icon: AI action / Shuffle / Dice', desc: 'The AI action mark by default, because a model runs; shuffle or dice where &ldquo;another one&rdquo; is the clearer promise.' },
+        { name: 'Tonal / Text', desc: 'Tonal to be found in an empty workspace; text where it sits beside other tools.' }
+      ],
+
+      content: [
+        'Label what you get: &ldquo;Try a direction&rdquo;, &ldquo;Another idea&rdquo;, &ldquo;Random style&rdquo; &mdash; not &ldquo;Random&rdquo; or &ldquo;Surprise me&rdquo; alone.',
+        'A direction is a short title and one line. The placed prompt wraps it in the request it stands for.',
+        'Confirmation: &ldquo;Replace your draft with this direction?&rdquo; &mdash; never replace silently.'
+      ],
+
+      a11y: [
+        'The control is a native button described by its supporting line; the direction is a labelled group; the confirmation is an inline alertdialog with its own question.',
+        'Each new direction is announced in a polite live region (title and line); placing it moves focus to the composer with the caret at the end.',
+        'Previous is a named icon button; every action is reachable by keyboard.',
+        'Under reduced motion directions appear without rising.'
+      ],
+
+      donts: [
+        'Don&rsquo;t offer it where randomness has no value: finance, legal, medical, destructive or deterministic workflows.',
+        'Don&rsquo;t run or send anything because a direction was generated.',
+        'Don&rsquo;t overwrite the person&rsquo;s draft without asking.',
+        'Don&rsquo;t replace open input with it; it is optional.',
+        'Don&rsquo;t repeat directions within a round, or generate ones nobody could use.'
+      ],
+
+      metrics: [
+        'Directions generated per use, and how many end in Use this.',
+        'Placed prompts that are edited before sending (a good sign: it was a starting point).',
+        'Replace confirmations answered with Add below or Cancel (people protecting their own work).'
+      ],
+
+      composed: ['Md3Button', 'Md3IconButton', 'PromptComposer'],
+      related: [['suggested-prompts', 'Suggested Prompts'], ['templates', 'Templates'], ['open-input', 'Open Input']],
       pkg: 'nucleux-m3-randomize',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/entry.css\" />\n\n<button class=\"md-dice\" type=\"button\" aria-label=\"Surprise me\">\n  <svg class=\"md-dice__ico\"><!-- dice --></svg>\n  Surprise me\n</button>\n\n<!-- the roll lands editable, and can be rolled again -->\n<div class=\"md-roll\">\n  <p class=\"md-roll__v\">Which renewals are at risk this quarter, and why?</p>\n  <div class=\"md-roll__foot\">\n    <button class=\"md-button md-button--filled md-button--sm\">Use this</button>\n    <button class=\"md-button md-button--text md-button--sm\">Roll again</button>\n  </div>\n</div>",
+      usage: "<link rel=\"stylesheet\" href=\"nucleux-md3.css\" />\n\n<section class=\"md-rnd\" aria-label=\"Random starting direction\">\n  <button class=\"md3-btn …\" aria-describedby=\"rnd-sup\">… Try a direction</button>\n  <span id=\"rnd-sup\">A random starting point — edit it before you use it.</span>\n  <div class=\"md-rnd__card\" role=\"group\" aria-label=\"Suggested direction\">\n    <p class=\"md-rnd__t\">Launch through customer stories</p>\n    <p class=\"md-rnd__l\">Lead with three teams who halved their onboarding time.</p>\n    <button class=\"md3-btn …\">Use this</button> <button class=\"md3-btn …\">Generate another</button>\n  </div>\n</section>\n<!-- …then the shared PromptComposer -->\n\n<script>\n  // MaterialSim.rnd.act('rnd:go' | 'rnd:another' | 'rnd:prev' | 'rnd:use' | 'rnd:replace' | 'rnd:append' | 'rnd:cancel', st, io)\n  // io.getDraft() / io.placeDraft(text) connect it to the composer; io.confirm guards the draft.\n</script>",
       examples: [
         {
-          id: 'dice-rolled',
-          title: 'A complete result, editable',
-          note: 'Not a fragment and not a category — a whole request the reader can send, change or roll past. Re-rolling is one press, and nothing they had is overwritten.',
+          id: 'rnd-confirm',
+          title: 'Never over the person’s words',
+          note: 'Use this while the composer holds a draft asks first — and offers adding the direction below instead.',
           code:
-'<div class="md-roll">\n' +
-'  <p class="md-roll__k md-body-small">Rolled for you</p>\n' +
-'  <p class="md-roll__v md-body-large">\n' +
-'    Which renewals are at risk this quarter, and why?\n' +
-'  </p>\n' +
-'  <div class="md-roll__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button">Use this</button>\n' +
-'    <button class="md-button md-button--text md-button--sm" type="button">Roll again</button>\n' +
-'  </div>\n' +
+'<div class="md-rnd__confirm" role="alertdialog" aria-labelledby="q">\n' +
+'  <p id="q">Replace your draft with this direction?</p>\n' +
+'  <button>Replace draft</button> <button>Add below my draft</button> <button>Cancel</button>\n' +
 '</div>'
         }
       ]
@@ -1623,7 +2166,7 @@
         { part: 'AutoSwitch',
           role: 'A toggle at the top of the list, above a separator, with one line underneath, shown on or off, saying what it weighs &mdash; quality and speed. A switch rather than a sixth radio because Auto is not one more thing to pick &mdash; it is the question of whether you pick at all, and turning it on collapses the list it replaces rather than leaving rows you can see and cannot use.' },
         { part: 'EffortScreen',
-          role: 'The second screen of the same flyout. Picking a model (or turning Auto on) replaces the list with it: a breadcrumb &mdash; back chevron, the model, its effort value &mdash; and the slider, nothing else. The breadcrumb is the way back to the list. The two axes stay two settings; only the trigger is shared.' },
+          role: 'The second screen of the same flyout. Choosing a model row (or turning Auto on) replaces the list with it: a breadcrumb &mdash; back chevron, the model, its effort value &mdash; and the slider, nothing else. The breadcrumb is the way back to the list. The two axes stay two settings; only the trigger is shared.' },
         { part: 'EffortSlider',
           role: 'Five notches and one handle. Effort is ordinal, and a column of radios says nothing about that ordering; a track says it in the shape of the control. One tab stop carries the value; arrows, Home and End move it, and the notches are pressable but silent. The active track stops short of the handle, which is M3 Expressive&rsquo;s own anatomy and what keeps the handle from vanishing into the fill.' },
         { part: 'AvailabilityTag',
@@ -1640,7 +2183,7 @@
         'A strong default is already selected. Nobody is asked to choose before their first request.',
         'The chip is pressed and the picker opens, anchored to it. The prompt text is untouched.',
         'Auto is a switch at the top; with it off, every model row below says what it is for.',
-        'Choosing one replaces the list with the effort screen for that model, updates the chip, and one line underneath says when the change starts mattering. The breadcrumb goes back; pressing the chip again closes.',
+        'Choosing a model &mdash; anywhere on its row, the chevron at its end only says so &mdash; selects it, updates the chip and replaces the list with that model&rsquo;s effort screen; one line underneath says when the change starts mattering. The breadcrumb goes back; pressing the chip again closes.',
         'Nothing is reset: the conversation continues, and what was already said is not rewritten.',
         'A model that is temporarily down is listed, unselectable, and says what to use meanwhile.',
         'A model an organisation has restricted reads differently, because waiting will not fix it.',
@@ -1708,7 +2251,7 @@
       composed: ['Menu', 'Chip', 'Button', 'Badge', 'Tooltip'],
       related: [['modes', 'Modes'], ['caveat', 'Caveat'], ['voice-input', 'Voice Input']],
       pkg: 'nucleux-m3-model-selection',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- The composer's OWN mode slot. There is no second control and\n     no ModelComposer: a choice that only matters at the moment of\n     asking belongs where the asking happens. ONE action carries\n     both values — the model, then its effort — and opens a flyout\n     with two screens: the model list, then effort. The axes stay\n     two settings; only the trigger is shared. It is the kit's\n     Small text button. -->\n<button class=\"ax__mode--model md-button md-button--text md-button--small\"\n        data-act=\"ax:mode\" aria-haspopup=\"menu\" aria-expanded=\"true\"\n        aria-label=\"Model: Balanced. Effort: High — Works through it step by step. Change them.\">\n  <span class=\"ax__mode__m\">Balanced</span>\n  <span class=\"ax__mode__v\">High</span>\n</button>\n\n<!-- Anchored to the chip that opens it, not to the composer -->\n<div class=\"ax__menu ax__menu--model md-ml\" role=\"menu\"\n     data-density=\"comfortable\" aria-label=\"Choose a model\">\n  <div class=\"md-ml__body\">\n    <p class=\"md-ml__h\">Models</p>\n\n    <!-- Auto is a SWITCH at the top, not a sixth radio: it is not\n         one more thing to pick, it is whether you pick at all.\n         Turning it on collapses the list below rather than\n         leaving rows you can see and cannot use. -->\n    <button class=\"md-ml__auto\" role=\"switch\" aria-checked=\"false\"\n            aria-controls=\"md-ml-models\" data-act=\"model:auto:on\">\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Auto</span>\n        <!-- Shown on or off: whoever is deciding whether to turn it\n             on is exactly who needs to know what it does. -->\n        <span class=\"md-ml__f\">Appropriate model for each request, balancing quality and speed.</span>\n      </span>\n      <span class=\"md-ml__sw\" aria-hidden=\"true\"><span></span></span>\n    </button>\n\n    <!-- 0fr to 1fr, so the ease is the real height of the real\n         content whether the host ships two models or twenty. -->\n    <div class=\"md-ml__models\" id=\"md-ml-models\" data-collapsed=\"false\">\n      <div class=\"md-ml__models__in\">\n        <div class=\"md-ml__rule\" aria-hidden=\"true\"></div>\n\n    <!-- Every row says what it is FOR. Names are neutral on\n         purpose: real line-ups turn over every few months. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"true\"\n            data-act=\"model:pick:balanced\" data-avail=\"ok\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- tick --></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Balanced</span>\n        <span class=\"md-ml__f\">Reliable for everyday writing and analysis.</span>\n      </span>\n    </button>\n\n    <!-- Temporarily down: listed, unpressable, and it says what\n         to use meanwhile. It is expected back. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n            data-act=\"model:pick:deep-reasoning\" data-avail=\"unavailable\" disabled aria-disabled=\"true\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Deep reasoning<span class=\"md-ml__tag md-ml__tag--wait\">Temporarily unavailable</span></span>\n        <span class=\"md-ml__f\">More depth for complex, multi-step work.</span>\n        <span class=\"md-ml__w\">Try again shortly, or use Balanced in the meantime.</span>\n      </span>\n    </button>\n\n    <!-- Decided by somebody. No retry: nothing about waiting\n         changes a decision, and offering one sends people round\n         a loop that cannot close. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n            data-act=\"model:pick:multimodal\" data-avail=\"restricted\" disabled aria-disabled=\"true\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Multimodal<span class=\"md-ml__tag md-ml__tag--denied\">Restricted</span></span>\n        <span class=\"md-ml__f\">Best for images, files, and mixed content.</span>\n        <span class=\"md-ml__w\">Not available in your workspace. Your administrator decides this.</span>\n      </span>\n    </button>\n\n      </div>\n    </div>\n\n  </div>\n</div>\n\n<!-- Screen two of the same flyout. Picking a model REPLACES the\n     list with this, in the same place: a breadcrumb and the slider,\n     nothing else. The breadcrumb names where you are and is the\n     way back to the list. -->\n<div class=\"ax__menu ax__menu--effort md-mle\" role=\"dialog\"\n     aria-label=\"Effort\">\n  <button class=\"md-mle__crumb md-button md-button--text md-button--small\"\n          data-act=\"model:back\" aria-label=\"Back to models. Balanced, High\">\n    <span class=\"md-mle__crumb-ico\" aria-hidden=\"true\"><!-- keyboard_arrow_left --></span>\n    <span class=\"md-mle__crumb-m\">Balanced</span>\n    <span class=\"md-mle__crumb-v\">High</span>\n  </button>\n  <div class=\"md-mle__track\" role=\"slider\" tabindex=\"0\"\n       aria-label=\"Effort\" aria-valuemin=\"0\" aria-valuemax=\"4\"\n       aria-valuenow=\"2\" aria-valuetext=\"High — Works through it step by step\"\n       style=\"--mle-x: 50%; --mle-fill: calc(50% - 10px)\">\n    <span class=\"md-mle__fill\" aria-hidden=\"true\"></span>\n    <!-- Low, Medium, High, Extra, Max -->\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:low\" style=\"left: 11px\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:medium\" style=\"left: 30.5%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:high\" style=\"left: 50%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:extra\" style=\"left: 69.5%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:max\" style=\"left: calc(100% - 11px)\"></button>\n    <span class=\"md-mle__thumb\" aria-hidden=\"true\"></span>\n  </div>\n</div>\n\n<!-- Said ONCE, after the change, where it is a fact rather than\n     a standing warning nobody reads twice. -->\n<p class=\"md-ml__changed\" role=\"status\" aria-live=\"polite\">\n  Using Deep reasoning from your next message\n</p>\n\n<!-- The selected model was withdrawn. Until this is answered the\n     chip is lying, so it interrupts — and it says what is NOT\n     affected, because the fear at this moment is the thread. -->\n<div class=\"md-ml__fall\" role=\"alertdialog\" tabindex=\"-1\"\n     aria-label=\"Deep reasoning is no longer available\">\n  <p class=\"md-ml__fallt\"><!-- warn -->Deep reasoning is no longer available</p>\n  <p class=\"md-ml__fallb\">Choose another model, or let Auto pick for each request.\n    Your conversation is unchanged.</p>\n  <div class=\"md-ml__fallact\">\n    <button class=\"md-button md-button--filled md-button--sm\"\n            data-act=\"model:fallback:auto\">Use Auto</button>\n    <button class=\"md-button md-button--text md-button--sm\"\n            data-act=\"model:fallback:pick\">Choose model</button>\n  </div>\n</div>"
+      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- The composer's OWN mode slot. There is no second control and\n     no ModelComposer: a choice that only matters at the moment of\n     asking belongs where the asking happens. ONE action carries\n     both values — the model, then its effort — and opens a flyout\n     with two screens: the model list, then effort. The axes stay\n     two settings; only the trigger is shared. It is the kit's\n     Small text button. -->\n<button class=\"ax__mode--model md-button md-button--text md-button--small\"\n        data-act=\"ax:mode\" aria-haspopup=\"menu\" aria-expanded=\"true\"\n        aria-label=\"Model: Balanced. Effort: High — Works through it step by step. Change them.\">\n  <span class=\"ax__mode__m\">Balanced</span>\n  <span class=\"ax__mode__v\">High</span>\n</button>\n\n<!-- Anchored to the chip that opens it, not to the composer -->\n<div class=\"ax__menu ax__menu--model md-ml\" role=\"menu\"\n     data-density=\"comfortable\" aria-label=\"Choose a model\">\n  <div class=\"md-ml__body\">\n    <p class=\"md-ml__h\">Models</p>\n\n    <!-- Auto is a SWITCH at the top, not a sixth radio: it is not\n         one more thing to pick, it is whether you pick at all.\n         Turning it on collapses the list below rather than\n         leaving rows you can see and cannot use. -->\n    <button class=\"md-ml__auto\" role=\"switch\" aria-checked=\"false\"\n            aria-controls=\"md-ml-models\" data-act=\"model:auto:on\">\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Auto</span>\n        <!-- Shown on or off: whoever is deciding whether to turn it\n             on is exactly who needs to know what it does. -->\n        <span class=\"md-ml__f\">Appropriate model for each request, balancing quality and speed.</span>\n      </span>\n      <span class=\"md-ml__sw\" aria-hidden=\"true\"><span></span></span>\n    </button>\n\n    <!-- 0fr to 1fr, so the ease is the real height of the real\n         content whether the host ships two models or twenty. -->\n    <div class=\"md-ml__models\" id=\"md-ml-models\" data-collapsed=\"false\">\n      <div class=\"md-ml__models__in\">\n        <div class=\"md-ml__rule\" aria-hidden=\"true\"></div>\n\n    <!-- Every row says what it is FOR. Names are neutral on\n         purpose: real line-ups turn over every few months.\n         The WHOLE row is the control: it selects the model and\n         opens that model's effort. The 18px chevron at its right\n         end is part of the row and only says so. Blocked rows\n         have none. -->\n    <button class=\"md-ml__opt md-ml__opt--go\" role=\"menuitemradio\" aria-checked=\"true\"\n            data-act=\"model:pick:balanced\" data-avail=\"ok\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"><!-- check --></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Balanced</span>\n        <span class=\"md-ml__f\">Reliable for everyday writing and analysis.</span>\n      </span>\n      <span class=\"md-ml__chev\" aria-hidden=\"true\"><!-- keyboard_arrow_right --></span>\n    </button>\n\n    <!-- Temporarily down: listed, unpressable, and it says what\n         to use meanwhile. It is expected back. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n            data-act=\"model:pick:deep-reasoning\" data-avail=\"unavailable\" disabled aria-disabled=\"true\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Deep reasoning<span class=\"md-ml__tag md-ml__tag--wait\">Temporarily unavailable</span></span>\n        <span class=\"md-ml__f\">More depth for complex, multi-step work.</span>\n        <span class=\"md-ml__w\">Try again shortly, or use Balanced in the meantime.</span>\n      </span>\n    </button>\n\n    <!-- Decided by somebody. No retry: nothing about waiting\n         changes a decision, and offering one sends people round\n         a loop that cannot close. -->\n    <button class=\"md-ml__opt\" role=\"menuitemradio\" aria-checked=\"false\"\n            data-act=\"model:pick:multimodal\" data-avail=\"restricted\" disabled aria-disabled=\"true\">\n      <span class=\"md-ml__tick\" aria-hidden=\"true\"></span>\n      <span class=\"md-ml__t\">\n        <span class=\"md-ml__n\">Multimodal<span class=\"md-ml__tag md-ml__tag--denied\">Restricted</span></span>\n        <span class=\"md-ml__f\">Best for images, files, and mixed content.</span>\n        <span class=\"md-ml__w\">Not available in your workspace. Your administrator decides this.</span>\n      </span>\n    </button>\n\n      </div>\n    </div>\n\n  </div>\n</div>\n\n<!-- Screen two of the same flyout. A pick REPLACES the\n     list with this, in the same place: a breadcrumb and the slider,\n     nothing else. The breadcrumb names where you are and is the\n     way back to the list. -->\n<div class=\"ax__menu ax__menu--effort md-mle\" role=\"dialog\"\n     aria-label=\"Effort\">\n  <button class=\"md-mle__crumb md-button md-button--text md-button--small\"\n          data-act=\"model:back\" aria-label=\"Back to models. Balanced, High\">\n    <span class=\"md-mle__crumb-ico\" aria-hidden=\"true\"><!-- keyboard_arrow_left --></span>\n    <span class=\"md-mle__crumb-m\">Balanced</span>\n    <span class=\"md-mle__crumb-v\">High</span>\n  </button>\n  <div class=\"md-mle__track\" role=\"slider\" tabindex=\"0\"\n       aria-label=\"Effort\" aria-valuemin=\"0\" aria-valuemax=\"4\"\n       aria-valuenow=\"2\" aria-valuetext=\"High — Works through it step by step\"\n       style=\"--mle-x: 50%; --mle-fill: calc(50% - 10px)\">\n    <span class=\"md-mle__fill\" aria-hidden=\"true\"></span>\n    <!-- Low, Medium, High, Extra, Max -->\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:low\" style=\"left: 11px\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:medium\" style=\"left: 30.5%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:high\" style=\"left: 50%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:extra\" style=\"left: 69.5%\"></button>\n    <button class=\"md-mle__dot\" tabindex=\"-1\" aria-hidden=\"true\"\n            data-act=\"model:effort:max\" style=\"left: calc(100% - 11px)\"></button>\n    <span class=\"md-mle__thumb\" aria-hidden=\"true\"></span>\n  </div>\n</div>\n\n<!-- Said ONCE, after the change, where it is a fact rather than\n     a standing warning nobody reads twice. -->\n<p class=\"md-ml__changed\" role=\"status\" aria-live=\"polite\">\n  Using Deep reasoning from your next message\n</p>\n\n<!-- The selected model was withdrawn. Until this is answered the\n     chip is lying, so it interrupts — and it says what is NOT\n     affected, because the fear at this moment is the thread. -->\n<div class=\"md-ml__fall\" role=\"alertdialog\" tabindex=\"-1\"\n     aria-label=\"Deep reasoning is no longer available\">\n  <p class=\"md-ml__fallt\"><!-- warn -->Deep reasoning is no longer available</p>\n  <p class=\"md-ml__fallb\">Choose another model, or let Auto pick for each request.\n    Your conversation is unchanged.</p>\n  <div class=\"md-ml__fallact\">\n    <button class=\"md-button md-button--filled md-button--sm\"\n            data-act=\"model:fallback:auto\">Use Auto</button>\n    <button class=\"md-button md-button--text md-button--sm\"\n            data-act=\"model:fallback:pick\">Choose model</button>\n  </div>\n</div>"
     },
 
     'knowledge-base': {
@@ -2059,7 +2602,7 @@
         'The card states what connecting would allow, in the product&rsquo;s own words, and who the sign-in is with.',
         'Connect does not sign anybody in. It surfaces the decision &mdash; this is what you are about to grant &mdash; and waits.',
         'On approval the product waits visibly for the service and does not impersonate it.',
-        'Connected says so in words, names the account, and the composer picks up a standing-context chip.',
+        'Connected says so in words, and the composer picks up a standing-context chip.',
         'The agent does the thing it was blocked on, and the answer names where it looked.',
         'The access persists across the conversation and across later ones, and the chip is the reminder that it does.',
         'When the sign-in expires the agent stops rather than guessing, and the way back is one press.',
@@ -2070,7 +2613,7 @@
         { name: 'Available', desc: 'Names the service, says what connecting would allow, and says who you will be signing in with &mdash; all before anything leaves the product.' },
         { name: 'Needs your approval', desc: 'The decision point, in the product&rsquo;s own words. This is the step products skip, and then wonder why nobody reads the provider&rsquo;s scope screen. It is also where read-only is stated: connected is not a permission, and &ldquo;it is connected but it cannot do that&rdquo; has to be visible before somebody asks it to. Write access, where a product wants it, is a second and separate question.' },
         { name: 'Connecting', desc: 'The product does not impersonate the sign-in. It waits, says it is waiting, and leaves a way out.' },
-        { name: 'Connected', desc: 'The word, the account, and a dot &mdash; in that order. A green dot on its own is nothing to anyone who cannot see it.' },
+        { name: 'Connected', desc: 'The word and a dot &mdash; in that order. A green dot on its own is nothing to anyone who cannot see it.' },
         { name: 'Active use', desc: 'Connected and used are different facts, and a live request quietly says so &mdash; a pulsing indicator and a present-tense line, never a percentage, and never confused with the plain Connected state it returns to.' },
         { name: 'Multiple connected sources', desc: 'A compact list, not a wall of oversized cards, once more than one door is open. Each row still carries its own state in words, because &ldquo;connected&rdquo; stops being a safe default to assume once there are several.' },
         { name: 'Needs reauth', desc: 'The sign-in expired, the agent stopped rather than guessing, and the way back is one press. The state most connector designs forget and people meet most often.' },
@@ -2783,7 +3326,7 @@
       ],
 
       composed: ['Icon Button', 'Chip', 'Text Field', 'Scrim', 'Snackbar'],
-      related: [['visual-input', 'Visual Input'], ['search-filter', 'Searching &amp; Filtering'], ['open-input', 'Open Input']],
+      related: [['visual-input', 'Visual Input'], ['open-input', 'Open Input']],
       pkg: 'nucleux-m3-selection',
       usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<div class=\"md-sel\" data-state=\"confirmed\">\n  <div class=\"md-sel__stage\">\n  <!-- whatever was already on screen, frozen -->\n  <div class=\"md-sel__screen\"><!-- the dashboard --></div>\n\n  <div class=\"md-sel__layer\" role=\"dialog\" aria-label=\"Select something to ask about\">\n    <!-- the resolved region, snapped and adjustable -->\n    <div class=\"md-sel__region\" style=\"--x:46%;--y:18%;--w:26%;--h:52%\">\n      <span class=\"md-sel__label\">Revenue &middot; 12&ndash;19 Sept</span>\n      <span class=\"md-sel__h md-sel__h--nw\"></span>\n      <span class=\"md-sel__h md-sel__h--se\"></span>\n    </div>\n    <p class=\"md-sel__teach\">Circle, highlight, scribble or tap anything.</p>\n  </div>\n  </div>\n\n  <!-- the region, arrived on the composer as a term in the request -->\n  <div class=\"md-sel__bar\">\n    <button class=\"md-sel__chip\" aria-label=\"Remove Revenue, 12 to 19 September\">\n      Revenue &middot; 12&ndash;19 Sept\n    </button>\n    <input class=\"md-sel__q\" placeholder=\"Ask about this\" />\n  </div>\n</div>",
 
@@ -2919,7 +3462,7 @@
       ],
 
       composed: ['Text Field', 'Chip', 'Menu', 'Badge', 'Button'],
-      related: [['templates', 'Templates'], ['search-filter', 'Searching &amp; Filtering'], ['open-input', 'Open Input']],
+      related: [['templates', 'Templates'], ['open-input', 'Open Input']],
       pkg: 'nucleux-m3-structured-input',
       usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- The request stays prose. The structure is asked for AFTER it,\n     and only for the things that change the answer. -->\n<p class=\"md-struct__req\">Create a customer research report on mid-market churn.</p>\n\n<div class=\"md-struct__ask\" role=\"group\" aria-label=\"Three things I need\">\n  <div class=\"md-struct__q\">\n    <p class=\"md-struct__qt\" id=\"q-aud\">Who is it for?</p>\n    <p class=\"md-struct__qw\">Changes how much background I include.</p>\n    <button class=\"md-echip\" aria-describedby=\"q-aud\">The exec team</button>\n    <button class=\"md-echip md-echip--unresolved\">Skip &mdash; I&rsquo;ll assume the product team</button>\n  </div>\n</div>\n\n<!-- Settled, and editable afterwards without retyping the sentence -->\n<div class=\"md-struct__set\">\n  <button class=\"md-echip\"><span class=\"md-echip__k\">audience</span>exec team</button>\n  <button class=\"md-echip md-echip--default\">\n    <span class=\"md-echip__k\">range</span>last 12 months &middot; default\n  </button>\n</div>",
 

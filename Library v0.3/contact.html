@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Contact — Nucleux AI UX Pattern Library</title>
-  <meta name="description" content="Book a scoping call with the Nucleux team." />
+  <meta name="description" content="Tell the Nucleux team what you are working on. Your inquiry goes directly to us by email." />
 
   <!-- ── SHARE CARD ──
        X (and LinkedIn, Slack, iMessage…) build their link preview by
@@ -19,18 +19,24 @@
   <meta property="og:site_name" content="Nucleux" />
   <meta property="og:url" content="https://nucleux.in/contact.html" />
   <meta property="og:title" content="Contact — Nucleux AI UX Pattern Library" />
-  <meta property="og:description" content="Book a scoping call with the Nucleux team." />
+  <meta property="og:description" content="Tell the Nucleux team what you are working on. Your inquiry goes directly to us by email." />
   <meta property="og:image" content="https://nucleux.in/share-on-x.png" />
   <meta property="og:image:width" content="515" />
   <meta property="og:image:height" content="272" />
   <meta property="og:image:alt" content="Nucleux — UI components for AI agents" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Contact — Nucleux AI UX Pattern Library" />
-  <meta name="twitter:description" content="Book a scoping call with the Nucleux team." />
+  <meta name="twitter:description" content="Tell the Nucleux team what you are working on. Your inquiry goes directly to us by email." />
   <meta name="twitter:image" content="https://nucleux.in/share-on-x.png" />
   <meta name="twitter:image:alt" content="Nucleux — UI components for AI agents" />
 
   <link rel="preconnect" href="https://rsms.me/" />
+  <!-- Oswald: the condensed display face for the left heading only
+       (user reference). Light 300, the weight the reference is set in. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap" rel="stylesheet" /></noscript>
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
@@ -41,7 +47,12 @@
 
     body {
       margin: 0;
-      font-family: "Inter", sans-serif;
+      /* The site's own stack (styles.css), not a bare "Inter", sans-serif.
+         The stack carries "Inter Metrics", the metric-matched fallback the
+         nav's split-flap labels are measured in before Inter arrives.
+         Without it they were measured in a different font and pinned too
+         narrow, clipping "Components" and "Scenarios". */
+      font-family: var(--font-body);
       color: #0a0a0a;
       min-height: 100vh;
       background: #f8f8fa;
@@ -64,113 +75,139 @@
       max-width: 1320px;
       margin: 0 auto;
       padding: 64px 32px;
-      gap: 200px;
+      gap: 96px;
       align-items: start;
     }
 
-    /* ── left copy ── */
-    .contact-copy__eyebrow { display: none; }
-
+    /* ── left copy (user reference) ──
+       One big condensed heading, then the supporting copy much smaller
+       beneath it. The heading is Oswald Light, the reference's face;
+       the copy stays the site's Inter in the muted ink. */
+    .contact-copy { container-type: inline-size; min-width: 0; }
+    .contact-copy__title {
+      font-family: "Oswald", "Arial Narrow", "Roboto Condensed", sans-serif;
+      font-weight: 300;
+      /* Sized from the column, not the viewport, so it wraps to three
+         lines at every width (user request). Measured: three lines
+         hold up to 0.140 × the column; 13.6cqi keeps a margin. */
+      font-size: min(13.6cqi, 88px);
+      line-height: 1.04;
+      letter-spacing: -0.005em;
+      color: var(--fg);
+      margin: 0 0 var(--s-6, 24px);
+      text-wrap: balance;
+    }
     .contact-copy__note {
-      font-size: 18px;
+      font-size: var(--t-body, 16px);
       font-weight: 400;
-      color: #5d5d54;
-      line-height: 1.45;
-      margin: 0 0 24px;
+      line-height: 1.75;
+      color: var(--fg-mid, #5d5d54);
+      max-width: 36em;
+      margin: 0;
     }
-    .contact-copy__note:last-child { margin-bottom: 0; }
+    /* A clear gap between the two paragraphs (user request) — the same
+       24px as under the heading, so every gap in this column is one
+       step. Line spacing inside a paragraph stays 1.75. */
+    .contact-copy__note + .contact-copy__note { margin-top: var(--s-6, 24px); }
 
-    /* ── form card ── */
+    /* ── inquiry card ──
+       Email only: three fields and one action. There is no call to
+       book and no phone number, so nothing on the card asks for or
+       promises one. Everything below is the Nucleux foundation —
+       styles.css tokens, the site's solid button, and the same field
+       the sign-in flow uses (auth.css) — not the reference's type or
+       colour. */
     .contact-card {
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.09);
-      border-radius: 18px;
-      padding: 36px;
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #dcdcd5);
+      border-radius: var(--r-6, 24px);
+      padding: var(--s-10, 40px);
+      box-shadow: var(--shadow-2);
     }
-    .contact-card h2 {
-      font-size: 17px;
+    .contact-card__title {
+      font-family: var(--font-display, inherit);
+      font-size: var(--t-h2, 28px);
       font-weight: 600;
-      margin: 0 0 24px;
-      color: #0a0a0a;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0;
+      color: var(--fg);
+    }
+    .contact-card__sub {
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--fg-mid, #5d5d54);
+      margin: var(--s-2, 8px) 0 var(--s-8, 32px);
     }
 
-    .form-group { margin-bottom: 16px; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-4, 16px);
+    }
+    .form-group { margin-bottom: var(--s-5, 20px); }
+    /* the sign-in field: 13/600 label, 48px input, radius 8,
+       1px #e2e8f0 stroke, 3px #cbd5e1 focus ring */
     .form-group label {
       display: block;
       font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #111;
+      font-weight: 600;
+      margin-bottom: var(--s-2, 8px);
+      color: var(--fg);
     }
-    .form-group label span { color: #888; font-weight: 400; }
     .form-group input,
     .form-group textarea {
       width: 100%;
-      padding: 10px 13px;
-      border: 1.5px solid #e5e5e5;
-      border-radius: 9px;
-      font-family: inherit;
-      font-size: 14px;
-      color: #0a0a0a;
-      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--r-3, 8px);
+      background: var(--surface, #fff);
+      color: var(--fg);
+      font: inherit;
+      font-size: 15px;
+      line-height: 1.5;
       outline: none;
-      transition: border-color .15s;
-      box-sizing: border-box;
+      transition: border-color var(--dur-1, 150ms) var(--ease),
+                  box-shadow var(--dur-1, 150ms) var(--ease);
     }
-    .form-group input:focus,
-    .form-group textarea:focus { border-color: #0a0a0a; }
-    .form-group textarea { resize: vertical; min-height: 84px; }
-    .form-group input::placeholder,
-    .form-group textarea::placeholder { color: #bbb; }
-
-    /* checkboxes */
-    .check-label {
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 10px;
+    .form-group input { height: 48px; padding: 0 var(--s-4, 16px); }
+    .form-group textarea {
       display: block;
-      color: #111;
+      padding: var(--s-3, 12px) var(--s-4, 16px);
+      min-height: 168px;
+      resize: vertical;
     }
-    .checks {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
+    .form-group input:hover,
+    .form-group textarea:hover { border-color: var(--border-strong, #c4c4bc); }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #cbd5e1;
+      box-shadow: 0 0 0 3px #cbd5e1;
     }
-    .check-item {
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--fg-muted, #88887d); }
+
+    .form-foot {
       display: flex;
       align-items: center;
-      gap: 9px;
-      cursor: pointer;
+      justify-content: space-between;
+      gap: var(--s-4, 16px);
+      margin-top: var(--s-6, 24px);
     }
-    .check-item input[type="checkbox"] {
-      width: 15px;
-      height: 15px;
-      accent-color: #0a0a0a;
-      cursor: pointer;
-      flex-shrink: 0;
+    .form-foot__note {
+      font-size: var(--t-sm, 14px);
+      line-height: 1.5;
+      color: var(--fg-mid, #5d5d54);
       margin: 0;
     }
-    .check-item span { font-size: 13.5px; color: #333; }
-
-    /* submit */
-    .btn-submit {
-      display: block;
-      width: 100%;
-      padding: 13px;
-      background: #0a0a0a;
-      color: #fff;
-      border: none;
-      border-radius: 9px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: background .15s;
+    /* The one action is the global nav's Sign In button
+       (.gnav__signup in nav-mega.css) — same pill, colour, type and
+       hover morph. A <button> needs the font and cursor that an <a>
+       gets for free; a form also needs a visible focus ring. */
+    .btn-submit { cursor: pointer; font-family: inherit; line-height: 1.55; }
+    .btn-submit:focus-visible {
+      outline: 3px solid #cbd5e1;
+      outline-offset: 2px;
     }
-    .btn-submit:hover { background: #222; }
-
 
     .contact-page {
       position: relative;
@@ -186,8 +223,15 @@
       .contact-wrap {
         grid-template-columns: 1fr;
         padding: 40px 20px 60px;
-        gap: 40px;
+        gap: 48px;
       }
+    }
+    @media (max-width: 560px) {
+      .contact-card { padding: var(--s-6, 24px) var(--s-5, 20px); border-radius: var(--r-5, 16px); }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+      .form-foot { flex-direction: column-reverse; align-items: stretch; }
+      .btn-submit { justify-content: center; }
+      .form-foot__note { text-align: center; }
     }
   </style>
 </head>
@@ -226,6 +270,7 @@
         <a class="gnav__link" href="docs.html">Docs</a>
         <a class="gnav__link" href="mcp.html">MCP</a>
         <a class="gnav__link" href="labs.html">Labs</a>
+        <a class="gnav__link gnav__link--featured" href="design-system.html">Design System</a>
       </nav>
 
       <div class="gnav__actions">
@@ -250,63 +295,42 @@
 
     <!-- Left copy — Option A: pattern library value prop + proof numbers -->
     <div class="contact-copy">
-      <p class="contact-copy__eyebrow">The AI UX Pattern Library</p>
-      <p class="contact-copy__note">The fastest way to build better AI products isn't starting from scratch—it's building on patterns that already work.</p>
-      <p class="contact-copy__note">Nucleux helps transform proven AI interaction patterns into production-ready experiences, so you can spend more time solving real problems and less time reinventing common ones.</p>
-      <p class="contact-copy__note">Whether you're exploring an idea, improving an existing product, or planning your next release, we'd love to help.</p>
+      <h1 class="contact-copy__title">Build better AI products without starting from scratch</h1>
+      <p class="contact-copy__note">Nucleux turns proven AI interaction patterns into reusable, production-ready experiences.</p>
+      <p class="contact-copy__note">Whether you’re exploring an idea, improving an existing product, or preparing your next release, we can help you move faster with patterns that already work.</p>
 
     </div>
 
-    <!-- Form card -->
+    <!-- Inquiry card — email only, no call to book -->
     <div class="contact-card">
-      <h2>Book your scoping call</h2>
+      <h2 class="contact-card__title">What can we help with?</h2>
+      <p class="contact-card__sub">Just three things.</p>
 
       <form action="https://www.intelligaia.com/contact" method="get" target="_blank">
 
-        <div class="form-group">
-          <label for="name">Your name <span>*</span></label>
-          <input type="text" id="name" name="name" required placeholder="Full name" />
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="name" required autocomplete="name" placeholder="Alex Taylor" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" required autocomplete="email" placeholder="alex@company.com" />
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="email">Email <span>*</span></label>
-          <input type="email" id="email" name="email" required placeholder="you@company.com" />
+          <label for="message">Your inquiry</label>
+          <textarea id="message" name="message" required placeholder="What are you building, and where are you getting stuck?"></textarea>
         </div>
 
-        <span class="check-label">I need help with</span>
-        <div class="checks">
-          <label class="check-item">
-            <input type="checkbox" name="help" value="pattern-library-integration" />
-            <span>Pattern Library Integration</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" name="help" value="ai-experience-design" />
-            <span>AI Experience Design</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" name="help" value="agent-workflow-design" />
-            <span>Agent Workflow Design</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" name="help" value="ai-design-system-audit" />
-            <span>AI Design System Audit</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" name="help" value="custom-pattern-development" />
-            <span>Custom Pattern Development</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" name="help" value="other" />
-            <span>Other</span>
-          </label>
+        <div class="form-foot">
+          <p class="form-foot__note">Your inquiry goes directly to our team.</p>
+          <!-- The same button as Sign In in the global nav (.gnav__signup,
+               nav-mega.css): one primary button across the site. -->
+          <button type="submit" class="gnav__signup btn-submit">Send inquiry</button>
         </div>
-
-        <div class="form-group">
-          <label for="message">What are you looking to build? <span>*</span></label>
-          <textarea id="message" name="message" required placeholder="A sentence or two is enough — we'll dig in on the call."></textarea>
-        </div>
-
-        <button type="submit" class="btn-submit">Request my call →</button>
 
       </form>
     </div>

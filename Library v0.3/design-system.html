@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Design System — Nucleux</title>
+  <meta name="description" content="Gaiametry — the design system behind Nucleux." />
+
+  <!-- ── SHARE CARD ──
+       X (and LinkedIn, Slack, iMessage…) build their link preview by
+       crawling these tags, not from anything the share button can pass in
+       the intent URL — there is no way to attach an image to a post from a
+       link. `summary_large_image` is what makes the card render as the wide
+       banner rather than a small thumbnail. The image URL must be absolute
+       and publicly reachable: the crawler fetches it from its own servers,
+       so a relative path or a localhost address renders no card at all. -->
+  <link rel="canonical" href="https://nucleux.in/design-system.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleux" />
+  <meta property="og:url" content="https://nucleux.in/design-system.html" />
+  <meta property="og:title" content="Design System — Nucleux" />
+  <meta property="og:description" content="Gaiametry — the design system behind Nucleux." />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png" />
+  <meta property="og:image:width" content="515" />
+  <meta property="og:image:height" content="272" />
+  <meta property="og:image:alt" content="Nucleux — UI components for AI agents" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Design System — Nucleux" />
+  <meta name="twitter:description" content="Gaiametry — the design system behind Nucleux." />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png" />
+  <meta name="twitter:image:alt" content="Nucleux — UI components for AI agents" />
+
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+  <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="nav-mega.css" />
+  <style>
+    /* The Design System page: Gaiametry shown inside Nucleux, under the
+       Nucleux nav. Only the embedded site scrolls, never this page. */
+    html, body.ds-embed { height: 100%; overflow: hidden; }
+    .ds-frame-wrap { position: relative; overflow: hidden; height: calc(100vh - var(--nav-h)); height: calc(100dvh - var(--nav-h)); background: var(--bg); }
+    /* Gaiametry's own top bar is position:fixed, 65px tall (h-16 + 1px
+       border), so it always sits at the top of the frame. The frame is
+       drawn 65px taller and lifted by that much: the wrapper clips the
+       bar away and only Gaiametry's content shows under the Nucleux nav. */
+    .ds-frame { --ds-crop: 65px; position: absolute; left: 0; top: calc(-1 * var(--ds-crop)); display: block; width: 100%; height: calc(100% + var(--ds-crop)); border: 0; }
+    .ds-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--fg-mid); font-size: 14px; pointer-events: none; transition: opacity .3s; }
+    .ds-frame-wrap.is-loaded .ds-loading { opacity: 0; }
+  </style>
+</head>
+<body class="ds-embed">
+
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M38.0781 11.5382C38.0781 5.9997 40.5397 3.23047 45.4627 3.23047H51.9243V6.92278H46.155C43.5397 6.92278 42.232 8.46124 42.232 11.5382C42.232 14.6151 43.5397 16.1535 46.155 16.1535H51.9243V19.8459H45.4627C40.5397 19.8459 38.0781 17.0766 38.0781 11.5382Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M54.2344 3.23047V19.8459H65.7728V16.1535H58.3882V3.23047H54.2344Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M68.0781 3.23047V19.8459H80.7704V16.1535H72.232V13.1535H79.8474V9.92278H72.232V6.92278H80.7704V3.23047H68.0781Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M83.5391 3V14.0769C83.5391 18.0769 85.8468 20.0769 90.4621 20.0769C95.0775 20.0769 97.3852 18.0769 97.3852 14.0769V3H93.2314V13.6154C93.2314 15.4615 92.3083 16.3846 90.4621 16.3846C88.616 16.3846 87.6929 15.4615 87.6929 13.6154V3H83.5391Z" fill="url(#paint0_linear_mark)"/>
+        <path d="M99.6959 3H104.773L108.465 8.53846L112.157 3H117.696L112.157 11.3077L117.696 19.6154H112.157L108.465 14.0769L104.773 19.6154H99.2344L105.234 11.3077L99.6959 3Z" fill="url(#paint1_linear_mark)"/>
+        <defs>
+        <linearGradient id="paint0_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        </defs>
+        </svg>
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item">
+          <a class="gnav__link" href="#components">Components</a>
+        </div>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+        <a class="gnav__link gnav__link--featured is-current" href="design-system.html" aria-current="page">Design System</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="ds-frame-wrap" id="ds">
+    <div class="ds-loading" aria-hidden="true">Loading Gaiametry…</div>
+    <iframe class="ds-frame" title="Gaiametry design system"
+      allow="clipboard-write; fullscreen" referrerpolicy="strict-origin-when-cross-origin"
+      onload="document.getElementById('ds').classList.add('is-loaded')"></iframe>
+  </main>
+
+  <script>
+  /* ── Design System page: Gaiametry inside Nucleux ─────────────────────
+     Gaiametry's CTAs leave Nucleux: each opens its Gaiametry page as an
+     external link, in a new browser tab.
+
+       Browse components  → https://gaiametry.vercel.app/#/components
+       Start designing    → https://gaiametry.vercel.app/#/designers
+       Start building     → https://gaiametry.vercel.app/#/components
+       Set up your agent  → https://gaiametry.vercel.app/#/ai  (page top)
+       any other route    → that same route on gaiametry.vercel.app
+
+     HOW. Gaiametry serves its page and scripts with
+     `Access-Control-Allow-Origin: *`, so this page fetches Gaiametry's
+     live index.html and renders it in the frame as `srcdoc` (with a
+     <base> pointing at gaiametry.vercel.app). A srcdoc frame belongs to
+     this page's origin, so Nucleux can see which link or button inside
+     it was clicked and send each one to its own destination.
+
+     FALLBACK. If that fetch fails (offline, CORS changed), the frame
+     loads gaiametry.vercel.app directly. Nucleux can then only see that
+     the frame changed route (Gaiametry routes by hash, and every route
+     change adds one entry to this tab's history.length), not which link
+     did it — so any route change opens the components page. */
+  (function () {
+    var GAIA = 'https://gaiametry.vercel.app/';
+    var HOME = GAIA + '#/';
+    var COMPONENTS = GAIA + '#/components';
+    var frame = document.querySelector('.ds-frame');
+
+    /* a CTA by its visible label → where it goes */
+    var BY_LABEL = [
+      [/^\s*Browse components\s*$/i, COMPONENTS],
+      [/^\s*Start designing\s*$/i,   GAIA + '#/designers'],
+      [/^\s*Start building\s*$/i,    COMPONENTS],
+      [/^\s*Set up your agent\s*$/i, GAIA + '#/ai']   /* top of the AI page — #/ai/agents jumps to its 'For agents' section */
+    ];
+
+    /* New, external tab. The click that got us here gives this page the
+       user activation window.open needs; if a browser still refuses the
+       tab, this tab goes instead — never Gaiametry inside Nucleux. */
+    function goOut(url) {
+      var w = null;
+      try { w = window.open(url, '_blank'); } catch (e) {}
+      if (w) { try { w.opener = null; } catch (e) {} }
+      else { window.location.assign(url); }
+    }
+
+    function destFor(el) {
+      var label = (el.textContent || '').trim();
+      for (var i = 0; i < BY_LABEL.length; i++) if (BY_LABEL[i][0].test(label)) return BY_LABEL[i][1];
+      if (el.tagName === 'A') {
+        var href = el.getAttribute('href') || '';
+        if (href.charAt(0) === '#') return GAIA + href;   /* an in-site route */
+        if (/^https?:/i.test(href)) return href;          /* an outside link */
+      }
+      return null;
+    }
+
+    /* ── same-origin mode ── */
+    function wire(win) {
+      var doc = win.document;   /* throws if the frame is not ours */
+      win.addEventListener('click', function (e) {
+        if (e.defaultPrevented || e.button !== 0) return;
+        var t = e.target && e.target.closest ? e.target.closest('a[href], button') : null;
+        if (!t) return;
+        var url = destFor(t);
+        if (!url) return;                   /* copy button, toggles… stay in place */
+        e.preventDefault();
+        e.stopPropagation();
+        goOut(url);
+      }, true);
+      /* Any other route change (a button that routes in script) also
+         leaves: open that route outside and put the embed back home. */
+      win.addEventListener('hashchange', function () {
+        var h = win.location.hash;
+        if (!h || h === '#' || h === '#/') return;
+        goOut(GAIA + h);
+        win.location.hash = '#/';
+      });
+      return doc;
+    }
+
+    function srcdocMode(html) {
+      html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + GAIA + '">');
+      frame.addEventListener('load', function onload() {
+        try { wire(frame.contentWindow); }
+        catch (e) { frame.removeEventListener('load', onload); crossOriginMode(); }
+      });
+      frame.srcdoc = html;
+    }
+
+    /* ── fallback: cross-origin mode ── */
+    function crossOriginMode() {
+      var base = null, armed = false;
+      frame.removeAttribute('srcdoc');
+      frame.name = 'ds-' + Date.now();   /* no stale frame URL restored on Back */
+      frame.addEventListener('load', function () {
+        setTimeout(function () { base = history.length; }, 800);
+      });
+      frame.addEventListener('mouseenter', function () { armed = true; });
+      frame.addEventListener('mouseleave', function () { if (document.activeElement !== frame) armed = false; });
+      addEventListener('blur', function () {
+        setTimeout(function () { if (document.activeElement === frame) armed = true; }, 0);
+      });
+      setInterval(function () {
+        if (base === null || history.length <= base) return;
+        if (armed) {
+          goOut(COMPONENTS);
+          try { frame.contentWindow.location.replace(HOME); } catch (e) { frame.src = HOME; }
+          base = null;
+          setTimeout(function () { base = history.length; }, 400);
+          return;
+        }
+        base = history.length;
+      }, 50);
+      addEventListener('pageshow', function (e) {
+        if (!e.persisted) return;
+        armed = false; base = null;
+        try { frame.contentWindow.location.replace(HOME); } catch (err) { frame.src = HOME; }
+        setTimeout(function () { base = history.length; }, 800);
+      });
+      frame.src = HOME;
+    }
+
+    var done = false;
+    var timer = setTimeout(function () { if (!done) { done = true; crossOriginMode(); } }, 8000);
+    fetch(GAIA, { cache: 'no-store', credentials: 'omit' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (html) { if (done) return; done = true; clearTimeout(timer); srcdocMode(html); })
+      .catch(function () { if (done) return; done = true; clearTimeout(timer); crossOriginMode(); });
+  })();
+  </script>
+  <script src="global.js"></script>
+<script src="nav-splitflap.js"></script>
+<script src="nav-mega.js"></script>
+</body>
+</html>

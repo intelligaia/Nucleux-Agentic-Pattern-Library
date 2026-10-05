@@ -540,7 +540,15 @@
       shown = shownIdx.map(function (i) { return src[i]; });
     }
 
-    return '<ul class="md-kb__srcs" role="list" ' +
+    /* A long list scrolls in place rather than stretching the
+       panel: the first `scrollAfter` rows are what the panel is
+       sized to, and the rest are one scroll away inside it. The
+       exact height is measured after paint (fit, below), because
+       a row with a reason under it is taller than one without. */
+    var scroll = !capped && o.scrollAfter && src.length > o.scrollAfter;
+
+    return '<ul class="md-kb__srcs' + (scroll ? ' md-kb__srcs--scroll' : '') + '" role="list" ' +
+        (scroll ? 'tabindex="0" data-rows="' + o.scrollAfter + '" ' : '') +
         'aria-label="' + esc('Sources in ' + o.name) + '">' +
       (o.group === 'status' && !capped ? grouped(src, o) : rows(shown, o, shownIdx)) +
     '</ul>' +
@@ -859,7 +867,49 @@
              act: 'kb:open' };
   }
 
+  /* ── Fit a scrolling list to its first N rows ─────────────
+     Both surfaces repaint wholesale, so this runs after every
+     paint: it sizes each scrolling list to the bottom of its Nth
+     row, puts back the scroll position the previous paint had
+     (a remove on row eight must not jump to the top), and marks
+     whether there is more below so the edge can say so. */
+  var kept = {};
+  function more(ul) {
+    ul.classList.toggle('is-more',
+      ul.scrollTop + ul.clientHeight < ul.scrollHeight - 1);
+  }
+  function fit(root) {
+    var lists = (root || document).querySelectorAll('.md-kb__srcs--scroll');
+    [].forEach.call(lists, function (ul) {
+      var n = +ul.getAttribute('data-rows') || 5;
+      var rowsEls = ul.querySelectorAll(':scope > .md-kb__src');
+      if (rowsEls.length > n) {
+        /* Layout boxes, not on-screen ones: the stage scales in
+           on a state change, and a transformed rect is short.
+           The list is position: relative, so offsetTop is from
+           its own top edge. */
+        var last = rowsEls[n - 1];
+        ul.style.maxHeight = Math.ceil(last.offsetTop + last.offsetHeight) + 'px';
+      }
+      var key = ul.getAttribute('aria-label') || '';
+      if (kept[key]) ul.scrollTop = kept[key];
+      more(ul);
+      if (ul._kbFit) return;
+      ul._kbFit = true;
+      ul.addEventListener('scroll', function () {
+        kept[key] = ul.scrollTop; more(ul);
+      }, { passive: true });
+    });
+  }
+  if (typeof window !== 'undefined') {
+    var rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt); rt = setTimeout(function () { fit(document); }, 120);
+    });
+  }
+
   window.MaterialKB = {
+    fit: fit,
     BASES: BASES, STATES: STATES, SOURCE: SOURCE, KIND: KIND,
     ICONS: ICONS, ORIGIN: ORIGIN,
     base: base, sources: sources, tally: tally, derive: derive,

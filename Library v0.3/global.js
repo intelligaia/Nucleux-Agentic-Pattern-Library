@@ -1362,8 +1362,11 @@
     var html = "";
     if (center) {
       center.querySelectorAll("a").forEach(function (a) {
-        html += '<a class="gnav__mobile-link" href="' + a.getAttribute("href") + '">' +
+        var ext = a.getAttribute("target") === "_blank"
+          ? ' target="_blank" rel="noopener noreferrer" aria-label="' + a.textContent.trim() + ' (opens in a new tab)"' : '';
+        html += '<a class="gnav__mobile-link" href="' + a.getAttribute("href") + '"' + ext + '>' +
           a.textContent.trim() +
+          (a.classList.contains("gnav__link--featured") ? '<span class="gnav__badge">Featured</span>' : '') +
           '<svg class="gnav__mobile-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
           '</a>';
       });
@@ -1403,7 +1406,7 @@
       if (e.key === "Escape" && panel.classList.contains("is-open")) close();
     });
     window.addEventListener("resize", function () {
-      if (window.innerWidth > 1080) close();
+      if (window.innerWidth > 1240) close();
     });
   }
 

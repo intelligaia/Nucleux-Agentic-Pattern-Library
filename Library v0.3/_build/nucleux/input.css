@@ -1,0 +1,5 @@
+/* The --nx-* design tokens from @nucleux/tokens (extract-tokens.cjs writes
+   tokens.css), then the utilities the components use. No @tailwind base. */
+@import "./tokens.css";
+@tailwind components;
+@tailwind utilities;

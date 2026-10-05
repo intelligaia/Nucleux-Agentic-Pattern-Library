@@ -114,6 +114,16 @@ const R = '[data-sim-root] ';
   await press('kb:open', 450);
   ok('5.1 manage shows the sources',
      (await p.$$(R + '.md-kb__src')).length === 12);
+  const simScroll = await p.evaluate(sel => {
+    const u = document.querySelector(sel + '.md-kb__srcs');
+    const r = [...u.querySelectorAll(':scope > .md-kb__src')];
+    const ub = u.getBoundingClientRect();
+    return { scroll: u.classList.contains('md-kb__srcs--scroll'),
+             seen: r.filter(x => { const b = x.getBoundingClientRect();
+               return b.top >= ub.top - 1 && b.bottom <= ub.bottom + 1; }).length };
+  }, R);
+  ok('5.1b the simulator shows five upfront and scrolls the rest',
+     simScroll.scroll && simScroll.seen === 5, JSON.stringify(simScroll));
   await press('kb:remove:5', 450);
   t = await txt();
   ok('5.2 removing asks first', (await kbState()) === 'confirm', await kbState());

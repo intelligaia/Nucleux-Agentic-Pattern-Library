@@ -13,6 +13,7 @@
      Docs         →  How to use
      MCP          →  Connect to AI
      Labs         →  Motion & Type
+     Design System →  Gaiametry (external, new tab)
    ============================================================ */
 (function () {
   var LABELS = {
@@ -20,7 +21,8 @@
     'Scenarios':  '8 Scenarios',
     'Docs':       'How to use',
     'MCP':        'Connect to AI',
-    'Labs':       'Motion & Type'
+    'Labs':       'Motion & Type',
+    'Design System': 'Gaiametry'
   };
 
   var FLIP_DURATION  = 75;   // per intermediate glyph
@@ -229,8 +231,27 @@
       link.addEventListener('mouseenter', function () { animateTo(HOVER); });
       link.addEventListener('mouseleave', function () { animateTo(LABEL, true); });
     }
-    link.addEventListener('focus', function () { animateTo(HOVER); });
+    /* Keyboard focus only. A mouse click also focuses the link, and when
+       the window regains focus (e.g. coming back from a tab the link
+       opened) the browser re-focuses it — that must not flip the label. */
+    link.addEventListener('focus', function () {
+      var kb = true;
+      try { kb = link.matches(':focus-visible'); } catch (e) {}
+      if (kb) animateTo(HOVER);
+    });
     link.addEventListener('blur',  function () { animateTo(LABEL, true); });
+
+    /* Leaving the page never fires mouseleave, so a label could be left
+       showing its hover text. Whenever the page is left or returned to,
+       it shows its own name again. */
+    function reset() { animateTo(LABEL, true); }
+    link.addEventListener('click', function () {
+      if (link.target === '_blank') { reset(); link.blur(); }
+    });
+    addEventListener('blur', reset);
+    addEventListener('focus', reset);
+    addEventListener('pageshow', reset);
+    document.addEventListener('visibilitychange', reset);
   }
 
   function init() {
