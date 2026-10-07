@@ -191,12 +191,15 @@ const ST = '.pv-stage ';
   await p.click(ST + '[data-act="ax:add:0"]'); await p.waitForTimeout(300);
   ok('5.1 adding context keeps the placed text', (await V()).value === before && (await state()) === 'Prompt placed in composer');
   await p.click(ST + '[data-act="voice:start"]'); await p.waitForTimeout(300);
-  await p.click(ST + '[data-act="voice:cancel"]'); await p.waitForTimeout(300);
+  ok('5.1b no microphone permission panel — voice starts listening at once', !(await p.$(ST + '[data-act="vx:allow"]')));
+  await p.click(ST + '[data-act="vx:cancel"]'); await p.waitForTimeout(300);
   ok('5.2 voice in and out keeps it', (await V()).value === before);
-  ok('5.3 one row, as Open Input: no model chip, field and send side by side (user request)', await p.evaluate(ST => {
+  ok('5.3 one row with the four actions: + · field · model · mic · send (user request, 7 Oct)', await p.evaluate(ST => {
     const f = document.querySelector(ST + '.ax__composer'), t = f.querySelector('[data-ax-field]'), send = f.querySelector('.ax__cbtn--send');
+    const m = f.querySelector('.ax__mode--model'), mic = f.querySelector('.ax__cbtn--mic');
     const a = t.getBoundingClientRect(), b = send.getBoundingClientRect();
-    return !f.querySelector('.ax__mode--model') && !f.hasAttribute('data-layout') && a.right <= b.left; }, ST));
+    return !!m && !!mic && !!f.querySelector('[data-act$="ax:plus"]') && !f.hasAttribute('data-layout') && a.right <= m.getBoundingClientRect().left &&
+      m.getBoundingClientRect().right <= mic.getBoundingClientRect().left && mic.getBoundingClientRect().right <= b.left; }, ST));
 
   /* ══ 6 · Edit it: it is simply their request now ═══════════ */
   await p.click(ST + '[data-ax-field]');

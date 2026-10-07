@@ -55,9 +55,9 @@ const URL = 'http://127.0.0.1:8901/material-pattern.html?id=suggested-prompts';
       entry: 'empty', running: false, maxLines: 6, label: 'Message Aria', busy: false });
     const a = tmp.querySelector('form'), b = document.querySelector(R + '.ax__dock .ax__composer');
     return a.className === b.className && !!b.querySelector('.ax__cbtn--mic') && !!b.querySelector('[data-act="ax:plus"]') &&
-      !b.querySelector('.ax__mode--model') && !b.hasAttribute('data-layout');
+      !!b.querySelector('.ax__mode--model') && !!b.querySelector('.ax__cbtn--send') && !b.hasAttribute('data-layout');
   }, R);
-  ok('1.3 the SAME working composer as Open Input', same);
+  ok('1.3 the SAME working composer as Open Input, with + · model · mic · send', same);
 
   /* ══ 2 · Choose one ════════════════════════════════════════ */
   await p.click(R + '.md-sp__item[data-sp-id="decisions"]');

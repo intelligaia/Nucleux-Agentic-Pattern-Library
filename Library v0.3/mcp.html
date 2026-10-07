@@ -63,6 +63,11 @@
     .mcp-hero {
       padding-block: var(--s-16) var(--s-12);
       border-bottom: 1px solid var(--border);
+      /* The Scenarios page background (.shape in styles.css): pink glow top-right, violet top-left. */
+      background:
+        radial-gradient(900px 420px at 88% -10%, rgba(233,75,156,0.10), transparent 60%),
+        radial-gradient(820px 460px at 4% 6%, rgba(124,92,246,0.10), transparent 58%),
+        var(--bg);
     }
     /* Subtle gradient glow behind the diagram */
     .mcp-hero__right {
@@ -558,6 +563,7 @@
         <a class="gnav__link is-current" href="mcp.html">MCP</a>
         <a class="gnav__link" href="labs.html">Labs</a>
         <a class="gnav__link gnav__link--featured" href="design-system.html">Design System</a>
+        <a class="gnav__link" href="blog.html">Blog</a>
       </nav>
       <div class="gnav__actions">
         <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">

@@ -10,7 +10,9 @@ const { chromium } = require(process.env.PW || '/opt/node-tools/node_modules/pla
 let pass = 0, fail = 0;
 const ok = (m, c, d) => { c ? pass++ : (fail++, console.log('  FAIL ' + m + (d ? '  → ' + d : ''))); };
 const BASE = 'http://127.0.0.1:8901/material-pattern.html?id=';
-const IDS = ['initial-cta', 'open-input', 'suggested-prompts', 'model-selection', 'attachments', 'voice-input'];
+/* Voice and Visual Input carry the same halo (user request, 6 Oct). While voice is
+   live the halo steps back for the voice's own gradient (pinned below and in vx.test.js). */
+const IDS = ['initial-cta', 'open-input', 'suggested-prompts', 'model-selection', 'attachments', 'voice-input', 'visual-input'];
 
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
@@ -65,6 +67,38 @@ const IDS = ['initial-cta', 'open-input', 'suggested-prompts', 'model-selection'
     ok(id + ': on a white ground (user request)', await p.evaluate(() =>
       getComputedStyle(document.querySelector('.pv-frame')).backgroundColor === 'rgb(255, 255, 255)'));
   }
+
+  /* Voice: the halo steps back while listening, and returns after. */
+  await p.goto(BASE + 'voice-input', { waitUntil: 'networkidle' }); await p.waitForTimeout(900);
+  const hop = () => p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.pv-stage .pv-aura .ax__aura')).opacity));
+  ok('voice: halo visible at rest', (await hop()) > 0.9);
+  await p.click('.pv-stage [data-act="voice:start"]'); await p.waitForTimeout(300);
+  await p.click('.pv-stage [data-act="vx:allow"]').catch(() => {}); await p.waitForTimeout(800);
+  ok('voice: halo steps back while listening', (await hop()) < 0.05);
+  await p.click('.pv-stage [data-act="vx:cancel"]'); await p.waitForTimeout(800);
+  ok('voice: halo returns after', (await hop()) > 0.9);
+
+  /* Zero state only (user request, 6 Oct): every further Voice / Visual state has no halo. */
+  const pvOn = () => p.evaluate(() => { const a = document.querySelector('.pv-stage .pv-aura'); return a ? +getComputedStyle(a).opacity : 0; });
+  const goState = async n => { await p.click('.pv-select__btn'); await p.waitForTimeout(120);
+    await p.$$eval('.pv-select__opt', (o, n) => o.find(x => x.textContent.trim() === n).click(), n); await p.waitForTimeout(700); };
+  for (const [id, zero] of [['voice-input', 'Ready'], ['visual-input', 'No visual']]) {
+    await p.goto(BASE + id, { waitUntil: 'networkidle' }); await p.waitForTimeout(900);
+    ok(id + ': zero state has the halo', (await pvOn()) > 0.8);
+    const names = await p.$$eval('.pv-select__opt', o => o.map(x => x.textContent.trim()));
+    const lit = [];
+    for (const n of names) { if (n === zero) continue; await goState(n); if ((await pvOn()) > 0.05) lit.push(n); }
+    ok(id + ': no further state has a halo', lit.length === 0, lit.join(', '));
+    await goState(zero);
+    ok(id + ': back to the zero state, the halo returns', (await pvOn()) > 0.8);
+  }
+  await p.goto(BASE + 'visual-input', { waitUntil: 'networkidle' }); await p.waitForTimeout(900);
+  await (await p.$('[data-sim-root]')).scrollIntoViewIfNeeded();
+  const simOn = () => p.evaluate(() => { const a = document.querySelector('[data-sim-root] .ax__aura'); return a ? +getComputedStyle(a).opacity : 0; });
+  ok('visual sim: zero state has the halo', (await simOn()) > 0.8);
+  await p.click('[data-sim-root] [data-act="ax:plus"]'); await p.waitForTimeout(250);
+  await p.click('[data-sim-root] [data-act="ax:add:0"]'); await p.waitForTimeout(900);
+  ok('visual sim: an attached visual has no halo', (await simOn()) < 0.05);
 
   /* It follows the composer: growth, focus, the hand-over, running. */
   await p.goto(BASE + 'open-input', { waitUntil: 'networkidle' }); await p.waitForTimeout(900);

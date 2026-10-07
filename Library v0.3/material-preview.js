@@ -175,9 +175,9 @@
     if (c.multiline !== false && +c.maxLines > 8)
       out.push('At ' + c.maxLines + ' lines the composer starts to crowd the conversation it is ' +
                'part of. Past the ceiling it scrolls, which is what a long request should do.');
-    if (c.showPlus !== false && c.showMic !== false && c.showModel && c.narrow === 'inline')
-      out.push('Three secondary controls on one row leave the field a sliver on a narrow panel. ' +
-               'Stack the field above the controls, or show fewer of them.');
+    if (c.narrow === 'inline')
+      out.push('Four controls on one row leave the field a sliver on a narrow panel. ' +
+               'Stack the field above the controls.');
     return out;
   }
   function oiGuard(root, s) {
@@ -348,13 +348,411 @@
   }
   function spEdited(prompt, suffix) { return String(prompt || '').replace(/[.…!?]+\s*$/, '') + suffix; }
 
-  /* ── Icons: the vocabulary's demo, guidance and run ─────── */
+  /* ── Voice Input: demo + guidance ─────────────────────────── */
+  function vxM() { return window.MaterialSim; }
+  var VX_TYPED = 'For the 2.4 release,';
+  var VX_MAP = { denied: 'ready' };
+  function vxDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.kind === 'vx' && s.demo.on === st) return s.demo;
+    if (s.demo && s.demo.kind === 'vx' && vxM() && vxM().vx) vxM().vx.halt(s.demo);
+    var S = vxM() && vxM().vx;
+    var all = S ? S.SCRIPT.slice() : [];
+    var d = { kind: 'vx', on: st, state: st, typed: VX_TYPED, text: VX_TYPED, heard: [], elapsed: 0,
+              granted: st !== 'ready' && st !== 'permission', run: 0 };
+    if (st === 'listening') { d.kick = 'listen'; d.state = 'ready'; }
+    if (st === 'paused') { d.heard = all.slice(0, 6); d.elapsed = 4; }
+    if (st === 'processing') { d.heard = all; d.elapsed = 6; d.kick = 'stop'; d.state = 'paused'; }
+    if (st === 'transcribed' || st === 'editing') {
+      d.before = VX_TYPED; d.fromVoice = true;
+      d.text = S ? S.join(VX_TYPED, all) : '';
+      if (st === 'editing') d.text = d.text.replace(/\.$/, ', and highlight anything blocking launch.');
+    }
+    if (st === 'nounderstand') d.heard = all.slice(0, 2);
+    s.demo = d;
+    return d;
+  }
+  function vxCfg(d, c) {
+    d.label = c.label; d.placeholder = c.placeholder;
+    d.permissionText = c.permissionText; d.failureText = c.failureText;
+    d.live = c.live !== false; d.pause = c.pause !== false;
+    d.autoStop = c.autoStop === 'off' ? 0 : +c.autoStop || 0;
+    d.maxSec = +c.maxSec || 60;
+    d.glow = c.glow || 'standard'; d.emphasis = c.emphasis || 'strong'; d.density = c.density || 'comfortable';
+  }
+  /* The host side of the shared controller: where the session lives,
+     how to repaint, how to speak. The read-out follows the session. */
+  function vxIO(ctx, d) {
+    var s = ctx.s;
+    return {
+      root: function () { return document.querySelector('.pv-stage .md-vx'); },
+      paint: function () { var st = VX_MAP[d.state] || d.state; s.state = st; d.on = st; ctx.paint(); },
+      announce: function (t) {
+        ctx.announce(t);
+        var sr = document.querySelector('.pv-stage [data-vx-sr]');
+        if (sr) sr.textContent = t;
+      }
+    };
+  }
+  function vxSend(root, s) {
+    var d = s.demo;
+    if (!d || !(d.text || '').trim()) return;
+    d.pending = 'send';
+    var b = root.querySelector('.pv-stage [data-act="vx:sync"]');
+    if (b) b.click();
+  }
+  function vxGuards(c) {
+    var out = [];
+    if (!(c.label || '').trim()) out.push('The listening state has no words. The lit microphone and clock need a label — “Listening”.');
+    var p = (c.permissionText || '').trim();
+    if (!p) out.push('The permission panel has no explanation. Say what is needed, why, when it is on and how to stop it.');
+    else if (!/\b(to|so|because|while|only)\b/i.test(p)) out.push('The permission text does not say why or when the microphone is used.');
+    var f = (c.failureText || '').trim();
+    if (!f || /something went wrong|an error occurred|^error\b/i.test(f))
+      out.push('“' + (f || 'nothing') + '” is not a recovery. Say what happened — the panel then offers Retry, Edit captured text and Type instead.');
+    if (c.editable === false) out.push('The transcript cannot be corrected before sending. Misheard words would go to the agent as if you had typed them.');
+    if (c.glow === 'off' && c.emphasis === 'subtle') out.push('With no gradient and a subtle microphone, capture rests on a small light. Keep one of them strong so nobody wonders whether it is still listening.');
+    return out;
+  }
+  function vxGuard(root, s) {
+    var stage = root.querySelector('.pv-stage');
+    if (!stage) return;
+    var old = stage.querySelector('.pv-guard');
+    if (old) old.remove();
+    var list = vxGuards(s.cfg);
+    if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend',
+      '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+        '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p>' +
+        '<ul>' + list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div>');
+  }
+
+  /* ── Voice in other composers (Initial CTA, Open Input, Suggested
+     Prompts): the microphone runs the Voice Input session — permission,
+     listening with Pause / Stop / Cancel, the transcript marked "From
+     voice" with Undo — instead of the old simple voice mode. */
+  /* granted: the host already has the microphone, so no permission panel. */
+  function pvVx(d, script, granted) {
+    var V = vxM() && vxM().vx;
+    if (!V) return null;
+    if (!d.vx) d.vx = V.session({ script: script ? script.split(' ') : null, granted: !!granted });
+    var v = d.vx;
+    if (v.state === 'transcribed' && (d.text || '') !== v.text) v.state = 'editing';
+    if (/^(transcribed|editing)$/.test(v.state) && !(d.text || '').trim()) { v.state = 'ready'; v.fromVoice = false; }
+    if (!/^(listening|paused|processing)$/.test(v.state)) v.text = d.text || '';
+    return v;
+  }
+  function pvVxAct(a, d, ctx, script, granted) {
+    if (a === 'voice:stop') a = 'vx:stop';
+    if (a === 'voice:cancel') a = 'vx:cancel';
+    if (!/^(voice:start|vx:)/.test(a)) return false;
+    var v = pvVx(d, script, granted); if (!v) return true;
+    if (a === 'voice:start') {
+      if (v.state === 'unavailable') { ctx.announce('Voice input is unavailable. Type instead.'); return true; }
+      v.text = d.text || ''; d.plusOpen = d.modesOpen = d.effortOpen = false;
+    }
+    vxM().vx.act(a, v, {
+      root: function () { return document.querySelector('.pv-stage .md-vx'); },
+      paint: function () {
+        if (ctx.s.demo !== d) { vxM().vx.halt(v); return; }
+        if (!/^(listening|paused|processing)$/.test(v.state)) d.text = v.text || '';
+        if (v.focusField) { v.focusField = false; d.focus = true; }
+        ctx.paint();
+      },
+      announce: function (x) { ctx.announce(x); var sr = document.querySelector('.pv-stage [data-vx-sr]'); if (sr) sr.textContent = x; }
+    });
+    return true;
+  }
+
+  /* ── Visual Input: demo + guidance ─────────────────────────── */
+  var VI_TYPED = 'Review this dashboard and tell me what looks unusual.';
+  function viOn(c) {
+    return ['upload', 'camera', 'recent', 'screen'].filter(function (k) {
+      return c['src' + k.charAt(0).toUpperCase() + k.slice(1)] !== false;
+    });
+  }
+  function viDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.kind === 'vi' && s.demo.on === st) return s.demo;
+    var I = vxM() && vxM().vi ? vxM().vi.ITEMS : {};
+    var v = { kind: 'vi', on: st, state: st, text: VI_TYPED, item: null, sharing: null };
+    if (st === 'attached') v.item = I.upload;
+    if (st === 'sharing') { v.item = I.screen; v.sharing = I.screen.name; }
+    if (st === 'processing') { v.item = I.upload; v.state = 'attached'; v.kick = 'send'; }
+    if (st === 'ready') { v.text = ''; v.answered = true; v.sent = { text: VI_TYPED, name: I.upload.name, thumb: 'dash' };
+      v.answer = 'Two things look unusual: sign-ups fell 18% on 14 Sep, and refunds doubled in the last week. Nothing else moved more than 5%.'; }
+    if (st === 'permission') v.ask = 'screen';
+    if (st === 'unsupported') v.bad = I.video;
+    if (st === 'failed') v.item = I.blurry;
+    s.demo = v;
+    return v;
+  }
+  function viCfg(v, c) {
+    v.sources = viOn(c); v.preview = c.preview !== false; v.replace = c.replace !== false; v.remove = c.remove !== false;
+    v.label = c.label; v.screenText = c.screenText; v.cameraText = c.cameraText; v.unsupportedText = c.unsupportedText;
+    v.thumb = c.thumb; v.emphasis = c.shareEmphasis;
+  }
+  function viIO(ctx, v) {
+    var s = ctx.s;
+    return {
+      paint: function () { s.state = v.state === 'denied' ? 'none' : v.state; v.on = s.state; ctx.paint(); },
+      announce: function (t) { ctx.announce(t); var sr = document.querySelector('.pv-stage [data-vi-sr]'); if (sr) sr.textContent = t; }
+    };
+  }
+  function viSendPreview(ctx, v, io) {
+    var text = (v.text || '').trim();
+    if (!text && !v.item) return;
+    var it = v.item, live = !!v.sharing;
+    v.state = 'processing'; io.paint();
+    io.announce(it ? (live ? 'Sent. Aria is looking at the shared window.' : 'Sent. Aria is reading ' + it.name + '.') : 'Sent.');
+    var mine = v.runs = (v.runs || 0) + 1;
+    return wait(1600).then(function () {
+      if (ctx.s.demo !== v || v.runs !== mine) return;
+      if (it && it.thumb === 'blur') { v.state = 'failed'; io.paint(); io.announce('Couldn’t read the image — it’s too blurry. Your message is kept.'); return; }
+      v.sent = { text: text, name: it ? it.name : '', thumb: it ? it.thumb : '' };
+      v.answer = live ? 'From the shared window: activation fell most (41% → 32%); revenue rose 12%; sign-ups and churn barely moved.'
+        : it ? 'Two things look unusual: sign-ups fell 18% on 14 Sep, and refunds doubled in the last week. Nothing else moved more than 5%.'
+        : 'I only have your words — add the dashboard and I can point to what changed.';
+      v.text = ''; v.answered = true;
+      if (!live) v.item = null;
+      v.state = live ? 'sharing' : 'ready';
+      io.paint();
+      io.announce('Aria answered' + (it ? ', using ' + it.name : '') + '.');
+    });
+  }
+  function viGuards(c) {
+    var out = [], on = viOn(c);
+    if (!on.length) out.push('No sources are allowed, so + has nothing to offer. Keep at least one, or hide visual input.');
+    if (c.preview === false) out.push('Without a preview, the visual becomes a small chip. Once it is part of the request, people need to see what the agent will see.');
+    if (c.remove === false) out.push('The visual cannot be removed. People must be able to take back what they showed before sending.');
+    if (on.indexOf('screen') !== -1 && !/\b(only|choose)\b/i.test(c.screenText || '')) out.push('The sharing explanation does not say that only the chosen window is shared, or how to stop.');
+    if (on.indexOf('camera') !== -1 && !(c.cameraText || '').trim()) out.push('The camera request has no explanation of what it is for and when it is on.');
+    if (!(c.unsupportedText || '').trim() || /something went wrong|not supported\.?$/i.test(c.unsupportedText)) out.push('The unsupported message should say what CAN be used, not only what cannot.');
+    return out;
+  }
+  function viGuard(root, s) {
+    var stage = root.querySelector('.pv-stage'); if (!stage) return;
+    var old = stage.querySelector('.pv-guard'); if (old) old.remove();
+    var list = viGuards(s.cfg); if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend', '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+      '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p><ul>' +
+      list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>');
+  }
+
+  /* ── Handwriting Input: demo + guidance ─────────────────────── */
+  var HW_TYPED = 'Next sprint:';
+  var HW_PADS = /^(pad|writing|recognizing|recognized|editing|failed)$/;
+  /* Controller state → the documented state in the read-out. */
+  function hwShown(h) {
+    if (h.state === 'pad') return (h.strokes || []).length || h.sampleN ? 'writing' : 'ready';
+    if (h.state === 'inserted') return 'added';
+    return h.state;
+  }
+  function hwDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.kind === 'hw' && s.demo.on === st) return s.demo;
+    if (s.demo && s.demo.kind === 'hw') s.demo.run = (s.demo.run || 0) + 1;
+    var H = vxM() && vxM().hw;
+    var read = function (fix) { return (H ? H.READ : []).map(function (x) { return { w: fix && x.alt ? 'flow' : x.w, c: x.c, alt: x.alt, ok: fix && !!x.alt }; }); };
+    var h = { kind: 'hw', on: st, state: 'pad', text: HW_TYPED, strokes: [], sampleN: 0, read: null, pick: null, run: 0 };
+    if (st === 'writing') { h.state = 'writing'; h.sampleN = 3; }
+    if (st === 'recognizing') { h.state = 'writing'; h.sampleN = 3; h.kick = 'recognize'; }
+    if (st === 'recognized') { h.state = 'recognized'; h.sampleN = 3; h.read = read(false); }
+    if (st === 'editing') { h.state = 'editing'; h.sampleN = 3; h.read = read(true); }
+    if (st === 'failed') { h.state = 'failed'; h.strokes = [[[.06, .5], [.12, .3], [.2, .62], [.27, .35], [.33, .58]], [[.4, .4], [.5, .55], [.58, .32]]]; }
+    if (st === 'unavailable') h.state = 'unavailable';
+    if (st === 'added') { h.state = 'inserted'; h.sampleN = 3; h.read = read(true); h.before = HW_TYPED; h.text = HW_TYPED + ' Review onboarding flow'; h.fromInk = true; h.attachInk = true; }
+    s.demo = h;
+    return h;
+  }
+  function hwCfg(h, c) {
+    h.mode = c.mode || 'review'; h.keep = c.keep !== false; h.undo = c.undo !== false; h.sample = true;
+    h.ink = c.ink || 'medium'; h.emphasis = c.emphasis || 'strong';
+    h.statusText = c.statusText; h.failureText = c.failureText; h.unavailableText = c.unavailableText;
+    if (h.state === 'inserted' && !h.keep && !h.keptOnly) h.attachInk = false;
+  }
+  function hwIO(ctx, h) {
+    var s = ctx.s;
+    return {
+      paint: function () { var st = hwShown(h); s.state = st; h.on = st; ctx.paint(); },
+      announce: function (t) { ctx.announce(t); var sr = document.querySelector('.pv-stage [data-hw-sr]'); if (sr) sr.textContent = t; }
+    };
+  }
+  function hwSendPreview(ctx, h, io) {
+    var text = (h.text || '').trim();
+    if (!text) return;
+    h.sent = { text: text, ink: !!h.fromInk, attached: !!h.attachInk };
+    h.answer = /flow/i.test(text)
+      ? 'Here’s a review of the onboarding flow, screen by screen: Welcome, Workspace name, Invite teammates, Connect a source. Two of the three open comments are on Workspace name.'
+      : 'I have your words. If you meant the onboarding flow, I can plan a screen-by-screen review.';
+    h.text = ''; h.before = ''; h.fromInk = false; h.attachInk = false; h.keptOnly = false;
+    h.strokes = []; h.sampleN = 0; h.read = null; h.state = 'ready';
+    io.paint(); io.announce('Sent. Aria answered.');
+  }
+  function hwGuards(c) {
+    var out = [];
+    if (c.mode === 'auto') out.push('Converting automatically skips the review step. Uncertain words still stop for a look — keep the “From handwriting” marker and Undo so the text can be taken back.');
+    if (c.undo === false) out.push('Without Undo, one slip of the pen means clearing everything and starting again.');
+    if (c.keep === false) out.push('The original ink is discarded once the text is added, so there is nothing left to check the recognized words against.');
+    if (!(c.failureText || '').trim() || /something went wrong|error|^failed/i.test(c.failureText)) out.push('The failure message should say what could not be read, in plain words — the actions (rewrite, retry, keep, type) are offered beside it.');
+    if (!(c.statusText || '').trim()) out.push('Recognizing has no status text. Say what is happening while the ink is being read.');
+    return out;
+  }
+  function hwGuard(root, s) {
+    var stage = root.querySelector('.pv-stage'); if (!stage) return;
+    var old = stage.querySelector('.pv-guard'); if (old) old.remove();
+    var list = hwGuards(s.cfg); if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend', '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+      '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p><ul>' +
+      list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>');
+  }
+
+  /* ── Gesture Input: demo + guidance ─────────────────────────── */
+  var GE_ASK = 'Why did this drop?';
+  function geOn(c) {
+    return ['circle', 'highlight', 'tap', 'region'].filter(function (k) { return c['t' + k.charAt(0).toUpperCase() + k.slice(1)] !== false; });
+  }
+  function geDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.kind === 'ge' && s.demo.on === st) return s.demo;
+    if (s.demo && s.demo.kind === 'ge') s.demo.demoRun = (s.demo.demoRun || 0) + 1;
+    var conv = { id: 'conversion', label: 'Conversion chart' };
+    var g = { kind: 'ge', on: st, state: st, tool: 'circle', text: '', sels: [], cands: [], path: [], pick: null };
+    if (st === 'made') g.pick = conv;
+    if (st === 'added') { g.sels = [conv]; g.text = GE_ASK; }
+    if (st === 'using') { g.sels = [conv]; g.text = GE_ASK; g.state = 'added'; g.kick = 'send'; }
+    if (st === 'cleared') g.lastLabel = 'Conversion chart';
+    if (st === 'failed') g.cands = ['conversion', 'funnel'];
+    s.demo = g;
+    return g;
+  }
+  function geCfg(g, c) {
+    g.types = geOn(c); g.auto = !!c.auto; g.confirm = c.confirm !== false; g.multi = !!c.multi;
+    g.labelText = c.labelText; g.ambiguousText = c.ambiguousText; g.failText = c.failText;
+    g.emphasis = c.emphasis || 'strong'; g.boundary = c.boundary || 'dashed';
+    if (g.types.indexOf(g.tool) === -1) g.tool = g.types[0] || 'tap';
+  }
+  function geIO(ctx, g) {
+    var s = ctx.s;
+    return {
+      paint: function () { s.state = g.state; g.on = g.state; ctx.paint(); },
+      announce: function (t) { ctx.announce(t); var sr = document.querySelector('.pv-stage [data-ge-sr]'); if (sr) sr.textContent = t; },
+      root: function () { return document.querySelector('.pv-stage .md-gep'); }
+    };
+  }
+  function geSendPreview(ctx, g, io) {
+    var text = (g.text || '').trim();
+    if (!text) return;
+    var M = vxM().ge, sel = (g.sels || []).map(function (x) { return M.label(g, x); }).join(' · ');
+    g.sent = { text: text, sel: sel }; g.answer = '';
+    g.text = ''; g.describe = false;
+    g.state = (g.sels || []).length ? 'using' : g.state;
+    io.paint();
+    io.announce((g.sels || []).length ? 'Sent. Aria is looking at the ' + g.sels.map(function (x) { return x.label; }).join(' and ') + '.' : 'Sent.');
+    var mine = g.runs = (g.runs || 0) + 1;
+    return wait(1600).then(function () {
+      if (ctx.s.demo !== g || g.runs !== mine) return;
+      var has = function (id) { return (g.sels || []).some(function (x) { return x.id === id; }); };
+      g.answer = has('conversion')
+        ? 'In the Conversion chart: conversion fell from about 4.1% to 2.9% starting 14 Sep — the week the new sign-up form shipped. Sign-ups held steady, so the drop happens after sign-up.'
+        : (g.sels || []).length ? 'In the ' + g.sels[0].label + ': nothing moved more than 5% this month.'
+        : 'Which part do you mean? Select it on the dashboard, or name it — “the conversion chart”.';
+      if (g.state === 'using') g.state = 'added';
+      io.paint(); io.announce('Aria answered' + ((g.sels || []).length ? ', using the ' + g.sels.map(function (x) { return x.label; }).join(' and ') : '') + '.');
+    });
+  }
+  function geGuards(c) {
+    var out = [], on = geOn(c);
+    if (!on.length) out.push('No gestures are allowed, so Select on screen has nothing to offer. Keep at least one, or hide it.');
+    else if (on.indexOf('tap') === -1) out.push('Without Tap, selecting one thing takes drawing a shape. Tap is the precise gesture — and the closest to a keyboard user’s Tab and Enter.');
+    if (c.confirm === false) out.push('Ambiguous selections are settled by taking the biggest overlap — a guess. Ask instead: a wrong guess points Aria at the wrong thing.');
+    if (c.auto) out.push('Selections join the message without a check. Keep the named chip with ✕ in the composer, so a wrong one is easy to see and remove.');
+    if ((c.labelText || '').indexOf('{name}') === -1) out.push('The selection label does not name what was selected. “Selected: Conversion chart” — not “Selection added”.');
+    if (!(c.ambiguousText || '').trim() || !/\?/.test(c.ambiguousText)) out.push('The ambiguous message should ask a question — which one did you mean — not report an error.');
+    return out;
+  }
+  function geGuard(root, s) {
+    var stage = root.querySelector('.pv-stage'); if (!stage) return;
+    var old = stage.querySelector('.pv-guard'); if (old) old.remove();
+    var list = geGuards(s.cfg); if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend', '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+      '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p><ul>' +
+      list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>');
+  }
+
+  /* ── Structured Input: demo + guidance ─────────────────────── */
+  function siDemo(s) {
+    var st = s.state;
+    if (s.demo && s.demo.kind === 'si' && s.demo.on === st) return s.demo;
+    if (s.demo && s.demo.kind === 'si') s.demo.run = (s.demo.run || 0) + 1;
+    var SUG = vxM() && vxM().si ? vxM().si.SUG : {};
+    var all = function () { return { task: SUG.task, owner: SUG.owner, due: SUG.due, priority: SUG.priority }; };
+    var sugAll = { task: true, owner: true, due: true, priority: true };
+    var f = { kind: 'si', on: st, state: st, v: { task: '', owner: '', due: '', priority: '' }, sug: {}, edited: {}, err: {} };
+    if (st === 'partial') f.v.task = SUG.task;
+    if (/^(complete|invalid|ready|submitted|failed)$/.test(st)) { f.v = all(); f.sug = JSON.parse(JSON.stringify(sugAll)); }
+    if (st === 'invalid') { f.v.due = '2026-10-01'; f.edited.due = true; f.err = { due: 'x' }; }
+    if (st === 'submitted') f.id = 'EXP-214';
+    if (st === 'failed') f.fail = true;
+    s.demo = f;
+    return f;
+  }
+  function siCfg(f, c) {
+    f.req = { owner: c.reqOwner !== false, due: c.reqDue !== false };
+    f.suggest = c.suggest !== false; f.confirm = c.confirm !== false; f.preserve = c.preserve !== false;
+    f.taskLabel = c.taskLabel; f.helpText = c.helpText; f.dateText = c.dateText; f.confirmText = c.confirmText;
+    f.density = c.density || 'comfortable'; f.layout = c.layout || 'grouped';
+    if (!f.suggest) f.sug = {};
+    if (f.state === 'invalid' && f.err.due === 'x') f.err.due = c.dateText || 'Pick a date after today.';
+  }
+  function siGuards(c) {
+    var out = [];
+    if (c.confirm === false) out.push('Creating a task changes another system. Without a review step, one click creates it — keep Review, or at least make Undo prominent.');
+    if (c.preserve === false) out.push('A failed submission clears the form, so a network blip costs the person everything they entered. Keep the values.');
+    if (!(c.dateText || '').trim() || /^(invalid|error|invalid date)\.?$/i.test((c.dateText || '').trim())) out.push('The date message should say how to fix it — “Pick a date after today” — not just “Invalid”.');
+    if (!/\b(create|send|add|update)\b/i.test(c.confirmText || '')) out.push('The confirmation should say what will happen, and where — “Aria will create this task in Orbit”.');
+    if (!(c.taskLabel || '').trim()) out.push('Every field needs a visible label.');
+    return out;
+  }
+  function siGuard(root, s) {
+    var stage = root.querySelector('.pv-stage'); if (!stage) return;
+    var old = stage.querySelector('.pv-guard'); if (old) old.remove();
+    var list = siGuards(s.cfg); if (!list.length) return;
+    stage.insertAdjacentHTML('beforeend', '<div class="pv-guard" role="note" aria-label="Guidance for this configuration">' +
+      '<p class="pv-guard__h">' + mi('info') + '<span>Worth a second look</span></p><ul>' +
+      list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>');
+  }
+
+  /* ── Icons: semantic roles, demo and guidance ───────────────
+     The consuming product names a MEANING (role="ai-action"); the
+     pattern maps it to the approved mark, words and motion. Nobody
+     has to remember which raw glyph means what. */
+  var AII_ROLE_OPTS = [['ai-action', 'AI action'], ['generated-content', 'AI-generated content'],
+                       ['agent-working', 'Agent working'], ['tool-use', 'Tool use']];
+  var AII_ROLE_KEY = { 'ai-action': 'action', 'generated-content': 'generated',
+                       'agent-working': 'working', 'tool-use': 'tool' };
   var AII_ORIGINAL = 'We fixed a bunch of stuff in onboarding and the export thing should work ' +
                      'better now, plus some small UI changes people asked about.';
   var AII_REWRITE = 'Onboarding is quicker to finish, CSV export no longer times out on large ' +
                     'projects, and three small layout fixes customers asked for are in.';
-  var AII_SUMMARY = 'Three changes: onboarding, export reliability and small layout fixes.';
+  /* Per-role words: the label, and the tooltip for when the label is
+     not enough (or not shown). */
+  var AII_WORDS = {
+    action:    { label: 'labelAction',    tip: 'tipAction' },
+    generated: { label: 'labelGenerated', tip: 'tipGenerated' },
+    working:   { label: 'labelWorking',   tip: null },
+    tool:      { label: 'labelTool',      tip: 'tipTool' }
+  };
+  var AII_DEFAULTS = {
+    labelAction: 'Rewrite', tipAction: 'Rewrite with AI',
+    labelGenerated: 'Generated with AI', tipGenerated: 'Written by Aria from your draft. Press for details.',
+    labelWorking: 'Rewriting release note…',
+    labelTool: 'Style guide checked', tipTool: 'Aria checked the draft against the Orbit style guide'
+  };
   var AII_KEY = { action: 'glyphAction', generated: 'glyphGenerated', tool: 'glyphTool' };
+  function aiiRoleOf(c) { return AII_ROLE_KEY[c.role] ? c.role : 'ai-action'; }
+  function aiiKeyOf(c) { return AII_ROLE_KEY[aiiRoleOf(c)]; }
   function aiiPick(c, role) {
     var S = window.MaterialSim;
     if (role === 'working') return 'working';
@@ -369,61 +767,55 @@
     var S = window.MaterialSim;
     return S && S.md3 ? S.md3.chipClass(false, false).replace('md-sp__chip', 'md-aii-chip') : '';
   }
-  var AII_STATES_REST = ['default', 'hover', 'focus', 'pressed'];
+  /* The demo belongs to one role. Switching role starts a fresh one,
+     in the state each role opens in. */
   function aiiDemo(s) {
-    var st = s.state;
-    if (s.demo && s.demo.on === st && s.demo.kind === 'aii') return s.demo;
-    var done = st === 'generated';
+    var role = aiiRoleOf(s.cfg);
+    if (s.demo && s.demo.kind === 'aii' && s.demo.role === role) return s.demo;
     s.demo = {
-      kind: 'aii', on: st, which: 'rewrite',
+      kind: 'aii', role: role, on: s.state, run: 0, open: false,
+      text: role === 'generated-content' ? AII_REWRITE : AII_ORIGINAL,
       original: AII_ORIGINAL,
-      text: st === 'disabled' ? '' : done ? AII_REWRITE : AII_ORIGINAL,
-      phase: st === 'working' ? 'working' : done ? 'done' : 'idle',
-      rewrote: done, tool: st === 'working', toolDone: done,
-      summary: '', explain: null, run: 0
+      /* idle | working | done | stopped */
+      phase: role === 'agent-working' ? 'working' : 'idle'
     };
     return s.demo;
   }
-  async function aiiRun(ctx, which) {
-    var s = ctx.s, d = s.demo, run = (d.run || 0) + 1;
-    d.run = run; d.which = which; d.phase = 'working'; d.tool = false; d.explain = null;
-    s.state = 'working'; d.on = 'working';
-    ctx.paint();
-    ctx.announce(which === 'summarize' ? 'Aria is summarizing the draft.' : 'Aria is rewriting the draft.');
-    await wait(900);
-    if (s.demo !== d || d.run !== run) return;
-    d.tool = true; ctx.paint();
-    await wait(1300);
-    if (s.demo !== d || d.run !== run) return;
-    d.phase = 'done'; d.tool = false; d.toolDone = true;
-    if (which === 'summarize') d.summary = AII_SUMMARY;
-    else { d.original = d.text; d.text = AII_REWRITE; d.rewrote = true; }
-    s.state = 'generated'; d.on = 'generated';
-    ctx.paint();
-    ctx.announce(which === 'summarize' ? 'Summary added, generated with AI.' :
-                 'Draft rewritten, generated with AI. Undo is available.');
-  }
   var AII_VAGUE = /^(ai|magic|ask ai|ask aria|sparkle|generate|smart|assist(ant)?|copilot|try ai|ai magic)\s*[.…!?]*$/i;
+  var AII_VAGUE_TOOL = /^(used? (a )?tools?|tool( call| use)?|ran a tool|working|done)\s*[.…!?]*$/i;
+  /* Quality rules for what the customizer allows. They do not block a
+     choice; they say what it costs, in the stage, as you make it. */
   function aiiGuards(c) {
-    var out = [];
-    var act = (c.actionLabel || '').trim(), io = (c.iconOnlyName || '').trim();
-    if (!act) out.push(c.labels === 'tooltip'
-      ? 'Rewrite is icon-only with no name: a screen reader announces only “button”, and the tooltip is empty.'
-      : 'The AI action has no word. Either give it one, or switch to icon-with-tooltip and name it.');
-    else if (AII_VAGUE.test(act))
-      out.push('“' + act + '” names the technology, not the result. Use the verb for what happens — ' +
-               '“Rewrite”, “Summarize”, “Draft a reply”.');
-    if (!io) out.push('The icon-only action has no accessible name or tooltip. Its meaning would rest on the glyph alone.');
-    else if (!/\b(ai|aria|agent)\b/i.test(io))
-      out.push('“' + io + '” does not say AI does it. Pair an AI mark with words like “… with AI”, ' +
-               'so the name and the mark agree.');
-    if (!(c.generatedLabel || '').trim())
-      out.push('The generated-content mark is shown without its label. Provenance should not depend ' +
-               'on recognising a glyph.');
-    if (!(c.workingLabel || '').trim())
-      out.push('The working mark has no status words. A turning mark alone says “wait”, not what is happening.');
+    var out = [], key = aiiKeyOf(c);
+    var W = AII_WORDS[key];
+    var label = (c[W.label] || '').trim(), tip = W.tip ? (c[W.tip] || '').trim() : '';
+    var showLabel = c.showLabel !== false, showTip = c.showTooltip !== false;
+    var marks = ['action', 'generated', 'tool'].map(function (r) { return aiiPick(c, r); });
+    if (new Set(marks).size < marks.length)
+      out.push('Two roles share one mark. Each meaning needs its own approved glyph.');
+    if (key === 'action') {
+      if (showLabel && !label) out.push('The AI action has no word. Give it the verb for what happens, or hide the label and rely on the tooltip and accessible name.');
+      else if (showLabel && AII_VAGUE.test(label))
+        out.push('“' + label + '” names the technology, not the result. Use the verb for what happens — “Rewrite”, “Summarize”.');
+      if (!showLabel && (!showTip || !tip))
+        out.push('Icon-only with no ' + (!tip ? 'accessible name' : 'tooltip') + ': the mark alone would have to explain itself. Keep the tooltip, and name it “… with AI”.');
+      else if (!showLabel && !/\b(ai|aria|agent)\b/i.test(tip))
+        out.push('“' + tip + '” does not say AI does it. Icon-only AI actions are named “… with AI”, so the name and the mark agree.');
+    }
+    if (key === 'generated') {
+      if (!showLabel || !label) out.push('The generated-content mark is shown without words. Provenance should never depend on recognising a glyph.');
+    }
+    if (key === 'working' || key === 'action') {
+      if (c.animate === false) out.push('Working no longer moves. A still progress mark reads as a broken icon, not as work in progress — keep the turn (reduced-motion settings stop it for those who ask).');
+    }
+    if (key === 'working' && !label)
+      out.push('The working mark has no status words. A turning mark says “wait”, not what the agent is doing.');
+    if (key === 'tool') {
+      if (!showLabel || !label) out.push('The tool mark is shown without the tool’s name. Nobody can infer what a wrench means — say which tool and what it did.');
+      else if (AII_VAGUE_TOOL.test(label)) out.push('“' + label + '” does not name the tool. Write the system and the act: “Style guide checked”.');
+    }
     if (+c.size <= 16 && (c.style || 'outlined') === 'outlined')
-      out.push('Outlined marks at 16 lose their inner detail. Use Filled at 16, or 18 and up.');
+      out.push('Outlined marks at 16 lose their inner detail. Use Filled at 16, or 20 and up.');
     return out;
   }
   function aiiGuard(root, s) {
@@ -799,6 +1191,23 @@
     var foc = !!f.querySelector(':focus') || f.matches(':focus-within');
     a.setAttribute('data-phase', run ? 'thinking' : foc ? 'focus' : 'idle');
   }
+  /* An open Model Selection or effort flyout opens upward. The stage
+     makes room for it (CSS), then trims that room to fit: the flyout
+     sits the same distance below the top of every Live Preview, rather
+     than under a fixed slab of empty space (user request, 7 Oct). */
+  var PV_MENU_TOP = 75;
+  function pvMenuRoom(root) {
+    var st = root && root.querySelector('.pv-stage');
+    if (!st) return;
+    st.style.paddingTop = '';
+    var m = st.querySelector('.ax__menu--model, .ax__menu--effort');
+    if (!m) return;
+    var pt = parseFloat(getComputedStyle(st).paddingTop) || 0;
+    var gap = m.getBoundingClientRect().top - st.getBoundingClientRect().top;
+    var want = Math.max(0, Math.round(pt - (gap - PV_MENU_TOP)));
+    if (want < pt) st.style.paddingTop = want + 'px';
+  }
+
   function pvAura(root) {
     var stage = root.querySelector('.pv-stage');
     if (!stage) return;
@@ -817,7 +1226,12 @@
        once there is a conversation — any turn on the stage — it is gone.
        It fades out on the paint that starts the conversation, and is
        simply absent after that. */
-    var off = !!stage.querySelector('.sim-turn');
+    /* …and in Voice / Visual Input, only the zero state: the first
+       state, nothing sent (user request, 6 Oct). Every further state —
+       listening, a visual attached, sharing, a transcript, an answer —
+       goes without it. */
+    var off = !!stage.querySelector('.sim-turn, .md-vxp__sent, .md-vip__sent, ' +
+      '.md-vx:not([data-vx="ready"]), .md-vi:not([data-vi="none"])');
     host.classList.toggle('has-halo', !off);
     var a = document.createElement('div');
     a.className = 'pv-aura' + (off && !pvAuraWasOn ? ' is-off' : '');
@@ -914,6 +1328,7 @@
       text: st === 'typing' ? IC_TYPING : st === 'ready' ? IC_DRAFT : '',
       focus: st === 'focused' || st === 'typing' || st === 'ready',
       chips: [], model: 'balanced', voice: null,
+      effort: (window.MaterialModel || {}).EFFORT_DEFAULT || 'high',
       turns: st === 'working'
         ? [{ who: 'you', text: IC_DRAFT }, { who: 'aria', text: IC_ANSWER }] : [],
       next: ''
@@ -955,7 +1370,7 @@
     var cap = lines
       ? lines * (parseFloat(cs.lineHeight) || 22) +
         (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0)
-      : 72;
+      : 72 + Math.max(0, (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) - 4);
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, cap) + 'px';
   }
@@ -1002,17 +1417,24 @@
     var def = PATTERNS[id], st = def.states[next];
     s.state = next;
     if (s.demo) s.demo.on = next;
-    var v = root.querySelector('.pv-select__v');
-    if (v) v.textContent = st.label;
-    var sb = root.querySelector('.pv-select__btn');
-    if (sb) sb.setAttribute('aria-label', 'Preview state: ' + st.label);
+    /* A head selector names something else (the role), so it stays. */
+    if (!def.headSelect) {
+      var v = root.querySelector('.pv-select__v');
+      if (v) v.textContent = st.label;
+      var sb = root.querySelector('.pv-select__btn');
+      if (sb) sb.setAttribute('aria-label', 'Preview state: ' + st.label);
+    }
     var rows = root.querySelector('.pv-doc-rows');
-    if (rows) rows.innerHTML = [['State', st.label], ['Trigger', st.trigger],
-        ['Behaviour', st.behaviour], ['Next', st.action]].map(function (r) {
+    var list = [['State', st.label], ['Trigger', st.trigger], ['Behaviour', st.behaviour]];
+    if (st.meaning) list.push(['Meaning', st.meaning]);
+    if (st.next) list.push(['Action', st.action], ['Next', st.next]);
+    else list.push(['Next', st.action]);
+    if (rows) rows.innerHTML = list.map(function (r) {
       return '<div class="pv-row"><dt class="pv-row__k">' + r[0] + '</dt>' +
              '<dd class="pv-row__v">' + r[1] + '</dd></div>';
     }).join('');
     var pre = root.querySelector('.pv-code code');
+    if (window.MaterialSim && window.MaterialSim.axd) window.MaterialSim.axd.use(s.__axd || (s.__axd = {}));
     if (pre) pre.innerHTML = highlight(prettyPrintHtml(def.view(s)));
   }
   function icSubmit(root, s, initial) {
@@ -1079,10 +1501,6 @@
     } else if (ph.length > 72) {
       out.push('This placeholder is turning into instructions, and it disappears on the first ' +
                'keystroke. Keep it to one suggestion; context belongs in the supporting line.');
-    }
-    if (c.showPlus !== false && c.showMic !== false && c.showModel) {
-      out.push('Three secondary controls around one field start to compete with it. Keep the ' +
-               'ones a first request here actually needs.');
     }
     if (c.showLead !== false && (c.lead || '').length > 120) {
       out.push('The supporting line has become a paragraph. One short line; the field is the ' +
@@ -3836,9 +4254,6 @@ card + '>\n' + head +
               multiline: c.multiline !== false,
               maxLines: c.multiline === false ? 1 : +c.maxLines,
               sendKey: c.sendKey,
-              showAddContext: c.showPlus !== false,
-              showVoice: c.showMic !== false,
-              showModel: !!c.showModel,
               emphasis: c.emphasis,
               density: c.density,
               workingPlaceholder: c.workingPlaceholder
@@ -3893,17 +4308,6 @@ card + '>\n' + head +
                       'Enter instead. The line under the field always says which.' }
             ] },
 
-          { id: 'actions', label: 'Secondary actions', section: 'behavior',
-            note: 'Everything here stays subordinate to the field. The invitation is the one ' +
-                  'primary thing on an empty workspace.',
-            controls: [
-              { id: 'showPlus', label: 'Add context', type: 'toggle', value: true },
-              { id: 'showMic', label: 'Voice', type: 'toggle', value: true,
-                hint: 'Voice is a mode of this same composer, not another surface.' },
-              { id: 'showModel', label: 'Model control', type: 'toggle', value: false,
-                hint: 'Only where the host lets people choose. It is the Model Selection chip, ' +
-                      'unchanged.' }
-            ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
           { id: 'look', label: 'Presence', section: 'appearance',
@@ -3960,16 +4364,19 @@ card + '>\n' + head +
 
         var common = {
           agent: 'Aria',
-          plus: c.showPlus === false ? false : IC_PLUS,
+          plus: IC_PLUS,
           plusOpen: !!d.plusOpen, chips: d.chips,
-          mic: c.showMic !== false,
-          mode: d.voice ? 'voice' : 'text', voice: d.voice || null,
+          mic: true,
+          dictation: pvVx(d, 'summarize the biggest risks for the september release', true),
           sendKey: sendKey
         };
-        if (c.showModel && M) {
-          common.models = M.MODELS; common.model = d.model; common.effort = null;
-          common.modesOpen = !!d.modesOpen;
-          common.modelOpts = { showAuto: true, showFor: true, showEffort: false,
+        /* + · model · mic · send are always there (user request, 7 Oct). */
+        if (M) {
+          /* The same chip and flow as Model Selection (user request, 7 Oct):
+             "Balanced High", model list then effort, opening upward. */
+          common.models = M.MODELS; common.model = d.model; common.effort = d.effort;
+          common.modesOpen = !!d.modesOpen; common.effortOpen = !!d.effortOpen;
+          common.modelOpts = { showAuto: true, showFor: true, showEffort: true,
                                modelsHeading: 'Models' };
         }
         var sync = '<button type="button" hidden tabindex="-1" data-act="ic:sync"></button>';
@@ -4100,7 +4507,7 @@ card + '>\n' + head +
            simulator: Add context adds a chip, voice switches the SAME
            composer into its voice mode, the model chip opens the
            Model Selection menu. None of them are drawings. */
-        if (a === 'ax:plus') { d.plusOpen = !d.plusOpen; d.modesOpen = false; ctx.paint(); return; }
+        if (a === 'ax:plus') { d.plusOpen = !d.plusOpen; d.modesOpen = d.effortOpen = false; ctx.paint(); return; }
         if (a.indexOf('ax:add:') === 0) {
           d.plusOpen = false;
           d.chips = (d.chips || []).concat([IC_PLUS[+a.slice(7)]]);
@@ -4110,20 +4517,29 @@ card + '>\n' + head +
           d.chips = (d.chips || []).filter(function (_, i) { return i !== +a.slice(10); });
           ctx.paint(); return;
         }
-        if (a === 'voice:start') { d.voice = 'listening'; d.plusOpen = d.modesOpen = false;
-                                   ctx.paint(); ctx.announce('Listening.'); return; }
-        if (a === 'voice:mute')  { d.voice = d.voice === 'muted' ? 'listening' : 'muted';
-                                   ctx.paint(); return; }
-        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
-          d.voice = null; d.focus = true; ctx.paint();
-          ctx.announce('Voice off. The field is ready for typing.'); return;
+        if (pvVxAct(a, d, ctx, 'summarize the biggest risks for the september release', true)) return;
+        if (!M) return;
+        if (a === 'ax:mode') {
+          if (d.modesOpen || d.effortOpen) d.modesOpen = d.effortOpen = false;
+          else d.modesOpen = true;
+          d.plusOpen = false; ctx.paint(); return;
         }
-        if (a === 'ax:mode') { d.modesOpen = !d.modesOpen; d.plusOpen = false; ctx.paint(); return; }
+        if (a === 'model:effort:focus') return;
         if (a.indexOf('model:pick:') === 0) {
-          d.model = a.slice(11); d.modesOpen = false; ctx.paint();
-          ctx.announce(((M && M.byId(M.MODELS, d.model)) || {}).label + ' selected.'); return;
+          d.model = a.slice(11); d.modesOpen = false; d.effortOpen = true;
+          if (M.holdTrack) M.holdTrack();
+          ctx.paint(); ctx.announce(((M.byId(M.MODELS, d.model)) || {}).label + ' selected. Now set the effort.');
+          return;
         }
-        if (a === 'model:auto:on')  { d.model = 'default'; d.modesOpen = false; ctx.paint(); return; }
+        if (a.indexOf('model:effort:') === 0) {
+          var eid = a.slice(13);
+          if (!M.EFFORT.some(function (x) { return x.id === eid; })) return;
+          d.effort = eid; ctx.paint(); return;
+        }
+        if (a === 'model:back') { d.effortOpen = false; d.modesOpen = true;
+                                  if (M.holdMenu) M.holdMenu(); ctx.paint(); return; }
+        if (a === 'model:auto:on')  { d.model = 'default'; d.modesOpen = false; d.effortOpen = true;
+                                      if (M.holdTrack) M.holdTrack(); ctx.paint(); return; }
         if (a === 'model:auto:off') { d.model = 'balanced'; ctx.paint(); return; }
       }
     },
@@ -4148,9 +4564,6 @@ card + '>\n' + head +
               multiline: c.multiline !== false,
               maxLines: c.multiline === false ? 1 : +c.maxLines,
               sendKey: c.sendKey,
-              showAddContext: c.showPlus !== false,
-              showVoice: c.showMic !== false,
-              showModel: !!c.showModel,
               emphasis: c.emphasis,
               density: c.density,
               narrowLayout: c.narrow,
@@ -4200,15 +4613,6 @@ card + '>\n' + head +
                 visibleWhen: function (c) { return c.multiline !== false; },
                 hint: 'The host’s rule, not the pattern’s. Coding and writing tools increasingly ' +
                       'let Enter make a new line and ⌘ / Ctrl + Enter send.' }
-            ] },
-          { id: 'controls', label: 'Secondary controls', section: 'behavior',
-            note: 'Only the ones this product supports, and all of them secondary to the field. ' +
-                  'Using any of them never touches what is typed.',
-            controls: [
-              { id: 'showPlus', label: 'Add context', type: 'toggle', value: true },
-              { id: 'showMic', label: 'Voice', type: 'toggle', value: true },
-              { id: 'showModel', label: 'Model and effort', type: 'toggle', value: false,
-                hint: 'The Model Selection chip, unchanged — including its effort screen.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
@@ -4279,10 +4683,10 @@ card + '>\n' + head +
         var errText = kind === 'offline' ? c.errOffline : kind === 'unavailable' ? c.errDown : c.errSend;
         var o = {
           agent: 'Aria', ask: c.placeholder, label: 'Message Aria',
-          plus: c.showPlus === false ? false : OI_PLUS,
+          plus: OI_PLUS,
           plusOpen: !!d.plusOpen, chips: d.chips,
-          mic: c.showMic !== false,
-          mode: d.voice ? 'voice' : 'text', voice: d.voice || null,
+          mic: true,
+          dictation: pvVx(d, 'also flag anything new since august', true),
           text: d.text || '',
           entry: oiEntry(st),
           maxLines: multiline ? (+c.maxLines || 6) : 1,
@@ -4295,7 +4699,8 @@ card + '>\n' + head +
           error: d.failed ? { kind: kind, text: errText, retryAct: 'oi:retry',
                               hold: kind === 'unavailable' } : null
         };
-        if (c.showModel && M) {
+        /* + · model · mic · send are always there (user request, 7 Oct). */
+        if (M) {
           o.models = M.MODELS; o.model = d.model; o.effort = d.effort;
           o.modesOpen = !!d.modesOpen; o.effortOpen = !!d.effortOpen;
           o.modelOpts = { showAuto: true, showFor: true, showEffort: true, modelsHeading: 'Models' };
@@ -4426,13 +4831,7 @@ card + '>\n' + head +
           d.chips = (d.chips || []).filter(function (_, i) { return i !== +a.slice(10); });
           ctx.paint(); return;
         }
-        if (a === 'voice:start') { d.voice = 'listening'; d.plusOpen = d.modesOpen = d.effortOpen = false;
-                                   ctx.paint(); ctx.announce('Listening.'); return; }
-        if (a === 'voice:mute')  { d.voice = d.voice === 'muted' ? 'listening' : 'muted'; ctx.paint(); return; }
-        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
-          d.voice = null; d.focus = true; ctx.paint();
-          ctx.announce('Voice off. Your text is where you left it.'); return;
-        }
+        if (pvVxAct(a, d, ctx, 'also flag anything new since august', true)) return;
         if (!M) return;
         if (a === 'ax:mode') {
           if (d.modesOpen || d.effortOpen) { d.modesOpen = d.effortOpen = false; d.focus = true; }
@@ -4641,7 +5040,7 @@ card + '>\n' + head +
         var o = {
           agent: 'Aria', ask: ws.ask, label: 'Message Aria',
           plus: SP_PLUS, plusOpen: !!d.plusOpen, chips: d.chips,
-          mic: true, mode: d.voice ? 'voice' : 'text', voice: d.voice || null,
+          mic: true, dictation: pvVx(d, 'compare these risks with the last release', true),
           text: d.text || '',
           entry: (d.text || '').trim() ? 'ready' : 'empty',
           /* One row, exactly as Open Input's composer (user request):
@@ -4817,13 +5216,7 @@ card + '>\n' + head +
           d.chips = (d.chips || []).filter(function (_, i) { return i !== +a.slice(10); });
           d.focus = true; ctx.paint(); return;
         }
-        if (a === 'voice:start') { d.voice = 'listening'; d.plusOpen = d.modesOpen = d.effortOpen = false;
-                                   ctx.paint(); ctx.announce('Listening.'); return; }
-        if (a === 'voice:mute')  { d.voice = d.voice === 'muted' ? 'listening' : 'muted'; ctx.paint(); return; }
-        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
-          d.voice = null; d.focus = true; ctx.paint();
-          ctx.announce('Voice off. Your text is where you left it.'); return;
-        }
+        if (pvVxAct(a, d, ctx, 'compare these risks with the last release', true)) return;
         if (!M) return;
         if (a === 'ax:mode') {
           if (d.modesOpen || d.effortOpen) { d.modesOpen = d.effortOpen = false; d.focus = true; }
@@ -4850,265 +5243,393 @@ card + '>\n' + head +
     },
 
     /* ── Icons ──────────────────────────────────────────────
-       SEMANTIC AI ICONOGRAPHY (user brief, 1 Oct). Not a glyph
-       picker: a small, stable vocabulary — one mark per meaning —
-       shown where it is used. A release-note editor with ordinary
-       controls beside two AI actions; pressing one shows the
-       working mark and a tool line, and the result carries the
-       generated-content mark. Hover, focus and press are real (the
-       read-out follows them) and can also be held from the list. */
+       SEMANTIC AI ICONOGRAPHY (user brief, 5 Oct). Not a gallery and
+       not a glyph picker: four meanings, one approved mark each.
+       "Icon role ▾" in the head picks the MEANING being demonstrated;
+       the release-note editor shows that one role in place, and its
+       states are reached by using it — hover, focus, press, work,
+       finish, disable — with the read-out following. The Icon
+       language list under it teaches the four side by side, at the
+       sizes products actually use (24, 20, 16). */
     'ai-icons': {
-      initial: 'default',
+      initial: 'rest',
+
+      headSelect: {
+        label: 'Icon role', cfg: 'role', options: AII_ROLE_OPTS,
+        chosen: function (ctx, role) {
+          var o = AII_ROLE_OPTS.filter(function (x) { return x[0] === role; })[0];
+          if (o) ctx.announce('Showing ' + o[1] + '.');
+        }
+      },
 
       customize: {
         api: {
           name: 'AiIcon',
+          /* The props a product writes. Only the role is required; the
+             words and the glyph are emitted only where they differ from
+             that role's Nucleux defaults. */
           props: function (c) {
+            var key = aiiKeyOf(c), W = AII_WORDS[key], ctl = function (id) { return AII_DEFAULTS[id]; };
+            var label = c[W.label], tip = W.tip ? c[W.tip] : undefined;
+            var R = window.MaterialSim && window.MaterialSim.AI_ROLES[key];
+            var glyph = key === 'working' ? undefined : aiiPick(c, key);
             return {
-              vocabulary: {
-                action: aiiPick(c, 'action'), generated: aiiPick(c, 'generated'),
-                working: 'working', tool: aiiPick(c, 'tool')
-              },
-              style: c.style || 'outlined',
-              size: +c.size || 18,
+              role: aiiRoleOf(c),
+              label: label !== ctl(W.label) ? label : undefined,
+              tooltip: W.tip && tip !== ctl(W.tip) ? tip : undefined,
+              showLabel: c.showLabel !== false,
+              showTooltip: c.showTooltip !== false,
+              animate: c.animate !== false,
+              size: +c.size || 20,
               emphasis: c.emphasis || 'primary',
-              actionLabel: c.labels === 'tooltip' ? 'tooltip' : 'visible',
-              labels: {
-                action: c.actionLabel, iconOnly: c.iconOnlyName,
-                generated: c.generatedLabel, working: c.workingLabel, tool: c.toolLabel
-              },
-              explainGenerated: c.explain !== false,
-              stopWhileWorking: c.stop !== false
+              variant: c.style || 'outlined',
+              glyph: R && glyph !== R.glyphs[0][0] ? glyph : undefined
             };
           }
         },
         groups: [
-          /* ══ CONTENT ═══════════════════════════════════════ */
+          /* ══ CONTENT · SEMANTICS ═══════════════════════════ */
           { id: 'semantics', label: 'Semantics', section: 'content',
-            note: 'Four meanings, four marks. Pick a role to see every place it appears.',
+            note: 'The meaning comes first. The role picks the mark, the words and the motion — the same in every place it appears.',
             controls: [
-              { id: 'focusRole', label: 'Role in focus', type: 'segment', value: 'all',
-                options: [['all', 'All'], ['action', 'AI action'], ['generated', 'Generated'],
-                          ['working', 'Working'], ['tool', 'Tool use']],
-                hint: 'Outlines each instance of the role in the editor, so you can check the same ' +
-                      'meaning always uses the same mark.' }
+              { id: 'role', label: 'Semantic role', type: 'segment', value: 'ai-action', nav: true,
+                options: [['ai-action', 'Action'], ['generated-content', 'Generated'],
+                          ['agent-working', 'Working'], ['tool-use', 'Tool use']],
+                hint: 'The same choice as “Icon role” above the preview. It is what your code names: ' +
+                      'role="ai-action", not a glyph.' }
             ] },
-          { id: 'words', label: 'The words with each mark', section: 'content',
+          { id: 'words', label: 'Label and tooltip', section: 'content',
             controls: [
-              { id: 'actionLabel', label: 'AI action · label', type: 'text', value: 'Rewrite',
-                hint: 'A verb for what happens. Not “AI”, “Magic” or “Ask AI”.' },
-              { id: 'iconOnlyName', label: 'Icon-only action · name and tooltip', type: 'text',
-                value: 'Summarize with AI',
-                hint: 'Read by screen readers and shown as the tooltip. Say what it does, and that ' +
-                      'AI does it.' },
-              { id: 'generatedLabel', label: 'Generated content · label', type: 'text',
-                value: 'Generated with AI',
-                visibleWhen: function (c, st) { return st === 'generated' || st === 'default'; } },
-              { id: 'workingLabel', label: 'Agent working · status', type: 'text',
-                value: 'Aria is rewriting…',
-                visibleWhen: function (c, st) { return st === 'working'; } },
-              { id: 'toolLabel', label: 'Tool use · line', type: 'text', value: 'Checked the style guide',
-                visibleWhen: function (c, st) { return st === 'working' || st === 'generated'; } }
+              { id: 'labelAction', label: 'Label', type: 'text', value: AII_DEFAULTS.labelAction,
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'action'; },
+                hint: 'The verb for what happens. Not “AI”, “Magic” or “Ask AI”.' },
+              { id: 'tipAction', label: 'Tooltip and accessible name', type: 'text', value: AII_DEFAULTS.tipAction,
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'action'; },
+                hint: 'Say what it does, and that AI does it. Read by screen readers when the label is hidden.' },
+              { id: 'labelGenerated', label: 'Label', type: 'text', value: AII_DEFAULTS.labelGenerated,
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'generated'; } },
+              { id: 'tipGenerated', label: 'Tooltip', type: 'text', value: AII_DEFAULTS.tipGenerated,
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'generated'; } },
+              { id: 'labelWorking', label: 'Working status', type: 'text', value: AII_DEFAULTS.labelWorking,
+                visibleWhen: function (c) { var k = aiiKeyOf(c); return k === 'working' || k === 'action'; },
+                hint: 'What the agent is doing now, not “Thinking…”. Screen readers hear it as “Agent working: …”.' },
+              { id: 'labelTool', label: 'Label', type: 'text', value: AII_DEFAULTS.labelTool,
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'tool'; },
+                hint: 'Name the tool and the act. “Used tool” tells nobody anything.' },
+              { id: 'tipTool', label: 'Tooltip', type: 'text', value: AII_DEFAULTS.tipTool,
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'tool'; } }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
           { id: 'labelling', label: 'Labels and tooltips', section: 'behavior',
             controls: [
-              { id: 'labels', label: 'Rewrite shows', type: 'segment', value: 'word',
-                options: [['word', 'Icon and word'], ['tooltip', 'Icon, with a tooltip']],
-                hint: 'Keep the word wherever someone could press it by mistake. Icon-only belongs ' +
-                      'in dense toolbars, and always carries a tooltip and an accessible name.' }
+              { id: 'showLabel', label: 'Show the label', type: 'toggle', value: true,
+                visibleWhen: function (c) { return aiiKeyOf(c) !== 'working'; },
+                hint: 'Off makes it icon-only. Fine for an AI action in a dense toolbar, with its tooltip ' +
+                      'and accessible name; never for generated content or tool use.' },
+              { id: 'showTooltip', label: 'Show a tooltip', type: 'toggle', value: true,
+                visibleWhen: function (c) { return aiiKeyOf(c) !== 'working'; },
+                hint: 'On hover and keyboard focus. Escape hides it.' }
             ] },
-          { id: 'while', label: 'While and after it works', section: 'behavior',
+          { id: 'motion', label: 'Motion', section: 'behavior',
             controls: [
-              { id: 'stop', label: 'Offer Stop while working', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'working'; } },
-              { id: 'explain', label: 'The generated mark explains itself', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'generated'; },
-                hint: 'Pressing it says what the AI did and offers Undo — the same way every time ' +
-                      'it appears.' }
+              { id: 'animate', label: 'Animate the working state', type: 'toggle', value: true,
+                visibleWhen: function (c) { var k = aiiKeyOf(c); return k === 'working' || k === 'action'; },
+                hint: 'The one mark that moves, and only while the agent works. Reduced-motion settings ' +
+                      'stop it; the status words still say what is happening.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Marks', section: 'appearance',
-            note: 'The four shapes differ, so no meaning rests on colour alone.',
+          { id: 'look', label: 'Mark', section: 'appearance',
+            note: 'Each role has its own shape, so no meaning rests on colour alone.',
             controls: [
-              { id: 'size', label: 'Inline mark size', type: 'segment', value: '18',
-                options: [['16', '16'], ['18', '18'], ['20', '20'], ['24', '24']],
-                hint: 'Status lines, the generated mark and the vocabulary. Buttons keep their ' +
-                      'component sizes: 18 in a button, 24 in an icon button.' },
-              { id: 'style', label: 'Style', type: 'segment', value: 'outlined',
-                options: [['outlined', 'Outlined'], ['filled', 'Filled']],
-                hint: 'Filled holds up better at 16 and below.' },
+              { id: 'size', label: 'Inline size', type: 'segment', value: '20',
+                options: [['16', '16'], ['20', '20'], ['24', '24']],
+                hint: 'Labels, status and activity lines. Buttons keep their component sizes: 18 in a ' +
+                      'button, 24 in an icon button.' },
               { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'primary',
-                options: [['primary', 'Primary'], ['neutral', 'Neutral']] }
+                options: [['primary', 'Primary'], ['neutral', 'Neutral']] },
+              { id: 'style', label: 'Variant', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['filled', 'Filled']],
+                visibleWhen: function (c) { return aiiKeyOf(c) !== 'working'; },
+                hint: 'Material Symbols Outlined or Filled. Filled holds up better at 16.' }
             ] },
-          { id: 'glyphs', label: 'Approved glyphs', section: 'appearance',
-            note: 'Choose once per product. The lists do not overlap, so two meanings can never ' +
-                  'share a mark — and there is no upload.',
+          { id: 'glyphs', label: 'Approved glyph', section: 'appearance',
+            note: 'Chosen once for the whole product, from lists that do not overlap — so two meanings ' +
+                  'can never share a mark. There is no upload.',
             controls: [
               { id: 'glyphAction', label: 'AI action', type: 'segment', value: 'spark',
-                options: aiiOptions('action') },
-              { id: 'glyphGenerated', label: 'Generated content', type: 'segment', value: 'aiInfo',
-                options: aiiOptions('generated') },
+                options: aiiOptions('action'),
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'action'; } },
+              { id: 'glyphGenerated', label: 'AI-generated content', type: 'segment', value: 'aiInfo',
+                options: aiiOptions('generated'),
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'generated'; } },
               { id: 'glyphTool', label: 'Tool use', type: 'segment', value: 'tool',
-                options: aiiOptions('tool') }
+                options: aiiOptions('tool'),
+                visibleWhen: function (c) { return aiiKeyOf(c) === 'tool'; } }
             ] }
         ]
       },
 
+      /* Each role's own states, in the order they happen. The head
+         selector shows one role, so only that role's states are live;
+         they are reached by using the example. */
       states: {
-        default:   { label: 'Default',
+        /* AI action */
+        rest:      { roles: ['ai-action'], label: 'Resting',
                      trigger: 'The editor is open with a draft in it.',
-                     behaviour: 'Ordinary controls (link, attach) carry ordinary icons. The two AI ' +
-                                'actions carry the AI-action mark: Rewrite with its word, Summarize ' +
-                                'as an icon button whose name says “with AI”.',
-                     action: 'Point at, tab to, or press an AI action. Next: Hover, Focus or Pressed.' },
-        hover:     { label: 'Hover',
-                     trigger: 'A pointer rests on an AI action.',
-                     behaviour: 'The 8% state layer. The icon-only action shows its tooltip, so its ' +
-                                'meaning is never a guess.',
-                     action: 'Move away (Default) or press (Pressed).' },
-        focus:     { label: 'Focus',
-                     trigger: 'An AI action receives keyboard focus.',
-                     behaviour: 'The visible focus ring and the 12% layer; the tooltip shows on ' +
-                                'focus as on hover, and Escape hides it.',
-                     action: 'Enter or Space to press. Tab on (Default).' },
-        pressed:   { label: 'Pressed',
-                     trigger: 'An AI action is being pressed.',
+                     behaviour: 'Rewrite carries the AI-action mark beside its word; Link and Attach carry ordinary icons.',
+                     meaning: '“AI will do something specific when I press this.”',
+                     action: 'Point at, tab to, or press Rewrite. Clear the draft to see Disabled.',
+                     next: 'Hover, Focus or Pressed.' },
+        hover:     { roles: ['ai-action'], label: 'Hover',
+                     trigger: 'A pointer rests on Rewrite.',
+                     behaviour: 'The 8% Material state layer, and the tooltip “Rewrite with AI”.',
+                     meaning: 'The same AI action, offered.',
+                     action: 'Press, or move away.',
+                     next: 'Pressed, or Resting.' },
+        focus:     { roles: ['ai-action'], label: 'Focus',
+                     trigger: 'Rewrite receives keyboard focus.',
+                     behaviour: 'The visible focus ring and the 12% layer; the tooltip shows on focus too, and Escape hides it.',
+                     meaning: 'The same AI action, ready for Enter or Space.',
+                     action: 'Enter or Space presses it; Tab moves on.',
+                     next: 'Pressed, or Resting.' },
+        pressed:   { roles: ['ai-action'], label: 'Pressed',
+                     trigger: 'Rewrite is being pressed.',
                      behaviour: 'The 12% pressed layer. Releasing it starts the work.',
-                     action: 'Release. Next: Agent working.' },
-        working:   { label: 'Agent working',
-                     trigger: 'An AI action was pressed.',
-                     behaviour: 'The working mark turns beside a status line, and the tool mark ' +
-                                'names what the agent used. The action is disabled while it runs; ' +
-                                'the draft stays readable.',
-                     action: 'Wait, or Stop. Next: Generated content — or Default if stopped.' },
-        generated: { label: 'Generated content',
+                     meaning: '“I asked AI to do this.”',
+                     action: 'Release.',
+                     next: 'Working.' },
+        working:   { roles: ['ai-action'], label: 'Working',
+                     trigger: 'Rewrite was released.',
+                     behaviour: 'The button’s mark changes from the AI-action mark to the turning working mark, and its word to “Rewriting…”. It is unavailable until the work ends; the draft stays readable.',
+                     meaning: 'The requested AI operation is running now.',
+                     action: 'Wait, or Stop where the product supports cancelling.',
+                     next: 'Complete — or Resting if stopped.' },
+        complete:  { roles: ['ai-action'], label: 'Complete',
+                     trigger: 'The rewrite finished.',
+                     behaviour: 'Rewrite returns to its AI-action mark, and a short line confirms the result with Undo.',
+                     meaning: 'The AI action is done, and can be run again.',
+                     action: 'Keep it, Undo, or press Rewrite again.',
+                     next: 'Resting.' },
+        disabled:  { roles: ['ai-action'], label: 'Disabled',
+                     trigger: 'There is nothing for the AI to act on — the draft is empty.',
+                     behaviour: 'Rewrite dims to 38% but keeps its AI-action mark and stays focusable; its tooltip says why: “Write something first”.',
+                     meaning: 'This is still an AI action, unavailable for now.',
+                     action: 'Write in the draft.',
+                     next: 'Resting.' },
+        /* AI-generated content */
+        gen:       { roles: ['generated-content'], label: 'Disclosed',
+                     trigger: 'The release note holds text Aria wrote.',
+                     behaviour: 'One “Generated with AI” label, with the generated-content mark, sits under the text it describes — once, not on every line.',
+                     meaning: '“This content came from AI.” Disclosure, not an action.',
+                     action: 'Point at or tab to the label; press it for details.',
+                     next: 'Hover or focus, or Details.' },
+        'gen-hover': { roles: ['generated-content'], label: 'Hover or focus',
+                     trigger: 'A pointer rests on the label, or it receives keyboard focus.',
+                     behaviour: 'The state layer, the focus ring on focus, and a tooltip saying who wrote it and from what.',
+                     meaning: 'The same provenance, explained in a sentence.',
+                     action: 'Press for details, or move on.',
+                     next: 'Details, or Disclosed.' },
+        'gen-open':  { roles: ['generated-content'], label: 'Details',
+                     trigger: 'The label was pressed.',
+                     behaviour: 'A rich tooltip says what Aria did and from what, and offers the original back.',
+                     meaning: 'What AI changed, and how to reverse it.',
+                     action: 'Show the original, or close (Escape).',
+                     next: 'Disclosed.' },
+        /* Agent working */
+        work:      { roles: ['agent-working'], label: 'Working',
+                     trigger: 'An AI action started — here, Rewrite.',
+                     behaviour: 'The working mark turns steadily beside “Rewriting release note…”, with Stop. Screen readers hear “Agent working: rewriting release note”, not the animation.',
+                     meaning: 'The agent is doing something right now.',
+                     action: 'Wait, or Stop.',
+                     next: 'Complete, or Stopped.' },
+        'work-done': { roles: ['agent-working'], label: 'Complete',
                      trigger: 'The agent finished.',
-                     behaviour: 'The result carries the generated-content mark and its label — a ' +
-                                'different shape from the action that made it. Pressing the mark ' +
-                                'says what happened and offers Undo.',
-                     action: 'Keep it, edit it, or Undo. Next: Default.' },
-        disabled:  { label: 'Disabled',
-                     trigger: 'There is nothing for the AI to act on (the draft is empty).',
-                     behaviour: 'The AI actions dim to 38% but stay focusable, and their tooltip ' +
-                                'says why: “Write something first”.',
-                     action: 'Write in the draft. Next: Default.' }
+                     behaviour: 'The turning mark is gone the moment the work ends; a still line says what was done.',
+                     meaning: 'Nothing is running any more.',
+                     action: 'Read the result, or run it again.',
+                     next: 'Working (Run again).' },
+        'work-stopped': { roles: ['agent-working'], label: 'Stopped',
+                     trigger: 'Stop was pressed while the agent worked.',
+                     behaviour: 'The mark stops and goes; the line says the draft is unchanged.',
+                     meaning: 'The work was cancelled; nothing changed.',
+                     action: 'Run it again, or carry on.',
+                     next: 'Working (Run again).' },
+        /* Tool use */
+        tool:      { roles: ['tool-use'], label: 'Tool used',
+                     trigger: 'Aria checked the draft against the team’s style guide before suggesting changes.',
+                     behaviour: 'An activity line led by the tool-use mark names the tool and the act: “Style guide checked”.',
+                     meaning: '“The agent used another capability to do this work.”',
+                     action: 'Point at or tab to it; press it for what was checked.',
+                     next: 'Hover or focus, or Details.' },
+        'tool-hover': { roles: ['tool-use'], label: 'Hover or focus',
+                     trigger: 'A pointer rests on the activity line, or it receives keyboard focus.',
+                     behaviour: 'The state layer, the focus ring on focus, and a tooltip naming the system.',
+                     meaning: 'The same tool use, named in full.',
+                     action: 'Press for details.',
+                     next: 'Details, or Tool used.' },
+        'tool-open': { roles: ['tool-use'], label: 'Details',
+                     trigger: 'The activity line was pressed.',
+                     behaviour: 'It expands in place to list what the tool found and what changed because of it.',
+                     meaning: 'What the tool contributed, inspectable.',
+                     action: 'Collapse it (press again or Escape).',
+                     next: 'Tool used.' }
       },
 
       view: function (s) {
         var c = s.cfg, st = s.state, S = window.MaterialSim;
         if (!S || !S.md3) return '';
-        var d = aiiDemo(s), M = S.md3;
-        var I = function (role, extra) {
-          return S.aiIcon(role, Object.assign({ style: c.style || 'outlined', pick: aiiPick(c, role) }, extra || {}));
+        var d = aiiDemo(s), M = S.md3, role = d.role, key = AII_ROLE_KEY[role];
+        var still = c.animate === false ? 'is-still' : '';
+        var I = function (r, cls) {
+          return S.aiIcon(r, { style: c.style || 'outlined', pick: aiiPick(c, r),
+                               cls: [r === 'working' ? still : '', cls || ''].join(' ').trim() });
         };
-        var empty = !(d.text || '').trim();
-        var busy = d.phase === 'working';
-        var off = empty || busy;
-        var why = empty ? 'Write something first' : busy ? 'Aria is working' : '';
-        var force = function (k) { return st === k && !busy && !empty ? ' is-' + k : ''; };
-        var focus = c.focusRole || 'all';
-        var R = function (role) { return ' data-ai-role="' + role + '"' + (focus === role ? ' data-ai-focus' : ''); };
-
-        /* Rewrite: the labelled AI action (or icon-only, with tooltip). */
-        var rwName = (c.actionLabel || '').trim();
-        var rewrite = c.labels === 'tooltip'
-          ? M.tooltip({ id: 'aii-tip-rw', content: esc(off ? why : (rwName ? rwName + ' with AI' : '')),
-              cls: 'md-aiiv__tipw' + force('pressed'),
-              trigger: M.iconButton({ variant: 'standard', icon: I('action'),
-                label: rwName ? rwName + ' with AI' : '', cls: 'md-aiiv__act' + force('pressed'),
-                attrs: { 'data-act': 'aii:rewrite', 'aria-describedby': 'aii-tip-rw',
-                         'aria-disabled': off ? 'true' : null, 'data-ai-role': 'action',
-                         'data-ai-focus': focus === 'action' ? true : null } }) })
-          : M.button({ variant: 'tonal', label: esc(rwName), icon: I('action'),
-              cls: 'md-aiiv__act' + force('pressed'),
-              attrs: { 'data-act': 'aii:rewrite', 'aria-disabled': off ? 'true' : null,
-                       'aria-describedby': off ? 'aii-why' : null, 'data-ai-role': 'action',
-                       'data-ai-focus': focus === 'action' ? true : null } });
-        /* Summarize: always icon-only — a dense toolbar slot. */
-        var smName = (c.iconOnlyName || '').trim();
-        var summarize = M.tooltip({ id: 'aii-tip-sm', content: esc(off ? why : smName),
-          cls: 'md-aiiv__tipw' + force('hover') + force('focus'),
-          trigger: M.iconButton({ variant: 'standard', icon: I('action'), label: smName,
-            cls: 'md-aiiv__act' + force('hover') + force('focus'),
-            attrs: { 'data-act': 'aii:summarize', 'aria-describedby': 'aii-tip-sm',
-                     'aria-disabled': off ? 'true' : null, 'data-ai-role': 'action',
-                     'data-ai-focus': focus === 'action' ? true : null } }) });
-        /* Ordinary controls: ordinary icons, never the AI mark. */
+        var showLabel = c.showLabel !== false, showTip = c.showTooltip !== false;
+        var tipWrap = function (id, text, trigger, cls) {
+          return showTip && text
+            ? M.tooltip({ id: id, content: esc(text), cls: cls || '', trigger: trigger })
+            : trigger;
+        };
+        var force = function (k) { return st === k ? ' is-' + k : ''; };
         var plain = function (icon, name, id) {
           return M.tooltip({ id: id, content: name,
             trigger: M.iconButton({ variant: 'standard', icon: mi(icon), label: name,
               attrs: { 'data-act': 'aii:noop', 'aria-describedby': id } }) });
         };
-
-        var status = busy
-          ? '<div class="md-aiiv__status" role="status"' + R('working') + '>' +
-              I('working') +
-              '<span class="md-aiiv__st">' + esc(d.which === 'summarize'
-                ? (c.workingLabel || '').replace(/rewriting/i, 'summarizing') : c.workingLabel) + '</span>' +
-              (c.stop !== false
-                ? M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'aii:stop' } }) : '') +
-            '</div>'
-          : '';
-        var toolLine = (busy && d.tool) || (d.phase === 'done' && d.toolDone)
-          ? '<p class="md-aiiv__tool"' + R('tool') + '>' + I('tool') +
-              '<span>' + esc(c.toolLabel) + '</span></p>'
-          : '';
-        var gen = function (key) {
-          var label = (c.generatedLabel || '').trim();
-          var chip = '<button type="button" class="md3-chip md-aiiv__gen ' + aiiChipCls() + '"' +
-              ' data-act="' + (c.explain !== false ? 'aii:explain:' + key : 'aii:noop') + '"' +
-              (c.explain !== false ? ' aria-expanded="' + (d.explain === key) + '" aria-controls="aii-why-' + key + '"' : '') +
-              (label ? '' : ' aria-label="Generated with AI"') + R('generated') + '>' +
-              '<span class="relative shrink-0">' + I('generated') + '</span>' +
-              (label ? '<span class="relative">' + esc(label) + '</span>' : '') + '</button>';
-          if (c.explain === false) return chip;
-          return M.tooltip({ id: 'aii-why-' + key, rich: true, cls: 'md-aiiv__whyw' + (d.explain === key ? ' is-open' : ''),
-            title: key === 'summary' ? 'About this summary' : 'About this text',
-            content: key === 'summary'
-              ? 'Aria wrote this summary from the draft below. Nothing in the draft changed.'
-              : 'Aria rewrote your draft for clarity. Your version is kept.',
-            actions: M.button({ variant: 'text', label: key === 'summary' ? 'Remove' : 'Undo',
-                       attrs: { 'data-act': 'aii:undo:' + key } }),
-            trigger: chip });
+        var srWork = function (text) {
+          return '<span class="md-aiiv__sr" role="status">' + (text ? 'Agent working: ' + esc(text) : '') + '</span>';
         };
+        var empty = !(d.text || '').trim();
+        var working = d.phase === 'working';
+        var region = '', toolbarAI = '', genRow = '';
 
-        var legend = '<ul class="md-aiiv__vocab" aria-label="The AI icon vocabulary">' +
-          ['action', 'generated', 'working', 'tool'].map(function (r) {
-            var A = S.AI_ROLES[r];
-            return '<li class="md-aiiv__term' + (focus === r ? ' is-focus' : '') + '">' +
-              I(r, { cls: r === 'working' ? 'is-still' : '' }) +
-              '<span class="md-aiiv__tn">' + A.name + '</span>' +
-              '<span class="md-aiiv__tm">' + A.means + '</span></li>';
-          }).join('') + '</ul>';
+        /* ── AI action: the control itself ── */
+        if (key === 'action') {
+          var label = (c.labelAction || '').trim(), tip = (c.tipAction || '').trim();
+          var off = empty || working;
+          var why = empty ? 'Write something first' : '';
+          var wl = (c.labelWorking || '').replace(/ release note/i, '').trim() || 'Working…';
+          var icon = working ? I('working') : I('action');
+          var attrs = { 'data-act': 'aii:rewrite', 'data-ai-role': 'ai-action',
+                        'aria-disabled': off ? 'true' : null,
+                        'aria-describedby': showTip ? 'aii-tip-act' : null };
+          var btn = showLabel
+            ? M.button({ variant: 'tonal', label: esc(working ? wl : label), icon: icon,
+                cls: 'md-aiiv__act' + force('pressed') + force('hover') + force('focus'), attrs: attrs })
+            : M.iconButton({ variant: 'standard', icon: icon, label: working ? 'Agent working: ' + wl : tip,
+                cls: 'md-aiiv__act' + force('pressed') + force('hover') + force('focus'), attrs: attrs });
+          toolbarAI = '<span class="md-aiiv__sep" aria-hidden="true"></span>' +
+            ((showTip && !working) || why
+              ? M.tooltip({ id: 'aii-tip-act', content: esc(why || (working ? '' : tip)),
+                  cls: 'md-aiiv__tipw' + (st === 'hover' || st === 'focus' ? ' is-' + st : ''), trigger: btn })
+              : btn);
+          region = (working ? srWork(c.labelWorking) : srWork('')) +
+            (d.phase === 'done'
+              ? '<p class="md-aiiv__line md-aiiv__done" role="status">' + mi('check') +
+                  '<span>Release note rewritten.</span>' +
+                  M.button({ variant: 'text', label: 'Undo', attrs: { 'data-act': 'aii:undo' } }) + '</p>'
+              : '');
+        }
+
+        /* ── AI-generated content: one disclosure, under the text ── */
+        if (key === 'generated') {
+          var gl = (c.labelGenerated || '').trim();
+          var chip = '<button type="button" class="md3-chip md-aiiv__gen ' + aiiChipCls() +
+              (st === 'gen-hover' ? ' is-hover' : '') + '" data-act="aii:explain" data-ai-role="generated-content"' +
+              ' aria-expanded="' + !!d.open + '" aria-controls="aii-gen-why"' +
+              (showLabel && gl ? '' : ' aria-label="' + esc(gl || 'Generated with AI') + '"') +
+              (showTip && !d.open ? ' aria-describedby="aii-tip-gen"' : '') + '>' +
+              '<span class="relative shrink-0">' + I('generated') + '</span>' +
+              (showLabel && gl ? '<span class="relative">' + esc(gl) + '</span>' : '') + '</button>';
+          var why2 = M.tooltip({ id: 'aii-gen-why', rich: true, cls: 'md-aiiv__whyw' + (d.open ? ' is-open' : ''),
+            title: 'About this text',
+            content: 'Aria rewrote your draft for clarity, using the September changelog. Your version is kept.',
+            actions: M.button({ variant: 'text', label: d.showOriginal ? 'Show the rewrite' : 'Show the original',
+                       attrs: { 'data-act': 'aii:original' } }),
+            trigger: d.open ? chip : tipWrap('aii-tip-gen', c.tipGenerated, chip,
+                       'md-aiiv__tipw' + (st === 'gen-hover' ? ' is-hover' : '')) });
+          genRow = '<div class="md-aiiv__genrow">' + why2 + '</div>';
+        }
+
+        /* ── Agent working: the status line, and only while it works ── */
+        if (key === 'working') {
+          var wl2 = (c.labelWorking || '').trim();
+          region = d.phase === 'working'
+            ? '<div class="md-aiiv__line md-aiiv__status" data-ai-role="agent-working">' + I('working') +
+                (wl2 ? '<span class="md-aiiv__st" aria-hidden="true">' + esc(wl2) + '</span>' : '') +
+                M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'aii:stop' } }) +
+              '</div>' + srWork(wl2 || 'Working')
+            : '<p class="md-aiiv__line md-aiiv__done">' + mi(d.phase === 'stopped' ? 'stop' : 'check') +
+                '<span>' + (d.phase === 'stopped' ? 'Stopped. Your draft is unchanged.' : 'Release note rewritten.') + '</span>' +
+                M.button({ variant: 'text', label: 'Run again', attrs: { 'data-act': 'aii:again' } }) + '</p>' +
+              srWork('');
+        }
+
+        /* ── Tool use: an activity line that names the tool ── */
+        if (key === 'tool') {
+          var tl = (c.labelTool || '').trim();
+          var row = '<button type="button" class="md-aiiv__line md-aiiv__tool' +
+              (st === 'tool-hover' ? ' is-hover' : '') + '" data-act="aii:tool" data-ai-role="tool-use"' +
+              ' aria-expanded="' + !!d.open + '" aria-controls="aii-tool-detail"' +
+              (showLabel && tl ? '' : ' aria-label="' + esc(tl || 'Tool used') + '"') +
+              (showTip ? ' aria-describedby="aii-tip-tool"' : '') + '>' +
+              I('tool') + (showLabel && tl ? '<span class="md-aiiv__st">' + esc(tl) + '</span>' : '') +
+              '<span class="md-aiiv__chev' + (d.open ? ' is-open' : '') + '">' + mi('chevDown') + '</span>' + '</button>';
+          region = '<div class="md-aiiv__activity">' +
+              tipWrap('aii-tip-tool', c.tipTool, row, 'md-aiiv__tipw' + (st === 'tool-hover' ? ' is-hover' : '')) +
+              '<div class="md-aiiv__detail" id="aii-tool-detail"' + (d.open ? '' : ' hidden') + '>' +
+                '<p>Checked 14 terms against the Orbit style guide.</p>' +
+                '<ul><li>“a bunch of stuff” → named the three changes</li>' +
+                    '<li>“the export thing” → “CSV export”</li></ul>' +
+              '</div>' +
+            '</div>';
+        }
+
+        var vocab = '<section class="md-aiiv__lang" aria-labelledby="aii-lang-h">' +
+          '<h3 class="md-aiiv__langh" id="aii-lang-h">Icon language</h3>' +
+          '<ul class="md-aiiv__vocab">' +
+          [['ai-action', 'action', 'AI action', 'Pressing this runs AI on something specific.'],
+           ['generated-content', 'generated', 'AI-generated content', 'This content was created or changed by AI.'],
+           ['agent-working', 'working', 'Agent working', 'The agent is currently performing work.'],
+           ['tool-use', 'tool', 'Tool use', 'The agent used another tool or system.']].map(function (r) {
+            var here = r[0] === role;
+            return '<li class="md-aiiv__term' + (here ? ' is-current' : '') + '"' + (here ? ' aria-current="true"' : '') + '>' +
+              '<span class="md-aiiv__sizes" aria-hidden="true">' +
+                [24, 20, 16].map(function (px) {
+                  return '<span class="md-aiiv__px" style="--aii-size:' + px + 'px">' + I(r[1], r[1] === 'working' ? 'is-still' : '') + '</span>';
+                }).join('') +
+              '</span>' +
+              '<span class="md-aiiv__tn">' + r[2] + '</span>' +
+              '<span class="md-aiiv__tm">' + r[3] + '</span></li>';
+          }).join('') + '</ul></section>';
+
+        var doc = '<div class="md-aiiv__doc' + (key === 'generated' ? ' is-generated' : '') + '">' +
+          M.textArea({ id: 'aii-draft', label: 'What changed',
+            value: key === 'generated' && d.showOriginal ? d.original : (d.text || ''), rows: 3,
+            cls: 'md-aiiv__field', attrs: { 'data-aii-field': true,
+              readonly: working || key === 'generated' && d.showOriginal ? true : null } }) +
+          genRow +
+        '</div>';
 
         return '' +
-'<div class="md-aiiv" data-state="' + st + '" data-size="' + (c.size || '18') + '" ' +
-     'data-emphasis="' + (c.emphasis || 'primary') + '" data-focus-role="' + focus + '">' +
+'<div class="md-aiiv" data-role="' + role + '" data-state="' + st + '" data-size="' + (c.size || '20') + '" ' +
+     'data-emphasis="' + (c.emphasis || 'primary') + '" data-animate="' + (c.animate !== false) + '">' +
   M.card('outlined',
     '<div class="md-aiiv__bar" role="toolbar" aria-label="Release note tools">' +
       '<span class="md-aiiv__title">Release note · September</span>' +
       '<span class="md-aiiv__tools">' +
         plain('link', 'Add a link', 'aii-tip-ln') + plain('attach', 'Attach a file', 'aii-tip-at') +
-        '<span class="md-aiiv__sep" aria-hidden="true"></span>' +
-        summarize + rewrite +
+        toolbarAI +
       '</span>' +
     '</div>' +
-    (off && !busy ? '<span class="md-aiiv__why" id="aii-why">' + esc(why) + '</span>' : '') +
-    (d.summary
-      ? '<div class="md-aiiv__summary"><p class="md-aiiv__sumt">' + esc(d.summary) + '</p>' + gen('summary') + '</div>'
-      : '') +
-    status + toolLine +
-    '<div class="md-aiiv__doc' + (d.phase === 'done' && d.rewrote ? ' is-generated' : '') + '">' +
-      M.textArea({ id: 'aii-draft', label: 'What changed', value: d.text || '', rows: 3,
-        cls: 'md-aiiv__field', attrs: { 'data-aii-field': true, readonly: busy } }) +
-      (d.phase === 'done' && d.rewrote ? '<div class="md-aiiv__genrow">' + gen('text') + '</div>' : '') +
-    '</div>',
+    (key === 'tool' || key === 'working' ? region : '') +
+    doc +
+    (key === 'action' ? region : ''),
     'md-aiiv__card') +
-  legend +
-  '<button type="button" hidden tabindex="-1" data-act="aii:sync"></button>' +
+  vocab +
+  '<button type="button" hidden tabindex="-1" data-act="aii:tick"></button>' +
 '</div>';
       },
 
@@ -5117,41 +5638,61 @@ card + '>\n' + head +
         var d = s.demo;
         if (!box || !d) return;
         aiiGuard(root, s);
-        var field = box.querySelector('[data-aii-field]');
-        if (d.focusField && field) {
-          d.focusField = false;
-          field.focus({ preventScroll: true });
-          try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+        var tick = box.querySelector('[data-act="aii:tick"]');
+        /* Agent working runs on its own: the role is shown working, then
+           finishing. A repaint mid-run does not restart it. */
+        if (d.role === 'agent-working' && d.phase === 'working' && d.timerRun !== d.run) {
+          d.timerRun = d.run;
+          var run = d.run;
+          setTimeout(function () { if (s.demo === d && d.run === run && tick && tick.isConnected) tick.click(); }, 4200);
         }
-        if (d.focusAct) {
-          var fa = box.querySelector('[data-act="' + d.focusAct + '"]');
-          d.focusAct = null;
-          if (fa) fa.focus({ preventScroll: true });
+        if (d.focusSel) {
+          var fe = box.querySelector(d.focusSel);
+          d.focusSel = null;
+          if (fe) fe.focus({ preventScroll: true });
         }
         function to(next) {
-          if (!next || s.state === next) return;
+          if (!next || s.state === next || !PATTERNS['ai-icons'].states[next]) return;
           box.setAttribute('data-state', next);
           pvLive(root, s, 'ai-icons', next);
         }
-        /* Real hover, focus and press move the read-out; the states
-           held from the list do not fight them. */
-        var resting = function () { return d.phase !== 'working' && (d.text || '').trim(); };
-        [].forEach.call(box.querySelectorAll('.md-aiiv__act'), function (b) {
-          b.addEventListener('pointerenter', function () {
-            if (resting() && (s.state === 'default' || s.state === 'focus')) to('hover'); });
-          b.addEventListener('pointerleave', function () {
-            if (resting() && (s.state === 'hover' || s.state === 'pressed')) to('default'); });
-          b.addEventListener('pointerdown', function () { if (resting()) to('pressed'); });
-          b.addEventListener('focus', function () {
-            if (resting() && b.matches(':focus-visible') && s.state !== 'pressed') to('focus'); });
-          b.addEventListener('blur', function () { if (resting() && s.state === 'focus') to('default'); });
-        });
-        /* Escape hides a tooltip without moving focus (WCAG 1.4.13). */
+        /* Real hover, focus and press move the read-out. */
+        var field = box.querySelector('[data-aii-field]');
+        var act = box.querySelector('.md-aiiv__act');
+        if (act) {
+          var restful = function () { return d.phase !== 'working' && (d.text || '').trim(); };
+          /* A repaint under a resting pointer must not swallow Complete:
+             hover counts again only once the pointer has left. */
+          act.addEventListener('pointerenter', function () {
+            if (s.state === 'complete' && !d.leftSince) return;
+            if (restful() && /^(rest|focus|complete)$/.test(s.state)) to('hover'); });
+          act.addEventListener('pointerleave', function () {
+            d.leftSince = true;
+            if (restful() && /^(hover|pressed)$/.test(s.state)) to(d.phase === 'done' ? 'complete' : 'rest'); });
+          act.addEventListener('pointerdown', function () { if (restful()) to('pressed'); });
+          act.addEventListener('keydown', function (e) {
+            if ((e.key === 'Enter' || e.key === ' ') && restful()) to('pressed'); });
+          act.addEventListener('focus', function () {
+            if (restful() && act.matches(':focus-visible') && s.state !== 'pressed') to('focus'); });
+          act.addEventListener('blur', function () { if (restful() && s.state === 'focus') to('rest'); });
+        }
+        var hoverable = box.querySelector('.md-aiiv__gen, .md-aiiv__tool');
+        if (hoverable) {
+          var base = d.role === 'tool-use' ? 'tool' : 'gen';
+          var on = function () { if (!d.open) to(base + '-hover'); };
+          var off = function () { if (!d.open && s.state === base + '-hover') to(base); };
+          hoverable.addEventListener('pointerenter', on);
+          hoverable.addEventListener('pointerleave', function () { if (document.activeElement !== hoverable) off(); });
+          hoverable.addEventListener('focus', function () { if (hoverable.matches(':focus-visible')) on(); });
+          hoverable.addEventListener('blur', off);
+        }
+        /* Escape hides a tooltip without moving focus (WCAG 1.4.13), and
+           closes details. */
         box.addEventListener('keydown', function (e) {
           if (e.key !== 'Escape') return;
           var w = e.target.closest && e.target.closest('.md3-tip');
-          if (w) { w.classList.add('is-dismissed'); }
-          if (d.explain) { d.explain = null; var b = root.querySelector('.pv-stage [data-act="aii:sync"]'); if (b) b.click(); }
+          if (w) w.classList.add('is-dismissed');
+          if (d.open) { d.open = false; d.closeTo = true; if (tick) tick.click(); }
         });
         box.addEventListener('focusout', function (e) {
           var w = e.target.closest && e.target.closest('.md3-tip');
@@ -5161,49 +5702,72 @@ card + '>\n' + head +
         field.dataset.aiiBound = '1';
         field.addEventListener('input', function () {
           d.text = field.value;
+          if (d.role !== 'ai-action') return;
           var empty = !field.value.trim();
-          /* The actions follow the draft in place, with no repaint, so
+          /* The action follows the draft in place, with no repaint, so
              the caret stays where it is. */
-          [].forEach.call(box.querySelectorAll('.md-aiiv__act'), function (b) {
-            if (empty) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
-          });
-          [].forEach.call(box.querySelectorAll('.md-aiiv__tipw [role="tooltip"]'), function (t) {
-            var trg = t.parentNode.querySelector('.md-aiiv__act');
-            if (trg) t.textContent = empty ? 'Write something first'
-              : (trg.getAttribute('aria-label') || t.textContent);
-          });
+          if (act) { if (empty) act.setAttribute('aria-disabled', 'true'); else act.removeAttribute('aria-disabled'); }
+          var tipEl = box.querySelector('#aii-tip-act');
+          if (tipEl) tipEl.textContent = empty ? 'Write something first' : (s.cfg.tipAction || '');
           if (empty) to('disabled');
-          else if (s.state === 'disabled' || s.state === 'generated') to('default');
+          else if (s.state === 'disabled' || s.state === 'complete') { d.phase = 'idle'; to('rest'); }
         });
       },
 
       act: function (a, ctx) {
         var s = ctx.s, d = aiiDemo(s);
-        if (a === 'aii:noop' || a === 'aii:sync') { if (a === 'aii:sync') ctx.paint(); return; }
-        if (a === 'aii:rewrite' || a === 'aii:summarize') {
-          if (d.phase === 'working' || !(d.text || '').trim()) return;
-          return aiiRun(ctx, a === 'aii:rewrite' ? 'rewrite' : 'summarize');
-        }
-        if (a === 'aii:stop') {
-          d.run = (d.run || 0) + 1; d.phase = 'idle'; d.tool = false;
-          s.state = 'default'; d.on = 'default'; d.focusAct = 'aii:' + (d.which || 'rewrite');
-          ctx.paint(); ctx.announce('Stopped. Your draft is unchanged.');
+        if (a === 'aii:noop') return;
+        if (a === 'aii:tick') {
+          if (d.closeTo) {
+            d.closeTo = false; s.state = d.role === 'tool-use' ? 'tool' : 'gen';
+            /* Focus stays on the control that opened the details. */
+            d.focusSel = d.role === 'tool-use' ? '.md-aiiv__tool' : '.md-aiiv__gen';
+            ctx.paint(); return;
+          }
+          if (d.role === 'agent-working' && d.phase === 'working') {
+            d.phase = 'done'; s.state = 'work-done'; ctx.paint();
+            ctx.announce('Agent finished: release note rewritten.');
+          }
           return;
         }
-        if (a.indexOf('aii:explain:') === 0) {
-          var k = a.slice(12);
-          d.explain = d.explain === k ? null : k;
+        if (a === 'aii:rewrite') {
+          if (d.phase === 'working' || !(d.text || '').trim()) return;
+          var run = ++d.run;
+          d.phase = 'working'; s.state = 'working';
+          d.focusSel = '.md-aiiv__act';
+          ctx.paint();
+          ctx.announce('Agent working: ' + (ctx.s.cfg.labelWorking || 'working'));
+          return wait(2400).then(function () {
+            if (s.demo !== d || d.run !== run) return;
+            d.original = d.text; d.text = AII_REWRITE; d.phase = 'done'; s.state = 'complete'; d.leftSince = false;
+            d.focusSel = '.md-aiiv__act';
+            ctx.paint();
+            ctx.announce('Release note rewritten. Undo is available.');
+          });
+        }
+        if (a === 'aii:undo') {
+          d.text = d.original; d.phase = 'idle'; s.state = 'rest'; d.focusSel = '.md-aiiv__act';
+          ctx.paint(); ctx.announce('Your original draft is back.'); return;
+        }
+        if (a === 'aii:stop') {
+          d.run++; d.phase = 'stopped'; s.state = 'work-stopped'; d.focusSel = '[data-act="aii:again"]';
+          ctx.paint(); ctx.announce('Stopped. Your draft is unchanged.'); return;
+        }
+        if (a === 'aii:again') {
+          d.run++; d.phase = 'working'; s.state = 'work'; d.focusSel = '[data-act="aii:stop"]';
+          ctx.paint(); ctx.announce('Agent working: ' + (s.cfg.labelWorking || 'working')); return;
+        }
+        if (a === 'aii:explain') {
+          d.open = !d.open; s.state = d.open ? 'gen-open' : 'gen'; d.focusSel = '.md-aiiv__gen';
           ctx.paint(); return;
         }
-        if (a.indexOf('aii:undo:') === 0) {
-          var which = a.slice(9);
-          if (which === 'summary') { d.summary = ''; }
-          else { d.text = d.original; d.rewrote = false; }
-          d.explain = null;
-          if (!d.summary && !d.rewrote) { d.phase = 'idle'; d.toolDone = false; s.state = 'default'; d.on = 'default'; }
-          d.focusField = true;
-          ctx.paint();
-          ctx.announce(which === 'summary' ? 'Summary removed.' : 'Your original draft is back.');
+        if (a === 'aii:original') {
+          d.showOriginal = !d.showOriginal; d.focusSel = '[data-act="aii:original"]';
+          ctx.paint(); ctx.announce(d.showOriginal ? 'Showing your original draft.' : 'Showing the rewrite.'); return;
+        }
+        if (a === 'aii:tool') {
+          d.open = !d.open; s.state = d.open ? 'tool-open' : 'tool'; d.focusSel = '.md-aiiv__tool';
+          ctx.paint(); return;
         }
       }
     },
@@ -8051,953 +8615,845 @@ card + '>\n' + head +
       }
     },
 
-    /* ── Voice input ────────────────────────────────────────
-       Six states of ONE component — the shared prompt composer —
-       and the first of them is that composer doing nothing
-       special at all. A preview that never shows the resting
-       state cannot make this pattern's argument, which is that
-       voice is a mode of the bar you were already using.
-
-       Two of the six earn most of the room. "Listening" and
-       "Speaking" have to be unmistakably different, or an open
-       microphone looks identical to a heard one. And "Processing"
-       has to be visibly less than either, or the strokes go on
-       implying that something is still being heard.
-
-       The selector is a documentation affordance: in a product
-       these states arrive because somebody pressed a microphone
-       and started talking, which is what the simulator shows. */
+    /* ── Voice Input ────────────────────────────────────────
+       DICTATION INTO THE SHARED COMPOSER (user brief, 6 Oct).
+       Speech → transcript → editable composer text → the person
+       sends. The same bar the product already has: pressing the
+       microphone turns it into a voice session (lit mic + clock,
+       what has been heard, Pause / Stop / Cancel), and Stop hands
+       the words back to the field marked "From voice" — never
+       sent. Every state is reached by USING it; the list jumps
+       there for inspection. The controller (MaterialSim.vx) is the
+       one the simulator uses. */
     'voice-input': {
-      initial: 'default',
+      initial: 'ready',
 
       customize: {
+        api: {
+          name: 'AgentComposer',
+          props: function (c) {
+            return { voice: {
+              listeningLabel: c.label, placeholder: c.placeholder,
+              permissionText: c.permissionText, failureText: c.failureText,
+              showWordsAsHeard: c.live !== false, pause: c.pause !== false,
+              editableTranscript: c.editable !== false,
+              autoStopAfterSilence: c.autoStop === 'off' ? false : +c.autoStop,
+              maxDuration: +c.maxSec, density: c.density, gradient: c.glow, emphasis: c.emphasis
+            } };
+          }
+        },
         groups: [
-          { id: 'composer', label: 'The composer',
-            states: ['default', 'listening', 'speaking', 'processing', 'muted', 'error'],
-            note: 'One component. Voice is a mode of it, and everything below changes what ' +
-                  'the bar contains — never which bar it is.',
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'amp', label: 'Respond to the voice', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Off, the strokes run a loop instead — which is what makes a hung ' +
-                      'microphone look healthy.' },
-              { id: 'mode', label: 'Offer a mode chip', type: 'toggle', value: false,
-                visibleWhen: function (c, st) { return st === 'default'; },
-                hint: 'Only where a scenario actually has two modes. A control with no use ' +
-                      'in the screen it is standing in is furniture.' },
-              { id: 'agentName', label: 'Agent', type: 'text', value: 'Aria' }
+              { id: 'label', label: 'Listening label', type: 'text', value: 'Listening',
+                hint: 'Shown beside the clock while the microphone is on.' },
+              { id: 'placeholder', label: 'Placeholder', type: 'text', value: 'Ask Aria about the release…' },
+              { id: 'permissionText', label: 'Permission explanation', type: 'text',
+                value: 'Microphone access is needed to capture your voice. It’s on only while the bar says Listening, and you can stop at any time.',
+                hint: 'What it needs, why, when it is on, and how to stop it.' },
+              { id: 'failureText', label: 'Couldn’t understand message', type: 'text',
+                value: 'Couldn’t make out all of that.',
+                hint: 'Say what happened. The next steps are always offered: Retry, Edit captured text, Type instead.' }
             ] },
-
-          { id: 'words', label: 'In words',
-            states: ['listening', 'speaking', 'processing', 'muted', 'error'],
-            note: 'Every state has a text equivalent, in a live region. None of the motion ' +
-                  'is allowed to be the only way to know what is going on.',
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'capture', label: 'While listening', section: 'behavior',
             controls: [
-              { id: 'status', label: 'Say the state in words', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Turn this off and the pattern depends entirely on five small moving ' +
-                      'strokes, which rules out anybody who cannot see them or has asked ' +
-                      'for less movement.' },
-              { id: 'transcript', label: 'Show the line being heard', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'speaking'; },
-                hint: 'One line, clipped. A transcript that grows the composer as you speak ' +
-                      'is a composer that moves under your hand.' }
+              { id: 'live', label: 'Show words as they are heard', type: 'toggle', value: true,
+                hint: 'A live preview in the bar. Off, the words appear when you stop.' },
+              { id: 'pause', label: 'Offer Pause', type: 'toggle', value: true,
+                hint: 'Pause turns the microphone off and keeps what was said; Resume carries on.' },
+              { id: 'autoStop', label: 'Stop after silence', type: 'segment', value: '2',
+                options: [['off', 'Off'], ['2', '2 s'], ['5', '5 s']],
+                hint: 'Stopping keeps the words and never sends them.' },
+              { id: 'maxSec', label: 'Longest recording', type: 'segment', value: '60',
+                options: [['30', '30 s'], ['60', '1 min'], ['120', '2 min']],
+                hint: 'At the limit it stops — and keeps what was said.' }
+            ] },
+          { id: 'after', label: 'After you stop', section: 'behavior',
+            controls: [
+              { id: 'editable', label: 'Transcript is editable before sending', type: 'toggle', value: true,
+                hint: 'The words land in the field, marked “From voice”, with Undo. Sending is always the person’s choice.' }
+            ] },
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Composer', section: 'appearance',
+            note: 'The same composer in every state — voice changes what it contains, not which bar it is.',
+            controls: [
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['compact', 'Compact'], ['comfortable', 'Comfortable']],
+                hint: 'Comfortable gives 40 px targets (48 on phones).' },
+              { id: 'glow', label: 'Gradient', type: 'segment', value: 'standard',
+                options: [['off', 'Off'], ['subtle', 'Subtle'], ['standard', 'Standard']],
+                hint: 'Behind the bar while voice is on: a word swells it a little, silence settles it, transcribing makes it drift.' },
+              { id: 'emphasis', label: 'Listening emphasis', type: 'segment', value: 'strong',
+                options: [['subtle', 'Subtle'], ['strong', 'Strong']],
+                hint: 'How loudly the lit microphone says it is on.' }
             ] }
         ]
       },
 
       states: {
-        default:    { label: 'Default',
-                      trigger: 'The product at rest.',
-                      behaviour: 'The ordinary composer, with a microphone in it where the ' +
-                                 'scenario supports speaking. Nothing else about it is ' +
-                                 'special, and that is the whole claim of the pattern.',
-                      action: 'Press the microphone' },
-        listening:  { label: 'Listening',
-                      trigger: 'The microphone control is pressed.',
-                      behaviour: 'Same bar, same width, about a line taller. The strokes sit ' +
-                                 'at rest because nothing is being said — an open microphone ' +
-                                 'drawn like a heard one is the commonest lie here.',
-                      action: 'Say something' },
-        speaking:   { label: 'Speaking',
-                      trigger: 'Speech is detected.',
-                      behaviour: 'The strokes follow amplitude with smooth interpolation, ' +
-                                 'gaps included. Middle strokes take more of it than outer ' +
-                                 'ones, which is what stops the row reading as a bar chart.',
-                      action: 'Stop, and let it think' },
-        processing: { label: 'Processing',
-                      trigger: 'The utterance completes.',
-                      behaviour: 'The same strokes, shorter and slower, rather than a spinner ' +
-                                 'dropped where the voice used to be. Nothing about the bar ' +
-                                 'moves except what is inside it.',
-                      action: 'Mute the microphone' },
-        muted:      { label: 'Muted',
-                      trigger: 'Mute is pressed.',
-                      behaviour: 'Colour drains and the strokes stop moving with speech. An ' +
-                                 'indicator that still moves while muted is claiming to hear ' +
-                                 'you.',
-                      action: 'See it fail' },
-        error:      { label: 'Error',
-                      trigger: 'The microphone is taken, or permission is refused.',
-                      behaviour: 'The semantic error accent, no motion, a sentence saying what ' +
-                                 'happened — and the keyboard route still in the same bar, ' +
-                                 'because voice failing is not a reason to lose the composer.',
-                      action: 'Back to the composer' }
+        ready:        { label: 'Ready',
+                        trigger: 'The composer at rest — here with a few words already typed.',
+                        behaviour: 'The ordinary composer with a microphone in it. No gradient, no capture.',
+                        meaning: 'You can type, or speak instead. Voice is optional.',
+                        action: 'Press the microphone (the first time, the browser asks for it).',
+                        next: 'Permission required, or Listening.' },
+        permission:   { label: 'Permission required',
+                        trigger: 'The microphone was pressed and access has not been given yet.',
+                        behaviour: 'A panel above the bar says what is needed, why, when it is on and how to stop. The composer stays usable under it.',
+                        meaning: 'Nothing is recording yet.',
+                        action: 'Allow microphone, or Not now (keep typing).',
+                        next: 'Listening, or Ready.' },
+        listening:    { label: 'Listening',
+                        trigger: 'Capture started.',
+                        behaviour: 'The bar keeps its place and becomes the voice session: a lit microphone with a dot, “Listening · 0:04”, the words as they are heard after anything already typed, and Pause, Stop, Cancel. The gradient behind it swells a little with each word and settles in silence.',
+                        meaning: 'The microphone is on. Nothing is sent.',
+                        action: 'Pause, Stop (keep the words) or Cancel (discard this recording).',
+                        next: 'Paused, Processing, or Ready.' },
+        paused:       { label: 'Paused',
+                        trigger: 'Pause was pressed.',
+                        behaviour: 'The microphone turns off (“Paused · microphone off”), the dot goes, the gradient settles. What was heard stays.',
+                        meaning: 'Not listening; your progress is kept.',
+                        action: 'Resume, Stop or Cancel.',
+                        next: 'Listening, Processing, or Ready.' },
+        processing:   { label: 'Processing',
+                        trigger: 'Stop was pressed, silence ended it, or the time limit was reached.',
+                        behaviour: 'The microphone is off. “Transcribing…”, with the gradient drifting slowly. Only Cancel is offered.',
+                        meaning: 'Turning speech into text. Still nothing sent.',
+                        action: 'Wait, or Cancel.',
+                        next: 'Transcribed, or Couldn’t understand.' },
+        transcribed:  { label: 'Transcribed',
+                        trigger: 'Transcription finished.',
+                        behaviour: 'The bar is a text composer again. The words join what was typed, marked “From voice — check it before you send”, with Undo. The caret is in the field.',
+                        meaning: 'This is what was understood. It has not been sent.',
+                        action: 'Edit it, Undo it, or Send.',
+                        next: 'Editing transcript, Ready (Undo), or sent.' },
+        editing:      { label: 'Editing transcript',
+                        trigger: 'The person changes the transcribed text.',
+                        behaviour: 'The marker reads “From voice · edited”; Undo still returns to what was typed before voice.',
+                        meaning: 'Your correction wins. Voice only drafted it.',
+                        action: 'Send, or keep editing.',
+                        next: 'Sent → Ready.' },
+        nounderstand: { label: 'Couldn’t understand',
+                        trigger: 'Too little could be made out to trust.',
+                        behaviour: 'A panel says what happened and keeps what was heard; the typed text is untouched. No guess is put in the field.',
+                        meaning: 'Nothing was lost, and nothing was guessed.',
+                        action: 'Retry, Edit captured text, or Type instead.',
+                        next: 'Listening, Editing transcript, or Ready.' },
+        unavailable:  { label: 'Unavailable',
+                        trigger: 'No microphone was found, or the device blocks it.',
+                        behaviour: 'The microphone button is unavailable with its reason; a note says so. Typing works exactly as before.',
+                        meaning: 'Voice is off for now; the composer is not.',
+                        action: 'Type instead.',
+                        next: 'Ready.' }
       },
 
-      /* THE COMPOSER ITSELF. Not a drawing of it, not a copy kept
-         in step by hand: `MaterialSim.composer` is the function the
-         twenty-five simulators render through, called here with an
-         options object instead of a scenario. If the preview and
-         the product ever disagree, it will be because somebody
-         deleted this call. */
       view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var agent = c.agentName || 'Aria';
-        var M = window.MaterialSim;
-        if (!M || !M.composer) return '';
-
-        var STATUS = {
-          listening: 'Listening…', speaking: 'Listening…', processing: 'Thinking…',
-          muted: 'Microphone muted', error: 'Microphone unavailable'
-        };
-        var LINE = {
-          speaking: '“Compare the onboarding feedback from this quarter with the previous one…',
-          muted: agent + ' is still here; it just cannot hear you.',
-          error: 'Another application is using it. Type instead, or try again.'
-        };
-
+        var c = s.cfg, M = window.MaterialSim;
+        if (!M || !M.composer || !M.vx) return '';
+        var d = vxDemo(s);
+        vxCfg(d, c);
         var html = M.composer({
-          agent: agent,
-          ask: 'Ask me anything',
-          plus: ['Attach a file', 'Add a source'],
-          modes: c.mode ? ['Balanced', 'Thorough'] : null,
-          mic: true,
-          mode: st === 'default' ? 'text' : 'voice',
-          voice: st,
-          status: c.status ? STATUS[st] : '',
-          /* Muted and error say their piece in the second line
-             whether or not the transcript is on: they are not a
-             transcript, they are the reason. */
-          line: (st === 'speaking' ? (c.transcript ? LINE.speaking : '') : (LINE[st] || ''))
+          agent: 'Aria', ask: c.placeholder || 'Ask Aria about the release…',
+          label: 'Message Aria', plus: ['Attach a file', 'Add a source'], mic: true,
+          text: d.text, dictation: d
         });
-
-        /* With the response turned off the indicator loses its live
-           hook and falls back to the sway alone — which is exactly
-           the failure the toggle exists to show. */
-        if (!c.amp) html = html.replace(/ data-vx-live="[a-z]+"/, '');
-        if (!c.status) html = html.replace(/<span class="ax__vstatus"[^>]*><\/span>/, '');
-        return html;
+        if (c.editable === false && (d.state === 'transcribed' || d.state === 'editing'))
+          html = html.replace('<textarea class="ax__field"', '<textarea readonly class="ax__field"');
+        return '<div class="md-vxp">' +
+          (d.sent ? '<div class="md-vxp__sent" role="note"><span class="md-vxp__who">You</span><p>' + esc(d.sent) + '</p>' +
+            '<span class="md-vxp__then">Aria answers from this text — the same as anything typed.</span></div>' : '') +
+          html +
+          '<button type="button" hidden tabindex="-1" data-act="vx:sync"></button>' +
+        '</div>';
       },
 
-      /* The driver is started after every paint, because a repaint
-         replaces the element the previous loop was writing to. */
-      mounted: function (root) {
-        if (window.MaterialVoice) window.MaterialVoice.drive(root);
+      mounted: function (root, s) {
+        var d = s.demo;
+        var wrap = root.querySelector('.pv-stage .md-vx');
+        if (!d || !wrap) return;
+        if (window.MaterialVoice) window.MaterialVoice.drive(root.querySelector('.pv-stage'));
+        vxGuard(root, s);
+        var field = wrap.querySelector('[data-ax-field]');
+        if (d.focusField && field) {
+          d.focusField = false;
+          field.focus({ preventScroll: true });
+          try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+        }
+        /* A jump from the list into a moving state starts it moving. */
+        var sync = root.querySelector('.pv-stage [data-act="vx:sync"]');
+        if (d.kick && sync) { setTimeout(function () { if (s.demo === d && sync.isConnected) sync.click(); }, 60); }
+        if (field && !field.dataset.vxBound) {
+          field.dataset.vxBound = '1';
+          field.addEventListener('input', function () {
+            d.text = field.value;
+            if (d.state === 'transcribed') {
+              d.state = 'editing'; d.on = 'editing';
+              wrap.setAttribute('data-vx', 'editing');
+              var m = wrap.querySelector('.ax__vxfrom > span');
+              if (m) m.textContent = 'From voice · edited — check it before you send';
+              pvLive(root, s, 'voice-input', 'editing');
+            }
+            var send = wrap.querySelector('.ax__cbtn--send');
+            if (send) send.disabled = !field.value.trim();
+          });
+          field.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); vxSend(root, s); }
+          });
+        }
+        var form = wrap.querySelector('.ax__composer');
+        if (form && !form.dataset.vxBound) {
+          form.dataset.vxBound = '1';
+          form.addEventListener('submit', function (e) { e.preventDefault(); vxSend(root, s); });
+        }
       },
 
       act: function (a, ctx) {
-        if (a.indexOf('go:') === 0) { ctx.s.state = a.slice(3); }
-        /* The controls in the preview are the real ones, so they
-           carry the real actions. Pressing Mute in the preview has
-           to do what pressing Mute does. */
-        else if (a === 'voice:start')  { ctx.s.state = 'listening'; }
-        else if (a === 'voice:stop')   { ctx.s.state = 'default'; }
-        else if (a === 'voice:cancel') { ctx.s.state = 'default'; }
-        else if (a === 'voice:retry')  { ctx.s.state = 'listening'; }
-        else if (a === 'voice:mute')   {
-          ctx.s.state = ctx.s.state === 'muted' ? 'listening' : 'muted';
-        } else return;
-        ctx.paint();
-        ctx.announce(({
-          default: 'Text composer', listening: 'Listening',
-          speaking: 'Listening', processing: 'Thinking',
-          muted: 'Microphone muted', error: 'Microphone unavailable'
-        })[ctx.s.state] || '');
+        var s = ctx.s, d = vxDemo(s);
+        var io = vxIO(ctx, d);
+        if (a === 'vx:sync') {
+          var k = d.kick; d.kick = null;
+          if (d.pending === 'send') { d.pending = null; d.sent = (d.text || '').trim(); d.text = ''; d.typed = '';
+            d.fromVoice = false; d.state = 'ready'; d.focusField = true; io.paint();
+            ctx.announce('Sent. Aria answers from your text.'); return; }
+          if (k === 'listen') { d.granted = true; return vxM().vx.act('vx:retry', d, io); }
+          if (k === 'stop') { d.state = 'paused'; return vxM().vx.act('vx:stop', d, io); }
+          return;
+        }
+        if (a === 'ax:plus' || a.indexOf('ax:') === 0) return;
+        if (d.state === 'unavailable' && a === 'voice:start') { ctx.announce('Voice input is unavailable. Type instead.'); return; }
+        vxM().vx.act(a, d, io);
       }
     },
 
     /* ── Visual input ───────────────────────────────────────
-       Five states, one per act plus the two that carry the
-       argument: an image sitting there doing nothing, and an
-       answer that admits what the crop removed. */
+       VISUAL CONTEXT ON THE SHARED COMPOSER (user brief, 6 Oct).
+       Upload, take a photo, choose a recent screenshot or share a
+       window — the visual lands as a recognisable card IN the
+       composer, next to the person's words (never replacing them),
+       and nothing is read until Send. Sharing is a persistent,
+       stoppable state. Shared controller: MaterialSim.vi. */
     'visual-input': {
-      initial: 'empty',
+      initial: 'none',
 
       customize: {
-        groups: [
-          { id: 'attach', label: 'Attaching',
-            states: ['empty', 'attached'],
-            controls: [
-              { id: 'ways', label: 'What the empty state offers', type: 'text',
-                value: 'Paste, drag, choose a file, or use the camera' },
-              { id: 'kind', label: 'What it says the image is', type: 'text',
-                value: 'Screenshot · 1440 × 900' },
-              { id: 'retain', label: 'Say what happens to the image', type: 'toggle',
-                value: true, capability: true,
-                hint: 'A photo is the most personal thing most people will ever hand an ' +
-                      'agent. Say it where they hand it over, not in a policy.' },
-              { id: 'retainText', label: 'The line', type: 'text',
-                value: 'Kept with this ticket · not used for training' }
-            ] },
-
-          { id: 'ask', label: 'Instructing',
-            states: ['instructing'],
-            note: 'The half products drop. An image is not a question.',
-            controls: [
-              { id: 'wait', label: 'Wait for an instruction', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Turn this off to see the failure: the same screenshot supports three ' +
-                      'different questions, and it will answer one of them.' },
-              { id: 'question', label: 'The question', type: 'text',
-                value: 'is this the same bug as #4412?' }
-            ] },
-
-          { id: 'read', label: 'Analysing',
-            states: ['region', 'reshoot'],
-            controls: [
-              { id: 'region', label: 'Mark the region the answer used', type: 'toggle',
-                value: true, capability: true,
-                hint: 'An answer that does not say where it looked cannot be checked.' },
-              { id: 'answer', label: 'The reading', type: 'text',
-                value: 'a null map key in ScheduleResolver.' },
-              { id: 'reshoot', label: 'The specific shot that would settle it', type: 'text',
-                value: 'Scroll up three lines and screenshot again.' }
-            ] }
-        ]
-      },
-
-      states: {
-        empty:       { label: 'Empty',
-                       trigger: 'No image yet.',
-                       behaviour: 'The four ways in are named, because people reach for ' +
-                                  'different ones — and the drop target is the whole surface, ' +
-                                  'not a 24px paperclip.',
-                       action: 'Attach one' },
-        attached:    { label: 'Attached',
-                       trigger: 'The image is here.',
-                       behaviour: 'And nothing is happening. Visibly waiting, not visibly ' +
-                                  'working — no spinner, because no answer is coming until ' +
-                                  'somebody says what they want. This is the state most ' +
-                                  'implementations skip.',
-                       action: 'Write the question' },
-        instructing: { label: 'Instructing',
-                       trigger: 'The question is typed against the image.',
-                       behaviour: 'Image and words go together as one message. This is what ' +
-                                  'turns an attachment into a request — and the same ' +
-                                  'screenshot would have supported three different ones.',
-                       action: 'Send it' },
-        region:      { label: 'Region found',
-                       trigger: 'The reading settles.',
-                       behaviour: 'The edge hardens, the lines it used read hotter than the ' +
-                                  'rest, and the answer names the region before it states a ' +
-                                  'conclusion.',
-                       action: 'See what it could not read' },
-        reshoot:     { label: 'Needs another shot',
-                       trigger: 'Part of the image could not be read.',
-                       behaviour: 'The crop is shown as a crop, the gap is named, and it asks ' +
-                                  'for one specific further image. “A clearer photo” is not a ' +
-                                  'request anybody can act on.',
-                       action: 'Back to empty' }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-
-        function shot(mode) {
-          var lines = '';
-          for (var i = 0; i < 8; i++) {
-            var cls = '';
-            if (mode === 'hot' && i >= 3 && i <= 5) cls = ' class="is-hot"';
-            if (mode === 'cut' && i === 0)          cls = ' class="is-cut"';
-            if (mode === 'cut' && i >= 3 && i <= 5) cls = ' class="is-hot"';
-            lines += '      <b' + cls + '></b>\n';
+        api: {
+          name: 'AgentComposer',
+          props: function (c) {
+            return { visual: {
+              sources: viOn(c), showPreview: c.preview !== false, replace: c.replace !== false, remove: c.remove !== false,
+              label: c.label, screenText: c.screenText, cameraText: c.cameraText, unsupportedText: c.unsupportedText,
+              thumbnail: c.thumb, sharingEmphasis: c.shareEmphasis
+            } };
           }
-          return '' +
-'    <div class="md-vis__shot" role="img"\n' +
-'         aria-label="Screenshot of a stack trace, eight lines">\n' + lines +
-'    </div>\n';
+        },
+        groups: [
+          { id: 'words', label: 'Words', section: 'content',
+            controls: [
+              { id: 'label', label: 'Card line before sending', type: 'text', value: 'Aria will see this when you send',
+                hint: 'Says what the agent will have, and when.' },
+              { id: 'screenText', label: 'Screen-sharing explanation', type: 'text',
+                value: 'Only the window you choose will be shared. You’ll see “Sharing” while it’s on, and you can stop at any time.',
+                visibleWhen: function (c) { return c.srcScreen !== false; } },
+              { id: 'cameraText', label: 'Camera explanation', type: 'text',
+                value: 'Camera access lets Aria see what you choose to show. It’s on only while you take the photo.',
+                visibleWhen: function (c) { return c.srcCamera !== false; } },
+              { id: 'unsupportedText', label: 'Unsupported message', type: 'text',
+                value: 'Aria can read images (PNG, JPG, HEIC). For a video, share your screen while it plays.' }
+            ] },
+          { id: 'sources', label: 'Allowed sources', section: 'behavior',
+            note: 'The + menu offers only these.',
+            controls: [
+              { id: 'srcUpload', label: 'Upload image', type: 'toggle', value: true },
+              { id: 'srcCamera', label: 'Take photo', type: 'toggle', value: true },
+              { id: 'srcRecent', label: 'Recent screenshot', type: 'toggle', value: true },
+              { id: 'srcScreen', label: 'Share screen', type: 'toggle', value: true }
+            ] },
+          { id: 'handling', label: 'In the composer', section: 'behavior',
+            controls: [
+              { id: 'preview', label: 'Show a preview of the visual', type: 'toggle', value: true,
+                hint: 'Once a visual is part of the request, it should be recognisable at a glance — not a paperclip.' },
+              { id: 'replace', label: 'Allow Replace', type: 'toggle', value: true },
+              { id: 'remove', label: 'Allow Remove', type: 'toggle', value: true,
+                hint: 'Removing the visual never removes the words.' }
+            ] },
+          { id: 'look', label: 'Appearance', section: 'appearance',
+            controls: [
+              { id: 'thumb', label: 'Thumbnail', type: 'segment', value: 'large',
+                options: [['large', 'Large'], ['compact', 'Compact']] },
+              { id: 'shareEmphasis', label: 'Active-sharing emphasis', type: 'segment', value: 'strong',
+                options: [['subtle', 'Subtle'], ['strong', 'Strong']],
+                hint: 'The sharing bar stays either way; strong uses the secondary container.' }
+            ] }
+        ]
+      },
+
+      states: {
+        none:        { label: 'No visual',
+                       trigger: 'The composer, with words typed and nothing shown yet.',
+                       behaviour: 'An ordinary composer. Visual context is offered under +.',
+                       meaning: 'Aria only has your words.',
+                       action: 'Press + to add an image, a photo, a screenshot or a window.',
+                       next: 'Selecting.' },
+        selecting:   { label: 'Selecting',
+                       trigger: '+ was pressed.',
+                       behaviour: 'A menu lists only the sources this product allows: Upload image, Take photo, Choose a recent screenshot, Share screen.',
+                       meaning: 'Nothing is shared yet.',
+                       action: 'Choose a source, or close the menu.',
+                       next: 'Visual attached, Permission required, Unsupported.' },
+        attached:    { label: 'Visual attached',
+                       trigger: 'An image was chosen.',
+                       behaviour: 'A card with a real preview joins the composer above the words, with its name, “Aria will see this when you send”, Replace and Remove. The words are untouched.',
+                       meaning: 'This is exactly what Aria will see — and only when you send.',
+                       action: 'Add words, Replace, Remove, or Send.',
+                       next: 'Processing, No visual (Remove), Selecting (Replace).' },
+        sharing:     { label: 'Sharing',
+                       trigger: 'A window was chosen to share.',
+                       behaviour: 'A persistent bar — red dot, “Sharing ‘Q3 metrics dashboard’”, Stop sharing — sits above the composer, and the card says it is live.',
+                       meaning: 'Aria can see this window, and only this window, until you stop.',
+                       action: 'Ask about it, or Stop sharing at any time.',
+                       next: 'Processing, or No visual (Stop sharing).' },
+        processing:  { label: 'Processing',
+                       trigger: 'The request was sent with a visual.',
+                       behaviour: 'The card says “Aria is reading this image…” with a slow sheen across the preview; Replace and Remove step aside.',
+                       meaning: 'Aria is using the visual now. Nothing else happens because of it.',
+                       action: 'Wait.',
+                       next: 'Ready, or Failed.' },
+        ready:       { label: 'Ready',
+                       trigger: 'Aria finished reading it.',
+                       behaviour: 'Your message shows the visual it carried; the answer says which visual it used. The composer is clear for the next request.',
+                       meaning: 'You can see what Aria used to answer.',
+                       action: 'Ask a follow-up, or add another visual.',
+                       next: 'No visual, or Selecting.' },
+        permission:  { label: 'Permission required',
+                       trigger: 'Take photo or Share screen was chosen.',
+                       behaviour: 'A panel above the composer says what is needed, why, when it is on and how to stop — and, for sharing, lets you choose the one window.',
+                       meaning: 'Nothing is captured or shared yet.',
+                       action: 'Choose the window (or Allow camera), or Cancel.',
+                       next: 'Sharing / Visual attached, or No visual.' },
+        unsupported: { label: 'Unsupported',
+                       trigger: 'A file that cannot be used was chosen (here, a video).',
+                       behaviour: 'A panel says what cannot be used and what can; the words stay.',
+                       meaning: 'Nothing was added.',
+                       action: 'Choose an image, or continue without it.',
+                       next: 'Selecting, or No visual.' },
+        failed:      { label: 'Failed',
+                       trigger: 'Aria could not read the image (too blurry).',
+                       behaviour: 'The card is marked, a panel says why, and the message is kept — nothing was sent without the image.',
+                       meaning: 'Nothing is lost; the request waits for you.',
+                       action: 'Retry, Replace, or Continue without it.',
+                       next: 'Processing, Selecting, or No visual.' }
+      },
+
+      view: function (s) {
+        var c = s.cfg, M = window.MaterialSim;
+        if (!M || !M.composer || !M.vi) return '';
+        var v = viDemo(s);
+        viCfg(v, c);
+        var html = M.composer({
+          agent: 'Aria', ask: 'Ask Aria about what you show it…', label: 'Message Aria',
+          plus: M.vi.sources(v), plusOpen: v.state === 'selecting', mic: false,
+          text: v.text, visual: v, busy: v.state === 'processing'
+        });
+        return '<div class="md-vip">' +
+          (v.sent ? '<div class="md-vxp__sent md-vip__sent" role="note"><span class="md-vxp__who">You</span>' +
+              (v.sent.thumb ? '<span class="md-vip__st">' + M.vi.thumb(v.sent.thumb) + '<small>' + esc(v.sent.name) + '</small></span>' : '') +
+              '<p>' + esc(v.sent.text) + '</p></div>' +
+            '<div class="md-vip__ans" role="note"><span class="md-vxp__who">Aria</span><p>' + esc(v.answer || '') + '</p>' +
+              (v.sent.name ? '<span class="md-vip__used">' + mi('visibility') + 'Used: ' + esc(v.sent.name) + '</span>' : '') + '</div>' : '') +
+          html +
+          '<button type="button" hidden tabindex="-1" data-act="vi:sync"></button>' +
+        '</div>';
+      },
+
+      mounted: function (root, s) {
+        var v = s.demo, wrap = root.querySelector('.pv-stage .md-vi');
+        if (!v || !wrap) return;
+        viGuard(root, s);
+        var field = wrap.querySelector('[data-ax-field]');
+        if (v.focusField && field) { v.focusField = false; field.focus({ preventScroll: true }); }
+        var sync = root.querySelector('.pv-stage [data-act="vi:sync"]');
+        if (v.kick && sync) setTimeout(function () { if (s.demo === v && sync.isConnected) sync.click(); }, 60);
+        if (field && !field.dataset.viBound) {
+          field.dataset.viBound = '1';
+          field.addEventListener('input', function () {
+            v.text = field.value;
+            var send = wrap.querySelector('.ax__cbtn--send'); if (send) send.disabled = !field.value.trim();
+          });
+          field.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); v.kick = 'send'; if (sync) sync.click(); }
+          });
         }
-
-        /* `false` means no region at all — the correct state for
-           everything before analysis has run. A marked region on an
-           image nobody has asked about yet is the exact failure
-           this pattern is about. */
-        function region(kind) {
-          return (kind !== false && c.region)
-? '    <span class="md-vis__region' + (kind ? ' md-vis__region--' + kind : '') +
-  '"\n          style="--x:6%;--y:36%;--w:86%;--h:30%"></span>\n' : '';
+        var form = wrap.querySelector('.ax__composer');
+        if (form && !form.dataset.viBound) {
+          form.dataset.viBound = '1';
+          form.addEventListener('submit', function (e) { e.preventDefault(); v.kick = 'send'; if (sync) sync.click(); });
         }
-
-        function figure(mode, kind, caption) {
-          return '' +
-'<figure class="md-vis">\n' +
-'  <div class="md-vis__frame">\n' + shot(mode) + region(kind) +
-'  </div>\n' +
-'  <p class="md-vis__meta">' + esc(c.kind) +
-   (c.retain ? ' <span>·</span> ' + esc(c.retainText) : '') + '</p>\n' +
-   (caption || '') +
-'</figure>';
-        }
-
-        if (st === 'empty') return '' +
-'<div class="md-vis__drop" role="button" tabindex="0" data-act="attach">\n' +
-'  <strong>Add an image</strong>\n' +
-'  <span>' + esc(c.ways) + '</span>\n' +
-'</div>';
-
-        if (st === 'attached') return figure('', false,
-'  <p class="md-vis__wait">Attached, and nothing is being asked. This same screenshot ' +
-'supports at least three different questions — what the error is, whether it matches a known ' +
-'bug, or how to fix it — and they have three different answers.</p>\n' +
-'  <div class="md-vis__read">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'            data-act="instruct">Write the question</button>\n' +
-'  </div>\n');
-
-        if (st === 'instructing') return c.wait
-? figure('', false,
-  '  <div class="md-sel__bar" style="margin-top:12px">\n' +
-  '    <span class="md-sel__q md-body-medium">' + esc(c.question) +
-  '<span class="pv-caretbar"></span></span>\n' +
-  '    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-  '            data-act="read">Send</button>\n' +
-  '  </div>\n')
-: figure('hot', '',
-  '  <div class="md-vis__read">\n' +
-  '    <p class="md-vis__t md-body-medium">This is a NullPointerException in ' +
-  'ScheduleResolver — here is how to fix it.</p>\n' +
-  '    <p class="md-vis__gap md-body-small">Nobody asked for a fix. It answered the moment ' +
-  'the image landed, and the question the person actually had is now three paragraphs ' +
-  'away.</p>\n' +
-  '  </div>\n');
-
-        if (st === 'region') return figure('hot', '',
-'  <div class="md-vis__read">\n' +
-'    <p class="md-vis__t md-body-medium">In the highlighted lines: ' + esc(c.answer) + '</p>\n' +
-   (c.region ? ''
-: '    <p class="md-vis__gap md-body-small">No region marked. “The highlighted lines” refers ' +
-  'to nothing, and nobody can check this against the image.</p>\n') +
-'  </div>\n');
-
-        /* reshoot */
-        return figure('cut', '',
-'  <div class="md-vis__read">\n' +
-'    <p class="md-vis__t md-body-medium">In the highlighted lines: ' + esc(c.answer) + '</p>\n' +
-'    <p class="md-vis__gap md-body-small">The first three frames are above the crop, so I ' +
-'cannot see where it started. <b>' + esc(c.reshoot) + '</b></p>\n' +
-'  </div>\n');
       },
 
       act: function (a, ctx) {
-        var go = function (st, say) { ctx.s.state = st; ctx.paint(); if (say) ctx.announce(say); };
-        if (a === 'attach')   return go('attached', 'Image attached. Nothing is being asked yet');
-        if (a === 'instruct') return go('instructing');
-        if (a === 'read')     return go('region', 'Region used: lines 4 to 6');
+        var s = ctx.s, v = viDemo(s);
+        var io = viIO(ctx, v);
+        if (a === 'vi:sync') { var k = v.kick; v.kick = null; if (k === 'send') return viSendPreview(ctx, v, io); return; }
+        if (a === 'vi:retry') { v.nextBad = null; v.item = vxM().vi.ITEMS.upload; v.state = 'attached'; return viSendPreview(ctx, v, io); }
+        vxM().vi.act(a, v, io);
       }
     },
 
-    /* ── Handwriting ────────────────────────────────────────
-       Five states across the two modes this pattern covers: an
-       ordinary field a pen writes into, where the ink is
-       transient — and ink that is itself the record, where
-       converting is destructive. Merging those two is the failure
-       the page is about. */
+    /* ── Handwriting Input (user brief, 6 Oct) ────────────────
+       The shared composer with a pen. Three layers stay apart —
+       the ink, the recognized text, the accepted text — and an
+       uncertain word is never accepted silently. */
     handwriting: {
-      initial: 'nopen',
+      initial: 'ready',
 
       customize: {
+        api: {
+          name: 'AgentComposer',
+          props: function (c) {
+            return { handwriting: {
+              convert: c.mode || 'review', keepOriginal: c.keep !== false, undoStroke: c.undo !== false,
+              statusText: c.statusText, failureText: c.failureText, unavailableText: c.unavailableText,
+              inkWeight: c.ink, recognitionEmphasis: c.emphasis
+            } };
+          }
+        },
         groups: [
-          { id: 'field', label: 'Writing into a field',
-            states: ['nopen', 'writing'],
-            note: 'There is no handwriting button here, and there should not be one: the ' +
-                  'platform already lets a pen write into any field.',
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'text', label: 'What was written', type: 'text',
-                value: 'is this working right?' },
-              { id: 'bounds', label: 'Show the handwriting bounds', type: 'toggle',
-                value: true, capability: true,
-                hint: 'Android’s are 40dp above and below, 10dp either side. Without them a ' +
-                      'stroke has to start inside a 52px target, and every one that misses ' +
-                      'is silently lost.' }
+              { id: 'statusText', label: 'Recognizing status', type: 'text', value: 'Recognizing your writing…' },
+              { id: 'failureText', label: 'Couldn’t recognize message', type: 'text', value: 'Couldn’t recognize this writing.',
+                hint: 'Your ink is kept, and Rewrite, Retry, Keep original and Switch to typing sit beside it.' },
+              { id: 'unavailableText', label: 'Unavailable message', type: 'text',
+                value: 'This device has no pen or touch input. Type your request instead.' }
             ] },
-
-          { id: 'ink', label: 'Ink as the record',
-            states: ['ink', 'lowconf', 'corrected'],
-            note: 'Maths, annotation, anything drawn in front of somebody. Here converting ' +
-                  'is destructive.',
+          { id: 'convert', label: 'Recognition', section: 'behavior',
             controls: [
-              { id: 'keep', label: 'Keep the strokes', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Replacing ink with the reading throws away the only thing a reader ' +
-                      'can appeal to.' },
-              { id: 'doubt', label: 'The part it was unsure of', type: 'text',
-                value: 'squared' },
-              { id: 'mark', label: 'Mark low-confidence readings', type: 'toggle', value: true,
-                hint: 'Off, a wrong exponent is indistinguishable from a right one — and it ' +
-                      'is a different equation.' }
+              { id: 'mode', label: 'When writing becomes text', type: 'segment', value: 'review',
+                options: [['review', 'Review first'], ['auto', 'Convert automatically']],
+                hint: 'Either way, an uncertain word stops for a look, and nothing is sent.' },
+              { id: 'keep', label: 'Keep the original ink', type: 'toggle', value: true,
+                hint: 'The handwriting travels with the message as context.' },
+              { id: 'undo', label: 'Undo last stroke', type: 'toggle', value: true }
+            ] },
+          { id: 'look', label: 'Appearance', section: 'appearance',
+            controls: [
+              { id: 'ink', label: 'Ink weight', type: 'segment', value: 'medium',
+                options: [['thin', 'Thin'], ['medium', 'Medium'], ['bold', 'Bold']] },
+              { id: 'emphasis', label: 'Recognition emphasis', type: 'segment', value: 'strong',
+                options: [['subtle', 'Subtle'], ['strong', 'Strong']],
+                hint: 'How strongly the uncertain word is marked. It is always a button with a “?”, whatever the emphasis.' }
             ] }
         ]
       },
 
       states: {
-        nopen:     { label: 'No pen',
-                     trigger: 'A touch or mouse session.',
-                     behaviour: 'An ordinary text field, and nothing at all about handwriting ' +
-                                'on screen. This is most of the time, and it is why there is ' +
-                                'no button.',
-                     action: 'Write into it with a pen' },
-        writing:   { label: 'Writing',
-                     trigger: 'A pen writes into that same field.',
-                     behaviour: 'Strokes at one-to-one, unsmoothed, converting behind the nib ' +
-                                '— and the handwriting bounds around the field are why a ' +
-                                'stroke starting slightly outside still lands in it.',
-                     action: 'Switch to ink as the record' },
-        ink:       { label: 'Ink kept',
-                     trigger: 'A page of working, written by hand.',
-                     behaviour: 'The strokes are the document. No conversion has happened and ' +
-                                'none needs to: the ink is already a usable record.',
-                     action: 'Recognise it' },
-        lowconf:   { label: 'Low confidence',
-                     trigger: 'The recogniser could not settle the exponent.',
-                     behaviour: 'The reading sits beneath the ink, never over it, with the ' +
-                                'doubtful part marked in the agent’s own primary. In an ' +
-                                'equation this is not a typo — it is a different equation.',
-                     action: 'Correct it' },
-        corrected: { label: 'Corrected',
-                     trigger: 'The marked reading is tapped and settled.',
-                     behaviour: 'Replaced in place, the mark comes off, and the ink is ' +
-                                'untouched. It was always the original.',
-                     action: 'Back to the start' }
+        ready:       { label: 'Ready',
+                       trigger: 'The pen in the composer was pressed.',
+                       behaviour: 'A writing pad opens above the composer, which stays where it was and keeps what was typed (“Next sprint:”). Undo, Clear and Close sit on the pad.',
+                       meaning: 'Nothing is written or recognized yet.',
+                       action: 'Write with a stylus, a finger or the mouse — or Close.',
+                       next: 'Writing.' },
+        writing:     { label: 'Writing',
+                       trigger: 'Ink is on the pad.',
+                       behaviour: 'Strokes appear as they are drawn. Undo removes the last stroke; Clear removes all of it. Recognize is offered; nothing is read yet.',
+                       meaning: 'This ink is the original. It is yours, not text yet.',
+                       action: 'Keep writing, Undo, Clear, or Recognize.',
+                       next: 'Recognizing.' },
+        recognizing: { label: 'Recognizing',
+                       trigger: 'Recognize was pressed (or, in automatic mode, the pen paused).',
+                       behaviour: 'The status says “Recognizing your writing…”; a slow sheen crosses the ink, which stays in view. Undo and Clear step aside.',
+                       meaning: 'The ink is being read. Nothing joins the message because of it.',
+                       action: 'Wait.',
+                       next: 'Recognized, or Couldn’t recognize.' },
+        recognized:  { label: 'Recognized',
+                       trigger: 'Recognition finished.',
+                       behaviour: 'Under the ink: “Recognized: Review onboarding flaw?”. The uncertain word is a button marked “?”, and Add to message is disabled until it is settled.',
+                       meaning: 'This is what was read — not yet what you said.',
+                       action: 'Tap the uncertain word and choose, or Edit text.',
+                       next: 'Editing recognition, or Added to message.' },
+        editing:     { label: 'Editing recognition',
+                       trigger: 'A word was corrected.',
+                       behaviour: 'The corrected word (“flow”) is marked as yours; nothing is uncertain any more, so Add to message is enabled.',
+                       meaning: 'The text reads right. It is still not in the message.',
+                       action: 'Add to message, or Edit text in the composer.',
+                       next: 'Added to message.' },
+        added:       { label: 'Added to message',
+                       trigger: 'Add to message was pressed.',
+                       behaviour: 'The words join what was typed — never replacing it — marked “From handwriting” with Undo. The ink is attached as “Handwritten note”, removable.',
+                       meaning: 'Accepted text. Nothing is sent until you send.',
+                       action: 'Edit, Undo, remove the original, or Send.',
+                       next: 'Ready (after sending), or back to what was typed (Undo).' },
+        failed:      { label: 'Couldn’t recognize',
+                       trigger: 'Too little of the ink could be read to trust.',
+                       behaviour: 'A message says so; the ink stays on the pad. Rewrite, Retry, Keep original (send the ink as an image) and Switch to typing are offered. Nothing is guessed into the message.',
+                       meaning: 'Nothing is lost, and nothing was added.',
+                       action: 'Rewrite, Retry, Keep original, or Switch to typing.',
+                       next: 'Ready, Recognizing, or Added to message (original only).' },
+        unavailable: { label: 'Unavailable',
+                       trigger: 'The device has no pen or touch input (or handwriting is turned off).',
+                       behaviour: 'The pen is shown disabled; pressing it explains why, in a panel above the composer. The field works as always.',
+                       meaning: 'Handwriting is optional; typing never depends on it.',
+                       action: 'Type instead.',
+                       next: '—' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
+        var c = s.cfg, M = window.MaterialSim;
+        if (!M || !M.composer || !M.hw) return '';
+        var h = hwDemo(s);
+        hwCfg(h, c);
+        var html = M.composer({
+          agent: 'Aria', ask: 'Ask Aria about the redesign…', label: 'Message Aria',
+          mic: false, text: h.text, handwriting: h
+        });
+        return '<div class="md-vip md-hwp" data-no-halo>' +
+          (h.sent ? '<div class="md-vxp__sent md-vip__sent" role="note"><span class="md-vxp__who">You</span>' +
+              '<p>' + esc(h.sent.text) + '</p>' +
+              (h.sent.ink ? '<span class="md-vip__used">' + mi('draw') + (h.sent.attached ? 'From handwriting · original attached' : 'From handwriting') + '</span>' : '') + '</div>' +
+            '<div class="md-vip__ans" role="note"><span class="md-vxp__who">Aria</span><p>' + esc(h.answer || '') + '</p></div>' : '') +
+          html +
+          '<button type="button" hidden tabindex="-1" data-act="hw:sync"></button>' +
+        '</div>';
+      },
 
-        /* The un-converted tail: one joined stroke on the same line
-           as the words that have already resolved. Joined, because
-           separated glyph shapes read as a strange font rather than
-           as somebody's hand still moving. */
-        var LINE =
-'  <svg class="md-ink__live" viewBox="0 0 130 26" aria-hidden="true">\n' +
-'    <path d="M3 19c2-9 4-11 5-4s2 9 5 3 5-9 6-3 2 7 5 2 4-9 5-3 1 7 4 5\n' +
-'             c4-3 3-12 1-16-2-4-3 1-3 5 0 6 2 10 6 10 3 0 5-3 6-7\n' +
-'             s2 5 5 5 5-4 6-8 1 6 4 7c3 1 5-2 6-6s2 4 5 4\n' +
-'             c3 0 4-3 5-6 1 4 2 8 5 8 2 0 4-2 5-5"/>\n' +
-'    <path d="M120 8c1-4 8-4 8 0s-7 4-7 8m-1 5v1"/>\n' +
-'  </svg>\n';
-
-        /* The page of working. Drawn once, unsmoothed, with the
-           exponent small and raised — because misreading it has to
-           be believable rather than a contrivance. */
-        var EQ =
-'  <svg class="md-ink__strokes md-ink__strokes--eq" viewBox="0 0 400 190"\n' +
-'       aria-label="Handwritten working. Line one: x squared plus three x minus four equals\n' +
-'                   zero. Line two: open bracket x plus four close bracket, open bracket x\n' +
-'                   plus one close bracket, equals zero.">\n' +
-'    <g transform="rotate(-1.1 200 95)">\n' +
-'      <path d="M22 48c9 8 19 20 27 27M50 47c-9 9-19 20-27 28"/>\n' +
-'      <path d="M60 34c1-7 15-9 15-1 0 7-15 9-16 17l18-1"/>\n' +
-'      <path d="M94 63h27M107 48v27"/>\n' +
-'      <path d="M141 50c12-8 23 0 15 7-5 4-10 3-10 3m-1 1c15-3 23 5 15 12-7 6-17 0-19-3"/>\n' +
-'      <path d="M178 52c8 8 17 17 25 24M203 50c-8 9-17 18-25 26"/>\n' +
-'      <path d="M222 64h28"/>\n' +
-'      <path d="M291 41v38M291 41l-24 28h32"/>\n' +
-'      <path d="M315 56h29M313 68h30"/>\n' +
-'      <path d="M375 44c-12-1-19 8-19 17s7 18 18 17 17-8 17-18-5-16-16-16Z"/>\n' +
-'      <path d="M22 122c-8 13-8 33-1 45"/>\n' +
-'      <path d="M38 132c8 8 16 17 23 23M60 131c-8 8-16 17-23 24"/>\n' +
-'      <path d="M74 144h23M85 133v23"/>\n' +
-'      <path d="M128 126v35M128 126l-21 25h29"/>\n' +
-'      <path d="M144 122c8 13 8 33 1 45"/>\n' +
-'      <path d="M162 122c-8 13-8 33-1 45"/>\n' +
-'      <path d="M178 132c8 8 16 17 23 23M200 131c-8 8-16 17-23 24"/>\n' +
-'      <path d="M214 144h23M225 133v23"/>\n' +
-'      <path d="M262 124v37M262 124l-9 8"/>\n' +
-'      <path d="M280 122c8 13 8 33 1 45"/>\n' +
-'      <path d="M300 138h27M299 150h28"/>\n' +
-'      <path d="M356 126c-11-1-18 7-18 16s6 17 16 17 17-7 17-16-5-16-15-17Z"/>\n' +
-'    </g>\n' +
-'  </svg>\n';
-
-        /* ── Writing into a field ─────────────────────────── */
-        if (st === 'nopen') return '' +
-'<label class="md-ink__field">\n' +
-'  <span class="md-ink__value md-ink__value--ghost md-body-medium">Ask about this working' +
-   '</span>\n' +
-'</label>\n' +
-'<p class="md-ink__hint md-body-small" style="margin-top:14px">An ordinary text field. No ' +
-'handwriting button, because the platform already accepts a pen here.</p>';
-
-        if (st === 'writing') return '' +
-'<label class="md-ink__field md-ink__field--focus">\n' +
-   (c.bounds ? '  <span class="md-ink__bounds" aria-hidden="true"></span>\n' : '') +
-'  <span class="md-ink__value md-body-medium">is this wor</span>\n' +
-   LINE +
-'  <span class="md-ink__caret" aria-hidden="true"></span>\n' +
-'</label>\n' +
-'<p class="md-ink__hint md-body-small">' +
-   (c.bounds
-     ? 'The handwriting area is bigger than the field — 40dp above and below, 10dp either ' +
-       'side — so a stroke starting anywhere in here lands in it.'
-     : 'No bounds. A stroke has to start inside a 52px-high target, and every one that ' +
-       'misses is silently lost.') + '</p>';
-
-        /* ── Ink as the record ────────────────────────────── */
-        if (st === 'ink') return '' +
-'<div class="md-ink">\n' + (c.keep ? EQ : '') +
-'  <p class="md-ink__read md-ink__read--pending md-body-medium">Not recognised yet — the ink ' +
-'is already the record.</p>\n' +
-'</div>';
-
-        var fixed = st === 'corrected';
-        var body =
-'    <span class="md-ink__word">x</span>\n' +
-   (c.mark && !fixed
-? '    <button class="md-ink__doubt md-ink__word" type="button" data-act="fix"\n' +
-  '            aria-label="Low confidence, tap to correct: ' + esc(c.doubt) + '">' +
-  esc(c.doubt) + '</button>\n'
-: '    <span class="md-ink__word' + (fixed ? ' md-ink__doubt is-fixed' : '') + '">' +
-  esc(c.doubt) + '</span>\n') +
-'    <span class="md-ink__word">+ 3x − 4 = 0</span>\n';
-
-        return '' +
-'<div class="md-ink">\n' + (c.keep ? EQ : '') +
-'  <p class="md-ink__read md-body-medium">\n' + body +
-'  </p>\n' +
-'</div>' +
-  (!c.keep
-? '\n<p class="md-ink__hint md-body-small" style="margin-top:14px">The ink is gone, so the ' +
-  'reading is now the only version of the working. If the exponent is wrong there is nothing ' +
-  'left to check it against.</p>'
-: (st === 'lowconf'
-? '\n<p class="md-ink__hint md-body-small" style="margin-top:14px">x&nbsp;squared and ' +
-  'x&nbsp;times&nbsp;2 are different equations. This is why the mark is not cosmetic.</p>'
-: '\n<p class="md-ink__hint md-body-small" style="margin-top:14px">Corrected in one tap, and ' +
-  'the strokes above are exactly as they were.</p>'));
+      mounted: function (root, s) {
+        var h = s.demo, wrap = root.querySelector('.pv-stage .md-hw');
+        if (!h || !wrap) return;
+        hwGuard(root, s);
+        var sync = root.querySelector('.pv-stage [data-act="hw:sync"]');
+        var kick = function (k) { h.kick = k; if (sync && sync.isConnected) sync.click(); };
+        vxM().hw.bind(wrap, h, {
+          mark: function (st) { pvLive(root, s, 'handwriting', st); },
+          recognize: function () { kick('recognize'); }
+        });
+        if (h.kick && sync) setTimeout(function () { if (s.demo === h && sync.isConnected && h.kick) sync.click(); }, 60);
+        var field = wrap.querySelector('[data-ax-field]');
+        if (h.focusField && field) { h.focusField = false; field.focus({ preventScroll: true }); try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {} }
+        if (field && !field.dataset.hwBound) {
+          field.dataset.hwBound = '1';
+          field.addEventListener('input', function () {
+            h.text = field.value;
+            var send = wrap.querySelector('.ax__cbtn--send'); if (send) send.disabled = !field.value.trim();
+          });
+          field.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); kick('send'); }
+          });
+        }
+        var form = wrap.querySelector('.ax__composer');
+        if (form && !form.dataset.hwBound) {
+          form.dataset.hwBound = '1';
+          form.addEventListener('submit', function (e) { e.preventDefault(); kick('send'); });
+        }
       },
 
       act: function (a, ctx) {
-        if (a === 'fix') { ctx.s.state = 'corrected'; ctx.paint();
-                           ctx.announce('Corrected in place; the ink is unchanged'); }
+        var s = ctx.s, h = hwDemo(s);
+        var io = hwIO(ctx, h);
+        if (a === 'hw:sync') {
+          var k = h.kick; h.kick = null;
+          if (k === 'send') return hwSendPreview(ctx, h, io);
+          if (k === 'recognize') { vxM().hw.act('hw:done', h, io); }
+          return;
+        }
+        if (a === 'hw:open' && HW_PADS.test(h.state)) a = 'hw:close';
+        if (a === 'hw:sample' && s.cfg.mode === 'auto') h.mode = 'auto';
+        vxM().hw.act(a, h, io);
       }
     },
 
-    /* ── Gesture input · contextual selection ───────────────
-       Five states, which is the whole interaction: nothing, the
-       mark, the region it resolved to, the region as a term in
-       the request, and the answer. Everything else this pattern
-       does — failure, adjustment, multiple regions, the keyboard
-       route — is documented in Reference and demonstrated in the
-       simulator, because a state list nobody reads to the end is
-       a specification rather than a page. */
+    /* ── Gesture Input (user brief, 6 Oct) ───────────────────
+       Point at what is on screen; it joins the request as a
+       named selection. Contextual only — a gesture never acts —
+       and an ambiguous selection asks rather than guesses. */
     gesture: {
-      initial: 'inactive',
+      initial: 'ready',
 
       customize: {
+        api: {
+          name: 'AgentComposer',
+          props: function (c) {
+            return { gesture: {
+              types: geOn(c), autoAdd: !!c.auto, askWhenAmbiguous: c.confirm !== false, multiple: !!c.multi,
+              label: c.labelText, ambiguousText: c.ambiguousText, failText: c.failText,
+              emphasis: c.emphasis, boundary: c.boundary
+            } };
+          }
+        },
         groups: [
-          { id: 'layer', label: 'The layer',
-            states: ['inactive', 'selecting'],
-            note: 'The layer is what makes a stroke safe: inside it a drag selects, ' +
-                  'outside it a drag still scrolls.',
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'entry', label: 'Entry point', type: 'text',
-                value: 'Ask about this screen' },
-              { id: 'teach', label: 'Teach the marks in place', type: 'toggle', value: true,
-                capability: true,
-                hint: 'One line, once, in the layer. Not a tour on second launch.' },
-              { id: 'teachText', label: 'The line', type: 'text',
-                value: 'Circle, highlight, scribble or tap anything.',
-                visibleWhen: function (c) { return !!c.teach; } }
+              { id: 'labelText', label: 'Selection label', type: 'text', value: 'Selected: {name}',
+                hint: '{name} is what was selected — the label must name it.' },
+              { id: 'ambiguousText', label: 'Ambiguous selection', type: 'text', value: 'Your selection covers more than one thing. Which did you mean?' },
+              { id: 'failText', label: 'Couldn’t identify', type: 'text', value: 'Couldn’t tell what you selected — nothing is there to select.' }
             ] },
-
-          { id: 'region', label: 'The region',
-            states: ['confirmed'],
-            note: 'Snapping is what lets an imprecise stroke land on the right object. ' +
-                  'Turn it off to see what the raw mark alone is worth.',
+          { id: 'types', label: 'Gestures', section: 'behavior',
+            note: 'Every target is also a button, so Tab and Enter select the same things.',
             controls: [
-              { id: 'snap', label: 'Snap to objects the product knows', type: 'toggle',
-                value: true, capability: true },
-              { id: 'label', label: 'What the region is called', type: 'text',
-                value: 'Revenue · 12–19 Sept',
-                visibleWhen: function (c) { return !!c.snap; } },
-              { id: 'handles', label: 'Adjustable before it is sent', type: 'toggle',
-                value: true, capability: true,
-                hint: 'Without handles a wrong snap can only be undone by starting again.' }
+              { id: 'tCircle', label: 'Circle', type: 'toggle', value: true },
+              { id: 'tHighlight', label: 'Highlight', type: 'toggle', value: true },
+              { id: 'tTap', label: 'Tap / select', type: 'toggle', value: true },
+              { id: 'tRegion', label: 'Region select', type: 'toggle', value: true }
             ] },
-
-          { id: 'chip', label: 'On the composer',
-            states: ['attached', 'result'],
-            note: 'The chip is a term in the request, not a badge on it.',
+          { id: 'handling', label: 'Selections', section: 'behavior',
             controls: [
-              { id: 'placeholder', label: 'Placeholder', type: 'text',
-                value: 'Ask about this' },
-              { id: 'question', label: 'The question', type: 'text',
-                value: 'why did this happen?' },
-              { id: 'removable', label: 'The chip can be removed', type: 'toggle',
-                value: true, capability: true,
-                hint: 'And removing it must not take the typed sentence with it.' }
+              { id: 'auto', label: 'Add to the message automatically', type: 'toggle', value: false,
+                hint: 'Off: a selection waits for Add to message, Adjust or Clear.' },
+              { id: 'confirm', label: 'Ask when a selection is ambiguous', type: 'toggle', value: true,
+                hint: 'Off: the biggest overlap is taken. That is a guess.' },
+              { id: 'multi', label: 'Allow more than one selection', type: 'toggle', value: false }
+            ] },
+          { id: 'look', label: 'Appearance', section: 'appearance',
+            controls: [
+              { id: 'emphasis', label: 'Selection emphasis', type: 'segment', value: 'strong',
+                options: [['subtle', 'Subtle'], ['strong', 'Strong']] },
+              { id: 'boundary', label: 'Boundary', type: 'segment', value: 'dashed',
+                options: [['dashed', 'Dashed'], ['solid', 'Solid'], ['glow', 'Glow']],
+                hint: 'Around the selected thing only — never the whole screen.' }
             ] }
         ]
       },
 
       states: {
-        inactive:  { label: 'Inactive',
-                     trigger: 'The product at rest.',
-                     behaviour: 'No layer, no hidden stroke. One visible, nameable entry ' +
-                                'point — which is also the only thing on screen that says ' +
-                                'this capability exists.',
-                     action: 'Invoke the layer and draw' },
+        ready:     { label: 'Ready',
+                     trigger: 'A dashboard on screen and the composer below it.',
+                     behaviour: 'An ordinary composer with a Select on screen button.',
+                     meaning: 'Aria only has your words.',
+                     action: 'Press Select on screen.',
+                     next: 'Selecting.' },
         selecting: { label: 'Selecting',
-                     trigger: 'The layer is up and the pointer is down.',
-                     behaviour: 'The screen beneath is frozen and dimmed one step, and the ' +
-                                'stroke follows the pointer one-to-one with no smoothing. ' +
-                                'Nothing is interpreted yet.',
-                     action: 'Release, and let it snap' },
-        confirmed: { label: 'Selection confirmed',
-                     trigger: 'The mark closes and the snap resolves.',
-                     behaviour: 'The edge hardens and handles appear. The region is now an ' +
-                                'object that can be corrected rather than a mark that has ' +
-                                'already been acted on — and nothing has been sent.',
-                     action: 'Use this region' },
-        attached:  { label: 'Context attached',
-                     trigger: 'The selection is accepted.',
-                     behaviour: 'The region travels to the composer and becomes a chip. One ' +
-                                'object in a second position — which is why the chip needs ' +
-                                'no caption saying where it came from.',
-                     action: 'Ask the question' },
-        result:    { label: 'Result',
-                     trigger: 'The agent answers.',
-                     behaviour: 'It names the region it used before it states a conclusion, ' +
-                                'and the chip is still there — so the same region can be ' +
-                                'asked about again without drawing it twice.',
-                     action: 'Back to the start' }
+                     trigger: 'Select on screen was pressed.',
+                     behaviour: 'A toolbar on the dashboard — “Circle what you mean — or Tab to it” — with Circle, Highlight, Tap and Region, and Cancel. Every item on the dashboard becomes a button.',
+                     meaning: 'Nothing is selected or shared yet. A gesture here only points.',
+                     action: 'Circle, highlight, tap or drag a box — or Tab to an item and press Enter. Escape cancels.',
+                     next: 'Selection made, or Couldn’t identify selection.' },
+        made:      { label: 'Selection made',
+                     trigger: 'A gesture landed on one thing.',
+                     behaviour: 'That thing gets a boundary, and a bar on it names it — “Conversion chart” — with Adjust, Clear and Add to message.',
+                     meaning: 'This is what you pointed at. It is not in the message yet.',
+                     action: 'Add to message, Adjust, or Clear.',
+                     next: 'Context added, Selecting (Adjust), or Ready (Clear).' },
+        added:     { label: 'Context added',
+                     trigger: 'Add to message (or automatic adding).',
+                     behaviour: 'A chip in the composer — “Selected: Conversion chart” — with ✕; the chart keeps a quiet “Selected” tag. The words are yours to write.',
+                     meaning: 'Aria will use the chart with your words, when you send.',
+                     action: 'Ask, remove the selection, or select something else.',
+                     next: 'Agent using selection, or Selection cleared.' },
+        using:     { label: 'Agent using selection',
+                     trigger: 'The message was sent with a selection.',
+                     behaviour: 'The chart says “Aria is looking at this” under a slow sheen; the chip is outlined. The answer names the chart it used.',
+                     meaning: 'Aria is using the chart — and only the chart. Nothing is changed.',
+                     action: 'Wait.',
+                     next: 'Context added (the selection stays for follow-ups).' },
+        cleared:   { label: 'Selection cleared',
+                     trigger: 'The selection was removed.',
+                     behaviour: 'The chip and the boundary are gone; a note says Aria won’t use the chart, with Select something else.',
+                     meaning: 'The conversation continues without it.',
+                     action: 'Select something else, or keep typing.',
+                     next: 'Selecting, or Ready.' },
+        failed:    { label: 'Couldn’t identify selection',
+                     trigger: 'A gesture covered two things (or nothing).',
+                     behaviour: 'Both candidates are marked and a panel asks “Which did you mean?” with a button for each, Try again, Describe it instead and Clear. Nothing is guessed.',
+                     meaning: 'Nothing is selected until you say.',
+                     action: 'Choose one, try again, describe it in words, or clear.',
+                     next: 'Selection made, Selecting, or Ready.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
+        var c = s.cfg, M = window.MaterialSim;
+        if (!M || !M.composer || !M.ge) return '';
+        var g = geDemo(s);
+        geCfg(g, c);
+        var html = M.composer({
+          agent: 'Aria', ask: g.describe ? 'Describe what you mean — e.g. “the conversion chart”…' : 'Ask Aria about what you select…', label: 'Message Aria',
+          mic: false, text: g.text, gesture: g, busy: g.state === 'using'
+        });
+        return '<div class="md-gep" data-no-halo>' +
+          M.ge.dash(g, true) +
+          (g.state === 'selecting' ? '<p class="md-gep__try"><span>Try it:</span><button class="md-button md-button--tonal md-button--small" type="button" data-act="ge:demo">Circle the Conversion chart</button></p>' : '') +
+          (g.sent ? '<div class="md-vxp__sent md-vip__sent" role="note"><span class="md-vxp__who">You</span><p>' + esc(g.sent.text) + '</p>' +
+              (g.sent.sel ? '<span class="md-vip__used">' + mi('lasso') + esc(g.sent.sel) + '</span>' : '') + '</div>' +
+            (g.answer ? '<div class="md-vip__ans" role="note"><span class="md-vxp__who">Aria</span><p>' + esc(g.answer) + '</p>' +
+              (g.sent.sel ? '<span class="md-vip__used">' + mi('visibility') + 'Used: ' + esc(g.sent.sel.replace(/^Selected: /, '')) + '</span>' : '') + '</div>' : '') : '') +
+          html +
+          '<button type="button" hidden tabindex="-1" data-act="ge:sync"></button>' +
+        '</div>';
+      },
 
-        /* One screen, drawn once. The pattern is the layer over it,
-           so the chart under it stays deliberately quiet. */
-        var COLS = [['3', 34], ['5', 41], ['7', 36], ['9', 45], ['11', 38],
-                    ['13', 74], ['15', 88], ['17', 96], ['19', 90]];
-        function screen(mark) {
-          return '' +
-'  <div class="md-sel__screen">\n' +
-'    <p class="md-sel__head">Weekly revenue</p>\n' +
-'    <p class="md-sel__sub">Self-serve · September</p>\n' +
-'    <div class="md-sel__chart" role="img"\n' +
-'         aria-label="Weekly revenue, flat until 12 September then rising sharply">\n' +
-   COLS.map(function (col, i) {
-     var hot = mark && i >= 5;
-     return '      <span class="md-sel__col' + (hot ? ' md-sel__col--hot' : '') +
-            '" style="--h:' + col[1] + '%"><i></i><b>' + col[0] + '</b></span>\n';
-   }).join('') +
-'    </div>\n' +
-'  </div>\n';
+      mounted: function (root, s) {
+        var g = s.demo, wrap = root.querySelector('.pv-stage .md-gep');
+        if (!g || !wrap) return;
+        geGuard(root, s);
+        var sync = root.querySelector('.pv-stage [data-act="ge:sync"]');
+        var kick = function (k) { g.kick = k; if (sync && sync.isConnected) sync.click(); };
+        vxM().ge.bind(wrap, g, {
+          paint: function () { kick('paint'); },
+          announce: function (t) { var el = root.querySelector('.pv-live'); if (el) el.textContent = t; var sr = wrap.querySelector('[data-ge-sr]'); if (sr) sr.textContent = t; },
+          root: function () { return wrap; }
+        });
+        if (g.kick && sync) setTimeout(function () { if (s.demo === g && sync.isConnected && g.kick) sync.click(); }, 60);
+        if (g.focusDash) { g.focusDash = false; var first = wrap.querySelector('.md-ge__tool[aria-checked="true"], .md-ge__hit'); if (first) first.focus({ preventScroll: true }); }
+        var field = wrap.querySelector('[data-ax-field]');
+        if (g.focusField && field) { g.focusField = false; field.focus({ preventScroll: true }); }
+        if (field && !field.dataset.geBound) {
+          field.dataset.geBound = '1';
+          field.addEventListener('input', function () {
+            g.text = field.value;
+            var send = wrap.querySelector('.ax__cbtn--send'); if (send) send.disabled = !field.value.trim();
+          });
+          field.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); kick('send'); }
+          });
         }
-
-        var REGION = '--x:55%;--y:12%;--w:41%;--h:70%';
-        var name = c.snap ? c.label : 'Region · 240 × 96';
-
-        function chipEl(label, act) {
-          return '' +
-'    <button class="md-sel__chip" type="button" data-act="' + act + '"\n' +
-'            aria-label="Remove ' + esc(label) + '">\n' +
-'      <svg class="md-sel__chip-i mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M600.5-379.5Q650-429 650-500t-49.5-120.5Q551-670 480-670t-120.5 49.5Q310-571 310-500t49.5 120.5Q409-330 480-330t120.5-49.5Zm-200-41Q368-453 368-500t32.5-79.5Q433-612 480-612t79.5 32.5Q592-547 592-500t-32.5 79.5Q527-388 480-388t-79.5-32.5ZM216-283Q98-366 40-500q58-134 176-217t264-83q146 0 264 83t176 217q-58 134-176 217t-264 83q-146 0-264-83Zm264-217Zm222.5 174.5Q804-391 857-500q-53-109-154.5-174.5T480-740q-121 0-222.5 65.5T102-500q54 109 155.5 174.5T480-260q121 0 222.5-65.5Z"/></svg>\n' +
-'      ' + esc(label) + '\n' +
-   (c.removable ? '      <span class="md-sel__x" aria-hidden="true">×</span>\n' : '') +
-'    </button>\n';
+        var form = wrap.querySelector('.ax__composer');
+        if (form && !form.dataset.geBound) {
+          form.dataset.geBound = '1';
+          form.addEventListener('submit', function (e) { e.preventDefault(); kick('send'); });
         }
-
-        /* ── Inactive ─────────────────────────────────────── */
-        if (st === 'inactive') {
-          return '' +
-'<div class="md-sel">\n' +
-'  <div class="md-sel__stage">\n' + screen(false) +
-'  </div>\n' +
-'  <div class="md-sel__bar">\n' +
-'    <button class="md-button md-button--outlined md-button--sm" type="button"\n' +
-'            data-act="select">' + esc(c.entry) + '</button>\n' +
-'    <span class="md-sel__q md-body-medium" style="opacity:.6">' +
-       esc(c.placeholder) + '</span>\n' +
-'  </div>\n' +
-'</div>';
-        }
-
-        /* ── Inside the layer ─────────────────────────────── */
-        if (st === 'selecting' || st === 'confirmed') {
-          var inner = st === 'selecting'
-            ? '    <svg class="md-sel__ink" viewBox="0 0 400 200" aria-hidden="true">\n' +
-              '      <path d="M232 26c58-8 132 6 148 54 14 42-6 96-54 108-46 12-104 6-122-28' +
-              '-14-26-10-58 2-78"/>\n' +
-              '    </svg>\n'
-            : '    <div class="md-sel__region" style="' + REGION + '">\n' +
-              '      <span class="md-sel__label">' + esc(name) + '</span>\n' +
-              (c.handles
-                ? '      <span class="md-sel__h md-sel__h--nw"></span>\n' +
-                  '      <span class="md-sel__h md-sel__h--se"></span>\n' : '') +
-              '    </div>\n';
-
-          return '' +
-'<div class="md-sel">\n' +
-'  <div class="md-sel__stage">\n' + screen(st === 'confirmed') +
-'  <div class="md-sel__layer" role="dialog" aria-modal="true"\n' +
-'       aria-label="Select something to ask about">\n' + inner +
-   (c.teach
-? '    <p class="md-sel__teach md-body-small">' + esc(c.teachText) + '</p>\n' : '') +
-'  </div>\n' +
-'  </div>\n' +
-   (st === 'confirmed'
-? '  <div class="md-sel__bar">\n' +
-  '    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-  '            data-act="attach">Use this</button>\n' +
-  '    <span class="md-sel__q md-body-small" style="opacity:.6">Nothing is sent while ' +
-  'the selection is still being adjusted.</span>\n' +
-  '  </div>\n' : '') +
-'</div>';
-        }
-
-        /* ── On the composer ──────────────────────────────── */
-        var bar = '' +
-'  <div class="md-sel__bar">\n' + chipEl(name, 'clear') +
-'    <span class="md-sel__q md-body-medium">' +
-   (st === 'result' ? esc(c.question) : esc(c.placeholder)) + '</span>\n' +
-'  </div>\n';
-
-        return '' +
-'<div class="md-sel">\n' +
-'  <div class="md-sel__stage">\n' + screen(true) + '  </div>\n' + bar +
-  (st === 'result'
-? '  <p class="md-sel__miss md-body-small">In <b>' + esc(name) + '</b>: the rise starts on ' +
-  '12 September, the day the self-serve trial length changed from 7 days to 14. Nothing ' +
-  'else shipped that week.</p>\n' : '') +
-'</div>';
       },
 
       act: function (a, ctx) {
-        var go = function (st, say) { ctx.s.state = st; ctx.paint(); if (say) ctx.announce(say); };
-        if (a === 'select') return go('selecting', 'Selection layer open');
-        if (a === 'attach') return go('attached', 'Region attached to the composer');
-        if (a === 'clear')  return go('inactive', 'Region removed');
+        var s = ctx.s, g = geDemo(s);
+        var io = geIO(ctx, g);
+        if (a === 'ge:sync') {
+          var k = g.kick; g.kick = null;
+          if (k === 'send') return geSendPreview(ctx, g, io);
+          if (k === 'demo') return vxM().ge.act('ge:demo', g, io);
+          if (k === 'paint') io.paint();
+          return;
+        }
+        vxM().ge.act(a, g, io);
       }
     },
 
-    /* ── Structured input ───────────────────────────────────
-       Five states: the prose, the questions, the skip that states
-       its own assumption, the answer carrying its constraints,
-       and the inline variant. */
+    /* ── Structured Input (user brief, 6 Oct) ─────────────────
+       A compact form the agent asks with, when a request needs
+       exact values. Complements the composer; never replaces it. */
     'structured-input': {
-      initial: 'request',
+      initial: 'complete',
 
       customize: {
+        api: {
+          name: 'AgentForm',
+          props: function (c) {
+            return { required: ['task', 'priority'].concat(c.reqOwner !== false ? ['owner'] : [], c.reqDue !== false ? ['due'] : []),
+              suggestions: c.suggest !== false, confirm: c.confirm !== false, preserveOnFailure: c.preserve !== false,
+              labels: { task: c.taskLabel }, helperText: c.helpText, validationText: c.dateText, confirmText: c.confirmText,
+              density: c.density, layout: c.layout };
+          }
+        },
         groups: [
-          { id: 'ask', label: 'What it asks for',
-            states: ['request', 'asking', 'skipped'],
-            note: 'Ask for what changes the answer, not for everything the API accepts.',
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'req', label: 'The request', type: 'text',
-                value: 'Create a customer research report on mid-market churn.' },
-              { id: 'restraint', label: 'Ask only for what changes the answer',
-                type: 'toggle', value: true, capability: true,
-                hint: 'Turn this off to see the same moment as a form: eight questions, and ' +
-                      'no way to tell which two matter.' },
-              { id: 'why', label: 'Say what each question changes', type: 'toggle',
-                value: true, capability: true,
-                hint: 'A question that cannot explain its own effect on the answer should ' +
-                      'not be asked.' },
-              { id: 'skippable', label: 'Every question can be skipped', type: 'toggle',
-                value: true, capability: true,
-                hint: 'A question that cannot be skipped is a required field in a friendlier ' +
-                      'voice — and should be labelled as one.' }
+              { id: 'taskLabel', label: 'First field label', type: 'text', value: 'Task' },
+              { id: 'helpText', label: 'Helper text', type: 'text', value: 'What needs doing, in a few words.' },
+              { id: 'dateText', label: 'Date validation', type: 'text', value: 'Pick a date after today (Tue 6 Oct).',
+                hint: 'Shown next to the field, and says how to fix it.' },
+              { id: 'confirmText', label: 'Confirmation', type: 'text', value: 'Aria will create this task in Orbit and link it to EXP-210. You can undo it afterwards.' }
             ] },
-
-          { id: 'result', label: 'After the answer',
-            states: ['answered'],
+          { id: 'rules', label: 'Fields', section: 'behavior',
+            note: 'Task and priority are always required.',
             controls: [
-              { id: 'showSet', label: 'Keep the constraints beside the result',
-                type: 'toggle', value: true, capability: true,
-                hint: 'Buried in the transcript, the result cannot be reproduced.' }
+              { id: 'reqOwner', label: 'Owner required', type: 'toggle', value: true },
+              { id: 'reqDue', label: 'Due date required', type: 'toggle', value: true }
             ] },
-
-          { id: 'inline', label: 'Typed entities',
-            states: ['typed'],
-            note: 'The other way to reach the same structure: from inside the sentence.',
+          { id: 'flow', label: 'Submitting', section: 'behavior',
             controls: [
-              { id: 'kinds', label: 'Show the type on the chip', type: 'toggle', value: true,
-                hint: 'Without it, a metric and a segment are the same lozenge.' }
+              { id: 'suggest', label: 'AI-suggested values', type: 'toggle', value: true,
+                hint: 'Always marked “Suggested”, with why; always editable.' },
+              { id: 'confirm', label: 'Review before creating', type: 'toggle', value: true },
+              { id: 'preserve', label: 'Keep values if it fails', type: 'toggle', value: true }
+            ] },
+          { id: 'look', label: 'Appearance', section: 'appearance',
+            controls: [
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable', options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
+              { id: 'layout', label: 'Layout', type: 'segment', value: 'grouped', options: [['grouped', 'Grouped'], ['inline', 'Inline']] }
             ] }
         ]
       },
 
       states: {
-        request:  { label: 'Free request',
-                    trigger: 'Somebody types what they want.',
-                    behaviour: 'A sentence, and nothing else. No fields, no dropdowns, no form ' +
-                               'standing between the person and the ask.',
-                    action: 'Send it, and see what it asks back' },
-        asking:   { label: 'Asking',
-                    trigger: 'Three parameters would change the answer.',
-                    behaviour: 'Three, not eight — and each one names what it changes. The ' +
-                               'whole group arrives at once, so the size of the ask is never ' +
-                               'a surprise.',
-                    action: 'Skip one' },
-        skipped:  { label: 'Skipped',
-                    trigger: 'A question is declined.',
-                    behaviour: 'The default is stated in the same breath, and it settles as an ' +
-                               'assumption rather than a choice: lower emphasis, with the word ' +
-                               '“default” in its accessible name.',
-                    action: 'Run it' },
-        answered: { label: 'Answered',
-                    trigger: 'The work finishes.',
-                    behaviour: 'The result with its constraints beside it — which is what lets ' +
-                               'one value be changed and the same question re-run into a ' +
-                               'comparable number.',
-                    action: 'See the inline variant' },
-        typed:    { label: 'Typed entity',
-                    trigger: 'Typing inside the sentence.',
-                    behaviour: 'The other route to the same structure: a word resolves from ' +
-                               'the product’s own schema and becomes a chip carrying its type.',
-                    action: 'Back to the request' }
+        empty:     { label: 'Empty',
+                     trigger: 'Aria needs exact values and has none yet.',
+                     behaviour: 'A compact form under the request: Task, Owner, Due date, Priority — labels, helper text, required marks — and “Suggest values”.',
+                     meaning: 'Nothing will happen until the form is complete and you confirm.',
+                     action: 'Fill it in, or ask for suggestions.',
+                     next: 'Partially completed.' },
+        partial:   { label: 'Partially completed',
+                     trigger: 'Some fields are filled.',
+                     behaviour: 'A count (“1 of 4 filled”); required fields still empty are marked by their label, not yet by an error.',
+                     meaning: 'You can carry on in any order.',
+                     action: 'Fill the rest, or Cancel.',
+                     next: 'Complete.' },
+        complete:  { label: 'Complete',
+                     trigger: 'Every required field has a value.',
+                     behaviour: 'Owner, Due date and Priority were filled in by Aria from the blocker — Aria’s message says so — and stay editable. A value you change is marked “Edited by you”. Review is ready.',
+                     meaning: 'Suggestions are offers. Nothing you set is changed for you.',
+                     action: 'Edit anything, then Review.',
+                     next: 'Ready to submit, or Validation error.' },
+        invalid:   { label: 'Validation error',
+                     trigger: 'Review found a problem.',
+                     behaviour: 'The message sits under its field (“Pick a date after today”), the field is marked invalid, a summary counts what needs a look, and focus moves to the first one.',
+                     meaning: 'Nothing was sent. Your values are untouched.',
+                     action: 'Fix the field — the error clears as soon as it is right.',
+                     next: 'Complete.' },
+        ready:     { label: 'Ready to submit',
+                     trigger: 'Review passed.',
+                     behaviour: 'A summary of the values, which were suggested and which you edited, “What Aria will receive” (the exact payload), Back to edit and Create task.',
+                     meaning: 'Creating a task changes another system, so it waits for you.',
+                     action: 'Create task, or Back to edit.',
+                     next: 'Submitted, or Couldn’t submit.' },
+        submitted: { label: 'Submitted',
+                     trigger: 'Create task succeeded.',
+                     behaviour: '“Task created — EXP-214”, the values, “What Aria received”, Undo and Open task.',
+                     meaning: 'The outcome is visible, and reversible.',
+                     action: 'Open the task, or Undo.',
+                     next: 'Complete (Undo).' },
+        failed:    { label: 'Couldn’t submit',
+                     trigger: 'Creating the task failed.',
+                     behaviour: 'An alert says what happened; every value is kept; Retry and Cancel.',
+                     meaning: 'Nothing was created, and nothing is lost.',
+                     action: 'Retry, edit, or Cancel.',
+                     next: 'Ready to submit / Submitted, or Complete.' }
       },
 
       view: function (s) {
-        var c = s.cfg;
-        var st = s.state;
-        var REQ = '<p class="md-struct__req">' + esc(c.req) + '</p>\n';
+        var c = s.cfg, M = window.MaterialSim;
+        if (!M || !M.si || !M.composer) return '';
+        var f = siDemo(s);
+        siCfg(f, c);
+        return '<div class="md-sip" data-no-halo>' +
+          '<div class="md-vxp__sent md-vip__sent" role="note"><span class="md-vxp__who">You</span><p>Create a follow-up task for this blocker</p></div>' +
+          '<div class="md-vip__ans" role="note"><span class="md-vxp__who">Aria</span><p>' +
+            (f.suggest !== false ? 'Here’s a follow-up task. I suggested some values from the blocker — check them before I create it.' : 'Here’s a follow-up task. Fill in the details and I’ll create it.') + '</p></div>' +
+          M.si.card(f) +
+          M.composer({ agent: 'Aria', ask: 'Or just say it — “assign it to Dev”…', label: 'Message Aria', mic: false, text: '' }) +
+          '<span class="md-vx__sr" role="status" aria-live="polite" data-si-sr></span>' +
+          '<button type="button" hidden tabindex="-1" data-act="si:sync"></button>' +
+        '</div>';
+      },
 
-        function chipEl(kind, value, cls, act) {
-          return '<button class="md-echip' + (cls ? ' ' + cls : '') + '" type="button"' +
-                 (act ? ' data-act="' + act + '"' : '') + '>' +
-                 (kind && c.kinds ? '<span class="md-echip__k">' + kind + '</span>' : '') +
-                 value + '</button>';
-        }
-
-        function question(id, title, why, opts, skip, act) {
-          return '' +
-'  <div class="md-struct__q">\n' +
-'    <p class="md-struct__qt md-body-medium" id="' + id + '">' + title + '</p>\n' +
-   (c.why ? '    <p class="md-struct__qw md-body-small">' + why + '</p>\n' : '') +
-'    <div class="md-struct__opts">\n' +
-     opts.map(function (o) {
-       return '      <button class="md-echip" type="button" aria-describedby="' + id + '"' +
-              (act ? ' data-act="' + act + '"' : '') + '>' + o + '</button>\n';
-     }).join('') +
-   (c.skippable && skip
-? '      <button class="md-echip md-echip--unresolved" type="button" data-act="skip">' +
-  skip + '</button>\n' : '') +
-'    </div>\n' +
-'  </div>\n';
-        }
-
-        var Q_AUD = question('q-aud', 'Who is it for?',
-          'Changes how much background I include.',
-          ['The exec team', 'The product team'],
-          'Skip &mdash; I&rsquo;ll assume the product team', 'skip');
-        var Q_RANGE = question('q-range', 'Over what period?',
-          'Changes which cohorts are complete enough to compare.',
-          ['Last 12 months', 'Since the pricing change'],
-          'Skip &mdash; I&rsquo;ll use the last 12 months', 'skip');
-        var Q_SRC = question('q-src', 'Which sources?',
-          'Changes what I am able to cite.',
-          ['Product data', 'Product data and support tickets'],
-          'Skip &mdash; I&rsquo;ll use product data', 'run');
-
-        /* The failure, reachable on purpose: everything the report
-           accepts as a parameter, asked at once, with no way to
-           tell which two of them decide the answer. */
-        var FORM = ['Who is it for?', 'Over what period?', 'Which sources?', 'Output format?',
-                    'Length?', 'Tone?', 'Include appendices?', 'Chart style?']
-          .map(function (t) {
-            return '  <div class="md-struct__q">\n' +
-                   '    <p class="md-struct__qt md-body-medium">' + t + '</p>\n' +
-                   '    <div class="md-struct__opts">' +
-                   '<button class="md-echip md-echip--unresolved" type="button">Choose' +
-                   '</button></div>\n  </div>\n';
-          }).join('');
-
-        function set(rows) {
-          return '<div class="md-struct__set">' +
-            '<span class="md-struct__setk">Using</span>' + rows.join('') + '</div>';
-        }
-        var AUD = chipEl('audience', 'exec team', '', '');
-        var SRC = chipEl('sources', 'product data', '', '');
-        var RANGE_D = '<button class="md-echip md-echip--default" type="button" ' +
-          'aria-label="Period, default: last 12 months">' +
-          (c.kinds ? '<span class="md-echip__k">period</span>' : '') +
-          'last 12 months &middot; default</button>';
-
-        if (st === 'request') return '' +
-'<div class="md-struct" role="textbox" aria-label="Ask for anything">\n' +
-'  <span>' + esc(c.req) + '</span>\n' +
-'</div>\n' +
-'<p class="md-struct__note">A sentence, and nothing else. No form stands between the person ' +
-'and the ask.</p>\n' +
-'<div class="md-struct__opts" style="margin-top:12px">\n' +
-'  <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'          data-act="ask">Send the request</button>\n' +
-'</div>';
-
-        if (st === 'asking') return REQ +
-   (c.restraint
-? '<div class="md-struct__ask" role="group" aria-label="Three things I need">\n' +
-  Q_AUD + Q_RANGE + Q_SRC + '</div>\n' +
-  '<p class="md-struct__note">' +
-  (c.skippable
-    ? 'Three questions, each naming what it changes. Everything else this report accepts as ' +
-      'a parameter, it has a sensible answer for already.'
-    : 'Nothing here can be declined, which makes these required fields. Calling them ' +
-      'questions does not change that — and a required field should be labelled as one.') +
-  '</p>'
-: '<div class="md-struct__ask" role="group" aria-label="Eight things I need">\n' + FORM +
-  '</div>\n' +
-  '<p class="md-struct__note">Eight questions and no way to tell which two of them decide ' +
-  'the answer. This is a form with a friendlier voice.</p>');
-
-        if (st === 'skipped') return REQ +
-'<div class="md-struct__ask" role="group" aria-label="One thing I still need">\n' + Q_SRC +
-'</div>\n' + set([AUD, RANGE_D]) +
-'<p class="md-struct__note">Skipped, and the assumption was stated in the same breath rather ' +
-'than made quietly. The middle value sits at lower emphasis because it is an assumption, not ' +
-'a choice.</p>';
-
-        if (st === 'answered') return REQ +
-   (c.showSet ? set([AUD, RANGE_D, SRC]) : '') +
-'<p class="md-struct__note">Mid-market churn at <b>3.4%</b>, concentrated in accounts under ' +
-'nine seats. The period is my assumption, not your choice.</p>' +
-   (c.showSet
-? '<p class="md-struct__note">Change one value and ask again: the two numbers are comparable ' +
-  'because the difference between them is a value, not a differently-worded question.</p>'
-: '<p class="md-struct__note">The constraints are somewhere in the transcript. Nobody can ' +
-  'reproduce this number next month, including the person who asked for it.</p>');
-
-        /* typed */
-        return '' +
-'<div class="md-struct" role="textbox" aria-label="Ask a question">\n' +
-'  <span>Show</span>\n' +
-'  ' + chipEl('metric', 'activation rate', '', '') + '\n' +
-'  <span>for</span>\n' +
-'  ' + chipEl('segment', 'self-serve', '', '') + '\n' +
-'  <span>since 12 September</span>\n' +
-'</div>\n' +
-'<p class="md-struct__note">' +
-   (c.kinds
-     ? 'Two words pinned to real values, the rest still prose. The type sits on the chip, so a ' +
-       'metric is never mistaken for a segment — and four metrics here have “activation” in ' +
-       'the name.'
-     : 'Without the type, a metric and a segment are the same lozenge — and picking the wrong ' +
-       'one still returns a perfectly plausible number.') + '</p>';
+      mounted: function (root, s) {
+        var f = s.demo, wrap = root.querySelector('.pv-stage .md-sip');
+        if (!f || !wrap) return;
+        siGuard(root, s);
+        var form = wrap.querySelector('.ax__composer'); if (form) form.addEventListener('submit', function (e) { e.preventDefault(); });
+        vxM().si.bind(wrap, f, {
+          paint: function () { var b = root.querySelector('.pv-stage [data-act="si:sync"]'); if (b) b.click(); }
+        });
       },
 
       act: function (a, ctx) {
-        var go = function (st, say) { ctx.s.state = st; ctx.paint(); if (say) ctx.announce(say); };
-        if (a === 'ask')  return go('asking');
-        if (a === 'skip') return go('skipped', 'Skipped. Using the last 12 months');
-        if (a === 'run')  return go('answered');
+        var s = ctx.s, f = siDemo(s);
+        var io = { paint: function () { s.state = f.state; f.on = f.state; ctx.paint(); },
+                   announce: function (t) { ctx.announce(t); var sr = document.querySelector('.pv-stage [data-si-sr]'); if (sr) sr.textContent = t; },
+                   wait: wait };
+        if (a === 'si:sync') return io.paint();
+        if (a === 'noop') return;
+        if (a === 'si:retry') f.fail = false;
+        vxM().si.act(a, f, io);
       }
     }
   };
@@ -9125,12 +9581,12 @@ card + '>\n' + head +
      change every state. */
   function stateDirty(def, cfg, state) {
     return liveGroups(def, cfg, state).some(function (x) {
-      return x.controls.some(function (c) { return cfg[c.id] !== c.value; });
+      return x.controls.some(function (c) { return !c.nav && cfg[c.id] !== c.value; });
     });
   }
   function anyDirty(def, cfg) {
     var d = false;
-    eachControl(def, function (c) { if (cfg[c.id] !== c.value) d = true; });
+    eachControl(def, function (c) { if (!c.nav && cfg[c.id] !== c.value) d = true; });
     return d;
   }
   /* Reset scoped to the state resets what is on screen and leaves
@@ -9189,7 +9645,7 @@ card + '>\n' + head +
 
   function changeCount(def, cfg) {
     var n = 0;
-    eachControl(def, function (c) { if (cfg[c.id] !== c.value) n++; });
+    eachControl(def, function (c) { if (!c.nav && cfg[c.id] !== c.value) n++; });
     return n;
   }
   /* A state can stop existing. Turn "Opens for detail" off and
@@ -9197,6 +9653,10 @@ card + '>\n' + head +
      rather than sitting there offering a panel that cannot open. */
   function liveStates(def, cfg) {
     return Object.keys(def.states).filter(function (k) {
+      /* A pattern with a head selector (Icons: "Icon role") offers
+         only the states of the option being shown. */
+      var hs = def.headSelect, rs = def.states[k].roles;
+      if (hs && rs && rs.indexOf(cfg[hs.cfg]) === -1) return false;
       var r = def.states[k].requires;
       if (!r) return true;
       return [].concat(r).every(function (x) { return !!cfg[x]; });
@@ -9398,7 +9858,7 @@ card + '>\n' + head +
   function resetMenuHTML(def, cfg, state, open) {
     var here = def.states[state] ? def.states[state].label : state;
     var scopedDirty = stateScoped(def, state).some(function (g) {
-      return g.controls.some(function (c) { return cfg[c.id] !== c.value; });
+      return g.controls.some(function (c) { return !c.nav && cfg[c.id] !== c.value; });
     });
     return '' +
       '<button class="pvc__reset" type="button" data-cfg-reset-open ' +
@@ -9550,10 +10010,15 @@ card + '>\n' + head +
     /* Which configuration the stage draws. The panel always edits the
        real one — Original is a look, not a mode you can get stuck in. */
     function viewState() {
+      /* The composer's always-there controls keep their state here. */
+      if (window.MaterialSim && window.MaterialSim.axd) window.MaterialSim.axd.use(s.__axd || (s.__axd = {}));
       if (s.compare !== 'original') return s;
       var o = {};
       Object.keys(s).forEach(function (k) { o[k] = s[k]; });
       o.cfg = defaults(def);
+      /* What is being demonstrated is not a customization: the Default
+         view shows the same role, drawn with the defaults. */
+      eachControl(def, function (c) { if (c.nav) o.cfg[c.id] = s.cfg[c.id]; });
       return o;
     }
 
@@ -9571,6 +10036,7 @@ card + '>\n' + head +
        control, name the current state in words, and leave room for the
        things that belong beside them. */
     function stateSelect() {
+      if (def.headSelect) return headSelectHTML();
       var keys = liveStates(def, s.cfg);
       /* A pattern with one state has nothing to select. Showing a
          dropdown that cannot go anywhere is furniture pretending to be
@@ -9595,6 +10061,37 @@ card + '>\n' + head +
                          '<span class="pv-select__tick">' + (k === s.state ? TICK : '') + '</span>' +
                          '<span class="pv-select__label">' + def.states[k].label + '</span>' +
                          (stateDirty(def, s.cfg, k) ? DOT : '') + '</button>';
+                }).join('') +
+              '</div>'
+            : '') +
+        '</div>';
+    }
+
+    /* A pattern can put a different question in the head: Icons asks
+       which ROLE is being demonstrated ("Icon role ▾"), and its states
+       are reached by using the example, not picked from a list. The
+       value is an ordinary (nav) control, so the Customizer shows the
+       same choice and the copied code carries it. */
+    function headSelectHTML() {
+      var hs = def.headSelect, cur = s.cfg[hs.cfg];
+      var opts = typeof hs.options === 'function' ? hs.options() : hs.options;
+      var now = (opts.filter(function (o) { return o[0] === cur; })[0] || opts[0]);
+      return '' +
+        '<div class="pv-select pv-select--head" data-select>' +
+          '<button class="pv-select__btn" type="button" data-select-open ' +
+            'aria-haspopup="listbox" aria-expanded="' + !!s.menu + '" ' +
+            'aria-label="' + esc(hs.label) + ': ' + esc(now[1]) + '">' +
+            '<span class="pv-select__k">' + esc(hs.label) + '</span>' +
+            '<span class="pv-select__v">' + esc(now[1]) + '</span>' +
+            CHEV_DOWN +
+          '</button>' +
+          (s.menu
+            ? '<div class="pv-select__menu" role="listbox" tabindex="-1" aria-label="' + esc(hs.label) + '">' +
+                opts.map(function (o) {
+                  return '<button class="pv-select__opt" type="button" role="option" ' +
+                         'aria-selected="' + (o[0] === cur) + '" data-hs="' + esc(o[0]) + '">' +
+                         '<span class="pv-select__tick">' + (o[0] === cur ? TICK : '') + '</span>' +
+                         '<span class="pv-select__label">' + esc(o[1]) + '</span></button>';
                 }).join('') +
               '</div>'
             : '') +
@@ -9683,7 +10180,10 @@ card + '>\n' + head +
             row('State', st.label) +
             row('Trigger', st.trigger) +
             row('Behaviour', st.behaviour) +
-            row('Next', st.action) +
+            /* Patterns that document meaning separately: what the person
+               should understand, what they can do, and where it goes. */
+            (st.meaning ? row('Meaning', st.meaning) : '') +
+            (st.next ? row('Action', st.action) + row('Next', st.next) : row('Next', st.action)) +
           '</dl>' +
 
           '<p class="pv-live" role="status" aria-live="polite">' + (s.said || '') + '</p>' +
@@ -9693,6 +10193,7 @@ card + '>\n' + head +
          was writing to, so anything script-driven has to be
          re-attached to the new one. */
       if (def.mounted) def.mounted(root, s);
+      pvMenuRoom(root);
       pvAura(root);
       if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
     }
@@ -9776,6 +10277,7 @@ card + '>\n' + head +
          at, and it is not part of the component. */
       if (pre)   pre.innerHTML = highlight(prettyPrintHtml(code));
       if (def.mounted) def.mounted(root, s);
+      pvMenuRoom(root);
       pvAura(root);
       if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
       var dot = root.querySelector('.pv-edit__dot');
@@ -9978,11 +10480,14 @@ card + '>\n' + head +
              the store holds this reference, and only this pattern's
              values are touched. */
           var d = defaults(def);
-          Object.keys(d).forEach(function (k) { s.cfg[k] = d[k]; });
+          Object.keys(d).forEach(function (k) {
+            var fc = findControl(def, k);
+            if (!(fc && fc.nav)) s.cfg[k] = d[k];
+          });
         }
         else {
           stateScoped(def, s.state).forEach(function (g) {
-            g.controls.forEach(function (c) { s.cfg[c.id] = c.value; });
+            g.controls.forEach(function (c) { if (!c.nav) s.cfg[c.id] = c.value; });
           });
         }
         s.reset = false;
@@ -10031,6 +10536,13 @@ card + '>\n' + head +
           btn.setAttribute('aria-pressed', String(btn === opt));
         });
         commit(skey);
+        var sc = findControl(def, skey);
+        if (sc && sc.nav) {
+          if (s.demo) delete s.demo;
+          ensureState(skey);
+          if (def.headSelect && def.headSelect.chosen) def.headSelect.chosen(ctx, s.cfg[skey]);
+          return;
+        }
         sync(skey);
         return;
       }
@@ -10045,8 +10557,24 @@ card + '>\n' + head +
       /* Changing the STATE is a context change: different sections,
          different preview. The panel is rebuilt and therefore opens at
          the top of the new state's configuration — deliberately. */
+      var hso = e.target.closest('.pv-select__opt[data-hs]');
+      if (hso && def.headSelect) {
+        var hk = def.headSelect.cfg;
+        s.menu = false;
+        if (s.cfg[hk] !== hso.dataset.hs) {
+          s.cfg[hk] = hso.dataset.hs;
+          if (s.demo) delete s.demo;
+          ensureState(hk);
+          if (def.headSelect.chosen) def.headSelect.chosen(ctx, hso.dataset.hs);
+        } else syncSelect();
+        var hb = root.querySelector('[data-select-open]');
+        if (hb) hb.focus();
+        return;
+      }
       var opt2 = e.target.closest('.pv-select__opt[data-state]');
-      if (opt2) { s.state = opt2.dataset.state; s.menu = false; paint(); return; }
+      if (opt2) { s.state = opt2.dataset.state; s.menu = false;
+        if (s.__axd && s.__axd.vx && window.MaterialSim) window.MaterialSim.vx.halt(s.__axd.vx);
+        s.__axd = {}; paint(); return; }
 
       /* A click anywhere else in the playground closes the list. The
          document-level handler below covers everything outside it. */
@@ -10057,6 +10585,11 @@ card + '>\n' + head +
 
       var btn = e.target.closest('[data-act]');
       if (!btn || btn.disabled) return;
+      if (btn.dataset.act.indexOf('axd:') === 0 && window.MaterialSim && window.MaterialSim.axd) {
+        window.MaterialSim.axd.act(btn.dataset.act, s.__axd || (s.__axd = {}),
+          { paint: ctx.paint, announce: ctx.announce, container: root.querySelector('.pv-stage') });
+        return;
+      }
       var out = def.act(btn.dataset.act, ctx);
       if (out && typeof out.then === 'function') {
         if (busy) return;

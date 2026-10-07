@@ -1,18 +1,18 @@
-/* Icons — Live Preview (user brief, 1 Oct).
+/* Icons — Live Preview (user brief, 5 Oct: semantic AI iconography).
 
-   Semantic AI iconography, not a glyph picker. Pinned here: four
-   meanings with four different marks (action, generated, working,
-   tool) drawn from disjoint approved lists; the AI-action mark only on
-   controls that run AI, never on ordinary controls or content; every
-   mark travels with words (label, tooltip + accessible name, status);
-   hover, focus, pressed, working, generated and disabled are reached by
-   USING it and the read-out follows; tooltips show on hover and focus
-   and Escape hides them; disabled actions stay focusable and say why;
-   working shows the turning mark + status + tool line and is
-   stoppable; the generated mark explains itself and offers Undo; built
-   from Nucleux Md3 components (Md3Button, Md3IconButton, Md3Tooltip,
-   Md3Chip, Md3TextField, Md3Card); customizer is Content / Behavior /
-   Appearance with no Quality section or advanced flag. */
+   Pinned here: the head asks "Icon role" (AI action · AI-generated
+   content · Agent working · Tool use) — a role, not a state — and each
+   role is demonstrated alone in the release-note editor; the four
+   roles use four different marks from disjoint approved lists; the
+   Icon language list teaches them compactly at 24/20/16; AI action's
+   hover, focus, pressed, working, complete and disabled are reached by
+   USING it; Working really turns (and stops under reduced motion or
+   when animation is switched off, with a warning); screen readers get
+   "Agent working: …"; generated content is disclosed once and explains
+   itself; tool use names the tool and expands; the read-out documents
+   Trigger / Behaviour / Meaning / Action / Next; the customizer is
+   Content / Behavior / Appearance (no Quality, no advanced flag) and
+   its guardrails fire; the copied API is semantic (role="…"). */
 const { chromium } = require(process.env.PW || '/opt/node-tools/node_modules/playwright-core');
 let pass = 0, fail = 0;
 const ok = (m, c, d) => { c ? pass++ : (fail++, console.log('  FAIL ' + m + (d ? '  → ' + d : ''))); };
@@ -26,230 +26,211 @@ const ST = '.pv-stage ';
   p.on('pageerror', e => errs.push(String(e)));
   await p.goto(URL, { waitUntil: 'networkidle' });
   await p.waitForTimeout(900);
-  const state = () => p.$eval('.pv-select__v', e => e.textContent.trim());
-  const go = async n => {
-    await p.click('.pv-select__btn'); await p.waitForTimeout(120);
+  const state = () => p.$eval('.pv-doc-rows .pv-row dd', e => e.textContent.trim());
+  const rowsK = () => p.$$eval('.pv-doc-rows dt', d => d.map(x => x.textContent.trim()).join('|'));
+  const head = () => p.$eval('.pv-select__btn', e => e.getAttribute('aria-label'));
+  const role = async n => {
+    await p.click('.pv-select__btn'); await p.waitForTimeout(150);
     await p.$$eval('.pv-select__opt', (o, n) => o.find(x => x.textContent.trim() === n).click(), n);
-    await p.waitForTimeout(450);
+    await p.waitForTimeout(500);
   };
-  const seg = async (id, v) => { await p.click('.pvc-seg__btn[data-cfg="' + id + '"][data-value="' + v + '"]'); await p.waitForTimeout(400); };
-  const sw = async id => { await p.evaluate(id => { const x = document.querySelector('.pvc-switch[data-cfg="' + id + '"]') ||
-      [...document.querySelectorAll('.pvc-row')].find(r => r.querySelector('[data-cfg="' + id + '"]')).querySelector('.pvc-switch'); x.click(); }, id);
-    await p.waitForTimeout(400); };
-  const text = async (id, v) => { await p.fill('.pvc-input[data-cfg="' + id + '"]', v); await p.waitForTimeout(400); };
+  const sw = async id => { await p.evaluate(id => { const r = [...document.querySelectorAll('.pvc-row')].find(r => r.querySelector('[data-cfg="' + id + '"]'));
+      (r.querySelector('.pvc-switch') || r.querySelector('[data-cfg="' + id + '"]')).click(); }, id); await p.waitForTimeout(450); };
+  const seg = async (id, v) => { await p.click('.pvc-seg__btn[data-cfg="' + id + '"][data-value="' + v + '"]'); await p.waitForTimeout(450); };
+  const text = async (id, v) => { await p.fill('.pvc-input[data-cfg="' + id + '"]', v); await p.waitForTimeout(450); };
   const guard = () => p.evaluate(ST => [...document.querySelectorAll(ST + '.pv-guard li')].map(l => l.textContent), ST);
-  const path = sel => p.evaluate(s => { const e = document.querySelector(s); return e ? e.querySelector('path').getAttribute('d') : null; }, sel);
+  const d = sel => p.evaluate(s => { const e = document.querySelector(s); return e ? e.querySelector('path').getAttribute('d') : null; }, sel);
   const tipShown = id => p.evaluate(id => { const t = document.getElementById(id); if (!t) return null;
     const c = getComputedStyle(t); return c.visibility === 'visible' && +c.opacity > 0.5; }, id);
-  const colour = v => p.evaluate(v => { const d = document.createElement('div'); d.style.color = 'var(' + v + ')';
-    document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; }, v);
-  const primary = await colour('--md-sys-color-primary');
-  const onVar = await colour('--md-sys-color-on-surface-variant');
+  const spinning = sel => p.evaluate(s => { const e = document.querySelector(s); return !!e && getComputedStyle(e).animationName === 'md-aii-turn'; }, sel);
   const ICONS = await p.evaluate(() => window.MaterialIcons.PATH);
 
-  /* ══ 1 · Built from Nucleux Md3 components ═════════════════ */
+  /* ══ 1 · The head asks for a ROLE, not a state ══════════════ */
+  ok('1.1 head selector is “Icon role: AI action”', /^Icon role: AI action$/.test(await head()), await head());
+  await p.click('.pv-select__btn'); await p.waitForTimeout(150);
+  const opts = await p.$$eval('.pv-select__opt', o => o.map(x => x.textContent.trim()));
+  ok('1.2 options are the four roles', opts.join('|') === 'AI action|AI-generated content|Agent working|Tool use', opts.join('|'));
+  await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+  ok('1.3 the Customize button sits beside it', !!(await p.$('.pv-head__right [data-select] + .pv-edit')));
+  ok('1.4 read-out documents Trigger, Behaviour, Meaning, Action, Next',
+     (await rowsK()) === 'State|Trigger|Behaviour|Meaning|Action|Next', await rowsK());
+
+  /* ══ 2 · Built from Nucleux Md3 components ═════════════════ */
   const k = await p.evaluate(ST => ({
     card: !!document.querySelector(ST + '.md3-card.rounded-md-md.border-md-outline-variant'),
-    rw: (document.querySelector(ST + '[data-act="aii:rewrite"]') || {}).className || '',
-    sm: (document.querySelector(ST + '[data-act="aii:summarize"]') || {}).className || '',
-    tips: document.querySelectorAll(ST + '.md3-tip [role="tooltip"]').length,
+    act: (document.querySelector(ST + '.md-aiiv__act') || {}).className || '',
+    tip: !!document.querySelector(ST + '#aii-tip-act[role="tooltip"]'),
     field: (document.querySelector(ST + 'textarea[data-aii-field]') || {}).className || '',
-    sheet: [...document.styleSheets].some(s => /nucleux-md3\.css/.test(s.href || ''))
+    title: (document.querySelector(ST + '.md-aiiv__title') || {}).textContent
   }), ST);
-  ok('1.1 Md3Card (outlined) around the editor', k.card);
-  ok('1.2 Rewrite is an Md3Button (tonal), Summarize an Md3IconButton',
-     /md3-btn/.test(k.rw) && /bg-md-secondary-container/.test(k.rw) && /rounded-full/.test(k.rw) &&
-     /md3-iconbtn/.test(k.sm) && /h-10 w-10/.test(k.sm), JSON.stringify([k.rw.slice(0, 60), k.sm.slice(0, 60)]));
-  ok('1.3 Md3Tooltips and an Md3TextField (filled)', k.tips >= 3 && /bg-md-surface-container-high/.test(k.field) && /border-b-2/.test(k.field));
-  ok('1.4 the Tailwind build from @nucleux/tokens is linked', k.sheet);
+  ok('2.1 Md3Card around a release-note editor', k.card && k.title === 'Release note · September', k.title);
+  ok('2.2 Rewrite is an Md3Button (tonal) with an Md3Tooltip', /md3-btn/.test(k.act) && /bg-md-secondary-container/.test(k.act) && k.tip);
+  ok('2.3 Md3TextField (filled) holds the draft', /bg-md-surface-container-high/.test(k.field));
 
-  /* ══ 2 · The vocabulary ═══════════════════════════════════ */
-  const v = await p.evaluate(ST => {
-    const d = e => e && e.querySelector('path').getAttribute('d');
-    const terms = [...document.querySelectorAll(ST + '.md-aiiv__term')];
-    return {
-      names: terms.map(t => t.querySelector('.md-aiiv__tn').textContent),
-      paths: terms.map(t => d(t.querySelector('svg'))),
-      rw: d(document.querySelector(ST + '[data-act="aii:rewrite"] svg')),
-      sm: d(document.querySelector(ST + '[data-act="aii:summarize"] svg')),
-      plain: [...document.querySelectorAll(ST + '.md3-iconbtn:not(.md-aiiv__act) svg')].map(d),
-      hidden: [...document.querySelectorAll(ST + '.md-aii')].every(s => s.getAttribute('aria-hidden') === 'true')
-    };
-  }, ST);
-  ok('2.1 four roles, named', v.names.join('|') === 'AI action|Generated with AI|Agent working|Tool use', v.names.join('|'));
-  ok('2.2 four different marks — no meaning shares a glyph', new Set(v.paths).size === 4);
-  ok('2.3 the defaults are star_shine, chat_info, progress_activity, build',
-     v.paths[0] === ICONS.spark && v.paths[1] === ICONS.aiInfo && v.paths[2] === ICONS.working && v.paths[3] === ICONS.tool);
-  ok('2.4 the same meaning uses the same mark: both AI actions draw the action mark', v.rw === ICONS.spark && v.sm === ICONS.spark);
-  ok('2.5 ordinary controls never carry an AI mark', v.plain.length === 2 && v.plain.every(x => x !== ICONS.spark && x !== ICONS.aiInfo));
-  ok('2.6 marks are decorative; the words carry the meaning', v.hidden);
-  const ac = await p.evaluate(ST => getComputedStyle(document.querySelector(ST + '[data-act="aii:summarize"] .md-aii')).color, ST);
-  ok('2.7 the AI-action mark carries primary, unlike its neighbours (colour AND shape)', ac === primary, ac);
+  /* ══ 3 · One role at a time, in context ═════════════════════ */
+  const only = () => p.evaluate(ST => ['action', 'generated', 'working', 'tool'].map(r =>
+    document.querySelectorAll(ST + '.md-aiiv__card .md-aii--' + r).length), ST);
+  ok('3.1 AI action role: only the action mark is in the editor', (await only()).join() === '1,0,0,0', (await only()).join());
+  const vocab = await p.evaluate(ST => [...document.querySelectorAll(ST + '.md-aiiv__term')].map(t => ({
+    n: t.querySelector('.md-aiiv__tn').textContent, m: t.querySelector('.md-aiiv__tm').textContent,
+    px: [...t.querySelectorAll('.md-aiiv__px .md-aii')].map(s => Math.round(s.getBoundingClientRect().width)),
+    d: t.querySelector('.md-aii path').getAttribute('d'), cur: t.getAttribute('aria-current') })), ST);
+  ok('3.2 Icon language lists the four roles with one-line meanings',
+     vocab.map(v => v.n).join('|') === 'AI action|AI-generated content|Agent working|Tool use' && vocab.every(v => v.m.length > 20));
+  ok('3.3 four different marks — no meaning shares a glyph', new Set(vocab.map(v => v.d)).size === 4);
+  ok('3.4 each mark drawn at 24, 20 and 16', vocab.every(v => v.px.join() === '24,20,16'), JSON.stringify(vocab.map(v => v.px)));
+  ok('3.5 the shown role is marked current', vocab[0].cur === 'true' && !vocab[1].cur);
+  ok('3.6 heading “Icon language”', /icon language/i.test(await p.$eval(ST + '.md-aiiv__langh', e => e.textContent)));
+  ok('3.7 Rewrite uses star_shine; ordinary controls never use an AI mark',
+     (await d(ST + '.md-aiiv__act .md-aii')) === ICONS.spark &&
+     (await p.$$eval(ST + '.md3-iconbtn:not(.md-aiiv__act) svg', s => s.every(x => !x.classList.contains('md-aii')))));
 
-  /* ══ 3 · Hover, focus, pressed — by using it ══════════════ */
-  ok('3.0 starts at Default', (await state()) === 'Default');
-  await p.hover(ST + '[data-act="aii:summarize"]'); await p.waitForTimeout(350);
-  ok('3.1 hover → Hover; the icon-only action shows “Summarize with AI”', (await state()) === 'Hover' && await tipShown('aii-tip-sm') &&
-     (await p.$eval('#aii-tip-sm', e => e.textContent)) === 'Summarize with AI');
-  const layer = await p.$eval(ST + '[data-act="aii:summarize"]', e => getComputedStyle(e, '::before').opacity);
-  ok('3.2 hover is the component’s 8% state layer', Math.abs(+layer - 0.08) < 0.01, layer);
-  await p.mouse.move(5, 5); await p.waitForTimeout(300);
-  ok('3.3 pointer leaves → Default, tooltip gone', (await state()) === 'Default' && !(await tipShown('aii-tip-sm')));
-  await p.focus(ST + '[data-act="aii:noop"][aria-label="Attach a file"]');
-  await p.keyboard.press('Tab'); await p.waitForTimeout(300);
-  const f = await p.evaluate(() => ({ a: document.activeElement.dataset.act, o: getComputedStyle(document.activeElement).outlineStyle }));
-  ok('3.4 Tab → Focus, with a visible ring and the tooltip', (await state()) === 'Focus' && f.a === 'aii:summarize' && f.o === 'solid' && await tipShown('aii-tip-sm'), JSON.stringify(f));
-  await p.keyboard.press('Escape'); await p.waitForTimeout(250);
-  ok('3.5 Escape hides the tooltip and keeps focus', !(await tipShown('aii-tip-sm')) &&
-     (await p.evaluate(() => document.activeElement.dataset.act)) === 'aii:summarize');
-  await p.keyboard.press('Tab'); await p.waitForTimeout(200);
-  await p.keyboard.press('Shift+Tab'); await p.waitForTimeout(250);
-  ok('3.6 the tooltip returns on the next focus', await tipShown('aii-tip-sm'));
-  await p.evaluate(() => document.activeElement.blur()); await p.waitForTimeout(200);
-  const rb = await p.$(ST + '[data-act="aii:rewrite"]'); const bx = await rb.boundingBox();
-  await p.mouse.move(bx.x + bx.width / 2, bx.y + bx.height / 2); await p.mouse.down(); await p.waitForTimeout(250);
-  ok('3.7 pressing → Pressed', (await state()) === 'Pressed');
-
-  /* ══ 4 · Working: the working mark, status, tool line, Stop ═ */
-  await p.mouse.up(); await p.waitForTimeout(300);
-  const w = await p.evaluate(ST => {
-    const st = document.querySelector(ST + '.md-aiiv__status');
-    return { role: st && st.getAttribute('role'), txt: st && st.textContent,
-      anim: st && getComputedStyle(st.querySelector('.md-aii--working')).animationName,
-      path: st && st.querySelector('.md-aii--working path').getAttribute('d'),
-      dis: [...document.querySelectorAll(ST + '.md-aiiv__act')].map(b => b.getAttribute('aria-disabled')),
-      stop: !!document.querySelector(ST + '[data-act="aii:stop"]'),
-      text: document.querySelector(ST + 'textarea').value };
-  }, ST);
-  ok('4.1 release → Agent working', (await state()) === 'Agent working');
-  ok('4.2 a status line with the turning working mark', w.role === 'status' && /Aria is rewriting/.test(w.txt) && w.anim === 'md-aii-turn' && w.path === ICONS.working, JSON.stringify(w));
-  ok('4.3 the AI actions are disabled while it works; Stop is offered', w.dis.every(x => x === 'true') && w.stop);
-  await p.waitForTimeout(1000);
-  ok('4.4 a tool line names what the agent used, in the tool mark', (await path(ST + '.md-aiiv__tool .md-aii--tool')) === ICONS.tool &&
-     /Checked the style guide/.test(await p.$eval(ST + '.md-aiiv__tool', e => e.textContent)));
-  ok('4.5 the live region announces the work', /rewriting/i.test(await p.evaluate(() => (document.querySelector('.pv-live') || {}).textContent || '')));
-
-  /* ══ 5 · Generated content, explained, undoable ═══════════ */
-  await p.waitForTimeout(1600);
-  const g = await p.evaluate(ST => ({ txt: document.querySelector(ST + 'textarea').value,
-    chip: (document.querySelector(ST + '.md-aiiv__gen') || {}).textContent,
-    chipCls: (document.querySelector(ST + '.md-aiiv__gen') || {}).className || '',
-    path: (document.querySelector(ST + '.md-aiiv__gen path') || { getAttribute: () => '' }).getAttribute('d'),
-    working: !!document.querySelector(ST + '.md-aiiv__status') }), ST);
-  ok('5.1 → Generated content; the working mark is gone', (await state()) === 'Generated content' && !g.working);
-  ok('5.2 the result carries the generated mark and its label — not the action mark',
-     /^Onboarding is quicker/.test(g.txt) && g.chip === 'Generated with AI' && g.path === ICONS.aiInfo && g.path !== ICONS.spark, JSON.stringify(g));
-  ok('5.3 the generated mark is an Md3Chip', /md3-chip/.test(g.chipCls) && /rounded-md-sm/.test(g.chipCls) && /border-md-outline-variant/.test(g.chipCls));
-  await p.click(ST + '.md-aiiv__gen'); await p.waitForTimeout(300);
-  ok('5.4 pressing it explains what happened (aria-expanded) and offers Undo', await tipShown('aii-why-text') &&
-     (await p.$eval(ST + '.md-aiiv__gen', e => e.getAttribute('aria-expanded'))) === 'true' && !!(await p.$(ST + '[data-act="aii:undo:text"]')));
-  await p.click(ST + '[data-act="aii:undo:text"]'); await p.waitForTimeout(350);
-  ok('5.5 Undo restores the draft → Default', (await state()) === 'Default' && /^We fixed a bunch/.test(await p.$eval(ST + 'textarea', e => e.value)));
-
-  /* ══ 6 · Stop leaves the draft alone ═══════════════════════ */
-  await p.click(ST + '[data-act="aii:summarize"]'); await p.waitForTimeout(300);
-  ok('6.1 Summarize also works → Agent working, “summarizing”', (await state()) === 'Agent working' && /summarizing/i.test(await p.$eval(ST + '.md-aiiv__status', e => e.textContent)));
-  await p.click(ST + '[data-act="aii:stop"]'); await p.waitForTimeout(300);
-  ok('6.2 Stop → Default, draft unchanged, no summary', (await state()) === 'Default' &&
-     /^We fixed a bunch/.test(await p.$eval(ST + 'textarea', e => e.value)) && !(await p.$(ST + '.md-aiiv__summary')));
-  await p.waitForTimeout(2400);
-  ok('6.3 a stopped run never lands later', !(await p.$(ST + '.md-aiiv__summary')) && (await state()) === 'Default');
-  await p.click(ST + '[data-act="aii:summarize"]'); await p.waitForTimeout(2600);
-  const sm = await p.evaluate(ST => ({ s: (document.querySelector(ST + '.md-aiiv__sumt') || {}).textContent,
-    gen: !!document.querySelector(ST + '.md-aiiv__summary .md-aiiv__gen'), t: document.querySelector(ST + 'textarea').value }), ST);
-  ok('6.4 a summary lands with its own generated mark; the draft is untouched', /^Three changes/.test(sm.s || '') && sm.gen && /^We fixed/.test(sm.t), JSON.stringify(sm));
-
-  /* ══ 7 · Disabled says why ═════════════════════════════════ */
-  await go('Default');
+  /* ══ 4 · AI action: states by USING it ══════════════════════ */
+  ok('4.1 opens Resting', (await state()) === 'Resting');
+  await p.hover(ST + '.md-aiiv__act'); await p.waitForTimeout(300);
+  ok('4.2 hover → Hover, tooltip “Rewrite with AI” shows', (await state()) === 'Hover' && await tipShown('aii-tip-act'));
+  ok('4.3 Material state layer on hover', await p.$eval(ST + '.md-aiiv__act', e => +getComputedStyle(e, '::before').opacity > 0.05));
+  await p.mouse.move(5, 5); await p.waitForTimeout(250);
+  ok('4.4 leave → Resting', (await state()) === 'Resting');
+  await p.focus(ST + '.md-aiiv__act'); await p.keyboard.press('Shift+Tab'); await p.keyboard.press('Tab'); await p.waitForTimeout(300);
+  ok('4.5 keyboard focus → Focus, ring + tooltip', (await state()) === 'Focus' && await tipShown('aii-tip-act') &&
+     await p.$eval(ST + '.md-aiiv__act', e => e.matches(':focus-visible')));
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  ok('4.6 Escape hides the tooltip, focus stays', !(await tipShown('aii-tip-act')) &&
+     await p.evaluate(() => document.activeElement.classList.contains('md-aiiv__act')));
+  const box = await (await p.$(ST + '.md-aiiv__act')).boundingBox();
+  await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await p.mouse.down(); await p.waitForTimeout(200);
+  ok('4.7 press → Pressed', (await state()) === 'Pressed');
+  await p.mouse.up(); await p.waitForTimeout(400);
+  ok('4.8 release → Working: mark becomes the turning working mark, word “Rewriting…”',
+     (await state()) === 'Working' && (await d(ST + '.md-aiiv__act .md-aii')) === ICONS.working &&
+     /Rewriting…/.test(await p.$eval(ST + '.md-aiiv__act', e => e.textContent)) && await spinning(ST + '.md-aiiv__act .md-aii'));
+  ok('4.9 working: unavailable, status for screen readers', (await p.$eval(ST + '.md-aiiv__act', e => e.getAttribute('aria-disabled'))) === 'true' &&
+     /^Agent working: Rewriting release note/.test(await p.$eval(ST + '.md-aiiv__sr[role="status"]', e => e.textContent)));
+  await p.mouse.move(5, 5);
+  await p.waitForTimeout(2700);
+  ok('4.10 → Complete: back to the AI-action mark, result confirmed with Undo',
+     (await state()) === 'Complete' && (await d(ST + '.md-aiiv__act .md-aii')) === ICONS.spark &&
+     !!(await p.$(ST + '.md-aiiv__done [data-act="aii:undo"]')) && /Onboarding is quicker/.test(await p.$eval(ST + 'textarea', e => e.value)));
+  await p.click(ST + '[data-act="aii:undo"]'); await p.waitForTimeout(400);
+  ok('4.11 Undo restores the draft → Resting', (await state()) === 'Resting' && /a bunch of stuff/.test(await p.$eval(ST + 'textarea', e => e.value)));
   await p.fill(ST + 'textarea', ''); await p.waitForTimeout(300);
-  const dz = await p.evaluate(ST => [...document.querySelectorAll(ST + '.md-aiiv__act')].map(b => ({ d: b.getAttribute('aria-disabled'),
-    op: getComputedStyle(b).opacity, dis: b.disabled })), ST);
-  ok('7.1 empty draft → Disabled; actions at 38% via aria-disabled (still focusable)', (await state()) === 'Disabled' &&
-     dz.every(x => x.d === 'true' && Math.abs(+x.op - 0.38) < 0.01 && !x.dis), JSON.stringify(dz));
-  await p.focus(ST + '[data-act="aii:summarize"]'); await p.keyboard.press('Shift+Tab'); await p.keyboard.press('Tab'); await p.waitForTimeout(300);
-  ok('7.2 the tooltip says why', await tipShown('aii-tip-sm') && (await p.$eval('#aii-tip-sm', e => e.textContent)) === 'Write something first');
-  await p.keyboard.press('Enter'); await p.waitForTimeout(300);
-  ok('7.3 pressing a disabled AI action does nothing', (await state()) === 'Disabled' && !(await p.$(ST + '.md-aiiv__status')));
-  await p.fill(ST + 'textarea', 'Export is faster.'); await p.waitForTimeout(300);
-  ok('7.4 writing → Default; the actions come back', (await state()) === 'Default' &&
-     (await p.$$eval(ST + '.md-aiiv__act', bs => bs.every(b => !b.hasAttribute('aria-disabled')))));
+  const dis = await p.evaluate(ST => { const a = document.querySelector(ST + '.md-aiiv__act');
+    return { aria: a.getAttribute('aria-disabled'), op: +getComputedStyle(a).opacity, mark: !!a.querySelector('.md-aii--action'),
+             tip: document.getElementById('aii-tip-act').textContent, tab: a.tabIndex }; }, ST);
+  ok('4.12 empty draft → Disabled: 38%, focusable, keeps its mark, says why', (await state()) === 'Disabled' &&
+     dis.aria === 'true' && Math.abs(dis.op - 0.38) < 0.02 && dis.mark && dis.tip === 'Write something first' && dis.tab === 0, JSON.stringify(dis));
+  await p.click(ST + '.md-aiiv__act', { force: true }); await p.waitForTimeout(300);
+  ok('4.13 a disabled action does nothing', (await state()) === 'Disabled');
+  await p.fill(ST + 'textarea', 'Exports are faster.'); await p.waitForTimeout(300);
+  ok('4.14 typing restores Resting', (await state()) === 'Resting');
 
-  /* ══ 8 · Every state from the list ═════════════════════════ */
-  for (const n of ['Default', 'Hover', 'Focus', 'Pressed', 'Agent working', 'Generated content', 'Disabled']) {
-    await go(n);
-    const r = await p.evaluate(ST => ({ rows: document.querySelector('.pv-doc-rows').innerText,
-      code: (document.querySelector('.pv-code code') || {}).textContent || '' }), ST);
-    ok('8.x ' + n + ' reachable, documented (trigger/behaviour/next) and in the code pane',
-       (await state()) === n && /Trigger/i.test(r.rows) && /Next/i.test(r.rows) && /md3-btn/.test(r.code));
-  }
-  await go('Hover');
-  ok('8.h held Hover shows the icon-only tooltip and the 8% layer', await tipShown('aii-tip-sm') &&
-     Math.abs(+(await p.$eval(ST + '[data-act="aii:summarize"]', e => getComputedStyle(e, '::before').opacity)) - 0.08) < 0.01);
-  await go('Pressed');
-  ok('8.p held Pressed shows the 12% layer on Rewrite', Math.abs(+(await p.$eval(ST + '[data-act="aii:rewrite"]', e => getComputedStyle(e, '::before').opacity)) - 0.12) < 0.01);
+  /* ══ 5 · AI-generated content: disclosure, once ═════════════ */
+  await role('AI-generated content');
+  ok('5.1 head reads the role; state Disclosed', /AI-generated content$/.test(await head()) && (await state()) === 'Disclosed');
+  ok('5.2 one “Generated with AI” label with the generated mark, and no action mark in the editor',
+     (await p.$$eval(ST + '.md-aiiv__gen', g => g.length)) === 1 && (await only()).join() === '0,1,0,0' &&
+     /Generated with AI/.test(await p.$eval(ST + '.md-aiiv__gen', e => e.textContent)));
+  ok('5.3 rewritten text is shown', /Onboarding is quicker/.test(await p.$eval(ST + 'textarea', e => e.value)));
+  await p.hover(ST + '.md-aiiv__gen'); await p.waitForTimeout(300);
+  ok('5.4 hover → tooltip says who wrote it', (await state()) === 'Hover or focus' && await tipShown('aii-tip-gen'));
+  await p.click(ST + '.md-aiiv__gen'); await p.waitForTimeout(400);
+  ok('5.5 press → Details: rich tooltip, aria-expanded', (await state()) === 'Details' &&
+     (await p.$eval(ST + '.md-aiiv__gen', e => e.getAttribute('aria-expanded'))) === 'true' && await tipShown('aii-gen-why'));
+  await p.click(ST + '[data-act="aii:original"]'); await p.waitForTimeout(300);
+  ok('5.6 Show the original', /a bunch of stuff/.test(await p.$eval(ST + 'textarea', e => e.value)));
+  await p.focus(ST + '.md-aiiv__gen'); await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+  ok('5.7 Escape closes details; focus stays on the label', /^(Disclosed|Hover or focus)$/.test(await state()) &&
+     (await p.$eval(ST + '.md-aiiv__gen', e => e.getAttribute('aria-expanded'))) === 'false' &&
+     await p.evaluate(() => document.activeElement.classList.contains('md-aiiv__gen')));
 
-  /* ══ 9 · Customizer ═══════════════════════════════════════ */
-  await go('Default');
-  await p.click('.pv-edit'); await p.waitForTimeout(400);
-  const panel = await p.evaluate(() => ({ txt: document.querySelector('.pvc').innerText,
-    ids: [...document.querySelectorAll('.pvc [data-cfg]')].map(e => e.dataset.cfg) }));
-  ok('9.1 no Quality section, no advanced flag', !/quality/i.test(panel.txt) && !panel.ids.some(i => /advanced/i.test(i)));
-  ok('9.2 Content, Behavior and Appearance only', /content/i.test(panel.txt) && /behavio/i.test(panel.txt) && /appearance/i.test(panel.txt));
-  ok('9.3 no upload or free glyph choice', !panel.ids.some(i => /upload|custom/i.test(i)) &&
-     !(await p.$('.pvc input[type="file"]')));
-  await seg('focusRole', 'action');
-  ok('9.4 Role in focus outlines every AI action, and its term', (await p.$$(ST + '[data-ai-focus]')).length === 2 &&
-     (await p.$$eval(ST + '[data-ai-focus]', es => es.every(e => e.dataset.aiRole === 'action'))) && !!(await p.$(ST + '.md-aiiv__term.is-focus')));
-  await seg('focusRole', 'all');
-  await seg('labels', 'tooltip');
-  const ic = await p.evaluate(ST => { const b = document.querySelector(ST + '[data-act="aii:rewrite"]');
-    return { cls: b.className, name: b.getAttribute('aria-label'), tip: (document.getElementById('aii-tip-rw') || {}).textContent }; }, ST);
-  ok('9.5 icon-with-tooltip: Rewrite becomes an Md3IconButton named and tooltipped “Rewrite with AI”',
-     /md3-iconbtn/.test(ic.cls) && ic.name === 'Rewrite with AI' && ic.tip === 'Rewrite with AI', JSON.stringify(ic));
-  await seg('labels', 'word');
-  await seg('glyphAction', 'wand');
-  ok('9.6 one approved alternative swaps the mark everywhere that meaning appears',
-     (await path(ST + '[data-act="aii:rewrite"] svg')) === ICONS.wand && (await path(ST + '[data-act="aii:summarize"] svg')) === ICONS.wand &&
-     (await path(ST + '.md-aiiv__term svg')) === ICONS.wand);
-  await seg('glyphAction', 'spark');
-  await seg('style', 'filled');
-  ok('9.7 Filled style uses the filled symbols', (await path(ST + '.md-aiiv__term svg')) === ICONS.sparkFill);
-  await seg('style', 'outlined');
-  await seg('size', '24');
-  ok('9.8 inline mark size', (await p.$eval(ST + '.md-aiiv__term .md-aii', e => e.getBoundingClientRect().width)) === 24);
-  await seg('size', '18');
-  await seg('emphasis', 'neutral');
-  ok('9.9 Neutral emphasis', (await p.$eval(ST + '.md-aiiv__term .md-aii', e => getComputedStyle(e).color)) === onVar);
-  await seg('emphasis', 'primary');
-  ok('9.10 default configuration: no guidance', (await guard()).length === 0, (await guard()).join(' | '));
-  await text('actionLabel', 'AI');
-  ok('9.11 guidance: a label that names the technology', (await guard()).some(t => /names the technology/.test(t)));
-  await text('actionLabel', 'Rewrite');
-  await text('iconOnlyName', 'Summarize');
-  ok('9.12 guidance: an icon-only name that does not say AI', (await guard()).some(t => /does not say AI/.test(t)));
-  await text('iconOnlyName', 'Summarize with AI');
+  /* ══ 6 · Agent working: actually animated, then done ════════ */
+  await role('Agent working');
+  ok('6.1 Working: turning mark beside the status, with Stop', (await state()) === 'Working' &&
+     await spinning(ST + '.md-aiiv__status .md-aii') && /Rewriting release note…/.test(await p.$eval(ST + '.md-aiiv__status', e => e.textContent)) &&
+     !!(await p.$(ST + '[data-act="aii:stop"]')));
+  ok('6.2 screen readers hear “Agent working: …”, not the animation',
+     (await p.$eval(ST + '.md-aiiv__sr', e => e.textContent)) === 'Agent working: Rewriting release note…');
+  const a1 = await p.$eval(ST + '.md-aiiv__status .md-aii', e => getComputedStyle(e).transform);
+  await p.waitForTimeout(300);
+  const a2 = await p.$eval(ST + '.md-aiiv__status .md-aii', e => getComputedStyle(e).transform);
+  ok('6.3 it really moves (transform changes over time)', a1 !== a2, a1 + ' / ' + a2);
+  await p.click(ST + '[data-act="aii:stop"]'); await p.waitForTimeout(300);
+  ok('6.4 Stop → Stopped, no turning mark', (await state()) === 'Stopped' && !(await p.$(ST + '.md-aiiv__card .md-aii--working')));
+  await p.click(ST + '[data-act="aii:again"]'); await p.waitForTimeout(4700);
+  ok('6.5 Run again → finishes on its own → Complete, nothing turning', (await state()) === 'Complete' && !(await p.$(ST + '.md-aiiv__card .md-aii--working')));
+
+  /* ══ 7 · Tool use: named, inspectable ═══════════════════════ */
+  await role('Tool use');
+  ok('7.1 an activity line led by the tool mark names the tool', (await state()) === 'Tool used' &&
+     (await d(ST + '.md-aiiv__tool .md-aii')) === ICONS.tool && /Style guide checked/.test(await p.$eval(ST + '.md-aiiv__tool', e => e.textContent)) &&
+     (await only()).join() === '0,0,0,1');
+  await p.hover(ST + '.md-aiiv__tool'); await p.waitForTimeout(300);
+  ok('7.2 hover → tooltip names the system', (await state()) === 'Hover or focus' && await tipShown('aii-tip-tool'));
+  await p.click(ST + '.md-aiiv__tool'); await p.waitForTimeout(400);
+  ok('7.3 press → Details expands in place', (await state()) === 'Details' &&
+     (await p.$eval(ST + '.md-aiiv__tool', e => e.getAttribute('aria-expanded'))) === 'true' &&
+     !(await p.$eval('#aii-tool-detail', e => e.hidden)));
+  await p.mouse.move(5, 5); await p.focus(ST + '.md-aiiv__tool'); await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+  ok('7.4 Escape collapses; focus stays on the line', /^(Tool used|Hover or focus)$/.test(await state()) &&
+     (await p.$eval('#aii-tool-detail', e => e.hidden)) &&
+     await p.evaluate(() => document.activeElement.classList.contains('md-aiiv__tool')));
+
+  /* ══ 8 · Customizer: own controls, guardrails, semantic API ═ */
+  await role('AI action');
+  await p.click('[data-cfg-open]'); await p.waitForTimeout(500);
+  const secs = await p.$$eval('.pvc-sec__h, .pvc-section__h, .pvc-sec > h3, .pvc-sec h3', h => h.map(x => x.textContent.trim().toLowerCase()));
+  const body = await p.$eval('.pvc', e => e.innerText.toLowerCase());
+  ok('8.1 Content / Behavior / Appearance, no Quality section', /content/.test(body) && /behavior/.test(body) && /appearance/.test(body) && !/\bquality\b/.test(body));
+  ok('8.2 role, label and tooltip are content controls', !!(await p.$('.pvc-seg__btn[data-cfg="role"]')) &&
+     !!(await p.$('.pvc-input[data-cfg="labelAction"]')) && !!(await p.$('.pvc-input[data-cfg="tipAction"]')));
+  ok('8.3 the copied component is semantic and minimal', /<AiIcon \/>/.test(await p.$eval('.pvc__foot', e => e.innerText)) ||
+     /Matches the Nucleux default/.test(await p.$eval('.pvc__foot', e => e.innerText)));
+  await seg('role', 'tool-use');
+  ok('8.4 the customizer role and the head are one choice', /Tool use$/.test(await head()) && (await state()) === 'Tool used');
+  ok('8.5 choosing a role is not a customization', !(await p.$('.pv-edit__dot')));
+  await seg('role', 'ai-action');
+  await sw('showLabel');
+  ok('8.6 label off → icon-only, named by the tooltip', await p.$eval(ST + '.md-aiiv__act', e => e.classList.contains('md3-iconbtn') && e.getAttribute('aria-label') === 'Rewrite with AI'));
+  await sw('showTooltip');
+  ok('8.7 icon-only without tooltip → warned', (await guard()).some(t => /Icon-only/.test(t)), JSON.stringify(await guard()));
+  await sw('showTooltip'); await sw('showLabel');
+  await text('labelAction', 'Magic');
+  ok('8.8 a vague label → warned', (await guard()).some(t => /names the technology/.test(t)));
+  await text('labelAction', 'Rewrite');
+  await sw('animate');
+  ok('8.9 working without motion → warned', (await guard()).some(t => /no longer moves/.test(t)));
+  await sw('animate');
   await seg('size', '16');
-  ok('9.13 guidance: outlined at 16', (await guard()).some(t => /16/.test(t)));
+  ok('8.10 outlined at 16 → warned', (await guard()).some(t => /16/.test(t)));
   await seg('style', 'filled');
-  ok('9.14 filled at 16 clears it', !(await guard()).some(t => /Outlined marks at 16/.test(t)));
-  await seg('style', 'outlined'); await seg('size', '18');
+  ok('8.11 filled at 16 is fine', !(await guard()).some(t => /16/.test(t)));
+  await seg('size', '20'); await seg('style', 'outlined');
+  await seg('role', 'generated-content'); await sw('showLabel');
+  ok('8.12 generated content without words → warned', (await guard()).some(t => /Provenance/.test(t)));
+  await sw('showLabel');
+  await seg('role', 'tool-use'); await text('labelTool', 'Used tool');
+  ok('8.13 a tool line that does not name the tool → warned', (await guard()).some(t => /does not name the tool/.test(t)));
+  await text('labelTool', 'Style guide checked');
+  await seg('glyphTool', 'handyman');
+  const foot = await p.$eval('.pvc__foot', e => e.innerText);
+  ok('8.14 approved glyph changes the mark', (await d(ST + '.md-aiiv__tool .md-aii')) === ICONS.handyman);
+  ok('8.15 approved glyph lists never overlap', await p.evaluate(() => { const R = window.MaterialSim.AI_ROLES;
+     const all = [].concat(...Object.values(R).map(r => r.glyphs.map(g => g[0]))); return new Set(all).size === all.length; }));
 
-  /* ══ 10 · Narrow, reduced motion, errors ══════════════════ */
-  const ph = await b.newPage({ viewport: { width: 390, height: 900 } });
-  await ph.goto(URL, { waitUntil: 'networkidle' }); await ph.waitForTimeout(800);
-  const m = await ph.evaluate(ST => ({ over: document.documentElement.scrollWidth - innerWidth,
-    cols: getComputedStyle(document.querySelector(ST + '.md-aiiv__vocab')).gridTemplateColumns.split(' ').length,
-    inside: [...document.querySelectorAll(ST + '.md-aiiv__act')].every(i => { const r = i.getBoundingClientRect(),
-      s = document.querySelector(ST + '.md-aiiv__card').getBoundingClientRect(); return r.right <= s.right + 1; }) }), ST);
-  ok('10.1 phone: no horizontal scroll; every action inside the card; one-column vocabulary', m.over <= 1 && m.inside && m.cols === 1, JSON.stringify(m));
-  const rm = await b.newPage({ viewport: { width: 1400, height: 1200 } });
-  await rm.emulateMedia({ reducedMotion: 'reduce' });
-  await rm.goto(URL, { waitUntil: 'networkidle' }); await rm.waitForTimeout(700);
-  await rm.click(ST + '[data-act="aii:rewrite"]'); await rm.waitForTimeout(30);
-  const an = await rm.$eval(ST + '.md-aiiv__status .md-aii--working', e => getComputedStyle(e).animationName);
-  ok('10.2 reduced motion: the working mark does not turn; the words carry it', an === 'none' &&
-     /rewriting/.test(await rm.$eval(ST + '.md-aiiv__status', e => e.textContent)), an);
-  ok('10.3 no page errors', errs.length === 0, errs.join(' | '));
+  /* ══ 9 · Reduced motion, compact width ══════════════════════ */
+  const rm = await b.newPage({ viewport: { width: 420, height: 1400 }, reducedMotion: 'reduce' });
+  await rm.goto(URL, { waitUntil: 'networkidle' }); await rm.waitForTimeout(800);
+  await rm.click('.pv-select__btn'); await rm.waitForTimeout(150);
+  await rm.$$eval('.pv-select__opt', o => o.find(x => x.textContent.trim() === 'Agent working').click()); await rm.waitForTimeout(500);
+  ok('9.1 reduced motion: the working mark does not turn, the words stay',
+     await rm.$eval(ST + '.md-aiiv__status .md-aii', e => getComputedStyle(e).animationName === 'none') &&
+     /Rewriting release note/.test(await rm.$eval(ST + '.md-aiiv__status', e => e.textContent)));
+  ok('9.2 mobile: nothing overflows the stage', await rm.evaluate(ST => { const s = document.querySelector(ST);
+     return [...s.querySelectorAll('*')].every(e => e.getBoundingClientRect().right <= s.getBoundingClientRect().right + 1); }, ST));
+  await rm.close();
+
+  ok('no page errors', errs.length === 0, errs.join(' | '));
   console.log('\nicons · live preview: ' + pass + ' passed, ' + fail + ' failed');
   await b.close();
   process.exit(fail ? 1 : 0);

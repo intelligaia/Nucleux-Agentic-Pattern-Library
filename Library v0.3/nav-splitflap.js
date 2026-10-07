@@ -14,6 +14,10 @@
      MCP          →  Connect to AI
      Labs         →  Motion & Type
      Design System →  Gaiametry (external, new tab)
+     Blog         →  Read insights
+
+   Hover labels grow evenly about the tab's own centre (no reflow);
+   neighbours slide aside only if the wider label would crowd them.
    ============================================================ */
 (function () {
   var LABELS = {
@@ -22,7 +26,8 @@
     'Docs':       'How to use',
     'MCP':        'Connect to AI',
     'Labs':       'Motion & Type',
-    'Design System': 'Gaiametry'
+    'Design System': 'Gaiametry',
+    'Blog':       'Read insights'
   };
 
   var FLIP_DURATION  = 75;   // per intermediate glyph
@@ -38,7 +43,7 @@
     '  vertical-align:bottom;color:inherit;font:inherit;letter-spacing:inherit;',
     '  line-height:var(--nav-sf-line,inherit);white-space:nowrap;perspective:320px;',
     '  flex:0 0 auto;overflow:hidden;',
-    '  transition:width .35s cubic-bezier(.22,1,.36,1),font-size .35s cubic-bezier(.22,1,.36,1);',
+    '  transition:width .35s cubic-bezier(.22,1,.36,1),margin .35s cubic-bezier(.22,1,.36,1),font-size .35s cubic-bezier(.22,1,.36,1);',
     '}',
     '.nav-split-flap.is-hover{font-size:var(--nav-sf-hover-size,inherit);}',
     '.nav-split-flap__char{',
@@ -123,8 +128,10 @@
       shown = target;
 
       var to = pad(target);
+      var room = target === HOVER ? spare() : undefined;
       el.classList.toggle('is-hover', target === HOVER);
       el.style.width = (target === HOVER ? W.hover : W.label).toFixed(2) + 'px';
+      centre(target, room);
       if (reduced) { paint(to); return; }
 
       /* hover-out: restore the default label directly — the character
@@ -153,6 +160,61 @@
         if (me !== token) return;
         paint(to);
       }, step * STAGGER + (FLIPS_PER_CHAR + 1) * FLIP_DURATION + 30));
+    }
+
+    /* The hover label grows (or shrinks) evenly on both sides of the
+       label's own centre: equal negative margins cancel the change in
+       width, so the tab's footprint — and every other tab — stays put,
+       and the text stays centre-aligned instead of drifting left. */
+    /* The hover label grows evenly about the label's own centre. Equal
+       negative margins cancel the change in width, so nothing reflows and
+       the row never drifts. If the wider label would crowd a neighbour,
+       the tabs on that side slide away by just that much (a transform,
+       so layout still does not move); against the brand or the actions
+       cluster, which cannot move, the label itself eases inward instead. */
+    function items() {
+      var c = link.closest('.gnav__center');
+      return c ? Array.prototype.filter.call(c.children, function (x) { return x.getBoundingClientRect().width; }) : [];
+    }
+    function mine() { var it = items(); for (var i = 0; i < it.length; i++) if (it[i] === link || it[i].contains(link)) return it[i]; return link; }
+    function slide(node, px) {
+      node.style.transition = 'transform .35s cubic-bezier(.22,1,.36,1)';
+      node.style.transform = px ? 'translateX(' + px.toFixed(2) + 'px)' : '';
+    }
+    function centre(target, room) {
+      var half = target === HOVER ? (W.hover - W.label) / 2 : 0;
+      var m = (-half).toFixed(2) + 'px';
+      el.style.marginLeft = m; el.style.marginRight = m;
+      link.style.setProperty('--sf-out', half.toFixed(2) + 'px');
+      var me = mine(), it = items(), idx = it.indexOf(me), self = 0;
+      var needL = 0, needR = 0;
+      if (half > 0 && room) {
+        needL = Math.max(0, half - room.L); needR = Math.max(0, half - room.R);
+        if (needL && !room.pushL) { self += needL; needL = 0; }
+        if (needR && !room.pushR) { self -= needR; needR = 0; }
+      }
+      it.forEach(function (node, j) {
+        if (j < idx) slide(node, -needL);
+        else if (j > idx) slide(node, needR);
+      });
+      slide(me, self);
+    }
+    /* Spare room either side of this tab at rest, less a minimum gap; and
+       whether what is on that side is another tab (which can slide). */
+    function spare() {
+      var GAP = 16, me = mine(), r0 = me.getBoundingClientRect();
+      var L = -Infinity, R = Infinity, pushL = false, pushR = false;
+      var it = items();
+      var inner = link.closest('.gnav__inner') || document;
+      var bounds = Array.prototype.slice.call(inner.querySelectorAll('.brand, .gnav__actions'));
+      it.concat(bounds).forEach(function (o) {
+        if (o === me) return;
+        var r = o.getBoundingClientRect(), tab = it.indexOf(o) !== -1;
+        if (!r.width) return;
+        if (r.right <= r0.left + 1 && r.right > L) { L = r.right; pushL = tab; }
+        else if (r.left >= r0.right - 1 && r.left < R) { R = r.left; pushR = tab; }
+      });
+      return { L: Math.max(0, r0.left - L - GAP), R: Math.max(0, R - r0.right - GAP), pushL: pushL, pushR: pushR };
     }
 
     /* Each label's box is exactly as wide as the text it shows, so the gaps
@@ -190,12 +252,24 @@
          would read as the label moving on its own. Re-measuring to
          the same number writes nothing at all. */
       var want = (shown === HOVER ? W.hover : W.label).toFixed(2) + 'px';
-      if (el.style.width === want) return;
+      if (el.style.width === want) { edges(); return; }
       var prev = el.style.transition;
       el.style.transition = 'none';
       el.style.width = want;
+      centre(shown, shown === HOVER ? spare() : undefined);
       void el.offsetWidth;
       el.style.transition = prev;
+      edges();
+    }
+    /* Where the text sits inside the link at rest (the Components chevron
+       and the Featured badge live in the link too), so the current-page
+       underline can start and stop exactly at the text. */
+    function edges() {
+      if (shown === HOVER) return;
+      var lr = link.getBoundingClientRect(), er = el.getBoundingClientRect();
+      if (!lr.width || !er.width) return;
+      link.style.setProperty('--sf-head', Math.max(0, er.left - lr.left).toFixed(2) + 'px');
+      link.style.setProperty('--sf-tail', Math.max(0, lr.right - er.right).toFixed(2) + 'px');
     }
 
     var raf = null;

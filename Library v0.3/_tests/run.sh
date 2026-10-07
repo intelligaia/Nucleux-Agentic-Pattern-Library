@@ -43,7 +43,8 @@ SUITES=(ms.test.js mssim.test.js kb12.test.js kbsim3.test.js conn.js
         connsim2.test.js mcp.js disc.js toolbar.js modstate.js dline.js onb.js
         ic.test.js icsim.test.js oi.test.js sp.test.js spsim.test.js aura.test.js nokeys.js
         aii.test.js aiisim.test.js
-        ac.test.js acsim.test.js pro.test.js prosim.test.js rnd.test.js rndsim.test.js)
+        ac.test.js acsim.test.js pro.test.js prosim.test.js rnd.test.js rndsim.test.js
+        vx.test.js vxsim.test.js vi.test.js visim.test.js hw.test.js hwsim.test.js ge.test.js gesim.test.js si.test.js sisim.test.js c4.test.js)
 
 run () {
   local f="$1" path="$HERE/suites/$1"

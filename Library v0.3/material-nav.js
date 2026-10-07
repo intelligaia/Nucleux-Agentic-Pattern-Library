@@ -105,18 +105,18 @@
           { id: "initial-cta", name: "Initial CTA", oneline: "The large, inviting input that anchors the empty state." },
           { id: "open-input", name: "Open Input", oneline: "Free-form text box for any natural-language ask." },
           { id: "suggested-prompts", name: "Suggested Prompts", oneline: "Smart, context-aware preset actions to jumpstart engagement." },
-          { id: "ai-icons", name: "Icons", oneline: "Visual symbols that signal the AI's presence on a screen." },
+          { id: "ai-icons", name: "Icons", oneline: "One stable mark per AI meaning: action, generated content, agent working, tool use." },
           { id: "autocomplete", name: "Autocomplete", oneline: "Ghost text that anticipates and completes user actions." },
           { id: "proactive", name: "Proactive Suggestions", oneline: "Invisible AI moments that arrive exactly when needed." },
           { id: "randomize", name: "Randomize", oneline: "A 'dice' that kickstarts the experience with a fun result." }
         ] },
       { id: "expressive-input", title: "Expressive Input", desc: "Ways in beyond typing — voice, image, sketch, selection.",
         patterns: [
-          { id: "voice-input", name: "Voice Input", oneline: "Interact by talking; transcribe, converse, take action." },
-          { id: "visual-input", name: "Visual Input", oneline: "Attach images, screenshots, or videos as part of the ask." },
-          { id: "handwriting", name: "Handwriting Input", oneline: "Hand-drawn input recognised as text or instructions." },
-          { id: "gesture", name: "Gesture Input", oneline: "Swipes, pinches, circles as expressive signals." },
-          { id: "structured-input", name: "Structured Input", oneline: "Lightweight slots and hints that compose clearer prompts fast." }
+          { id: "voice-input", name: "Voice Input", oneline: "Speak into the composer; review the words, then send." },
+          { id: "visual-input", name: "Visual Input", oneline: "Show an image, a photo or a window — as context you control." },
+          { id: "handwriting", name: "Handwriting Input", oneline: "Write by hand; review what was recognized before it joins your message." },
+          { id: "gesture", name: "Gesture Input", oneline: "Circle or tap what's on screen; it joins your request by name." },
+          { id: "structured-input", name: "Structured Input", oneline: "A compact form for exact values — suggestions marked, actions confirmed." }
         ] },
       { id: "prompt-scaffolds", title: "Prompt Scaffolds", desc: "Structure that turns a rough intent into a workable request.",
         patterns: [

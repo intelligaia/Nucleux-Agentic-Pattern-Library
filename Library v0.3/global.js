@@ -1406,7 +1406,7 @@
       if (e.key === "Escape" && panel.classList.contains("is-open")) close();
     });
     window.addEventListener("resize", function () {
-      if (window.innerWidth > 1240) close();
+      if (window.innerWidth > 1420) close();
     });
   }
 

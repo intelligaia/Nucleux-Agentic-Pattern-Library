@@ -219,6 +219,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; margin: 0; 
 }
 .gnav__inner > .brand { justify-self: start; }
 .gnav__inner > .gnav__center { justify-self: center; }
+/* Room after the last tab, so its hover label (Blog → Read insights) can
+   grow evenly about its centre without touching the actions cluster. */
+.gnav__inner > .gnav__center { margin-right: 24px; }
 .gnav__inner > .gnav__actions { justify-self: end; }
 
 /* The action cluster is built by nav-mega.js: the GitHub link becomes an
@@ -312,7 +315,11 @@ html.gnav-pending .gnav__actions { visibility: hidden; }
 .gnav__link.is-current::after {
   content: "";
   position: absolute;
-  left: 0; right: 0;
+  /* --sf-out is set by nav-splitflap.js: how far the hover label reaches
+     past the tab's resting width on each side, so the underline always
+     runs exactly edge to edge with the text that is showing. */
+  left: calc(var(--sf-head, 0px) - var(--sf-out, 0px)); right: calc(var(--sf-tail, 0px) - var(--sf-out, 0px));
+  transition: left .35s cubic-bezier(.22,1,.36,1), right .35s cubic-bezier(.22,1,.36,1);
   bottom: -8px;
   height: 2px;
   border-radius: 1px;
@@ -324,7 +331,7 @@ html.gnav-pending .gnav__actions { visibility: hidden; }
    link's contents; absolutely placed so it never changes the nav's
    spacing. Sits inline after the label, vertically centred. */
 .gnav__link--featured { --gnav-badge-room: 64px; padding-right: var(--gnav-badge-room); }
-.gnav__link--featured.is-current::after { right: var(--gnav-badge-room); }
+.gnav__link--featured.is-current::after { right: calc(var(--sf-tail, var(--gnav-badge-room)) - var(--sf-out, 0px)); }
 .gnav__link--featured::before {
   content: "Featured";
   position: absolute;
@@ -3756,7 +3763,7 @@ body.is-lbx-open { overflow: hidden; }
   .cats__intro { grid-template-columns: 1fr; }
   .foot__lockup { grid-template-columns: 1fr; align-items: start; }
 }
-@media (max-width: 1240px) {
+@media (max-width: 1420px) {
   .gnav__center { display: none; }
   /* centre column is empty now — keep the actions pinned to the right edge */
   .gnav__inner > .gnav__actions { grid-column: 3; }
@@ -3777,7 +3784,7 @@ body.is-lbx-open { overflow: hidden; }
 
 /* ============================================================
    MOBILE NAV — hamburger + slide-down panel
-   The inline centre nav collapses at ≤1240px (six links since Design System); this hamburger +
+   The inline centre nav collapses at ≤1420px (seven links since Blog, room for the hover labels); this hamburger +
    panel (built by global.js on every page) restores navigation.
    ============================================================ */
 .gnav__toggle {
@@ -3853,10 +3860,10 @@ body.is-lbx-open { overflow: hidden; }
 }
 body.nav-open { overflow: hidden; }
 
-@media (max-width: 1240px) {
+@media (max-width: 1420px) {
   .gnav__toggle { display: inline-flex; }
 }
-@media (min-width: 1241px) {
+@media (min-width: 1421px) {
   .gnav__mobile { display: none; }
 }
 

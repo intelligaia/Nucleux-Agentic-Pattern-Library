@@ -120,6 +120,137 @@
   /* Randomize: the scenario's state. */
   function rndSim(s) { return s.rnd || (s.rnd = { phase: 'ready', seen: [], at: 0, items: RND_DEMO, applied: '', run: 0 }); }
   function proSimUnowned(s) { return ['ONB-112', 'EXP-210'].filter(function (id) { return !s.owners[id]; }); }
+  /* The simulator's voice session (the same controller as the preview). */
+  function vxSimD(s) {
+    if (!s.vx) s.vx = { state: s.opts && s.opts.nomic ? 'unavailable' : 'ready', text: s.axText || '', heard: [], elapsed: 0,
+      granted: !!(s.opts && s.opts.allowed), fail: !!(s.opts && s.opts.noisy), autoStop: 0, maxSec: 60, pause: true, live: true,
+      label: 'Listening', placeholder: 'Start speaking…', glow: 'standard', emphasis: 'strong', density: 'comfortable',
+      permissionText: 'Microphone access is needed to capture your voice. It’s on only while the bar says Listening, and you can stop at any time.',
+      failureText: 'Couldn’t make out all of that — the room is noisy.' };
+    return s.vx;
+  }
+  /* Any simulator's composer microphone runs the Voice Input session
+     (permission → listening → paused → transcribed → edit), not the
+     old simple voice mode. `script` is what the person "says". */
+  /* A fresh Voice Input session with the library defaults. */
+  function vxSession(extra) {
+    return Object.assign({ state: 'ready', text: '', heard: [], elapsed: 0, granted: false, fail: false, autoStop: 0, maxSec: 60,
+      pause: true, live: true, label: 'Listening', placeholder: 'Start speaking…', glow: 'standard', emphasis: 'strong', density: 'comfortable',
+      permissionText: 'Microphone access is needed to capture your voice. It’s on only while the bar says Listening, and you can stop at any time.',
+      failureText: 'Couldn’t make out all of that.', run: 0 }, extra || {});
+  }
+  function vxSimDict(s, script, granted) {
+    var d = vxSimD(s);
+    if (granted) d.granted = true;
+    if (script && !d.script) d.script = script.split(' ');
+    if (d.state === 'transcribed' && s.axText !== d.text) d.state = 'editing';
+    /* Sent or cleared: the From-voice marker goes with the words. */
+    if (/^(transcribed|editing)$/.test(d.state) && !(s.axText || '').trim()) { d.state = 'ready'; d.fromVoice = false; }
+    if (!/^(listening|paused|processing)$/.test(d.state)) d.text = s.axText || '';
+    return d;
+  }
+  function vxSimWire(a, ctx, script, granted) {
+    var s = ctx.s;
+    if (a === 'voice:stop') a = 'vx:stop';
+    if (a === 'voice:cancel') a = 'vx:cancel';
+    if (!/^(voice:start|vx:)/.test(a)) return false;
+    var d = vxSimDict(s, script, granted);
+    if (a === 'voice:start') {
+      if (d.state === 'unavailable') { ctx.announce && ctx.announce('Voice input is unavailable. Type instead.'); return true; }
+      d.text = s.axText || ''; s.axPlus = s.axModes = s.axEffort = false;
+    }
+    MaterialSim.vx.act(a, d, {
+      root: function () { return document.querySelector('[data-sim-root] .md-vx'); },
+      paint: function () {
+        if (!/^(listening|paused|processing)$/.test(d.state)) s.axText = d.text || '';
+        ctx.paint();
+        if (d.focusField) {
+          d.focusField = false;
+          var f = document.querySelector('[data-sim-root] [data-ax-field]');
+          if (f) { f.focus({ preventScroll: true }); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} }
+        }
+      },
+      announce: function (x) { if (ctx.announce) ctx.announce(x); }
+    });
+    return true;
+  }
+  /* The simulator's visual context (the same controller as the preview). */
+  function viSimV(s) {
+    if (!s.vi) s.vi = { state: 'none', item: null, sharing: null, sources: ['upload', 'camera', 'screen'],
+      preview: true, replace: true, remove: true, thumb: 'large', emphasis: 'strong', label: 'Aria will see this when you send',
+      screenText: 'Only the window you choose will be shared. You’ll see “Sharing” while it’s on, and you can stop at any time.',
+      cameraText: 'Camera access lets Aria see what you choose to show. It’s on only while you take the photo.',
+      unsupportedText: 'Aria can read images (PNG, JPG, HEIC). For a video, share your screen while it plays.' };
+    return s.vi;
+  }
+  function viSimIO(ctx) {
+    return { paint: function () { ctx.s.axPlus = !!(ctx.s.vi && ctx.s.vi.state === 'selecting'); ctx.paint();
+               var v = ctx.s.vi; if (v && v.focusField) { v.focusField = false; var f = document.querySelector('[data-sim-root] [data-ax-field]'); if (f) f.focus({ preventScroll: true }); } },
+             announce: function (t) { if (ctx.announce) ctx.announce(t); } };
+  }
+  function viSimFoot(s) {
+    var v = viSimV(s);
+    if (v.sharing && !s.turns.length && !(s.axText || '').trim()) return '<span class="sim-doc__who">Sharing is on</span>' + button('Ask: Which metrics changed the most from last month?', 'vis:ask:1', 'tonal');
+    if (s.stopped && !s.asked2 && !(s.axText || '').trim() && s.step !== 'working') return '<span class="sim-doc__who">Sharing stopped — keep talking</span>' + button('Ask: What should we check first?', 'vis:ask:2', 'tonal');
+    return '';
+  }
+  /* The simulator's handwriting session (the same controller as the preview). */
+  function hwSimH(s) {
+    if (!s.hw) s.hw = { state: s.opts && s.opts.nopen ? 'unavailable' : 'ready', text: s.axText || '', strokes: [], sampleN: 0, read: null, pick: null,
+      mode: s.opts && s.opts.auto ? 'auto' : 'review', keep: true, undo: true, sample: true, ink: 'medium', emphasis: 'strong', messy: !!(s.opts && s.opts.messy),
+      statusText: 'Recognizing your writing…', failureText: 'Couldn’t recognize this writing.' };
+    return s.hw;
+  }
+  function hwSimIO(ctx) {
+    return { paint: function () { var h = ctx.s.hw; if (h && !/^(pad|writing|recognizing|recognized|editing|failed)$/.test(h.state)) ctx.s.axText = h.text || '';
+               ctx.paint();
+               if (h && h.focusField) { h.focusField = false; var f = document.querySelector('[data-sim-root] [data-ax-field]'); if (f) { f.focus({ preventScroll: true }); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } } },
+             announce: function (t) { if (ctx.announce) ctx.announce(t); },
+             mark: function () {} };
+  }
+  /* The simulator's selection session (the same controller as the preview). */
+  function geSimG(s) {
+    if (!s.ge) s.ge = { state: 'ready', tool: 'circle', sels: [], cands: [], path: [], pick: null,
+      types: ['circle', 'highlight', 'tap', 'region'], auto: !!(s.opts && s.opts.auto), confirm: true, multi: !!(s.opts && s.opts.multi), messy: !!(s.opts && s.opts.messy),
+      labelText: 'Selected: {name}', ambiguousText: 'Your selection covers more than one thing. Which did you mean?',
+      failText: 'Couldn’t tell what you selected — nothing is there to select.', emphasis: 'strong', boundary: 'dashed' };
+    return s.ge;
+  }
+  function geSimIO(ctx) {
+    return { paint: function () { ctx.paint(); var g = ctx.s.ge;
+               if (g && g.focusField) { g.focusField = false; var f = document.querySelector('[data-sim-root] [data-ax-field]'); if (f) f.focus({ preventScroll: true }); } },
+             announce: function (t) { if (ctx.announce) ctx.announce(t); },
+             root: function () { return document.querySelector('[data-sim-root]'); } };
+  }
+  function geSimFoot(s) {
+    var g = geSimG(s);
+    if (s.step === 'working' || g.state === 'using') return '';
+    if (g.state === 'ready' && !s.turns.length) return '<span class="sim-doc__who">Press Select on screen in the composer — or let the pen do it</span>' + button('Circle the Conversion chart', 'ge:demo', 'tonal');
+    if (g.state === 'selecting') return '<span class="sim-doc__who">Draw on the dashboard, Tab to a tile, or</span>' + button('Circle the Conversion chart', 'ge:demo', 'tonal');
+    if (g.state === 'added' && !s.turns.length && !(s.axText || '').trim()) return '<span class="sim-doc__who">The chart is in the composer by name</span>' + button('Ask: Why did this drop?', 'ges:ask', 'tonal');
+    if (g.state === 'added' && s.turns.length) return '<span class="sim-doc__who">The selection stays for follow-ups</span>' + button('Clear selection', 'ge:clear', 'text') + button('Select something else', 'ge:open', 'tonal');
+    if (g.state === 'cleared') return '<span class="sim-doc__who">Cleared — keep talking, or</span>' + button('Select something else', 'ge:open', 'tonal');
+    return '';
+  }
+  /* The simulator's form (the same controller as the preview). */
+  function siSimF(s) {
+    if (!s.si) s.si = { state: 'empty', v: { task: '', owner: '', due: '', priority: '' }, sug: {}, edited: {}, err: {},
+      req: { owner: true, due: true }, suggest: true, confirm: true, preserve: true, fail: !!(s.opts && s.opts.down),
+      density: 'comfortable', layout: 'grouped' };
+    return s.si;
+  }
+  function siSimIO(ctx) {
+    var s = ctx.s, M = window.MaterialSim.si;
+    return { paint: function () { ctx.paint(); },
+             announce: function (t) { if (ctx.announce) ctx.announce(t); },
+             wait: wait,
+             created: function (f) {
+               s.turns.push({ html: '<p class="wf-text">Created <b>' + f.id + '</b> · ' + esc(f.v.task) + ' — ' + esc(f.v.owner || 'unassigned') + ', due ' + M.date(f.v.due) + ', ' + esc(f.v.priority) + ' priority. ' +
+                 'Linked to EXP-210' + (f.v.owner ? '; ' + esc(f.v.owner.split(' ')[0]) + ' has been notified.' : '.') + '</p>' });
+               ctx.paint();
+             },
+             undone: function (f) { s.turns.push({ html: '<p class="wf-text">Deleted ' + (f.id || 'the task') + '. The form still has your values.</p>' }); ctx.paint(); } };
+  }
   function aiiSim(s) {
     return function (role, cls) {
       if (s.opts && s.opts.one) return MI('spark', 'md-aii md-aii--' + role + ' md-aii--one is-still' + (cls ? ' ' + cls : ''));
@@ -1869,138 +2000,126 @@
     },
 
     /* ──────────────────────────────────────────────────────
-       ICONS · workspace
+       ICONS · workspace (user brief, 5 Oct)
 
-       purpose   show WHY one mark per meaning matters: on a busy
-                 record, a person has to tell at a glance which
-                 controls run AI, which text AI wrote, and whether
-                 the agent is doing something now
-       context   a CRM account (Orbit · Northwind Group) — ordinary
-                 controls, a new non-AI feature, two AI actions and
-                 an AI-written note already in the activity
-       decision  run an AI action; see the working and tool marks,
-                 then the generated mark on what it produced
-       contrast  "One sparkle for everything" collapses the
-                 vocabulary, and the hint asks the same questions
+       purpose   show WHY one mark per meaning matters: a single AI
+                 interaction passes through four meanings, and each
+                 keeps its own mark the whole way through
+       context   a release-note editor (Orbit · September release)
+                 with ordinary controls, one new non-AI feature and
+                 one AI action
+       flow      AI action (Rewrite) → Agent working (turning mark,
+                 status, Stop) → Tool use (Style guide checked) →
+                 AI-generated content (Generated with AI, once)
+       contrast  "One sparkle for every meaning" collapses the
+                 vocabulary: every stage then looks the same
        ────────────────────────────────────────────────────── */
     'ai-icons': {
       shell: 'workspace',
       product: 'Orbit',
       agent: 'Aria',
-      note: 'A record with ordinary controls, a new non-AI feature, AI actions and AI-written ' +
-            'text. The marks are how you tell them apart without reading every label.',
+      note: 'One AI interaction, four meanings. Press Rewrite and watch each stage keep its own mark: ' +
+            'the action, the work, the tool and the result never borrow each other’s.',
 
-      initial: { step: 'idle', which: null, summary: '', next: '', tools: [], streaming: false,
-                 explain: null, opts: { one: false, words: true } },
+      initial: { step: 'idle', text: 'We fixed a bunch of stuff in onboarding and the export thing should work ' +
+                   'better now, plus some small UI changes people asked about.',
+                 original: '', tool: '', generated: false, explain: false, toolOpen: false,
+                 opts: { one: false, words: true } },
 
-      title: function () { return 'Northwind Group &middot; account'; },
-      pill: function (s) { return s.step === 'working' ? 'Aria working' : 'Saved'; },
+      title: function () { return 'Release notes &middot; September'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.generated ? 'Edited by Aria' : 'Draft'; },
 
       tools: function (s) {
         var M = md3(), I = aiiSim(s), busy = s.step === 'working';
-        return M.button({ variant: 'text', label: 'Log a call', attrs: { 'data-act': 'noop' } }) +
-          M.button({ variant: 'text', label: 'Add a task', attrs: { 'data-act': 'noop' } }) +
+        var act = s.opts.words
+          ? M.button({ variant: 'tonal', label: busy ? 'Rewriting…' : 'Rewrite',
+              icon: busy ? I('working') : I('action'), cls: 'sim-aii-act' + (busy ? ' is-busy' : ''),
+              attrs: { 'data-act': 'rewrite', 'aria-disabled': busy ? 'true' : null } })
+          : M.tooltip({ id: 'sim-aii-tip-rw', content: busy ? 'Aria is rewriting' : 'Rewrite with AI',
+              trigger: M.iconButton({ icon: busy ? I('working') : I('action'),
+                label: busy ? 'Agent working: rewriting' : 'Rewrite with AI', cls: 'sim-aii-act',
+                attrs: { 'data-act': 'rewrite', 'aria-describedby': 'sim-aii-tip-rw',
+                         'aria-disabled': busy ? 'true' : null } }) });
+        return M.button({ variant: 'text', label: 'Preview', attrs: { 'data-act': 'noop' } }) +
+          M.button({ variant: 'text', label: 'Share', attrs: { 'data-act': 'noop' } }) +
           /* A NEW feature — and not an AI one. It gets the word, not a mark. */
           '<span class="sim-aii-new">' +
-            M.button({ variant: 'text', label: 'Forecast', attrs: { 'data-act': 'noop' } }) +
+            M.button({ variant: 'text', label: 'Import changelog', attrs: { 'data-act': 'noop' } }) +
             (s.opts.one
               ? '<span class="sim-aii-badge sim-aii-badge--mark">' + I('action', 'md-aii--misuse') + 'New</span>'
               : '<span class="sim-aii-badge">New</span>') +
-          '</span>' +
-          (s.opts.words
-            ? M.button({ variant: 'tonal', label: 'Summarize account', icon: I('action'),
-                cls: 'sim-aii-act',
-                attrs: { 'data-act': 'do:summary', 'aria-disabled': busy ? 'true' : null } })
-            : M.tooltip({ id: 'sim-aii-tip-sum', content: 'Summarize account with AI',
-                trigger: M.iconButton({ icon: I('action'), label: 'Summarize account with AI', cls: 'sim-aii-act',
-                  attrs: { 'data-act': 'do:summary', 'aria-describedby': 'sim-aii-tip-sum',
-                           'aria-disabled': busy ? 'true' : null } }) }));
+          '</span>' + act;
       },
 
       canvas: function (s) {
         var M = md3(), I = aiiSim(s), busy = s.step === 'working';
-        var tipAct = function (id, act, name) {
-          return M.tooltip({ id: id, content: name,
-            trigger: M.iconButton({ icon: I('action'), label: name, cls: 'sim-aii-act',
-              attrs: { 'data-act': act, 'aria-describedby': id, 'aria-disabled': busy ? 'true' : null } }) });
-        };
-        var gen = function (key, about) {
-          var chip = '<button type="button" class="md3-chip md-aii-chip sim-aii-gen ' +
-              md3ChipClass(false, false).replace('md-sp__chip', '') + '" data-act="explain:' + key + '" ' +
-              'aria-expanded="' + (s.explain === key) + '" aria-controls="sim-aii-why-' + key + '">' +
-              '<span class="relative shrink-0">' + I('generated') + '</span>' +
-              '<span class="relative">Generated with AI</span></button>';
-          return M.tooltip({ id: 'sim-aii-why-' + key, rich: true,
-            cls: 'sim-aii-whyw' + (s.explain === key ? ' is-open' : ''),
-            title: 'About this text', content: about, trigger: chip });
-        };
-        var working = busy
-          ? '<div class="sim-aii-status" role="status">' + I('working') +
-              '<span>' + (s.which === 'next' ? 'Aria is drafting a next step…' : 'Aria is reading the account…') +
-              '</span>' + M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'stop' } }) + '</div>'
+        /* Where the interaction is, in the same four marks. */
+        var stage = s.generated ? 3 : s.tool && busy ? 2 : busy ? 1 : 0;
+        var steps = [['action', 'AI action', 'Rewrite'], ['working', 'Agent working', 'Rewriting…'],
+                     ['tool', 'Tool use', 'Style guide checked'], ['generated', 'AI-generated content', 'Generated with AI']];
+        var trail = '<ol class="sim-aii-flow" aria-label="Where this rewrite is">' + steps.map(function (st, i) {
+          return '<li class="sim-aii-step' + (i < stage ? ' is-past' : '') + (i === stage ? ' is-now' : '') + '"' +
+              (i === stage ? ' aria-current="step"' : '') + '>' +
+            I(st[0], st[0] === 'working' && i !== stage ? 'is-still' : '') +
+            '<span class="sim-aii-step__n">' + st[1] + '</span></li>';
+        }).join('') + '</ol>';
+        var status = busy
+          ? '<div class="sim-aii-status"><span aria-hidden="true" class="sim-aii-statusin">' + I('working') +
+              '<span>Rewriting release note…</span></span>' +
+              '<span class="sim-aii-sr" role="status">Agent working: rewriting release note</span>' +
+              M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'stop' } }) + '</div>'
+          : '<span class="sim-aii-sr" role="status"></span>';
+        var tool = s.tool
+          ? '<div class="sim-aii-activity">' +
+              '<button type="button" class="sim-aii-tool" data-act="tool" aria-expanded="' + !!s.toolOpen + '" ' +
+                'aria-controls="sim-aii-tooldetail">' + I('tool') + '<span>' + s.tool + '</span></button>' +
+              '<div id="sim-aii-tooldetail" class="sim-aii-tooldetail"' + (s.toolOpen ? '' : ' hidden') + '>' +
+                'Checked 14 terms against the Orbit style guide: “a bunch of stuff” named as three changes, ' +
+                '“the export thing” → “CSV export”.</div>' +
+            '</div>'
           : '';
-        var tools = (s.tools || []).map(function (t) {
-          return '<p class="sim-aii-tool">' + I('tool') + '<span>' + t + '</span></p>';
-        }).join('');
+        var gen = s.generated
+          ? '<div class="sim-aii-genrow">' +
+              M.tooltip({ id: 'sim-aii-why', rich: true, cls: 'sim-aii-whyw' + (s.explain ? ' is-open' : ''),
+                title: 'About this text',
+                content: 'Aria rewrote your draft for clarity, after checking it against the style guide. Your version is kept.',
+                trigger: '<button type="button" class="md3-chip md-aii-chip sim-aii-gen ' +
+                  md3ChipClass(false, false).replace('md-sp__chip', '') + '" data-act="explain" ' +
+                  'aria-expanded="' + !!s.explain + '" aria-controls="sim-aii-why">' +
+                  '<span class="relative shrink-0">' + I('generated') + '</span>' +
+                  '<span class="relative">Generated with AI</span></button>' }) +
+              M.button({ variant: 'text', label: 'Undo', attrs: { 'data-act': 'undo' } }) +
+            '</div>'
+          : '';
         return '<div class="sim-aii" data-one="' + !!s.opts.one + '">' +
-          '<div class="sim-rec">' +
-            '<div class="sim-rec__row"><span class="sim-rec__k">Owner</span><span class="sim-rec__v">Dana Khoury</span></div>' +
-            '<div class="sim-rec__row"><span class="sim-rec__k">Renewal</span><span class="sim-rec__v">30 September &middot; &pound;180k</span></div>' +
-            '<div class="sim-rec__row"><span class="sim-rec__k">Health</span><span class="sim-rec__v">At risk &mdash; 2 open escalations</span></div>' +
+          trail +
+          '<div class="sim-aii-doc">' +
+            '<p class="sim-rec__k">What changed</p>' +
+            '<p class="wf-text sim-aii-text' + (s.generated ? ' sc-rise' : '') + '">' + caret(s.text, s.streaming) + '</p>' +
+            (s.streaming ? '' : gen) +
           '</div>' +
-          (s.which === 'summary' ? working + tools : '') +
-          (s.summary
-            ? '<div class="sim-aii-out sc-rise"><p class="wf-text">' + caret(s.summary, s.streaming) + '</p>' +
-                (s.streaming ? '' : '<div class="sim-aii-genrow">' +
-                  gen('summary', 'Aria wrote this from the account, two Helpdesk tickets and four emails. ' +
-                                 'Check figures before you share it.') +
-                  M.button({ variant: 'text', label: 'Remove', attrs: { 'data-act': 'undo:summary' } }) + '</div>') +
-              '</div>'
-            : '') +
-          '<div class="sim-aii-field">' +
-            '<div class="w-full"><div class="relative">' +
-              '<input id="sim-aii-next" placeholder=" " class="md3-field ' + MD3_FIELD + '" ' +
-                'value="' + esc(s.next) + '" data-act="noop" />' +
-              '<label for="sim-aii-next" class="' + MD3_FIELD_LABEL + '">Next step</label>' +
-              '<span class="sim-aii-trail">' + tipAct('sim-aii-tip-next', 'do:next', 'Suggest a next step with AI') + '</span>' +
-            '</div></div>' +
-            (s.which === 'next' ? working : '') +
-            (s.next && s.nextGen && !(busy && s.which === 'next')
-              ? '<div class="sim-aii-genrow">' + gen('next', 'Aria suggested this from the renewal date and the open escalations. Edit it freely.') + '</div>'
-              : '') +
-          '</div>' +
-          '<div class="sim-rec__notes">' +
-            '<p class="sim-rec__k">Activity</p>' +
-            '<div class="sim-aii-row"><span class="sim-rec__v">Call &mdash; renewal terms</span>' +
-              '<span class="sim-rec__k">12 Aug</span>' + tipAct('sim-aii-tip-call', 'do:call', 'Summarize this call with AI') + '</div>' +
-            (s.callNote ? '<p class="wf-text sim-aii-note sc-rise">' + caret(s.callNote, s.streaming && s.which === 'call') + '</p>' +
-              (s.streaming && s.which === 'call' ? '' : '<div class="sim-aii-genrow">' + gen('call', 'Aria summarized the call recording. The recording itself is unchanged.') + '</div>')
-              : '') +
-            '<div class="sim-aii-row"><span class="sim-rec__v">Email &mdash; escalation recap</span>' +
-              '<span class="sim-rec__k">14 Aug</span></div>' +
-            '<p class="wf-text sim-aii-note">Support response times slipped twice in July; Dana wants a named engineer by Q3.</p>' +
-            '<div class="sim-aii-genrow">' + gen('email', 'Aria drafted this recap; Sam Ortiz sent it on 14 Aug.') + '</div>' +
-          '</div>' +
+          status + tool +
         '</div>';
       },
 
       controls: function (s) {
         return [toggle('One sparkle for every meaning', 'opt:one', s.opts.one),
-                toggle('Words on the account action', 'opt:words', s.opts.words)]
-          .concat(s.summary || s.next || s.callNote ? [button('Start over', 'reset', 'text')] : []);
+                toggle('Words on Rewrite', 'opt:words', s.opts.words)]
+          .concat(s.generated || s.step !== 'idle' ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (s.opts.one) return 'One mark for everything. Which of these runs AI, which text did AI ' +
-          'write, is the agent doing anything now &mdash; and is Forecast an AI feature? With one ' +
-          'sparkle you can only tell by reading every label. Switch it off to compare.';
-        if (s.step === 'working') return 'The working mark turns beside a status line, and the tool ' +
-          'mark names what Aria used. Nothing else on the record looks like this.';
-        if (s.summary || s.next || s.callNote) return 'What Aria produced carries the generated mark &mdash; ' +
-          'a different shape from the action that made it. Press it for what happened.';
-        return 'Three AI actions (the shine star), one AI-written note (the info bubble), and Forecast ' +
-          '&mdash; new, but not AI, so it gets the word “New”, not a mark. Log a call and Add a task ' +
-          'carry no mark: no model runs in them.';
+        if (s.opts.one) return 'One sparkle for everything. Is Rewrite running, finished, or did it use a tool? ' +
+          'Did AI write this text — and is “Import changelog” an AI feature? Every stage now looks the same, ' +
+          'so the only way to tell is to read every word. Switch it off to compare.';
+        if (s.step === 'working' && s.tool) return '<b>Tool use.</b> The wrench line names what Aria used — the style ' +
+          'guide — while the turning mark still says the work is not finished. Two meanings, two marks, side by side.';
+        if (s.step === 'working') return '<b>Agent working.</b> Rewrite’s star became the turning mark, and a status line ' +
+          'says what is happening. Only this mark moves, and only now.';
+        if (s.generated) return '<b>AI-generated content.</b> The result carries “Generated with AI” once, with its own ' +
+          'mark — not the star that started it. Press it for what Aria did; Rewrite still shows the star, ready again.';
+        return '<b>AI action.</b> Only Rewrite carries the star: pressing it runs AI on this draft. “Import changelog” ' +
+          'is new but not AI, so it gets the word “New”, not a mark. Press Rewrite.';
       },
 
       act: async function (a, ctx) {
@@ -2013,37 +2132,34 @@
           Object.assign(s, JSON.parse(JSON.stringify(SIMS['ai-icons'].initial)));
           s.opts = o; ctx.paint(); return;
         }
-        if (a.indexOf('explain:') === 0) {
-          var k = a.slice(8); s.explain = s.explain === k ? null : k; ctx.paint(); return;
+        if (a === 'explain') { s.explain = !s.explain; ctx.paint(); return; }
+        if (a === 'tool') { s.toolOpen = !s.toolOpen; ctx.paint(); return; }
+        if (a === 'undo') {
+          s.text = s.original; s.generated = false; s.explain = false; s.tool = ''; s.toolOpen = false;
+          ctx.paint(); ctx.announce && ctx.announce('Your original draft is back.'); return;
         }
-        if (a === 'undo:summary') { s.summary = ''; s.tools = []; s.explain = null; s.which = null; ctx.paint();
-                                    ctx.announce && ctx.announce('Summary removed.'); return; }
-        if (a === 'stop') { s.run = (s.run || 0) + 1; s.step = 'idle'; s.tools = [];
-                            if (s.which === 'summary') s.which = null; ctx.paint();
-                            ctx.announce && ctx.announce('Stopped.'); return; }
-        if (a.indexOf('do:') === 0) {
+        if (a === 'stop') {
+          s.run = (s.run || 0) + 1; s.step = 'idle'; s.tool = ''; ctx.paint();
+          ctx.announce && ctx.announce('Stopped. Your draft is unchanged.'); return;
+        }
+        if (a === 'rewrite') {
           if (s.step === 'working') return;
-          var which = a.slice(3), run = (s.run || 0) + 1;
-          s.run = run; s.which = which; s.step = 'working'; s.explain = null;
-          if (which === 'summary') { s.summary = ''; s.tools = []; }
+          var run = (s.run || 0) + 1;
+          s.run = run; s.step = 'working'; s.explain = false; s.tool = ''; s.toolOpen = false;
+          if (s.generated) { s.generated = false; }
           ctx.paint();
-          ctx.announce && ctx.announce(which === 'next' ? 'Aria is drafting a next step.' : 'Aria is working.');
-          if (which === 'summary') {
-            await wait(700); if (s.run !== run) return;
-            s.tools = ['Looked up 2 tickets in Helpdesk']; ctx.paint();
-            await wait(700); if (s.run !== run) return;
-            s.tools = s.tools.concat(['Read 4 emails from Dana Khoury']); ctx.paint();
-          }
-          await wait(800); if (s.run !== run) return;
-          s.step = 'idle';
-          if (which === 'next') { s.next = 'Confirm a named engineer before 5 September'; s.nextGen = true; ctx.paint(); }
-          else if (which === 'call') {
-            await stream(ctx, 'callNote', 'Dana asked for a named engineer by Q3; we did not commit to a date.');
-          } else {
-            await stream(ctx, 'summary', 'Renews 30 September at &pound;180k. Two escalations are open, both ' +
-              'about support response time, and the champion left in June. A named engineer is the ask.');
-          }
-          ctx.announce && ctx.announce('Done. The result is marked as generated with AI.');
+          ctx.announce && ctx.announce('Agent working: rewriting release note.');
+          await wait(1100); if (s.run !== run) return;
+          s.tool = 'Checking the style guide…'; ctx.paint();
+          await wait(1200); if (s.run !== run) return;
+          s.tool = 'Style guide checked'; ctx.paint();
+          ctx.announce && ctx.announce('Style guide checked.');
+          await wait(900); if (s.run !== run) return;
+          s.step = 'idle'; s.original = s.original || s.text; s.text = '';
+          s.generated = true;
+          await stream(ctx, 'text', 'Onboarding is quicker to finish, CSV export no longer times out on large ' +
+            'projects, and three small layout fixes customers asked for are in.');
+          ctx.announce && ctx.announce('Release note rewritten. Generated with AI; Undo is available.');
         }
       }
     },
@@ -2224,8 +2340,6 @@
       modelOpts: function () { return { showAuto: true, showFor: true, showNote: false }; },
       model:  function (s) { return s.model; },
       effort: function (s) { return s.effort; },
-      composerMode: function (s) { return s.voice ? 'voice' : 'text'; },
-      voiceState: function (s) { return s.voice; },
 
       /* Everything the pattern asks of the shared composer, as options
          on it: live while Aria answers (Stop in the send slot), a
@@ -2238,6 +2352,7 @@
           unavailable: 'Aria is temporarily unavailable. Your request is kept — try again in a moment.'
         };
         return {
+          dictation: vxSimDict(s, 'also flag anything new since august', true),
           busy: false, running: run, stopAct: 'stop',
           label: 'Message Aria', maxLines: 6, grow: true,
           entry: (s.axText || '').trim() ? 'ready' : 'empty',
@@ -2357,12 +2472,7 @@
         }
         /* Voice: a mode of the same composer. Leaving it hands back
            the field with the text exactly as it was. */
-        if (a === 'voice:start') { s.voice = 'listening'; s.axPlus = s.axModes = s.axEffort = false;
-                                   ctx.paint(); return; }
-        if (a === 'voice:mute')  { s.voice = s.voice === 'muted' ? 'listening' : 'muted'; ctx.paint(); return; }
-        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
-          s.voice = null; ctx.paint(); field(); return;
-        }
+        if (vxSimWire(a, ctx, 'also flag anything new since august', true)) return;
         /* The model chip: Model Selection's own flow, unchanged. */
         if (a === 'model:effort:focus') return;
         if (a.indexOf('model:pick:') === 0) {
@@ -2411,14 +2521,13 @@
 
       /* No model chip: one row, exactly as Open Input's composer
          (user request). */
-      composerMode: function (s) { return s.voice ? 'voice' : 'text'; },
-      voiceState: function (s) { return s.voice; },
 
       /* The SAME working composer as Open Input — the suggestions
          only ever put words in its field. */
       composerOpts: function (s) {
         var run = s.step === 'working';
         return {
+          dictation: vxSimDict(s, 'compare these risks with the last release', true),
           ask: SP_SIM[spW(s)].ask, label: 'Message Aria',
           busy: false, running: run, stopAct: 'stop',
           maxLines: 6, grow: true,
@@ -2575,12 +2684,7 @@
           ctx.announce && ctx.announce('Stopped. Your request is back in the field.');
           return;
         }
-        if (a === 'voice:start') { s.voice = 'listening'; s.axPlus = s.axModes = s.axEffort = false;
-                                   ctx.paint(); return; }
-        if (a === 'voice:mute')  { s.voice = s.voice === 'muted' ? 'listening' : 'muted'; ctx.paint(); return; }
-        if (a === 'voice:stop' || a === 'voice:cancel' || a === 'voice:retry') {
-          s.voice = null; ctx.paint(); field(); return;
-        }
+        if (vxSimWire(a, ctx, 'compare these risks with the last release', true)) return;
         if (a === 'model:effort:focus') return;
         if (a.indexOf('model:pick:') === 0) {
           s.model = a.slice(11); s.axModes = false; s.axEffort = true;
@@ -4795,1170 +4899,685 @@
     },
 
     /* ──────────────────────────────────────────────────────
-       VOICE INPUT · conversation
+       VOICE INPUT · conversation (user brief, 6 Oct)
 
-       purpose   show that voice is a STATE of the composer that
-                 is already there, not an application you enter
-       context   a research workspace with two quarters of
-                 customer feedback loaded and one question worth
-                 asking out loud
-       before    the ordinary composer, with a microphone in it
-                 where every other scenario has one
-       decision  speak it, or pause, or back out — all three
-                 without leaving the bar you started in
-       after     the answer is in the workspace and the composer
-                 is a text composer again
-
-       Nothing navigates, nothing is replaced, nothing grows by
-       more than a line. The arc is: text · listening · speaking ·
-       processing · answer · text.
+       purpose   show that voice is an INPUT into the normal
+                 composer: speak, see the words, correct them, send
+       context   a PM reviewing release 2.4 readiness with Aria
+       flow      mic (permission once) → Listening (lit mic, clock,
+                 words as heard, gradient answering the voice) →
+                 Pause / Resume → Stop (keeps, never sends) →
+                 Transcribing → the words in the field, "From voice"
+                 → the PM edits them → sends → Aria answers
+       contrast  "Noisy room" — the words cannot be trusted, so
+                 nothing is guessed: Retry / Edit captured text /
+                 Type instead; "No microphone" — typing carries on
        ────────────────────────────────────────────────────── */
     'voice-input': {
       shell: 'conversation',
-      product: 'Signal',
+      product: 'Orbit',
       agent: 'Aria',
-      note: 'The microphone in the composer turns the same composer into voice input and back. ' +
-            'Watch the bar rather than the screen: it keeps its width, its place and its ' +
-            'controls, and grows by about a line.',
+      note: 'Voice is a way of writing the request, not a different product. Speak, see exactly what ' +
+            'was heard, fix it, and send it yourself.',
 
       initial: {
-        step: 'text',   /* text · listening · speaking · processing · answer
-                           · muted · error */
-        turns: [],
-        opts: { amp: true }
+        step: 'idle', turns: [], vx: null, axText: '',
+        opts: { allowed: false, noisy: false, nomic: false }
       },
 
-      title: function () { return 'Onboarding feedback'; },
+      title: function () { return 'Release 2.4 &middot; readiness'; },
       pill: function (s) {
-        if (s.step === 'processing') return 'Thinking';
-        if (s.step === 'error')      return 'Voice stopped';
-        if (s.step === 'text' || s.step === 'answer') return '';
-        return 'Voice';
-      },
-
-      /* The atmosphere behind the composer is told what the voice
-         state is, so the two read as one system. It moves by a
-         phase, not by amplitude: the indicator communicates audio,
-         the gradient communicates atmosphere, and swapping those
-         roles is what makes a calm interface loud. */
-      phase: function (s) {
-        if (s.step === 'processing') return 'thinking';
-        if (s.step === 'answer')     return 'done';
-        if (s.step === 'error')      return 'blocked';
-        if (s.step === 'text')       return 'idle';
-        return 'focus';
-      },
-
-      /* The composer is the shell's. All this does is say which
-         mode it should be in, and what to put in it. */
-      composerMode: function (s) { return s.step === 'text' || s.step === 'answer' ? 'text' : 'voice'; },
-      voiceState: function (s) {
-        if (s.step === 'speaking')   return 'speaking';
-        if (s.step === 'processing') return 'processing';
-        if (s.step === 'muted')      return 'muted';
-        if (s.step === 'error')      return 'error';
-        return 'listening';
-      },
-      voiceStatus: function (s) {
-        if (s.step === 'listening')  return 'Listening…';
-        if (s.step === 'speaking')   return 'Listening…';
-        if (s.step === 'processing') return 'Thinking…';
-        if (s.step === 'muted')      return 'Microphone muted';
-        if (s.step === 'error')      return 'Microphone unavailable';
+        var v = s.vx && s.vx.state;
+        if (v === 'listening') return 'Microphone on';
+        if (v === 'paused') return 'Microphone off · paused';
+        if (s.step === 'working') return 'Aria working';
         return '';
       },
-      /* One line, inside the bar, ellipsised. A spoken sentence
-         does not need a panel of its own to prove it was heard. */
-      voiceLine: function (s) {
-        if (s.step === 'speaking')
-          return '“Compare the onboarding feedback from this quarter with the previous one…';
-        if (s.step === 'error')
-          return 'Another application is using it. Type instead, or try again.';
-        if (s.step === 'muted')
-          return 'Aria is still here; it just cannot hear you.';
-        return '';
+      phase: function (s) { return s.step === 'working' ? 'working' : 'idle'; },
+
+      composerOpts: function (s) {
+        var d = vxSimD(s);
+        /* Typing after a transcript is an edit of it. */
+        if (d.state === 'transcribed' && s.axText !== d.text) { d.state = 'editing'; }
+        if (!/^(listening|paused|processing)$/.test(d.state)) d.text = s.axText;
+        return { dictation: d, text: s.axText, label: 'Message Aria', ask: 'Ask Aria about the release…' };
       },
 
-      /* One workspace, one conversation. No cards, no dashboard,
-         no metadata strip — the question and the answer are the
-         only two things on it worth reading. */
       thread: function (s) {
-        if (!s.turns.length) {
-          return '<p class="sim-stage__empty">Two quarters of customer feedback are loaded. ' +
-                 'Ask about them in the composer below &mdash; by typing, or by speaking.</p>';
-        }
-        return s.turns.map(function (t) {
-          return t.who === 'you'
-            ? human('You', 'P', t.text)
-            : '<div class="sim-turn">' + mark('md-agentav--sm') +
-              '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-              chip() + '</div><p class="wf-text">' + t.text + '</p></div></div>';
+        var intro = '<div class="sim-turn">' + mark('md-agentav--sm') +
+          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' +
+          '<p class="wf-text">Release 2.4 has 9 open items across 4 owners. Launch is Thursday.</p></div></div>';
+        return intro + s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'P', esc(t.text) + (t.voice ? ' <span class="sim-vx-src">' + MI('mic') + 'from voice, edited by you</span>' : ''));
+          if (t.working) return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div>' + working('Aria is grouping the release risks…') + '</div></div>';
+          return '<div class="sim-turn">' + mark('md-agentav--sm') +
+            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() + '</div>' + t.html + '</div></div>';
         }).join('');
       },
 
       foot: function (s) {
-        if (s.step === 'text') {
-          return '<span class="sim-doc__who">Press the microphone in the composer</span>' +
-                 button('Speak instead', 'voice:start', 'filled');
-        }
-        if (s.step === 'listening') {
-          return '<span class="sim-doc__who">Open, and not hearing anything yet</span>' +
-                 button('Say it', 'say', 'filled');
-        }
-        if (s.step === 'muted') {
-          return '<span class="sim-doc__who">It cannot hear you</span>' +
-                 button('Unmute', 'voice:mute', 'filled');
-        }
-        if (s.step === 'error') {
-          return '<span class="sim-doc__who">Voice is unavailable</span>' +
-                 button('Try again', 'voice:retry', 'filled') +
-                 button('Type instead', 'voice:cancel', 'text');
-        }
-        if (s.step === 'answer') {
-          return '<span class="sim-doc__who">Composer is back in text mode</span>' +
-                 button('Start over', 'reset', 'text');
-        }
-        return '<span class="sim-doc__who">' +
-          (s.step === 'speaking' ? 'Speaking' : 'Working on it') + '</span>';
+        var d = vxSimD(s);
+        if (d.state === 'transcribed')
+          return '<span class="sim-doc__who">That is what was heard. Correct it before sending</span>' +
+            button('Add “and highlight anything blocking launch”', 'vxs:edit', 'tonal');
+        if (d.state === 'editing') return '<span class="sim-doc__who">Your words now. Send when it reads right</span>';
+        if (d.state === 'listening') return '<span class="sim-doc__who">Speaking. Pause, Stop (keeps the words) or Cancel (discards them) in the bar</span>';
+        if (d.state === 'paused') return '<span class="sim-doc__who">Microphone off — what you said is kept</span>';
+        if (s.step === 'answered') return '<span class="sim-doc__who">The composer is ready for the next request — typed or spoken</span>' + button('Start over', 'reset', 'text');
+        return '';
       },
 
       controls: function (s) {
-        return [toggle('Respond to the voice', 'opt:amp', s.opts.amp),
-                toggle('Microphone unavailable', 'opt:err', s.step === 'error')];
+        return [toggle('Microphone already allowed', 'opt:allowed', s.opts.allowed),
+                toggle('Noisy room', 'opt:noisy', s.opts.noisy),
+                toggle('No microphone', 'opt:nomic', s.opts.nomic)];
       },
 
       hint: function (s) {
-        if (!s.opts.amp)
-          return 'With the response turned off the strokes run a loop instead of following the ' +
-                 'voice. It looks alive whether or not anything is being heard, which is exactly ' +
-                 'how a hung microphone passes for a working one.';
-        if (s.step === 'text')
-          return 'The ordinary composer, with a microphone in it. Voice is one control away and ' +
-                 'it does not go anywhere else &mdash; the same bar changes mode.';
-        if (s.step === 'listening')
-          return 'Same width, same place, one line taller. The strokes are at rest because ' +
-                 'nothing is being said, and an open microphone drawn like a heard one is the ' +
-                 'commonest lie this pattern tells.';
-        if (s.step === 'speaking')
-          return 'The strokes follow amplitude with smooth interpolation, gaps included. The ' +
-                 'middle ones move more than the outer ones, which is what stops a row of ' +
-                 'capsules reading as a bar chart.';
-        if (s.step === 'processing')
-          return 'The same strokes, shorter and slower, rather than a spinner dropped where the ' +
-                 'voice used to be. The gradient drifts toward the workspace at its own slow ' +
-                 'pace &mdash; the indicator carries audio, the gradient carries atmosphere.';
-        if (s.step === 'muted')
-          return 'The microphone is off, so the strokes stop moving with speech. A muted ' +
-                 'indicator that still pulses is claiming to hear you.';
-        if (s.step === 'error')
-          return 'It says what went wrong and leaves the keyboard route open in the same bar. ' +
-                 'Voice failing is not a reason to lose the composer.';
-        if (s.step === 'answer')
-          return 'The answer is in the workspace and the composer is a text composer again. ' +
-                 'Voice was a mode of this bar, not a screen of its own.';
-        return 'One composer, changing mode.';
+        var d = vxSimD(s);
+        if (s.opts.nomic) return 'No microphone, so voice says it is unavailable — and the composer carries on exactly as before. Voice is optional; typing never depends on it.';
+        if (d.state === 'permission') return 'The first press asks for the microphone in plain words: what it is for, when it is on, how to stop it. Nothing records until it is allowed.';
+        if (d.state === 'listening') return 'The bar is still the composer. A lit microphone with a dot and a running clock say it is listening; the gradient behind it swells a little with each word and settles when you stop talking.';
+        if (d.state === 'paused') return 'Paused: the microphone is off and the dot is gone, but every word so far is kept. Resume carries on; Stop keeps the words; Cancel discards this recording only.';
+        if (d.state === 'processing') return 'Transcribing. The microphone is already off — the gradient drifts slowly to show work, not listening.';
+        if (d.state === 'transcribed') return 'Stop did not send anything. The words are in the field, marked “From voice”, with Undo — exactly what Aria will read if you send it. Fix it first.';
+        if (d.state === 'editing') return 'Corrected by you. The request will go as written now; voice only drafted it.';
+        if (d.state === 'nounderstand') return 'Too little was clear to trust, so nothing was guessed into the field. What was heard is kept; Retry, edit it, or type instead.';
+        if (s.step === 'working') return 'Aria works from the text you sent — the same as if you had typed it.';
+        if (s.step === 'answered') return 'The answer follows the corrected request, including the blockers you added. The composer is an ordinary composer again.';
+        return 'Press the microphone in the composer and say: “Summarize the main release risks and group them by owner.”';
+      },
+
+      axSubmit: async function (text, ctx) {
+        var s = ctx.s, d = vxSimD(s);
+        var fromVoice = !!d.fromVoice;
+        d.fromVoice = false; d.state = s.opts.nomic ? 'unavailable' : 'ready';
+        s.turns.push({ who: 'you', text: text, voice: fromVoice });
+        var t = { who: 'aria', working: true };
+        s.turns.push(t);
+        s.axText = ''; d.text = ''; s.step = 'working';
+        var mine = s.run = (s.run || 0) + 1;
+        ctx.paint();
+        ctx.announce && ctx.announce('Sent. Aria is working on it.');
+        await wait(1500);
+        if (s.run !== mine) return;
+        var block = /block/i.test(text);
+        var row = function (who, what, b) {
+          return '<li><b>' + who + '</b> — ' + what + (b && block ? ' <span class="sim-vx-block">Blocking launch</span>' : '') + '</li>';
+        };
+        t.working = false;
+        t.html = '<p class="wf-text">Four risks, by owner' + (block ? ' — two block launch' : '') + ':</p>' +
+          '<ul class="sim-vx-list">' +
+            row('Maya · Payments', 'refund webhook retries are not yet verified in staging.', true) +
+            row('Dev · Mobile', 'iOS crash on cold start; the fix is in review.', true) +
+            row('Priya · Data', 'CSV export times out on very large projects; a workaround is documented.', false) +
+            row('Sam · Legal', 'updated terms are waiting on approval.', false) +
+          '</ul>';
+        s.step = 'answered';
+        ctx.paint();
+        ctx.announce && ctx.announce('Aria answered: four risks grouped by owner.');
       },
 
       act: function (a, ctx) {
-        var s = ctx.s;
-        var SAID = 'Compare the onboarding feedback from this quarter with the previous one.';
-        var REPLY = 'Onboarding is the one category that grew: 214 complaints against 168. ' +
-                    'Nearly all of them land in the first session, around connecting a data ' +
-                    'source — the rest of the quarter is down about a fifth.';
-
-        if (a === 'opt:amp') { flip(ctx, 'amp'); return; }
-        if (a === 'opt:err') {
-          s.step = s.step === 'error' ? 'text' : 'error';
-          ctx.paint(); return;
+        var s = ctx.s, d = vxSimD(s);
+        if (a === 'opt:allowed') { flip(ctx, 'allowed'); d.granted = s.opts.allowed; return; }
+        if (a === 'opt:noisy') { flip(ctx, 'noisy'); d.fail = s.opts.noisy; return; }
+        if (a === 'opt:nomic') {
+          flip(ctx, 'nomic');
+          if (window.MaterialSim) MaterialSim.vx.halt(d);
+          d.state = s.opts.nomic ? 'unavailable' : 'ready';
+          return;
         }
         if (a === 'reset') {
           var o = JSON.parse(JSON.stringify(s.opts));
+          MaterialSim.vx.halt(d);
           Object.assign(s, JSON.parse(JSON.stringify(SIMS['voice-input'].initial)));
           s.opts = o; ctx.paint(); return;
         }
-
-        /* Text → voice is a mode change on one element. There is
-           deliberately no transitional step here: a composer that
-           spends a second "connecting" before it can hear you is a
-           composer that lost your first three words. */
-        if (a === 'voice:start') { s.step = 'listening'; ctx.paint(); return; }
-        if (a === 'voice:cancel') { s.step = 'text'; ctx.paint(); return; }
-        if (a === 'voice:retry')  { s.step = 'listening'; ctx.paint(); return; }
-        if (a === 'voice:mute') {
-          s.step = s.step === 'muted' ? 'listening' : 'muted';
-          ctx.paint(); return;
+        if (a === 'vxs:edit') {
+          s.axText = (s.axText || '').replace(/\.\s*$/, '') + ', and highlight anything blocking launch.';
+          d.text = s.axText; d.state = 'editing'; ctx.paint();
+          ctx.announce && ctx.announce('Edited: and highlight anything blocking launch.');
+          return;
         }
-        if (a === 'voice:stop') { s.step = 'text'; ctx.paint(); return; }
-
-        if (a === 'say') {
-          s.step = 'speaking'; ctx.paint();
-          return wait(2400).then(function () {
-            s.turns = s.turns.concat([{ who: 'you', text: SAID }]);
-            s.step = 'processing'; ctx.paint();
-            return wait(1600);
-          }).then(function () {
-            s.turns = s.turns.concat([{ who: 'aria', text: REPLY }]);
-            s.step = 'answer'; ctx.paint();
+        if (/^(voice:start|vx:)/.test(a)) {
+          if (a === 'voice:start' && d.state === 'unavailable') { ctx.announce && ctx.announce('Voice input is unavailable. Type instead.'); return; }
+          if (a === 'voice:start') d.text = s.axText || '';
+          MaterialSim.vx.act(a, d, {
+            root: function () { return document.querySelector('[data-sim-root] .md-vx'); },
+            paint: function () {
+              if (!/^(listening|paused|processing)$/.test(d.state)) s.axText = d.text || '';
+              ctx.paint();
+              /* Focus goes back to the field whenever voice hands over. */
+              if (d.focusField) {
+                d.focusField = false;
+                var f = document.querySelector('[data-sim-root] [data-ax-field]');
+                if (f) { f.focus({ preventScroll: true }); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} }
+              }
+            },
+            announce: function (t) { if (ctx.announce) ctx.announce(t); }
           });
         }
       }
     },
     /* ──────────────────────────────────────────────────────
-       VISUAL INPUT · media
+       VISUAL INPUT · workspace (user brief, 6 Oct)
 
-       purpose   the image IS the evidence — and the instruction
-                 is what turns it into a question
-       context   support triage: a customer has pasted a
-                 screenshot of a crash into a ticket, and an
-                 engineer has ten of these before lunch
-       before    the screenshot arrived on its own, with no
-                 words, which is how they always arrive
-       decision  say what is actually wanted from it, then decide
-                 whether the reading can be trusted given what
-                 the crop cut off
-       after     the answer names the lines it read, asks for the
-                 one further screenshot that would settle the
-                 origin, and both images stay on the ticket
+       purpose   show the agent what you are looking at, under your
+                 control: permission → active sharing → the agent
+                 uses it → stop sharing → the conversation goes on
+       context   a PM reviewing the Q3 metrics dashboard
+       contrast  a blurry upload (Failed: Retry / Replace / Continue
+                 without it) and a video file (Unsupported)
        ────────────────────────────────────────────────────── */
     'visual-input': {
-      shell: 'media',
-      product: 'Mend',
+      shell: 'workspace',
+      product: 'Orbit',
       agent: 'Aria',
-      note: 'A screenshot pasted into a ticket with no words. Attaching it is not asking &mdash; ' +
-            'and the crop cut off the three lines that would say where the crash started.',
+      note: 'Show Aria what you are looking at, and stop showing it whenever you like. Sharing is a ' +
+            'state you can always see, and stopping it never ends the conversation.',
 
-      initial: {
-        step: 'attached',   /* attached · asked · reading · read · reshot */
-        asked: '',
-        images: 1,
-        opts: { wait: true, gaps: true }
+      initial: { turns: [], vi: null, axText: '', step: 'idle', opts: { blurry: false, video: false } },
+
+      title: function () { return 'Q3 metrics &middot; September review'; },
+      pill: function (s) { var v = viSimV(s); return v.sharing ? 'Sharing a window' : s.step === 'working' ? 'Aria working' : ''; },
+
+      tools: function () {
+        var M = md3();
+        return M.button({ variant: 'text', label: 'Last 30 days', attrs: { 'data-act': 'noop' } }) +
+          M.button({ variant: 'text', label: 'Export', attrs: { 'data-act': 'noop' } });
       },
 
-      title: function () { return 'Ticket 4417 &middot; &ldquo;app crashes on save&rdquo;'; },
-      pill: function (s) {
-        if (s.step === 'reshot')   return 'Resolved';
-        if (s.step === 'read')     return 'Needs one more shot';
-        if (s.step === 'reading')  return 'Reading';
-        if (s.step === 'attached') return 'Nothing asked yet';
-        return 'Open';
+      composerOpts: function (s) {
+        var v = viSimV(s);
+        return { visual: v, text: s.axText, ask: 'Ask Aria about the dashboard…', label: 'Message Aria' };
       },
 
-      media: function (s) {
-        var hot = s.step === 'read' || s.step === 'reshot' || s.step === 'reading';
-        var lines = '';
-        for (var i = 0; i < 8; i++) {
-          var cls = '';
-          /* The top line is the crop: it is SHOWN as cut off rather
-             than quietly omitted, because that is the whole reason
-             the agent cannot answer the question it was asked. */
-          if (i === 0 && s.step !== 'reshot')        cls = ' class="is-cut"';
-          if (hot && i >= 3 && i <= 5)               cls = ' class="is-hot"';
-          lines += '<b' + cls + '></b>';
-        }
-        return '<div class="md-vis__frame">' +
-            '<div class="md-vis__shot" role="img" aria-label="Screenshot pasted into the ' +
-            'ticket: eight lines of a stack trace, the top line cut off">' + lines + '</div>' +
-            (s.opts.gaps && hot
-              ? '<span class="md-vis__region' + (s.step === 'reading' ? ' md-vis__region--soft' : '') +
-                '" style="--x:6%;--y:36%;--w:86%;--h:30%"></span>'
-              : '') +
-          '</div>' +
-          '<p class="md-vis__meta">Screenshot &middot; 1440 &times; 900 &middot; pasted by the ' +
-          'customer &middot; kept with this ticket</p>' +
-          (s.step === 'reshot'
-            ? '<div class="md-vis__strip">' +
-              '<button class="md-vis__thumb" type="button" aria-label="First screenshot, kept">' +
-              '<span>1</span></button>' +
-              '<button class="md-vis__thumb is-on" type="button" ' +
-              'aria-label="Second screenshot, scrolled up">' +
-              '<span>2</span></button></div>'
-            : '');
+      addContext: function (i, ctx) {
+        var s = ctx.s, v = viSimV(s);
+        v.nextBad = s.opts.video && i === 0 ? 'video' : s.opts.blurry && i === 0 ? 'blurry' : null;
+        MaterialSim.vi.act('ax:add:' + i, v, viSimIO(ctx));
       },
 
-      reading: function (s) {
-        /* The state this simulator exists for: an image on screen
-           and nothing happening. No spinner, because no answer is
-           coming until somebody says what they want. */
-        if (s.step === 'attached') {
-          return '<p class="md-vis__wait md-body-medium">Attached, and nothing is being asked. ' +
-            'This same screenshot supports at least three different questions &mdash; what the ' +
-            'error is, whether it matches a known bug, or how to fix it &mdash; and they have ' +
-            'three different answers.</p>';
-        }
-
-        if (s.step === 'asked') {
-          return human('You', 'P', esc(s.asked));
-        }
-
-        if (s.step === 'reading') return working('Aria is reading the screenshot&hellip;');
-
-        var head = '<div class="sim-turn">' + mark('md-agentav--sm') +
-          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() +
-          '</div>';
-
-        if (s.step === 'reshot') {
-          return human('You', 'P', esc(s.asked)) + head +
-            '<p class="md-vis__t md-body-medium">With the second screenshot: it starts in the ' +
-            'scheduler&rsquo;s retry loop, and it is the same failure as <b>#4412</b> &mdash; ' +
-            'same null key, same resolver, different caller.</p>' +
-            '<p class="md-vis__gap md-body-small">Both screenshots stay on the ticket with the ' +
-            'lines I read marked, so whoever picks this up next can see what it was decided ' +
-            'on.</p></div></div>';
-        }
-
-        /* read */
-        return human('You', 'P', esc(s.asked)) + head +
-          '<p class="md-vis__t md-body-medium">' +
-          (s.opts.gaps
-            ? 'In the highlighted lines: a null map key in <code>ScheduleResolver</code>. ' +
-              'That is consistent with #4412, but I cannot confirm it from this.'
-            : 'It is the same bug as #4412.') +
-          '</p>' +
-          (s.opts.gaps
-            ? '<p class="md-vis__gap md-body-small">The first three frames are above the crop, ' +
-              'so I cannot see where it started &mdash; and #4412 is identified by its origin, ' +
-              'not by this line. <b>Scroll up three lines and screenshot again.</b></p>'
-            : '<p class="md-vis__gap md-body-small">Stated flatly, with no mention that the ' +
-              'three lines that actually identify #4412 were cropped out of the image.</p>') +
-          '</div></div>';
-      },
-
-      foot: function (s) {
-        if (s.step === 'attached') {
-          return '<span class="sim-doc__who">Attaching is not asking</span>' +
-            button('Ask what the error is', 'ask:what', 'outlined') +
-            button('Ask if it matches #4412', 'ask:match', 'filled') +
-            (s.opts.wait ? '' : button('Send it with no words', 'ask:none', 'text'));
-        }
-        if (s.step === 'read') {
-          return '<span class="sim-doc__who">' +
-            (s.opts.gaps ? 'One specific screenshot would settle it' : 'Answered anyway') +
-            '</span>' +
-            (s.opts.gaps ? button('Send the scrolled-up shot', 'reshoot', 'filled') : '') +
-            button('Start over', 'reset', 'text');
-        }
-        if (s.step === 'reshot' || s.step === 'asked') {
-          return '<span class="sim-doc__who">' +
-            (s.step === 'reshot' ? 'Two images, both kept' : 'Sent') + '</span>' +
-            (s.step === 'asked' ? button('Read it', 'read', 'filled') : '') +
-            button('Start over', 'reset', 'text');
-        }
-        return '<span class="sim-doc__who">Reading</span>';
+      canvas: function (s) {
+        var v = viSimV(s);
+        var tile = function (n, val, d, down) {
+          return '<div class="sim-vi-tile"><span class="sim-vi-k">' + n + '</span><span class="sim-vi-v">' + val + '</span>' +
+            '<span class="sim-vi-d' + (down ? ' is-down' : '') + '">' + d + ' vs Aug</span></div>';
+        };
+        var dash = '<section class="sim-vi-dash' + (v.sharing ? ' is-shared' : '') + '" aria-label="Q3 metrics dashboard">' +
+          (v.sharing ? '<span class="sim-vi-tag">' + MI('visibility') + 'Shared with Aria</span>' : '') +
+          '<div class="sim-vi-tiles">' + tile('Sign-ups', '12,480', '+4%') + tile('Activation', '32%', '−9 pts', true) +
+            tile('Revenue', '£418k', '+12%') + tile('Churn', '2.1%', '±0') + '</div>' +
+          '<div class="sim-vi-chart">' + MaterialSim.vi.thumb('dash') + '</div></section>';
+        var turns = s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'P', esc(t.text) + (t.ctx ? ' <span class="sim-vx-src">' + MI(t.live ? 'screenShare' : 'image') + esc(t.ctx) + '</span>' : ''));
+          if (t.note) return '<p class="sim-vi-note">' + MI(t.icon || 'info') + t.note + '</p>';
+          if (t.working) return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div>' + working(t.working) + '</div></div>';
+          return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() + '</div>' +
+            '<p class="wf-text">' + t.text + '</p>' + (t.used ? '<span class="md-vip__used">' + MI('visibility') + 'Used: ' + esc(t.used) + '</span>' : '') + '</div></div>';
+        }).join('');
+        return '<div class="sim-vi">' + dash + (turns ? '<div class="sim-vi-thread">' + turns + '</div>' : '') +
+          (viSimFoot(s) ? '<div class="sim-doc__foot">' + viSimFoot(s) + '</div>' : '') + '</div>';
       },
 
       controls: function (s) {
-        return [toggle('Wait for an instruction', 'opt:wait', s.opts.wait),
-                toggle('Say what it could not read', 'opt:gaps', s.opts.gaps)];
+        return [toggle('Upload is blurry', 'opt:blurry', s.opts.blurry), toggle('Upload is a video', 'opt:video', s.opts.video)]
+          .concat(s.turns.length ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (!s.opts.wait && s.step === 'attached')
-          return 'With waiting turned off, the image alone is treated as the request. Try ' +
-                 'sending it with no words and watch it answer a question nobody asked.';
-        if (!s.opts.gaps && s.step === 'read')
-          return 'It answered the question it was asked, confidently, from an image missing ' +
-                 'the three lines that would actually identify the bug. Nothing on screen ' +
-                 'says so.';
-        if (s.step === 'attached')
-          return 'An image on screen and nothing happening &mdash; no spinner, no shimmer, ' +
-                 'nothing suggesting an answer is on its way. There is no answer coming, ' +
-                 'because nobody has said what they want yet.';
-        if (s.step === 'read')
-          return 'It names the lines it read, says which part of the trace the crop removed, ' +
-                 'and asks for one specific further screenshot rather than &ldquo;a clearer ' +
-                 'image&rdquo;.';
-        if (s.step === 'reshot')
-          return 'The first screenshot is kept. It is what the question was originally about, ' +
-                 'and a ticket that shows only the image that produced the answer hides the ' +
-                 'one that did not.';
-        return 'The region is soft-edged while it is still being decided and hardens when the ' +
-               'reading settles. Certainty is edge definition, never a second colour.';
+        var v = viSimV(s);
+        if (v.state === 'permission') return 'Sharing starts with a choice, in words: only the window you pick is shared, you will see it while it is on, and you can stop at any time.';
+        if (v.state === 'failed') return 'The image could not be read. Nothing was sent without it and your words are kept: Retry, Replace or Continue without it.';
+        if (v.state === 'unsupported') return 'A video cannot be read here. The panel says what can be used instead — and nothing was added.';
+        if (v.sharing && s.step === 'working') return 'Aria is using the shared window — and only that window. The bar above the composer keeps saying so.';
+        if (v.sharing && s.turns.length) return 'The answer names what it used. Sharing is still on — the red dot and the bar say so. Press Stop sharing; the conversation will carry on.';
+        if (v.sharing) return 'Sharing is active: a persistent bar with a red dot and Stop sharing, and a soft boundary around the shared window — not around the whole screen. Ask your question.';
+        if (s.stopped) return 'Sharing stopped. Aria says it can no longer see the window, and the conversation continues without it.';
+        if (v.item) return 'The image is in the composer as a card you can recognise, next to your words. Nothing is read until you send.';
+        return 'Press + in the composer and choose Share screen to show Aria this dashboard.';
+      },
+
+      axSubmit: async function (text, ctx) {
+        var s = ctx.s, v = viSimV(s), it = v.item, live = !!v.sharing;
+        s.turns.push({ who: 'you', text: text, ctx: live ? 'with the shared window' : it ? 'with ' + it.name : '', live: live });
+        var t = { working: live ? 'Aria is looking at your shared window…' : it ? 'Aria is reading ' + it.name + '…' : 'Aria is thinking…' };
+        s.turns.push(t);
+        s.axText = ''; s.step = 'working';
+        if (it && !live) v.state = 'processing';
+        var mine = s.run = (s.run || 0) + 1;
+        ctx.paint(); ctx.announce && ctx.announce(t.working);
+        await wait(1500); if (s.run !== mine) return;
+        if (it && it.thumb === 'blur') {
+          s.turns.pop(); s.turns.pop(); s.axText = text; v.state = 'failed'; s.step = 'idle'; ctx.paint();
+          ctx.announce && ctx.announce('Couldn’t read the image. Your message is kept.'); return;
+        }
+        t.working = null;
+        if (live) { t.text = 'From your shared window: <b>Activation</b> moved most — down 9 points to 32%. Revenue is up 12%; sign-ups +4%; churn flat.'; t.used = 'Q3 metrics dashboard (shared window)'; }
+        else if (it) { t.text = 'In ' + esc(it.name) + ': sign-ups dipped on 14 Sep and refunds doubled in the last week.'; t.used = it.name; v.item = null; v.state = 'none'; }
+        else if (s.stopped) t.text = 'I can no longer see your screen. From what you shared earlier, start with <b>activation</b>: the drop began the week onboarding changed.';
+        else t.text = 'I only have your words. Share the dashboard and I can point to what changed.';
+        s.step = 'idle'; ctx.paint();
+        ctx.announce && ctx.announce('Aria answered.');
       },
 
       act: function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'opt:wait') { flip(ctx, 'wait'); return; }
-        if (a === 'opt:gaps') { flip(ctx, 'gaps'); return; }
-        if (a === 'reset') {
-          var o = JSON.parse(JSON.stringify(s.opts));
-          Object.assign(s, JSON.parse(JSON.stringify(SIMS['visual-input'].initial)));
-          s.opts = o; ctx.paint(); return;
+        var s = ctx.s, v = viSimV(s);
+        if (a === 'opt:blurry') { flip(ctx, 'blurry'); return; }
+        if (a === 'opt:video') { flip(ctx, 'video'); return; }
+        if (a === 'noop') return;
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS['visual-input'].initial))); s.opts = o; ctx.paint(); return; }
+        if (a.indexOf('vis:ask:') === 0) {
+          s.axText = a === 'vis:ask:1' ? 'Which metrics changed the most from last month?' : 'What should we check first?';
+          if (a === 'vis:ask:2') s.asked2 = true;
+          ctx.paint();
+          var f = document.querySelector('[data-sim-root] [data-ax-field]'); if (f) f.focus({ preventScroll: true });
+          return;
         }
-        if (a.indexOf('ask:') === 0) {
-          var which = a.slice(4);
-          s.asked = which === 'what'  ? 'what is this error?'
-                  : which === 'match' ? 'is this the same bug as #4412?'
-                  :                     '(sent with no words)';
-          s.step = 'asked'; ctx.paint(); return;
+        if (a === 'vi:stopshare') {
+          MaterialSim.vi.act(a, v, viSimIO(ctx));
+          s.stopped = true;
+          s.turns.push({ note: 'Screen sharing stopped — Aria can no longer see your window.', icon: 'stopShare' });
+          ctx.paint(); return;
         }
-        if (a === 'read') {
-          s.step = 'reading'; ctx.paint();
-          return wait(950).then(function () { s.step = 'read'; ctx.paint(); });
-        }
-        if (a === 'reshoot') {
-          s.images = 2; s.step = 'reading'; ctx.paint();
-          return wait(900).then(function () { s.step = 'reshot'; ctx.paint(); });
-        }
+        if (a.indexOf('vi:') === 0) MaterialSim.vi.act(a, v, viSimIO(ctx));
       }
     },
 
     /* ──────────────────────────────────────────────────────
-       HANDWRITING · media
+       HANDWRITING INPUT · conversation (user brief, 6 Oct)
 
-       purpose   write by hand and be understood, without the
-                 product turning the pen into a feature
-       context   a tablet, a pen, and a page of physics working
-                 that is wrong somewhere
-       before    the student has written three lines and cannot
-                 see where it went wrong
-       decision  settle the exponent the recogniser could not
-                 read — because it is the difference between two
-                 different equations
-       after     the ink is untouched, the agent answers the
-                 equation that was actually written, and the
-                 question itself was written with the same pen
-                 into an ordinary field with no mode button
+       purpose   write the request by hand, see exactly what was
+                 recognized, settle what was uncertain, and put it
+                 in the composer yourself
+       context   a designer on a tablet, reviewing onboarding
+       before    "Review onboarding flow" written with a pen
+       decision  the recognizer read "flow" as "flaw?" — choose
+                 the right word before anything joins the message
+       after     the text joins whatever was typed (never replaces
+                 it), marked "From handwriting" with Undo; the ink
+                 travels with it as the original; Aria plans the
+                 review from the corrected words
+       contrast  messy writing → Couldn't recognize (rewrite, retry,
+                 keep original, switch to typing); no pen → the
+                 composer carries on, typing only
        ────────────────────────────────────────────────────── */
     handwriting: {
-      shell: 'media',
-      product: 'Slate',
+      shell: 'conversation',
+      product: 'Orbit',
       agent: 'Aria',
-      note: 'A page of working and a pen. The question is written into an ordinary field &mdash; ' +
-            'there is no handwriting button &mdash; and the one thing the recogniser cannot ' +
-            'settle is the thing that decides the answer.',
+      note: 'Handwriting is a way of writing the request, not a different product. Write, see what was ' +
+            'recognized, settle anything uncertain, and add it to your message yourself.',
 
       initial: {
-        step: 'ink',       /* ink · asked · working · query · answered */
-        asked: '',
-        fixed: false,
-        opts: { keep: true, ask: true }
+        step: 'idle', turns: [], hw: null, axText: '',
+        opts: { messy: false, nopen: false, auto: false }
       },
 
-      title: function () { return 'Physics &middot; problem sheet 4'; },
+      title: function () { return 'Onboarding redesign &middot; design review'; },
       pill: function (s) {
-        if (s.step === 'answered') return 'Answered';
-        if (s.step === 'query')    return 'Needs settling';
-        if (s.step === 'working')  return 'Reading';
-        return 'Ink only';
+        var h = hwSimH(s);
+        if (h.state === 'recognizing') return 'Recognizing';
+        if (/^(pad|writing)$/.test(h.state)) return 'Pen on';
+        if (s.step === 'working') return 'Aria working';
+        return '';
+      },
+      phase: function (s) { return s.step === 'working' ? 'working' : 'idle'; },
+
+      composerOpts: function (s) {
+        var h = hwSimH(s);
+        h.text = s.axText;
+        return { handwriting: h, text: s.axText, label: 'Message Aria', ask: 'Ask Aria about the redesign…' };
       },
 
-      media: function (s) {
-        return '<div class="md-ink" style="max-width:100%">' +
-          (s.opts.keep
-            ? EQ_INK
-            : '<p class="md-voice__none md-body-small">The ink was discarded when it was ' +
-              'recognised. The reading below is now the only version of this working, and ' +
-              'there is nothing left to check it against.</p>') +
-        '</div>' +
-        '<p class="sim-media__cap">Written on the tablet &middot; two lines, one of them ' +
-        'wrong</p>';
+      thread: function (s) {
+        var intro = '<div class="sim-turn">' + mark('md-agentav--sm') +
+          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' +
+          '<p class="wf-text">The onboarding redesign has 6 screens and 3 open comments. Review is due Friday.</p></div></div>';
+        return intro + s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'P', esc(t.text) + (t.ink ? ' <span class="sim-vx-src">' + MI('draw') + (t.attached ? 'from handwriting · original attached' : 'from handwriting') + '</span>' : ''));
+          if (t.working) return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div>' + working('Aria is planning the review…') + '</div></div>';
+          return '<div class="sim-turn">' + mark('md-agentav--sm') +
+            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() + '</div>' + t.html + '</div></div>';
+        }).join('');
       },
 
-      reading: function (s) {
-        if (s.step === 'ink') {
-          return '<p class="md-ink__read md-ink__read--pending md-body-medium">Not recognised ' +
-                 'yet &mdash; and the ink is already a usable record on its own.</p>';
-        }
-
-        var line =
-          '<p class="md-ink__read md-body-medium">' +
-            '<span class="md-ink__word">x</span>' +
-            (s.fixed
-              ? '<span class="md-ink__word md-ink__doubt is-fixed">squared</span>'
-              : '<button class="md-ink__doubt md-ink__word" type="button" data-act="fix" ' +
-                'aria-label="Low confidence, tap to correct: squared or times two">' +
-                (s.opts.ask ? 'squared?' : 'squared') + '</button>') +
-            '<span class="md-ink__word">+ 3x &minus; 4 = 0</span>' +
-          '</p>';
-
-        var out = line;
-
-        if (s.step === 'working') out += working('Aria is reading the page&hellip;');
-
-        /* The agent refuses to answer a question it cannot yet
-           state. An exponent it could not settle is not a typo —
-           it is two different equations, and picking one quietly
-           is how a confident wrong answer gets a source. */
-        if (s.step === 'query') {
-          out += '<div class="sim-turn">' + mark('md-agentav--sm') +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() +
-            '</div><p class="wf-text">Your first line reads either <b>x&sup2; + 3x &minus; 4</b> ' +
-            'or <b>x&times;2 + 3x &minus; 4</b>. Those are different equations and I would ' +
-            'answer them differently &mdash; which did you write?</p></div></div>';
-        }
-
-        if (s.step === 'answered') {
-          out += '<div class="sim-turn">' + mark('md-agentav--sm') +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() +
-            '</div><p class="wf-text">' +
-            (s.fixed || s.opts.ask
-              ? 'Reading it as <b>x&sup2; + 3x &minus; 4 = 0</b>: line one is fine. Line two ' +
-                'factorises it as (x + 4)(x + 1), and those two brackets multiply to +4, not ' +
-                '&minus;4. One of the signs has to flip.'
-              : 'Reading it as <b>x&times;2 + 3x &minus; 4 = 0</b>: that is linear, it solves ' +
-                'to x = 0.8, and there is nothing to factorise &mdash; so line two should not ' +
-                'exist at all.') +
-            '</p>' +
-            (!s.opts.ask
-              ? '<p class="md-vis__gap md-body-small">It picked a reading rather than asking, ' +
-                'and answered a different equation from the one on the page.</p>'
-              : '') +
-            '</div></div>';
-        }
-
-        return out;
-      },
-
-      /* The question is written into an ORDINARY FIELD with the same
-         pen. There is no handwriting button here and there should
-         not be one — the platform already does this. */
       foot: function (s) {
-        var f = '<label class="md-ink__field" style="max-width:100%">' +
-          (s.asked
-            ? '<span class="md-ink__value md-body-medium">' + esc(s.asked) + '</span>' +
-              '<span class="md-ink__caret" aria-hidden="true"></span>'
-            : '<span class="md-ink__value md-ink__value--ghost md-body-medium">' +
-              'Ask about this working</span>') +
-        '</label>';
-
-        var bar = s.step === 'answered'
-          ? button('Start over', 'reset', 'text')
-          : s.step === 'query'
-            ? '<span class="sim-doc__who">Settle the reading above</span>' +
-              button('It was x squared', 'fix', 'filled') +
-              button('Start over', 'reset', 'text')
-            : s.asked
-              ? button('Send it', 'send', 'filled') + button('Start over', 'reset', 'text')
-              : '<span class="sim-doc__who">No mode, no button &mdash; just write</span>' +
-                button('Write the question with the pen', 'write', 'filled');
-
-        return f + '<div class="sc-bar" style="width:100%">' + bar + '</div>';
+        var h = hwSimH(s);
+        if (h.state === 'pad' && !s.opts.messy) return '<span class="sim-doc__who">Draw on the pad, or let the pen write the scenario</span>' + button('Write “Review onboarding flow”', 'hw:sample', 'tonal');
+        if (h.state === 'recognized') return '<span class="sim-doc__who">One word is uncertain — tap “flaw?” and choose</span>';
+        if (h.state === 'editing') return '<span class="sim-doc__who">Corrected. Add it to the message when it reads right</span>';
+        if (h.state === 'inserted') return '<span class="sim-doc__who">In the composer, marked “From handwriting”. Nothing is sent until you send</span>';
+        if (s.step === 'answered') return '<span class="sim-doc__who">The composer is ready for the next request — typed or written</span>' + button('Start over', 'reset', 'text');
+        return '';
       },
 
       controls: function (s) {
-        return [toggle('Keep the ink', 'opt:keep', s.opts.keep),
-                toggle('Ask rather than guess a reading', 'opt:ask', s.opts.ask)];
+        return [toggle('Messy writing', 'opt:messy', s.opts.messy),
+                toggle('Convert automatically', 'opt:auto', s.opts.auto),
+                toggle('No pen or touch', 'opt:nopen', s.opts.nopen)];
       },
 
       hint: function (s) {
-        if (!s.opts.keep && s.step !== 'ink')
-          return 'The ink is gone, so the reading is the only record. Nobody &mdash; not the ' +
-                 'student, not the agent, not a marker &mdash; can now tell whether the ' +
-                 'exponent was read correctly.';
-        if (s.step === 'answered' && !s.opts.ask)
-          return 'It guessed a reading and answered the wrong equation, confidently, with the ' +
-                 'student&rsquo;s own page as its apparent source.';
-        if (s.step === 'query')
-          return 'It will not answer a question it cannot yet state. An exponent it could not ' +
-                 'settle is not a typo &mdash; it is two different equations.';
-        if (s.step === 'answered')
-          return 'The ink never changed, which is what let the reading be corrected rather ' +
-                 'than argued about. The answer is about the maths; nothing in it mentions ' +
-                 'the pen.';
-        if (s.asked)
-          return 'That sentence was handwritten into an ordinary text field. No mode was ' +
-                 'entered, no canvas opened, and what the agent receives is text.';
-        if (s.step === 'ink')
-          return 'Ink first. The page is already a record before any recogniser has looked at ' +
-                 'it, which is why discarding it later is a choice rather than a necessity.';
-        return 'The reading sits under the ink, never over it.';
+        var h = hwSimH(s);
+        if (s.opts.nopen) return 'No pen or touch on this device, so handwriting says it is unavailable — and the composer carries on exactly as before. Typing never depends on it.';
+        if (h.state === 'pad') return 'The pad opens above the composer, which stays where it was — and keeps anything you had typed. Undo removes the last stroke; Clear starts again; Close adds nothing.';
+        if (h.state === 'writing') return 'Your ink is the original. Nothing is recognized until you press Recognize' + (h.mode === 'auto' ? ' — or, in automatic mode, until you pause.' : '.');
+        if (h.state === 'recognizing') return 'Recognizing. The ink stays in view under a slow sheen, so you can see what is being read.';
+        if (h.state === 'recognized') return 'Three layers, kept apart: your handwriting, the recognized text, and — not yet — accepted text. “flaw?” is uncertain, so Add to message waits until you choose.';
+        if (h.state === 'editing') return 'You chose the word. The corrected text is still only recognized, not accepted — Add to message is the step that accepts it.';
+        if (h.state === 'failed') return 'Too little could be read to trust, so nothing was guessed. The ink is kept: Rewrite, Retry, Keep original (sent as an image), or switch to typing.';
+        if (h.state === 'inserted') return 'Accepted. The words joined what was already in the composer — never replacing it — marked “From handwriting” with Undo, and the ink rides along as the original.';
+        if (s.step === 'working') return 'Aria works from the words you accepted. The handwriting is context, not the instruction.';
+        if (s.step === 'answered') return 'The plan follows the corrected request — “flow”, not “flaw”. The composer is an ordinary composer again.';
+        return 'Press the pen in the composer and write: “Review onboarding flow”.';
+      },
+
+      axSubmit: async function (text, ctx) {
+        var s = ctx.s, h = hwSimH(s);
+        var ink = !!h.fromInk, att = !!h.attachInk;
+        h.fromInk = false; h.attachInk = false; h.keptOnly = false; h.state = s.opts.nopen ? 'unavailable' : 'ready';
+        s.turns.push({ who: 'you', text: text, ink: ink, attached: att });
+        var t = { who: 'aria', working: true };
+        s.turns.push(t);
+        s.axText = ''; h.text = ''; s.step = 'working';
+        var mine = s.run = (s.run || 0) + 1;
+        ctx.paint();
+        ctx.announce && ctx.announce('Sent. Aria is working on it.');
+        await wait(1500);
+        if (s.run !== mine) return;
+        var flow = /flow/i.test(text);
+        t.working = false;
+        t.html = flow
+          ? '<p class="wf-text">A review of the onboarding <b>flow</b>, screen by screen:</p>' +
+            '<ol class="sim-vx-list">' +
+              '<li><b>Welcome → Workspace name</b> — 2 of 3 open comments are here; the skip link is easy to miss.</li>' +
+              '<li><b>Invite teammates</b> — check the empty state and the “Later” path.</li>' +
+              '<li><b>Connect a source</b> — the longest step in testing (median 48s).</li>' +
+              '<li><b>First project</b> — confirm the template picker matches the new copy.</li>' +
+            '</ol><p class="wf-text">I’ll leave review notes on each screen; nothing is changed in the file.</p>'
+          : '<p class="wf-text">I’m not sure what to review from “' + esc(text) + '”. Did you mean the onboarding <b>flow</b>?</p>';
+        s.step = 'answered';
+        ctx.paint();
+        ctx.announce && ctx.announce('Aria answered with a four-step review plan.');
+      },
+
+      after: function (root, s, ctx) {
+        var h = hwSimH(s), wrap = root.querySelector('.md-hw');
+        if (wrap && window.MaterialSim) MaterialSim.hw.bind(wrap, h, hwSimIO(ctx));
       },
 
       act: function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'opt:keep') { flip(ctx, 'keep'); return; }
-        if (a === 'opt:ask')  { flip(ctx, 'ask');  return; }
+        var s = ctx.s, h = hwSimH(s);
+        if (a === 'opt:messy') { flip(ctx, 'messy'); h.messy = s.opts.messy; return; }
+        if (a === 'opt:auto') { flip(ctx, 'auto'); h.mode = s.opts.auto ? 'auto' : 'review'; return; }
+        if (a === 'opt:nopen') {
+          h.run = (h.run || 0) + 1;
+          flip(ctx, 'nopen');
+          h.state = s.opts.nopen ? 'unavailable' : 'ready';
+          ctx.paint(); return;
+        }
         if (a === 'reset') {
           var o = JSON.parse(JSON.stringify(s.opts));
+          if (h) h.run = (h.run || 0) + 1;
           Object.assign(s, JSON.parse(JSON.stringify(SIMS.handwriting.initial)));
           s.opts = o; ctx.paint(); return;
         }
-        if (a === 'write') { s.asked = 'is this working right?'; ctx.paint(); return; }
-        if (a === 'fix')   { s.fixed = true; s.step = 'answered'; ctx.paint(); return; }
-        if (a === 'send') {
-          s.step = 'working'; ctx.paint();
-          return wait(1000).then(function () {
-            s.step = s.opts.ask ? 'query' : 'answered';
-            ctx.paint();
-          });
+        if (a.indexOf('hw:') === 0) {
+          if (a === 'hw:open' && /^(pad|writing|recognized|editing|failed)$/.test(h.state)) a = 'hw:close';
+          /* The composer is the source of truth for what was typed. */
+          if (!/^(pad|writing|recognizing|recognized|editing|failed)$/.test(h.state) || a === 'hw:insert' || a === 'hw:edit' || a === 'hw:keep') h.text = s.axText || '';
+          if (a === 'hw:sample' && s.opts.messy) h.messy = true;
+          MaterialSim.hw.act(a, h, hwSimIO(ctx));
         }
       }
     },
-
     /* ──────────────────────────────────────────────────────
-       GESTURE INPUT · screen
+       GESTURE INPUT · workspace (user brief, 6 Oct)
 
-       purpose   make something already on screen the subject of
-                 the next request, without describing it
-       context   an analytics dashboard on a Monday morning,
-                 where the interesting thing is a shape rather
-                 than a number anybody can name
-       before    the reader has spotted a rise they cannot
-                 account for and has no vocabulary for it —
-                 "that bit on the right" is the honest version
-       decision  circle it, tap it, or reach it from the
-                 keyboard; then whether the region the product
-                 snapped to is the one they meant
-       after     the answer names the region it read before it
-                 states a conclusion, and the region stays
-                 attached so it can be asked about again
+       purpose   point at what is on screen so the request can say
+                 "this" — contextual selection only, never an action
+       context   an analyst on the self-serve dashboard
+       flow      Select on screen → circle the Conversion chart →
+                 [Selected: Conversion chart] in the composer →
+                 "Why did this drop?" → Aria names the chart it used
+                 → clear it and choose another
+       contrast  a circle over two things asks which (nothing is
+                 guessed); Tab + Enter selects the same targets
        ────────────────────────────────────────────────────── */
     gesture: {
-      shell: 'screen',
+      shell: 'workspace',
       product: 'Prism',
       agent: 'Aria',
-      note: 'A rise nobody can name. Circle it, tap the series, or reach it from the keyboard ' +
-            '&mdash; all three attach the same region to the composer, and the answer says ' +
-            'which region it read.',
+      note: 'Point at what you mean, and it joins your request by name. A gesture only points — it never ' +
+            'changes anything — and when it could mean two things, Aria asks.',
+      halo: false,
 
-      initial: {
-        step: 'idle',        /* idle · layer · drawing · reading · region · attached · working · done */
-        region: null,        /* what is attached: { label, exact } */
-        question: '',
-        failed: false,
-        opts: { snap: true }
-      },
+      initial: { turns: [], ge: null, axText: '', step: 'idle', opts: { messy: false, auto: false, multi: false } },
 
       title: function () { return 'Self-serve &middot; September'; },
       pill: function (s) {
-        if (s.step === 'working') return 'Reading the region';
-        if (s.step === 'done')    return 'Answered';
-        if (s.region)             return 'Region attached';
-        if (s.step !== 'idle')    return 'Selecting';
-        return 'Dashboard';
+        var g = geSimG(s);
+        if (g.state === 'selecting') return 'Selecting';
+        if (g.state === 'using' || s.step === 'working') return 'Aria working';
+        if ((g.sels || []).length) return (g.sels.length > 1 ? g.sels.length + ' selections' : '1 selection');
+        return '';
       },
 
-      /* The chart is scaffolding and stays quiet: the pattern is the
-         layer over it, not the data under it. The columns highlight
-         only once a region covers them, so "what is selected" is
-         legible in the content itself and not only in the outline. */
-      screen: function (s) {
-        var COLS = [['3', 34], ['5', 41], ['7', 36], ['9', 45], ['11', 38],
-                    ['13', 74], ['15', 88], ['17', 96], ['19', 90]];
-        var hot = !!s.region || s.step === 'region' || s.step === 'reading';
-        var body =
-          '<div class="md-sel__screen">' +
-            '<p class="md-sel__head">Weekly revenue</p>' +
-            '<p class="md-sel__sub">Self-serve &middot; September</p>' +
-            '<div class="md-sel__chart" role="img" aria-label="Weekly revenue, flat until ' +
-              '12 September and rising sharply after it">' +
-              COLS.map(function (c, i) {
-                return '<span class="md-sel__col' + (hot && i >= 5 ? ' md-sel__col--hot' : '') +
-                       '" style="--h:' + c[1] + '%"><i></i><b>' + c[0] + '</b></span>';
-              }).join('') +
-            '</div>' +
-          '</div>';
-
-        var REGION = '--x:55%;--y:12%;--w:41%;--h:70%';
-        var layer = '';
-
-        if (s.step === 'layer' || s.step === 'drawing' || s.step === 'reading' ||
-            s.step === 'region') {
-          var inner = '';
-
-          if (s.step === 'drawing' || (s.step === 'layer' && s.failed)) {
-            /* The mark, as drawn. It is discarded the moment it
-               becomes a region — an outline and a stroke on screen
-               at once is two claims about the same selection. */
-            inner = '<svg class="md-sel__ink" viewBox="0 0 400 200" aria-hidden="true">' +
-              (s.failed
-                ? '<path d="M44 52c28-15 58-11 76 5"/>'
-                : '<path d="M232 26c58-8 132 6 148 54 14 42-6 96-54 108-46 12-104 6-122-28' +
-                  '-14-26-10-58 2-78"/>') + '</svg>';
-          }
-
-          if (s.step === 'reading') {
-            inner = '<div class="md-sel__region md-sel__region--soft" style="' + REGION + '">' +
-              '<span class="md-sel__label">Reading the selection&hellip;</span></div>';
-          }
-
-          if (s.step === 'region') {
-            inner = '<div class="md-sel__region" style="' + REGION + '">' +
-              '<span class="md-sel__label">' + esc(regionName(s)) + '</span>' +
-              '<span class="md-sel__h md-sel__h--nw"></span>' +
-              '<span class="md-sel__h md-sel__h--se"></span></div>';
-          }
-
-          layer = '<div class="md-sel__layer" role="dialog" aria-modal="true" ' +
-            'aria-label="Select something to ask about">' + inner +
-            '<p class="md-sel__teach md-body-small">' +
-              (s.failed
-                ? 'Nothing selectable inside that area.'
-                : 'Circle, highlight, scribble or tap anything.') +
-            '</p></div>';
-        }
-
-        /* Outside the layer the same regions are reachable by focus.
-           Not a fallback bolted on: it is on screen in the ordinary
-           state, which is the only way it gets maintained. */
-        var kbd = (s.step === 'idle' && !s.region)
-          ? '<button class="md-sel__focusable" type="button" data-act="kbd" style="' +
-            REGION + '" aria-label="Select the 12 to 19 September revenue region"></button>'
-          : '';
-
-        return '<div class="md-sel"><div class="md-sel__stage">' + body + layer + kbd +
-               '</div></div>';
+      tools: function () {
+        var M = md3();
+        return M.button({ variant: 'text', label: 'Last 30 days', attrs: { 'data-act': 'noop' } }) +
+          M.button({ variant: 'text', label: 'Share', attrs: { 'data-act': 'noop' } });
       },
 
-      /* The composer is where the selection has to become legible.
-         A region that changed the answer but left no trace here
-         would be an invisible term in the request. */
-      compose: function (s) {
-        if (s.step === 'layer' || s.step === 'drawing' || s.step === 'reading') {
-          return '<p class="sim-doc__who">Nothing is sent while the selection is being ' +
-                 'made. Draw, then check what it matched.</p>';
-        }
-        if (s.step === 'region') {
-          return '<div class="md-sel__bar">' +
-            button('Use this region', 'attach', 'filled') +
-            '<span class="md-sel__q md-body-small" style="opacity:.7">Drag a corner first if ' +
-            'it caught the wrong weeks &mdash; nothing has been sent.</span></div>';
-        }
-
-        var chipEl = s.region
-          ? '<button class="md-sel__chip" type="button" data-act="clear" ' +
-            'aria-label="Remove ' + esc(s.region.label) + '">' +
-              MI('visibility', 'md-sel__chip-i') +
-              esc(s.region.label) +
-              '<span class="md-sel__x" aria-hidden="true">&times;</span></button>'
-          : '<button class="md-button md-button--outlined md-button--sm" type="button" ' +
-            'data-act="invoke">Ask about this screen</button>';
-
-        return '<form class="md-sel__bar">' + chipEl +
-          '<input class="md-sel__q" data-input type="text" ' +
-          'value="' + esc(s.question) + '" ' +
-          'aria-label="Ask about the selected region" ' +
-          'placeholder="' + (s.region ? 'Ask about this' : 'Ask about the dashboard') + '" />' +
-          (s.step === 'working' ? working('Reading the region&hellip;') : '') +
-        '</form>';
+      composerOpts: function (s) {
+        var g = geSimG(s);
+        return { gesture: g, text: s.axText, busy: g.state === 'using',
+                 ask: g.describe ? 'Describe what you mean — e.g. “the conversion chart”…' : 'Ask Aria about the dashboard…', label: 'Message Aria' };
       },
 
-      answer: function (s) {
-        if (s.step !== 'done') return '';
-        var exact = s.region && s.region.exact;
-        return '<div class="sim-turn">' + mark('md-agentav--sm') +
-          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-          chip() + '</div>' +
-          '<p class="wf-text">In <b>' + esc(s.region.label) + '</b>: the rise starts on ' +
-          '12 September, the day self-serve trials went from 7 days to 14. Nothing else ' +
-          'shipped that week.' +
-          (exact
-            ? ''
-            : ' I could only use the area you drew rather than a named series, so treat the ' +
-              'week boundaries as approximate.') +
-          '</p></div></div>';
-      },
-
-      foot: function (s) {
-        if (s.step === 'idle' && !s.region) {
-          return '<span class="sim-doc__who">Three routes to the same region</span>' +
-            button('Circle the rise', 'draw', 'outlined') +
-            button('Tap the series', 'tap', 'outlined') +
-            button('Reach it from the keyboard', 'kbd', 'outlined') +
-            button('Circle empty space', 'miss', 'text');
-        }
-        if (s.step === 'layer' && !s.failed) {
-          return '<span class="sim-doc__who">Inside the layer</span>' +
-            button('Circle the rise', 'draw', 'filled') +
-            button('Tap the series', 'tap', 'outlined') +
-            button('Close', 'reset', 'text');
-        }
-        if (s.step === 'layer' && s.failed) {
-          return '<span class="sim-doc__who">Nothing under the mark</span>' +
-            button('Tap the series instead', 'tap', 'filled') +
-            button('Close', 'reset', 'text');
-        }
-        if (s.step === 'region') {
-          return '<span class="sim-doc__who">Before anything is sent</span>' +
-            button('Drag the left edge in', 'adjust', 'outlined') +
-            button('Start over', 'reset', 'text');
-        }
-        if (s.region && s.step !== 'working') {
-          return '<span class="sim-doc__who">With the region attached</span>' +
-            button('Ask why it happened', 'ask', 'filled') +
-            button('Start over', 'reset', 'text');
-        }
-        return '<span class="sim-doc__who">Working</span>';
+      canvas: function (s) {
+        var g = geSimG(s);
+        var turns = s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'P', esc(t.text) + (t.sel ? ' <span class="sim-vx-src">' + MI('lasso') + esc(t.sel) + '</span>' : ''));
+          if (t.note) return '<p class="sim-vi-note">' + MI(t.icon || 'info') + t.note + '</p>';
+          if (t.working) return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div>' + working(t.working) + '</div></div>';
+          return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() + '</div>' +
+            '<p class="wf-text">' + t.text + '</p>' + (t.used ? '<span class="md-vip__used">' + MI('visibility') + 'Used: ' + esc(t.used) + '</span>' : '') + '</div></div>';
+        }).join('');
+        var foot = geSimFoot(s);
+        return '<div class="sim-vi sim-ge">' + MaterialSim.ge.dash(g, false) + (turns ? '<div class="sim-vi-thread">' + turns + '</div>' : '') +
+          (foot ? '<div class="sim-doc__foot">' + foot + '</div>' : '') + '</div>';
       },
 
       controls: function (s) {
-        return [toggle('Snap to objects the product knows', 'opt:snap', s.opts.snap)];
+        return [toggle('Circle covers two things', 'opt:messy', s.opts.messy), toggle('Add automatically', 'opt:auto', s.opts.auto),
+                toggle('Allow more than one', 'opt:multi', s.opts.multi)]
+          .concat(s.turns.length ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (!s.opts.snap && s.region)
-          return 'Without snapping the region is raw pixels. It still works &mdash; but it ' +
-                 'cannot be named, the answer has to hedge, and the same question cannot be ' +
-                 're-run next week and mean the same thing.';
-        if (s.failed)
-          return 'The mark matched nothing the product can identify. It says what it found ' +
-                 'rather than inventing a label, because a confident wrong label is worse ' +
-                 'than no label.';
-        if (s.step === 'done')
-          return 'The answer names the region before it states a conclusion, and the chip is ' +
-                 'still there &mdash; so the same region can be asked about again without ' +
-                 'drawing it twice.';
-        if (s.region)
-          return 'The region is now a term in the request. Remove it and the question ' +
-                 'survives; ask it again and it means the same thing.';
-        if (s.step === 'region')
-          return 'Snapped, and adjustable. Nothing has been sent: a selection that acts the ' +
-                 'moment it is drawn cannot be corrected, only undone.';
-        if (s.step !== 'idle')
-          return 'The screen is frozen and dimmed one step. That is what lets a drag mean ' +
-                 '&ldquo;select&rdquo; here and go on meaning &ldquo;scroll&rdquo; everywhere ' +
-                 'else in the product.';
-        return 'The rise on the right has no name, which is exactly why it is hard to ask ' +
-               'about. Circling it costs one stroke; describing it costs a paragraph and ' +
-               'still leaves the agent guessing. Hover or tab over the rise to find the ' +
-               'same region without drawing anything.';
+        var g = geSimG(s);
+        if (g.state === 'selecting') return 'Selecting is a mode you can see: a toolbar on the dashboard, Cancel, and Escape. Circle, highlight, tap or drag a box — or Tab to any tile and press Enter. Nothing is shared by pointing.';
+        if (g.state === 'made') return 'The chart has a boundary and a bar that names it. It is not in the message yet: Add to message, Adjust, or Clear.';
+        if (g.state === 'failed') return (g.cands || []).length ? 'The circle covered two things, so Aria asks which — it does not guess. Choose one, try again, or describe it in words.' : 'Nothing selectable was there. Try again, or describe it in words.';
+        if (g.state === 'using') return 'Aria is looking at the Conversion chart — and only the chart. The chart says so, and the chip in the composer is outlined.';
+        if (g.state === 'cleared') return 'Cleared. Aria won’t use the chart any more, and the conversation carries on. Select something else, or keep typing.';
+        if (g.state === 'added' && s.turns.length) return 'The answer names the chart it used. The selection stays for follow-ups — clear it when you are done, or choose another.';
+        if (g.state === 'added') return 'The selection is in the composer by name — “Selected: Conversion chart” — with ✕. Ask your question.';
+        return 'Press Select on screen in the composer, then circle the conversion chart.';
       },
 
-      submit: function (v, ctx) {
-        ctx.s.question = v;
-        if (!v.trim()) { ctx.paint(); return; }
-        return run(ctx);
+      axSubmit: async function (text, ctx) {
+        var s = ctx.s, g = geSimG(s), M = MaterialSim.ge;
+        var sels = (g.sels || []).slice(), sel = sels.map(function (x) { return M.label(g, x); }).join(' · ');
+        g.describe = false;
+        s.turns.push({ who: 'you', text: text, sel: sel });
+        var t = { working: sels.length ? 'Aria is looking at the ' + sels.map(function (x) { return x.label; }).join(' and ') + '…' : 'Aria is thinking…' };
+        s.turns.push(t);
+        s.axText = ''; s.step = 'working';
+        if (sels.length) g.state = 'using';
+        var mine = s.run = (s.run || 0) + 1;
+        ctx.paint(); ctx.announce && ctx.announce(t.working);
+        await wait(1500); if (s.run !== mine) return;
+        var has = function (id) { return sels.some(function (x) { return x.id === id; }); };
+        t.working = null;
+        if (has('conversion') && has('funnel')) { t.text = 'Together: conversion fell from <b>4.1% to 2.9%</b> from 14 Sep, and the funnel shows where — <b>Activate</b> is the step that dropped.'; t.used = 'Conversion chart, Funnel table'; }
+        else if (has('conversion')) { t.text = 'In the <b>Conversion chart</b>: conversion fell from about 4.1% to 2.9% starting <b>14 Sep</b> — the week the new sign-up form shipped. Sign-ups held steady, so the drop happens after sign-up.'; t.used = 'Conversion chart'; }
+        else if (has('funnel')) { t.text = 'In the <b>Funnel table</b>: 18% sign up, but only 6.1% activate — the biggest step down is from sign-up to activation.'; t.used = 'Funnel table'; }
+        else if (sels.length) { t.text = 'In the ' + esc(sels[0].label) + ': ' + (sels[0].id === 'activation' ? 'activation fell 9 points to 32% — the same week conversion dropped.' : 'nothing moved more than 5% this month.'); t.used = sels[0].label; }
+        else t.text = 'Which part do you mean? Select it on the dashboard, or name it — “the conversion chart”.';
+        if (g.state === 'using') g.state = 'added';
+        s.step = 'idle'; ctx.paint();
+        ctx.announce && ctx.announce('Aria answered' + (t.used ? ', using the ' + t.used : '') + '.');
+      },
+
+      after: function (root, s, ctx) {
+        var g = geSimG(s);
+        if (window.MaterialSim) MaterialSim.ge.bind(root, g, geSimIO(ctx));
+        if (g.focusDash) { g.focusDash = false; setTimeout(function () { var f = root.querySelector('.md-ge__tool[aria-checked="true"], .md-ge__hit'); if (f) f.focus({ preventScroll: true }); }, 0); }
       },
 
       act: function (a, ctx) {
-        var s = ctx.s;
-
-        if (a === 'opt:snap') { flip(ctx, 'snap'); return; }
-
-        if (a === 'reset') {
-          var snap = s.opts.snap;
-          Object.assign(s, JSON.parse(JSON.stringify(SIMS.gesture.initial)));
-          s.opts.snap = snap; ctx.paint(); return;
-        }
-
-        if (a === 'invoke') { s.failed = false; s.step = 'layer'; ctx.paint(); return; }
-
-        if (a === 'miss') {
-          s.failed = true; s.step = 'layer'; ctx.paint(); return;
-        }
-
-        /* Drawing is the one place the simulator has to fake an
-           input it cannot receive: the stroke, the close, and the
-           snap are three separate beats because conflating them is
-           precisely how this pattern goes wrong in production. */
-        if (a === 'draw') {
-          s.failed = false; s.step = 'drawing'; ctx.paint();
-          return wait(620).then(function () {
-            s.step = 'reading'; ctx.paint();
-            return wait(560);
-          }).then(function () {
-            s.step = 'region'; ctx.paint();
-          });
-        }
-
-        /* A tap on something the product already knows is the
-           fastest form of the pattern, and skips the classification
-           entirely — there is nothing to infer. */
-        if (a === 'tap') {
-          s.failed = false; s.step = 'region'; ctx.paint(); return;
-        }
-
-        if (a === 'adjust') {
-          s.adjusted = true; s.step = 'region'; ctx.paint(); return;
-        }
-
-        if (a === 'attach' || a === 'kbd') {
-          s.region = { label: regionName(s), exact: !!s.opts.snap };
-          s.step = 'idle';
-          ctx.paint();
+        var s = ctx.s, g = geSimG(s);
+        if (a === 'opt:messy') { flip(ctx, 'messy'); g.messy = s.opts.messy; return; }
+        if (a === 'opt:auto') { flip(ctx, 'auto'); g.auto = s.opts.auto; return; }
+        if (a === 'opt:multi') { flip(ctx, 'multi'); g.multi = s.opts.multi; return; }
+        if (a === 'noop') return;
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); if (g) g.demoRun = (g.demoRun || 0) + 1; Object.assign(s, JSON.parse(JSON.stringify(SIMS.gesture.initial))); s.opts = o; ctx.paint(); return; }
+        if (a === 'ges:ask') {
+          s.axText = s.turns.length ? 'What changed in this?' : 'Why did this drop?'; ctx.paint();
+          var f = document.querySelector('[data-sim-root] [data-ax-field]'); if (f) f.focus({ preventScroll: true });
           return;
         }
-
-        if (a === 'clear') {
-          /* The question stays. Throwing away somebody's sentence to
-             undo their selection is a second action they did not
-             ask for. */
-          s.region = null; s.step = 'idle'; ctx.paint(); return;
+        if (a === 'ge:clear' && g.state === 'added') {
+          var lbl = g.sels.map(function (x) { return x.label; }).join(' and ');
+          MaterialSim.ge.act(a, g, geSimIO(ctx));
+          s.turns.push({ note: 'Selection cleared — Aria won’t use the ' + esc(lbl) + '.', icon: 'check' }); ctx.paint(); return;
         }
-
-        if (a === 'ask') {
-          s.question = s.question || 'why did this happen?';
-          return run(ctx);
+        if (a.indexOf('ge:remove:') === 0) {
+          var x = (g.sels || [])[+a.slice(10)];
+          MaterialSim.ge.act(a, g, geSimIO(ctx));
+          if (x && s.turns.length) { s.turns.push({ note: 'Removed ' + esc(x.label) + ' — Aria won’t use it.', icon: 'check' }); ctx.paint(); }
+          return;
         }
+        if (a.indexOf('ge:') === 0) MaterialSim.ge.act(a, g, geSimIO(ctx));
       }
     },
-
     /* ──────────────────────────────────────────────────────
-       STRUCTURED INPUT · composer
+       STRUCTURED INPUT · conversation (user brief, 6 Oct)
 
-       purpose   take the sentence first, then ask only for the
-                 two or three things that change the answer
-       context   a research tool where "a report on churn" is a
-                 completely reasonable request and eight
-                 different reports would satisfy it
-       before    somebody typed one line and expected work to
-                 start
-       decision  answer the constraints that matter, or skip one
-                 and accept the stated assumption
-       after     the answer carries its constraints, so it can be
-                 changed in one place and re-run into a
-                 comparable number
+       purpose   when a request needs exact values, the agent asks
+                 with a compact form — suggestions marked, every
+                 value editable, the consequential step confirmed
+       flow      "Create a follow-up task for this blocker" → a form
+                 (Task, Owner Maya [suggested], Due 12 Oct, High) →
+                 change the due date → review → Create task → task
+                 created, with what Aria received → outcome
+       contrast  Orbit down → Couldn't submit, everything kept
        ────────────────────────────────────────────────────── */
     'structured-input': {
-      shell: 'composer',
-      product: 'Quarry',
+      shell: 'conversation',
+      product: 'Orbit',
       agent: 'Aria',
-      note: 'One sentence, and eight different reports would satisfy it. Watch what it asks ' +
-            'for &mdash; and what it does when you decline to answer.',
+      note: 'Open input for the request, a small form for the exact values. Suggestions are offers you can see ' +
+            'and change; creating the task waits for you.',
 
-      initial: {
-        step: 'draft',     /* draft · reading · asking · running · done */
-        req: 'Create a customer research report on mid-market churn.',
-        /* The request starts in the SHARED composer's own field.
-           The page's argument is that nothing special stands in
-           front of a request like this one, and the way to make
-           that argument is to use the composer every other page
-           already has. */
-        axText: 'Create a customer research report on mid-market churn.',
-        audience: null, range: null, sources: null,
-        rangeDefault: false,
-        rerun: false,
-        opts: { restraint: true, skippable: true }
-      },
+      initial: { step: 'idle', turns: [], si: null, axText: '', opts: { down: false, nosug: false } },
 
-      title: function () { return 'New report'; },
+      title: function () { return 'Blocker EXP-210 &middot; CSV export'; },
       pill: function (s) {
-        if (s.rerun)              return 'Re-run';
-        if (s.step === 'done')    return 'Answered';
-        if (s.step === 'asking')  return 'Needs three things';
-        if (s.step === 'running') return 'Working';
-        return 'Draft';
+        var f = s.si;
+        if (f && f.busy) return 'Creating task';
+        if (f && f.state === 'submitted') return 'Task created';
+        if (f && !f.closed) return 'Form open';
+        return '';
       },
+      phase: function (s) { return s.step === 'working' ? 'working' : 'idle'; },
 
-      context: function () {
-        return '<p class="sim-ctx__t">Eight different reports would satisfy this sentence. ' +
-               'Two of the differences between them matter; the rest have sensible ' +
-               'answers already.</p>';
-      },
+      composerOpts: function () { return { label: 'Message Aria', ask: 'Ask Aria about the blocker…' }; },
 
-      stage: function (s) {
-        var kinds = true;
-        function chipEl(kind, value, cls, act) {
-          return '<button class="md-echip' + (cls ? ' ' + cls : '') + '" type="button"' +
-                 (act ? ' data-act="' + act + '"' : '') + '>' +
-                 (kinds && kind ? '<span class="md-echip__k">' + kind + '</span>' : '') +
-                 value + '</button>';
-        }
-        function settled() {
-          var rows = [];
-          if (s.audience) rows.push(chipEl('audience', s.audience, '', 'edit:audience'));
-          if (s.rangeDefault) {
-            rows.push('<button class="md-echip md-echip--default" type="button" ' +
-              'data-act="edit:range" aria-label="Period, default: last 12 months">' +
-              '<span class="md-echip__k">period</span>last 12 months &middot; default</button>');
-          } else if (s.range) {
-            rows.push(chipEl('period', s.range, '', 'edit:range'));
-          }
-          if (s.sources) rows.push(chipEl('sources', s.sources, '', 'edit:sources'));
-          return rows.length
-            ? '<div class="md-struct__set"><span class="md-struct__setk">Using</span>' +
-              rows.join('') + '</div>'
-            : '';
-        }
-
-        var REQ = '<p class="md-struct__req">' + esc(s.req) + '</p>';
-
-        if (s.step === 'draft') {
-          /* Nothing here. The request is in the composer below,
-             where a request goes, and the empty workspace is the
-             honest picture of a report that has not been asked
-             for yet. A bespoke box drawn to look like a composer
-             was the page contradicting its own argument. */
-          return '<p class="sim-stage__empty">Nothing asked for yet. The request is in the ' +
-                 'composer below &mdash; the same one every other page has, with no form ' +
-                 'standing in front of it.</p>';
-        }
-
-        if (s.step === 'reading') return REQ + working('Working out what is missing&hellip;');
-
-        if (s.step === 'running') return REQ + settled() +
-          '<div class="sc-working" role="status" style="margin-top:14px">' +
-          '<span class="sc-dot"></span><span class="sc-dot"></span><span class="sc-dot"></span>' +
-          '<span class="sc-working__t">Pulling churn by cohort&hellip;</span></div>';
-
-        if (s.step === 'done') {
-          return REQ + settled() +
-            '<div class="sim-turn" style="margin-top:14px">' + mark('md-agentav--sm') +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() +
-            '</div><p class="wf-text">' +
-            (s.rerun
-              ? 'Mid-market churn at <b>4.1%</b> since the pricing change, against <b>3.4%</b> ' +
-                'over twelve months. Those two numbers are comparable because the difference ' +
-                'between them is one value &mdash; not a differently-worded question.'
-              : 'Mid-market churn at <b>3.4%</b>, concentrated in accounts under nine seats' +
-                (s.rangeDefault
-                  ? '. Note that the period is my assumption, not your choice.'
-                  : '.')) +
-            '</p></div></div>';
-        }
-
-        /* asking */
-        function question(id, title, why, opts, skip, key) {
-          return '<div class="md-struct__q">' +
-            '<p class="md-struct__qt md-body-medium" id="' + id + '">' + title + '</p>' +
-            '<p class="md-struct__qw md-body-small">' + why + '</p>' +
-            '<div class="md-struct__opts">' +
-              opts.map(function (o) {
-                return '<button class="md-echip" type="button" aria-describedby="' + id + '" ' +
-                  'data-act="set:' + key + ':' + o + '">' + o + '</button>';
-              }).join('') +
-              (s.opts.skippable
-                ? '<button class="md-echip md-echip--unresolved" type="button" ' +
-                  'data-act="skip:' + key + '">' + skip + '</button>'
-                : '') +
-            '</div></div>';
-        }
-
-        var qs = '';
-        if (!s.audience) qs += question('q-aud', 'Who is it for?',
-          'Changes how much background I include.',
-          ['The exec team', 'The product team'],
-          'Skip &mdash; I&rsquo;ll assume the product team', 'audience');
-        if (!s.range && !s.rangeDefault) qs += question('q-range', 'Over what period?',
-          'Changes which cohorts are complete enough to compare.',
-          ['Last 12 months', 'Since the pricing change'],
-          'Skip &mdash; I&rsquo;ll use the last 12 months', 'range');
-        if (!s.sources) qs += question('q-src', 'Which sources?',
-          'Changes what I am able to cite.',
-          ['Product data', 'Product data and support tickets'],
-          'Skip &mdash; I&rsquo;ll use product data', 'sources');
-
-        /* The failure, reachable on purpose: everything the report
-           accepts as a parameter, asked at once, with no way to tell
-           which two of them decide the answer. */
-        if (!s.opts.restraint) {
-          qs += ['Output format?', 'Length?', 'Tone?', 'Include appendices?', 'Chart style?']
-            .map(function (t) {
-              return '<div class="md-struct__q">' +
-                '<p class="md-struct__qt md-body-medium">' + t + '</p>' +
-                '<div class="md-struct__opts">' +
-                '<button class="md-echip md-echip--unresolved" type="button" ' +
-                'data-act="noop">Choose</button></div></div>';
-            }).join('');
-        }
-
-        return REQ +
-          '<div class="md-struct__ask" role="group" aria-label="What I need">' + qs + '</div>' +
-          settled();
+      thread: function (s) {
+        var intro = '<div class="sim-turn">' + mark('md-agentav--sm') +
+          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' +
+          '<p class="wf-text"><b>EXP-210</b> — CSV export times out on projects over 50k rows. Reported by 3 customers; blocks the 2.4 release.</p></div></div>';
+        return intro + s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'P', esc(t.text));
+          if (t.working) return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div>' + working(t.working) + '</div></div>';
+          if (t.form) return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div class="sim-si"><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() + '</div>' +
+            '<p class="wf-text">' + t.text + '</p>' + MaterialSim.si.card(siSimF(s)) + '</div></div>';
+          return '<div class="sim-turn">' + mark('md-agentav--sm') + '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() + '</div>' + t.html + '</div></div>';
+        }).join('');
       },
 
       foot: function (s) {
-        if (s.step === 'draft') {
-          return '<span class="sim-doc__who">Prose first &mdash; no form in front of it</span>' +
-                 button('Send it', 'send', 'filled');
-        }
-        if (s.step === 'done') {
-          return '<span class="sim-doc__who">Change one value, ask again</span>' +
-                 (s.rerun ? '' : button('Change the period and re-run', 'rerun', 'filled')) +
-                 button('Start over', 'reset', 'text');
-        }
-        if (s.step === 'asking') {
-          var ready = s.audience && (s.range || s.rangeDefault) && s.sources;
-          return '<span class="sim-doc__who">' +
-            (ready ? 'Everything it needs is settled'
-                   : 'Answer or skip &mdash; both are answers') + '</span>' +
-            (ready ? button('Run it', 'run', 'filled') : '') +
-            button('Start over', 'reset', 'text');
-        }
-        return '<span class="sim-doc__who">Working</span>';
+        var f = s.si;
+        if (!s.turns.length) return '<span class="sim-doc__who">Ask in words — the form comes when exact values matter</span>' + button('Ask: Create a follow-up task for this blocker', 'sis:ask', 'tonal');
+        if (f && !f.closed && /^(complete|partial|empty)$/.test(f.state) && !f.edited.due) return '<span class="sim-doc__who">Check the suggestions — change anything</span>' + button('Change due date to Wed 14 Oct', 'sis:due', 'tonal');
+        if (f && f.state === 'submitted' && !f.undone) return '<span class="sim-doc__who">Created — and reversible</span>' + button('Start over', 'reset', 'text');
+        return '';
       },
 
       controls: function (s) {
-        return [toggle('Ask only for what changes the answer', 'opt:restraint', s.opts.restraint),
-                toggle('Every question can be skipped', 'opt:skippable', s.opts.skippable)];
+        return [toggle('Orbit is down', 'opt:down', s.opts.down), toggle('No suggestions', 'opt:nosug', s.opts.nosug)];
       },
 
       hint: function (s) {
-        if (!s.opts.restraint && s.step === 'asking')
-          return 'Eight questions and no way to tell which two decide the answer. This is a ' +
-                 'form with a friendlier voice, and it is what asking for everything the API ' +
-                 'accepts looks like.';
-        if (!s.opts.skippable && s.step === 'asking')
-          return 'Nothing here can be skipped, which makes these required fields. Calling them ' +
-                 'questions does not change that &mdash; and a required field should be ' +
-                 'labelled as one.';
-        if (s.rerun)
-          return 'One value changed, the sentence untouched, and the two numbers are ' +
-                 'comparable. This is the reason the structure was worth collecting at all.';
-        if (s.step === 'done' && s.rangeDefault)
-          return 'The period is an assumption: lower emphasis, the word &ldquo;default&rdquo; ' +
-                 'on its face and in its accessible name, and the answer says so rather than ' +
-                 'presenting it as a choice somebody made.';
-        if (s.step === 'done')
-          return 'The constraints sit beside the result rather than in the transcript, which ' +
-                 'is what lets this number be reproduced next month by somebody else.';
-        if (s.step === 'asking')
-          return 'Three questions, each naming what it changes. A question that cannot explain ' +
-                 'its own effect on the answer should not be asked.';
-        if (s.step === 'draft')
-          return 'A sentence, and nothing else. The form that would normally stand here asks ' +
-                 'for eight things, six of which have a sensible answer already.';
-        return 'Reading the request is not the same as answering it.';
+        var f = s.si;
+        if (!f) return 'Ask Aria to create a follow-up task. The request starts in words, in the ordinary composer.';
+        if (f.closed) return 'Closed — and nothing was created. Reopen brings your values back.';
+        if (f.state === 'empty') return 'No suggestions: an empty form with labels, helper text and required marks. “Suggest values” is an offer, not something that happens to you.';
+        if (f.state === 'partial') return 'Partially completed: carry on in any order. Required fields are marked by their labels; errors only appear when you review.';
+        if (f.state === 'complete' && f.edited.due) return 'Your date replaced the suggestion and is marked “Edited by you”. Aria will never change it back. Review when ready.';
+        if (f.state === 'complete') return 'Owner, date and priority are AI-suggested, and each says so — with why. Every one is editable; Aria will not create anything until you confirm.';
+        if (f.state === 'invalid') return 'The error sits next to its field and says how to fix it; focus went there. Nothing was sent, and every value is untouched.';
+        if (f.state === 'ready' && f.busy) return 'Creating the task in Orbit…';
+        if (f.state === 'ready') return 'Review: the values, which you edited, and exactly what Aria will receive. Creating a task changes another system, so it waits for you.';
+        if (f.state === 'submitted') return 'Created. The card shows the outcome and what Aria received; Undo is right there. Aria reports back in the thread.';
+        if (f.state === 'failed') return 'Orbit didn’t respond. Nothing was created and nothing is lost: Retry, or edit first.';
+        return '';
       },
 
-      /* Pressing send in the shared composer is the same act as
-         the demo button beside it, and it takes whatever was
-         actually typed. */
-      axSubmit: function (text, ctx) {
+      axSubmit: async function (text, ctx) {
         var s = ctx.s;
-        if (s.step !== 'draft') return;
-        s.req = text;
-        return this.act('send', ctx);
+        s.turns.push({ who: 'you', text: text });
+        var t = { working: 'Aria is reading the blocker…' };
+        s.turns.push(t); s.axText = ''; s.step = 'working';
+        var mine = s.run = (s.run || 0) + 1;
+        ctx.paint();
+        await wait(1100); if (s.run !== mine) return;
+        s.turns.pop();
+        if (/task|follow/i.test(text) && !s.si) {
+          var f = siSimF(s);
+          if (!s.opts.nosug) MaterialSim.si.act('si:suggest', f, {});
+          s.turns.push({ form: true, text: s.opts.nosug ? 'I need a few details for the follow-up task.' : 'Here’s a follow-up task. I suggested the owner, date and priority from the blocker — check them before I create it.' });
+          s.step = 'idle'; ctx.paint(); ctx.announce && ctx.announce('Aria offered a follow-up task form' + (s.opts.nosug ? '.' : ' with suggested values. Check them before creating.'));
+          return;
+        }
+        s.turns.push({ html: '<p class="wf-text">Noted. The follow-up task form above is still open if you want to change anything.</p>' });
+        s.step = 'idle'; ctx.paint();
+      },
+
+      after: function (root, s, ctx) {
+        if (s.si && window.MaterialSim) MaterialSim.si.bind(root.querySelector('.md-si'), s.si, siSimIO(ctx));
       },
 
       act: function (a, ctx) {
         var s = ctx.s;
-        if (a === 'opt:restraint') { flip(ctx, 'restraint'); return; }
-        if (a === 'opt:skippable') { flip(ctx, 'skippable'); return; }
         if (a === 'noop') return;
-        if (a === 'reset') {
-          var o = JSON.parse(JSON.stringify(s.opts));
-          Object.assign(s, JSON.parse(JSON.stringify(SIMS['structured-input'].initial)));
-          s.opts = o; ctx.paint(); return;
+        if (a === 'opt:down') { flip(ctx, 'down'); if (s.si) s.si.fail = s.opts.down; return; }
+        if (a === 'opt:nosug') { flip(ctx, 'nosug'); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); if (s.si) s.si.run = (s.si.run || 0) + 1; Object.assign(s, JSON.parse(JSON.stringify(SIMS['structured-input'].initial))); s.opts = o; ctx.paint(); return; }
+        if (a === 'sis:ask') {
+          s.axText = 'Create a follow-up task for this blocker'; ctx.paint();
+          var fl = document.querySelector('[data-sim-root] [data-ax-field]'); if (fl) fl.focus({ preventScroll: true }); return;
         }
-        if (a === 'send') {
-          /* The request has left the composer and become the thing
-             on the page. Leaving a copy in the field would be two
-             claims about where it lives. */
-          s.axText = '';
-          s.step = 'reading'; ctx.paint();
-          return wait(800).then(function () { s.step = 'asking'; ctx.paint(); });
+        if (a === 'sis:due') {
+          var f = siSimF(s); f.v.due = '2026-10-14'; f.edited.due = true; f.focusKey = 'due'; ctx.paint();
+          ctx.announce && ctx.announce('Due date changed to Wed 14 Oct. Marked as edited by you.'); return;
         }
-        if (a.indexOf('set:') === 0) {
-          var parts = a.split(':');
-          s[parts[1]] = parts.slice(2).join(':');
-          if (parts[1] === 'range') s.rangeDefault = false;
-          ctx.paint(); return;
-        }
-        /* Skipping is an answer, and it states the assumption rather
-           than making it quietly. */
-        if (a.indexOf('skip:') === 0) {
-          var k = a.slice(5);
-          if (k === 'audience') s.audience = 'The product team';
-          if (k === 'range')  { s.rangeDefault = true; }
-          if (k === 'sources')  s.sources = 'Product data';
-          ctx.paint(); return;
-        }
-        if (a.indexOf('edit:') === 0) {
-          var key = a.slice(5);
-          s[key] = null;
-          if (key === 'range') s.rangeDefault = false;
-          s.step = 'asking'; ctx.paint(); return;
-        }
-        if (a === 'run') {
-          s.step = 'running'; ctx.paint();
-          return wait(900).then(function () { s.step = 'done'; ctx.paint(); });
-        }
-        if (a === 'rerun') {
-          s.range = 'since the pricing change'; s.rangeDefault = false; s.rerun = true;
-          s.step = 'running'; ctx.paint();
-          return wait(800).then(function () { s.step = 'done'; ctx.paint(); });
-        }
+        if (a.indexOf('si:') === 0) MaterialSim.si.act(a, siSimF(s), siSimIO(ctx));
       }
     }
   };
@@ -6314,10 +5933,6 @@
        composer. A second one beside it, ungated, is the failure
        the page is about. */
     disclaimer: 'pattern',
-    /* The question is written into the field with a pen, and the
-       point is that it is an ORDINARY field rather than a special
-       one. Two fields makes it a special one again. */
-    handwriting: 'pattern',
     /* "Three places the agent can act on one record, and no
        composer anywhere." A docked composer is not a small
        inconsistency here — it is the counter-example. */
@@ -6372,16 +5987,16 @@
     'suggested-prompts': { group: 'Planboard', items: ['Release plan', 'Research notes', 'Design review'], on: 0 },
     autocomplete: { group: 'Planboard', items: ['Onboarding feedback', 'Release plan', 'Research notes', 'Decisions'], on: 0 },
     randomize: { group: 'Planboard 3.0 launch', items: ['Campaign directions', 'Creative brief', 'Moodboards', 'Past campaigns'], on: 0 },
-    'voice-input': { group: 'Feedback', items: ['Onboarding', 'This quarter', 'Last quarter', 'Sources'], on: 0 },
+    'voice-input': { group: 'Releases', items: ['2.4 readiness', '2.3', 'Incidents', 'Owners'], on: 0 },
     attachments: { group: 'Procurement', items: ['Vendor proposal', 'Open reviews', 'Signed', 'Suppliers'], on: 0 },
     connectors: { group: 'Research', items: ['Product review', 'Onboarding study', 'Interviews', 'Connected apps'], on: 0 },
     mcp: { group: 'Platform', items: ['Checkout regression', 'Open bugs', 'Servers', 'Audit log'], on: 0 },
     'knowledge-base': { group: 'Onboarding Redesign', items: ['Onboarding problems', 'Activation', 'Pricing research', 'Project knowledge'], on: 0 },
     'model-selection': { group: 'Platform', items: ['Migration review', 'Incident 412', 'Release notes', 'Cost review'], on: 0 },
-    'visual-input': { group: 'Support', items: ['Ticket 4417', 'Attachments', 'Known issues', 'Escalations'], on: 0 },
-    handwriting: { group: 'Coursework', items: ['Problem sheet 4', 'My working', 'Marked sheets', 'Formula notes'], on: 0 },
-    gesture: { group: 'Analytics', items: ['Self-serve · September', 'Dashboards', 'Saved regions', 'Reports'], on: 0 },
-    'structured-input': { group: 'Research', items: ['New report', 'In progress', 'Published', 'Data sources'], on: 0 }
+    'visual-input': { group: 'Dashboards', items: ['Q3 metrics', 'Activation', 'Revenue', 'Exports'], on: 0 },
+    handwriting: { group: 'Design reviews', items: ['Onboarding redesign', 'Billing settings', 'Mobile nav', 'Archive'], on: 0 },
+    gesture: { group: 'Analytics', items: ['Self-serve · September', 'Activation', 'Revenue', 'Reports'], on: 0 },
+    'structured-input': { group: 'Releases', items: ['EXP-210 · CSV export', 'Blockers', 'Tasks', 'Owners'], on: 0 }
   };
 
   /* ── Composer, per scenario ───────────────────────────────
@@ -6402,11 +6017,13 @@
     iconography: { ask: 'Ask me anything', plus: ['Attach a file', 'Add a reference'], modes: ['Edit', 'Rewrite'] },
     nudges: { ask: 'Ask me anything', plus: ['Attach a receipt', 'Add policy'], modes: ['Balanced', 'Thorough'] },
     proactive: { ask: 'Ask me anything', plus: ['Attach a document', 'Add a carrier'], modes: ['Balanced', 'Thorough'] },
-    'visual-input': { ask: 'Ask me anything', plus: ['Attach a screenshot', 'Add a known issue'], modes: ['Balanced', 'Thorough'] },
+    'visual-input': { ask: 'Ask Aria about the dashboard…', plus: ['Upload image', 'Take photo', 'Share screen'] },
     /* `mic: true` is the only difference between this composer and
        the twelve above it. That is the whole argument of the
        pattern, expressed as one flag rather than a component. */
     'voice-input': { ask: 'Ask me anything', plus: ['Attach a file', 'Add a source'], mic: true },
+    handwriting: { ask: 'Ask Aria about the redesign…', plus: ['Attach a file', 'Add a screen'] },
+    gesture: { ask: 'Ask Aria about the dashboard…', plus: ['Attach a file', 'Add a report'] },
     /* The + here offers SOURCES rather than labels, and the
        scenario handles the choice — see `addContext`. */
     attachments: { ask: 'Ask me anything',
@@ -6419,7 +6036,7 @@
     /* No `modes` here: the chip in that slot is the MODEL, and
        there is only ever one chip in it. */
     'model-selection': { ask: 'Ask me anything', plus: ['Attach a file', 'Add a source'] },
-    'structured-input': { ask: 'Ask me anything', plus: ['Attach a file', 'Add a data source'] },
+    'structured-input': { ask: 'Ask Aria about the blocker…', plus: ['Attach a file', 'Add a link'] },
     /* The one composer whose placeholder is not "Ask me anything":
        on an empty workspace it is the invitation, so it suggests the
        kind of request rather than naming the box. */
@@ -7452,7 +7069,1107 @@
      and the right-hand controls change to the two that mean
      anything while the microphone is open. The container grows by
      roughly a line of text and no more. */
+  /* ══════════════════════════════════════════════════════════
+     VOICE INPUT · DICTATION (the Voice Input pattern, 5 Oct)
+     Speech as an input method INTO the shared composer. Not a
+     voice assistant: speech → transcript → editable composer text
+     → the person sends. Shared by the Live Preview and the
+     simulator through composer({ dictation }) plus this controller.
+
+     States
+       ready         the composer, with a microphone in it
+       permission    the mic was asked for: what, why, when, how to stop
+       listening     capture is on — persistent mic indicator + timer
+       paused        capture off, what was heard is kept
+       processing    "Transcribing…" — only Cancel is offered
+       transcribed   the transcript is in the field, marked "From voice"
+       editing       the person is changing the transcript
+       nounderstand  could not make it out — Retry / Edit captured text / Type instead
+       unavailable   no microphone — voice is off, typing is not
+
+     Verbs (never interchangeable)
+       Pause   capture off, keep progress      Resume  carry on
+       Stop    end capture, KEEP what was said (never sends)
+       Cancel  end capture, DISCARD this recording (typed text stays)
+     ══════════════════════════════════════════════════════════ */
+  var VX_LIVE = /^(listening|paused|processing)$/;
+  var VX_SCRIPT = 'summarize the main release risks and group them by owner'.split(' ');
+  function vxClock(sec) { sec = Math.max(0, Math.floor(sec || 0)); return Math.floor(sec / 60) + ':' + ('0' + sec % 60).slice(-2); }
+  /* Spoken words as composer text: joined after what was typed,
+     capitalised where they start a sentence, closed with a stop. */
+  function vxJoin(typed, heard) {
+    var said = (heard || []).join(' ');
+    if (!said) return typed || '';
+    var t = (typed || '').replace(/\s+$/, '');
+    var start = !t || /[.!?]$/.test(t);
+    if (start) said = said.charAt(0).toUpperCase() + said.slice(1);
+    if (!/[.!?]$/.test(said)) said += '.';
+    return t ? t + ' ' + said : said;
+  }
+  function vxStatus(d) {
+    if (d.state === 'listening') return (d.label || 'Listening') + ' · ' + vxClock(d.elapsed);
+    if (d.state === 'paused') return 'Paused · microphone off · ' + vxClock(d.elapsed);
+    if (d.state === 'processing') return 'Transcribing…';
+    return '';
+  }
+  function vxLine(d) {
+    var typed = (d.typed || '').trim();
+    var heard = (d.heard || []).join(' ');
+    if (d.live === false && d.state === 'listening')
+      return (typed ? '<span class="ax__vtyped">' + esc(typed) + '</span> ' : '') +
+        '<span class="ax__vhint">Your words appear when you stop.</span>';
+    if (!heard && !typed) return '<span class="ax__vhint">' + esc(d.placeholder || 'Start speaking…') + '</span>';
+    return (typed ? '<span class="ax__vtyped">' + esc(typed) + '</span> ' : '') +
+      '<span class="ax__vheard">' + esc(heard) + '</span>';
+  }
+  /* The voice body of the shared composer. The microphone stays
+     lit (with a dot) for as long as capture is on: nobody should
+     have to wonder whether it is still listening. */
+  function vxBody(d) {
+    var V = window.MaterialVoice;
+    var st = d.state;
+    var ind = st === 'listening' ? (d.speaking ? 'speaking' : 'listening') : st === 'paused' ? 'pause' : 'processing';
+    var btn = function (act, icon, label, cls) {
+      return '<button class="ax__cbtn md-icon-button ' + (cls || 'md-icon-button--standard') + '" type="button" ' +
+        'data-act="' + act + '" aria-label="' + esc(label) + '" title="' + esc(label.split(' — ')[0]) + '">' + MI(icon) + '</button>';
+    };
+    return '<span class="ax__vxmic' + (st === 'listening' ? ' is-live' : '') + '" aria-hidden="true">' +
+        MI(st === 'paused' ? 'micOff' : 'mic') + (st === 'listening' ? '<i class="ax__vxdot"></i>' : '') + '</span>' +
+      '<span class="ax__voice">' + (V ? V.indicator(ind) : '') +
+        '<span class="ax__vtext">' +
+          '<span class="ax__vstatus" data-vx-status>' + esc(vxStatus(d)) + '</span>' +
+          '<span class="ax__vline" data-vx-line>' + vxLine(d) + '</span>' +
+        '</span>' +
+      '</span>' +
+      (st === 'listening' && d.pause !== false ? btn('vx:pause', 'pause', 'Pause — the microphone turns off, what you said is kept') : '') +
+      (st === 'paused' ? btn('vx:resume', 'play', 'Resume listening') : '') +
+      (st !== 'processing'
+        ? '<button class="ax__cbtn ax__vxstop md-icon-button md-icon-button--tonal" type="button" data-act="vx:stop" ' +
+            'aria-label="Stop and keep what you said" title="Stop — keeps what you said">' + MI('stop') + '</button>' : '') +
+      btn('vx:cancel', 'close', st === 'processing'
+        ? 'Cancel — discard this recording' : 'Cancel — discard this recording, your typed text stays');
+  }
+  /* Messages that belong to the voice session but sit above the bar,
+     never as an overlay: the composer stays usable under them. */
+  function vxPanel(d) {
+    var b = function (act, label, v) {
+      return '<button class="md-button md-button--' + (v || 'text') + ' md-button--small" type="button" data-act="' + act + '">' + label + '</button>';
+    };
+    if (d.state === 'permission')
+      return '<div class="md-vx__panel" role="region" aria-labelledby="vx-perm-h">' +
+        '<p class="md-vx__ph" id="vx-perm-h">' + MI('mic') + '<span>Use your microphone?</span></p>' +
+        '<p class="md-vx__pt">' + esc(d.permissionText) + '</p>' +
+        '<div class="md-vx__pa">' + b('vx:deny', 'Not now') + b('vx:allow', 'Allow microphone', 'filled') + '</div></div>';
+    if (d.state === 'nounderstand')
+      return '<div class="md-vx__panel md-vx__panel--err" role="alert">' +
+        '<p class="md-vx__ph">' + MI('error') + '<span>' + esc(d.failureText) + '</span></p>' +
+        ((d.heard || []).length
+          ? '<p class="md-vx__pt">We kept what we heard: <q>' + esc(d.heard.join(' ')) + '</q></p>'
+          : '<p class="md-vx__pt">Nothing was captured. Your typed text is unchanged.</p>') +
+        '<div class="md-vx__pa">' + b('vx:type', 'Type instead') +
+          ((d.heard || []).length ? b('vx:edit', 'Edit captured text') : '') + b('vx:retry', 'Retry', 'filled') + '</div></div>';
+    if (d.state === 'unavailable')
+      return '<div class="md-vx__panel" role="status">' +
+        '<p class="md-vx__ph">' + MI('micOff') + '<span>Voice isn’t available right now</span></p>' +
+        '<p class="md-vx__pt">' + esc(d.unavailableText || 'No microphone was found on this device. You can keep typing.') + '</p>' +
+        '<div class="md-vx__pa">' + b('vx:type', 'Type instead', 'filled') + '</div></div>';
+    if (d.state === 'denied')
+      return '<p class="md-vx__note" role="status">' + MI('micOff') +
+        '<span>Microphone not allowed. You can turn it on in your browser settings, or keep typing.</span></p>';
+    return '';
+  }
+  /* The "From voice" marker: what was transcribed, and the way back. */
+  function vxMarker(d) {
+    if (!(d.state === 'transcribed' || d.state === 'editing') || !d.fromVoice) return '';
+    return '<span class="ax__vxfrom" role="note">' + MI('mic') +
+      '<span>' + (d.state === 'editing' ? 'From voice · edited' : 'From voice') + ' — check it before you send</span>' +
+      '<button class="md-button md-button--text md-button--small" type="button" data-act="vx:undo" ' +
+        'aria-label="Undo the transcript, back to what you had typed">Undo</button></span>';
+  }
+
+  /* ── The controller ─────────────────────────────────────────
+     d is the session (state, typed, heard, elapsed …); io is the
+     host: { root() → the .md-vx element, paint(), announce(text),
+     to(state) → move the read-out without a repaint }. Words and
+     the clock update in place, so nothing is rebuilt under the
+     person while they speak. */
+  function vxSay(io, t) { if (io.announce) io.announce(t); }
+  function vxPatch(io, d) {
+    var r = io.root && io.root();
+    if (!r) return;
+    var s = r.querySelector('[data-vx-status]'), l = r.querySelector('[data-vx-line]');
+    if (s) s.textContent = vxStatus(d);
+    if (l) l.innerHTML = vxLine(d);
+    var va = r.querySelector('.md-va');
+    if (va) {
+      var want = d.speaking ? 'user' : 'quiet';
+      if (va.getAttribute('data-vx-live') !== want) {
+        va.setAttribute('data-vx-live', want); va.setAttribute('data-state', d.speaking ? 'speaking' : 'listening');
+        if (window.MaterialVoice) window.MaterialVoice.drive(r);
+      }
+    }
+  }
+  /* The gradient follows each word: a short swell, then it settles. */
+  function vxPulse(io, e) {
+    var r = io.root && io.root();
+    var g = r && r.querySelector('.md-vx__glow');
+    if (!g) return;
+    g.style.setProperty('--vx-e', e.toFixed(2));
+    clearTimeout(g.__t);
+    g.__t = setTimeout(function () { g.style.setProperty('--vx-e', '0'); }, 260);
+  }
+  function vxHalt(d) { clearInterval(d.clock); clearTimeout(d.wordT); clearTimeout(d.quietT); d.clock = d.wordT = d.quietT = 0; }
+  function vxListen(d, io) {
+    vxHalt(d);
+    var run = d.run = (d.run || 0) + 1;
+    d.state = 'listening';
+    if (io.paint) io.paint();
+    vxSay(io, 'Microphone on. Listening.');
+    d.clock = setInterval(function () {
+      if (d.run !== run || d.state !== 'listening') return;
+      d.elapsed = (d.elapsed || 0) + 1;
+      if (d.maxSec && d.elapsed >= d.maxSec) { vxSay(io, 'Time limit reached.'); vxStop(d, io); return; }
+      vxPatch(io, d);
+    }, 1000);
+    var words = d.script || VX_SCRIPT;
+    (function next() {
+      if (d.run !== run || d.state !== 'listening') return;
+      if ((d.heard || []).length >= words.length || d.mute) {
+        d.speaking = false; vxPatch(io, d);
+        if (d.autoStop && !d.quietT)
+          d.quietT = setTimeout(function () { if (d.run === run && d.state === 'listening') { vxSay(io, 'Stopped after a pause.'); vxStop(d, io); } }, d.autoStop * 1000);
+        return;
+      }
+      d.wordT = setTimeout(function () {
+        if (d.run !== run || d.state !== 'listening') return;
+        d.heard = (d.heard || []).concat(words[d.heard ? d.heard.length : 0]);
+        d.speaking = true;
+        vxPatch(io, d); vxPulse(io, 0.55 + Math.random() * 0.45);
+        next();
+      }, (d.heard && d.heard.length ? 240 + Math.random() * 180 : 700));
+    })();
+  }
+  function vxPause(d, io) {
+    if (d.state !== 'listening') return;
+    vxHalt(d); d.run++; d.speaking = false; d.state = 'paused';
+    if (io.paint) io.paint();
+    vxSay(io, 'Paused. The microphone is off; what you said is kept.');
+  }
+  function vxStop(d, io) {
+    if (!(d.state === 'listening' || d.state === 'paused')) return;
+    vxHalt(d); var run = ++d.run; d.speaking = false; d.state = 'processing';
+    if (io.paint) io.paint();
+    vxSay(io, 'Microphone off. Transcribing.');
+    setTimeout(function () {
+      if (d.run !== run || d.state !== 'processing') return;
+      /* Too little to trust is not turned into confident text. */
+      if ((d.heard || []).length < (d.minWords || 3) || d.fail) {
+        d.state = 'nounderstand';
+        if (io.paint) io.paint();
+        vxSay(io, (d.failureText || 'Couldn’t understand that.') + ' Retry, edit what was captured, or type instead.');
+        return;
+      }
+      d.before = d.typed || '';
+      d.text = vxJoin(d.typed, d.heard);
+      d.fromVoice = true; d.state = 'transcribed'; d.focusField = true;
+      if (io.paint) io.paint();
+      vxSay(io, 'Transcribed into the message. Check it, edit it, then send when ready. Nothing was sent.');
+    }, d.processMs || 1100);
+  }
+  function vxCancel(d, io) {
+    vxHalt(d); d.run++; d.speaking = false;
+    d.heard = []; d.elapsed = 0; d.state = 'ready'; d.text = d.typed || ''; d.focusField = true;
+    if (io.paint) io.paint();
+    vxSay(io, 'Voice input cancelled. The recording was discarded; your typed text is unchanged.');
+  }
+  function vxStart(d, io) {
+    if (d.state === 'unavailable') return;
+    d.typed = d.text || '';
+    d.heard = []; d.elapsed = 0; d.fromVoice = false;
+    if (!d.granted) { d.state = 'permission'; if (io.paint) io.paint(); vxSay(io, 'Microphone access needed.'); return; }
+    vxListen(d, io);
+  }
+  /* One dispatcher for vx:* actions, for any host. Returns true when handled. */
+  function vxAct(a, d, io) {
+    if (a === 'voice:start' || a === 'vx:start') { vxStart(d, io); return true; }
+    if (a === 'vx:allow') { d.granted = true; vxListen(d, io); return true; }
+    if (a === 'vx:deny') { d.state = 'denied'; d.focusField = true; if (io.paint) io.paint(); vxSay(io, 'Microphone not allowed. Keep typing.'); return true; }
+    if (a === 'vx:pause') { vxPause(d, io); return true; }
+    if (a === 'vx:resume') { vxListen(d, io); vxSay(io, 'Resumed. Listening.'); return true; }
+    if (a === 'vx:stop') { vxStop(d, io); return true; }
+    if (a === 'vx:cancel') { vxCancel(d, io); return true; }
+    if (a === 'vx:retry') { d.heard = []; d.elapsed = 0; d.fail = false; vxListen(d, io); return true; }
+    if (a === 'vx:edit') {
+      d.before = d.typed || ''; d.text = vxJoin(d.typed, d.heard); d.fromVoice = true;
+      d.state = 'editing'; d.focusField = true; if (io.paint) io.paint();
+      vxSay(io, 'The captured words are in the message to edit.'); return true;
+    }
+    if (a === 'vx:type') { d.heard = []; d.state = 'ready'; d.text = d.typed || d.text || ''; d.focusField = true; if (io.paint) io.paint(); return true; }
+    if (a === 'vx:undo') {
+      d.text = d.before || ''; d.fromVoice = false; d.state = 'ready'; d.focusField = true;
+      if (io.paint) io.paint(); vxSay(io, 'Transcript removed. Back to what you had typed.'); return true;
+    }
+    return false;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     VISUAL INPUT (the Visual Input pattern, 6 Oct)
+     Showing the agent something: an image, a photo, a recent
+     screenshot, or a shared window — as context ON the shared
+     composer, combined with the person's words.
+
+     States
+       none        no visual; the composer as it is
+       selecting   + is open: the sources this product allows
+       attached    a preview card in the composer (Replace / Remove);
+                   the words stay; nothing is read until Send
+       sharing     a window is shared: a persistent "Sharing" bar with
+                   Stop sharing; the card says it is live
+       processing  Aria is reading it (card says so)
+       ready       Aria used it; the answer names what it used
+       permission  camera / screen asked for in words — what, why,
+                   when, how to stop
+       unsupported the file cannot be used — say what can
+       failed      could not read it — Retry / Replace / Continue without it
+     Nothing consequential happens because something was shown.
+     ══════════════════════════════════════════════════════════ */
+  var VI_SRC = {
+    upload: { label: 'Upload image', icon: 'upload' },
+    camera: { label: 'Take photo', icon: 'camera' },
+    recent: { label: 'Choose a recent screenshot', icon: 'image' },
+    screen: { label: 'Share screen', icon: 'screenShare' }
+  };
+  var VI_ITEMS = {
+    upload: { name: 'dashboard-sep.png', kind: 'Image · 1440 × 900', thumb: 'dash' },
+    recent: { name: 'Screenshot · 10:42', kind: 'Recent screenshot', thumb: 'dash' },
+    camera: { name: 'Whiteboard photo', kind: 'Photo · just now', thumb: 'board' },
+    screen: { name: 'Q3 metrics dashboard', kind: 'Window · shared live', thumb: 'dash', live: true },
+    blurry: { name: 'IMG_2231.jpg', kind: 'Photo · 640 × 480', thumb: 'blur' },
+    video:  { name: 'release-demo.mov', kind: 'Video', thumb: 'none' }
+  };
+  /* Small, honest thumbnails: a drawing of what was shown, not stock art. */
+  function viThumb(k) {
+    if (k === 'board') return '<svg viewBox="0 0 64 44" aria-hidden="true"><rect width="64" height="44" rx="4" fill="#f4f2ee"/>' +
+      '<path d="M8 12h22M8 18h30M8 24h18" stroke="#3b6ea8" stroke-width="2" stroke-linecap="round"/>' +
+      '<rect x="40" y="10" width="16" height="14" rx="2" fill="none" stroke="#b33" stroke-width="2"/><path d="M10 34h44" stroke="#666" stroke-width="1.5" stroke-dasharray="3 3"/></svg>';
+    if (k === 'blur') return '<svg viewBox="0 0 64 44" aria-hidden="true"><defs><filter id="vib"><feGaussianBlur stdDeviation="2.4"/></filter></defs>' +
+      '<rect width="64" height="44" rx="4" fill="#e8e6f0"/><g filter="url(#vib)"><rect x="6" y="8" width="24" height="12" fill="#9a8fc7"/><rect x="34" y="8" width="24" height="28" fill="#c9c2e6"/><rect x="6" y="24" width="24" height="12" fill="#b6acd9"/></g></svg>';
+    if (k === 'none') return '<svg viewBox="0 0 64 44" aria-hidden="true"><rect width="64" height="44" rx="4" fill="#ece9f2"/><path d="M27 15l12 7-12 7z" fill="#8a849b"/></svg>';
+    return '<svg viewBox="0 0 64 44" aria-hidden="true"><rect width="64" height="44" rx="4" fill="#fbfaff"/>' +
+      '<rect x="5" y="5" width="25" height="15" rx="2" fill="#ece6fb"/><rect x="34" y="5" width="25" height="15" rx="2" fill="#ece6fb"/>' +
+      '<path d="M8 15l5-4 4 2 5-6 5 3" fill="none" stroke="#6750a4" stroke-width="1.6"/>' +
+      '<path d="M37 16l5-1 4-5 5 7 5-6" fill="none" stroke="#b3261e" stroke-width="1.6"/>' +
+      '<rect x="5" y="24" width="54" height="15" rx="2" fill="#ece6fb"/>' +
+      '<rect x="9" y="31" width="5" height="5" fill="#6750a4"/><rect x="17" y="28" width="5" height="8" fill="#6750a4"/><rect x="25" y="30" width="5" height="6" fill="#6750a4"/><rect x="33" y="27" width="5" height="9" fill="#6750a4"/><rect x="41" y="33" width="5" height="3" fill="#b3261e"/></svg>';
+  }
+  function viCard(v) {
+    var it = v.item;
+    if (!it || !/^(attached|sharing|processing|failed)$/.test(v.state)) return '';
+    var st = v.state;
+    var line = st === 'processing' ? (it.live ? 'Aria is looking at this window…' : 'Aria is reading this image…')
+      : st === 'failed' ? 'Couldn’t read this image'
+      : it.live ? 'Live — Aria sees this window while sharing is on'
+      : (v.label || 'Aria will see this when you send');
+    var btn = function (act, icon, label) {
+      return '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="' + act + '" ' +
+        'aria-label="' + esc(label) + '" title="' + esc(label) + '">' + MI(icon) + '</button>';
+    };
+    var preview = v.preview !== false;
+    return '<div class="ax__vis" data-vis-state="' + st + '" data-thumb="' + esc(v.thumb || 'large') + '" role="group" ' +
+        'aria-label="Visual context: ' + esc(it.name) + '. ' + esc(line) + '">' +
+      (preview ? '<span class="ax__vis__thumb">' + viThumb(it.thumb) + (st === 'processing' ? '<i class="ax__vis__sheen"></i>' : '') + '</span>'
+               : '<span class="ax__vis__chip">' + MI('image') + '</span>') +
+      '<span class="ax__vis__t"><span class="ax__vis__n">' + esc(it.name) + '</span>' +
+        '<span class="ax__vis__l">' + (it.live ? '<i class="ax__vis__live" aria-hidden="true"></i>' : '') + esc(line) + '</span></span>' +
+      (st === 'processing' ? '' :
+        (it.live ? '' : (v.replace !== false ? btn('vi:replace', 'refresh', 'Replace ' + it.name) : '') +
+                        (v.remove !== false ? btn('vi:remove', 'close', 'Remove ' + it.name + ' — your words stay') : ''))) +
+    '</div>';
+  }
+  function viShareBar(v) {
+    if (!v.sharing) return '';
+    return '<div class="md-vi__share" role="status" data-emphasis="' + esc(v.emphasis || 'strong') + '">' +
+      '<i class="md-vi__dot" aria-hidden="true"></i>' + MI('screenShare') +
+      '<span><b>Sharing “' + esc(v.sharing) + '”</b> · Aria can see this window while sharing is on</span>' +
+      '<button class="md-button md-button--tonal md-button--small" type="button" data-act="vi:stopshare">' + MI('stopShare') + 'Stop sharing</button>' +
+    '</div>';
+  }
+  function viPanel(v) {
+    var b = function (act, label, k) { return '<button class="md-button md-button--' + (k || 'text') + ' md-button--small" type="button" data-act="' + act + '">' + label + '</button>'; };
+    if (v.state === 'permission' && v.ask === 'screen')
+      return '<div class="md-vx__panel" role="region" aria-labelledby="vi-perm-h">' +
+        '<p class="md-vx__ph" id="vi-perm-h">' + MI('screenShare') + '<span>Share a window with Aria?</span></p>' +
+        '<p class="md-vx__pt">' + esc(v.screenText) + '</p>' +
+        '<div class="md-vi__pick" role="group" aria-label="Choose what to share">' +
+          '<button class="md-vi__opt" type="button" data-act="vi:pickwin">' + MI('selectWindow') + '<span><b>Q3 metrics dashboard</b><small>This window</small></span></button>' +
+        '</div>' +
+        '<div class="md-vx__pa">' + b('vi:deny', 'Cancel') + '</div></div>';
+    if (v.state === 'permission' && v.ask === 'camera')
+      return '<div class="md-vx__panel" role="region" aria-labelledby="vi-perm-h">' +
+        '<p class="md-vx__ph" id="vi-perm-h">' + MI('camera') + '<span>Use your camera?</span></p>' +
+        '<p class="md-vx__pt">' + esc(v.cameraText) + '</p>' +
+        '<div class="md-vx__pa">' + b('vi:deny', 'Not now') + b('vi:allowcam', 'Allow camera', 'filled') + '</div></div>';
+    if (v.state === 'unsupported')
+      return '<div class="md-vx__panel md-vx__panel--err" role="alert">' +
+        '<p class="md-vx__ph">' + MI('error') + '<span>Can’t use “' + esc((v.bad || VI_ITEMS.video).name) + '”</span></p>' +
+        '<p class="md-vx__pt">' + esc(v.unsupportedText) + '</p>' +
+        '<div class="md-vx__pa">' + b('vi:cancel', 'Continue without it') + b('vi:open', 'Choose an image', 'filled') + '</div></div>';
+    if (v.state === 'failed')
+      return '<div class="md-vx__panel md-vx__panel--err" role="alert">' +
+        '<p class="md-vx__ph">' + MI('error') + '<span>Couldn’t read this image — it’s too blurry.</span></p>' +
+        '<p class="md-vx__pt">Your message is kept. Nothing was sent to Aria without the image.</p>' +
+        '<div class="md-vx__pa">' + b('vi:remove', 'Continue without it') + b('vi:replace', 'Replace') + b('vi:retry', 'Retry', 'filled') + '</div></div>';
+    if (v.state === 'denied')
+      return '<p class="md-vx__note" role="status">' + MI('block') + '<span>' + esc(v.deniedText || 'Nothing is shared. You can describe it in words instead.') + '</span></p>';
+    return '';
+  }
+  /* The + menu offers only the sources this product allows. */
+  function viSources(v) {
+    var on = v.sources || ['upload', 'camera', 'recent', 'screen'];
+    return on.map(function (k) { return VI_SRC[k].label; });
+  }
+  function viKeyOf(v, i) { return (v.sources || ['upload', 'camera', 'recent', 'screen'])[i]; }
+
+  /* Controller. io: { paint(), announce(t), send(text, v) → Promise|void } */
+  function viAct(a, v, io) {
+    var say = function (t) { if (io.announce) io.announce(t); };
+    var paint = function () { if (io.paint) io.paint(); };
+    if (a === 'ax:plus' || a === 'vi:open') {
+      v.prev = v.state === 'selecting' ? v.prev : v.state;
+      v.state = v.state === 'selecting' && a === 'ax:plus' ? (v.prev || 'none') : 'selecting';
+      paint(); return true;
+    }
+    if (a.indexOf('ax:add:') === 0) {
+      var k = viKeyOf(v, +a.slice(7));
+      if (k === 'camera' && !v.camOK) { v.state = 'permission'; v.ask = 'camera'; paint(); say('Camera access needed.'); return true; }
+      if (k === 'screen') { v.state = 'permission'; v.ask = 'screen'; paint(); say('Choose a window to share.'); return true; }
+      v.item = v.nextBad === 'video' ? null : VI_ITEMS[v.nextBad === 'blurry' ? 'blurry' : k];
+      if (v.nextBad === 'video') { v.bad = VI_ITEMS.video; v.state = 'unsupported'; paint(); say('That file can’t be used. ' + (v.unsupportedText || '')); return true; }
+      v.state = 'attached'; v.focusField = true; paint();
+      say(v.item.name + ' added. Aria will see it when you send. Your words are unchanged.');
+      return true;
+    }
+    if (a === 'vi:allowcam') { v.camOK = true; v.item = VI_ITEMS.camera; v.state = 'attached'; v.focusField = true; paint();
+      say('Photo taken and added. The camera is off again.'); return true; }
+    if (a === 'vi:pickwin') {
+      v.item = VI_ITEMS.screen; v.sharing = VI_ITEMS.screen.name; v.state = 'sharing'; v.focusField = true; paint();
+      say('Sharing the Q3 metrics dashboard window. Aria can see it until you stop sharing.'); return true;
+    }
+    if (a === 'vi:deny') { v.state = 'denied'; v.ask = null; v.focusField = true; paint(); say('Nothing shared. Your message is unchanged.'); return true; }
+    if (a === 'vi:cancel') { v.state = v.item ? (v.sharing ? 'sharing' : 'attached') : 'none'; v.bad = null; v.focusField = true; paint(); return true; }
+    if (a === 'vi:remove') {
+      var n = v.item ? v.item.name : 'the image';
+      v.item = null; v.state = v.sharing ? 'sharing' : 'none'; v.focusField = true; paint();
+      say(n + ' removed. Your words are unchanged.'); return true;
+    }
+    if (a === 'vi:replace') { v.item = null; v.prev = 'none'; v.state = 'selecting'; v.nextBad = null; paint(); say('Choose a replacement.'); return true; }
+    if (a === 'vi:retry') { v.nextBad = null; v.item = VI_ITEMS.upload; v.state = 'attached'; paint(); return io.retry ? io.retry() : true; }
+    if (a === 'vi:stopshare') {
+      v.sharing = null; if (v.item && v.item.live) v.item = null;
+      v.state = v.item ? 'attached' : (v.answered ? 'ready' : 'none'); v.focusField = true; paint();
+      say('Screen sharing stopped. Aria can no longer see your window. The conversation continues.'); return true;
+    }
+    return false;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     HANDWRITING INPUT (the Handwriting Input pattern, 6 Oct)
+     Write with a stylus or finger on a surface attached to the
+     shared composer. Three things stay visibly different:
+       handwriting   the ink (kept as the original)
+       recognized    what the system THINKS it says — uncertain
+                     words marked, never silently accepted
+       accepted      what the person put into the message
+     Adjacent precedent (not an agentic one): Apple Pencil Scribble
+     and stylus handwriting-to-text — ink becomes text, text stays
+     selectable and correctable.
+
+     States
+       ready · writing · recognizing · recognized · editing ·
+       failed (Couldn't recognize) · unavailable
+     ══════════════════════════════════════════════════════════ */
+  var HW_SAMPLE = [
+    { w: 'Review', x: 18 }, { w: 'onboarding', x: 128 }, { w: 'flow', x: 312 }
+  ];
+  /* What recognition returns for the sample: one uncertain word. */
+  var HW_READ = [
+    { w: 'Review', c: .97 }, { w: 'onboarding', c: .93 }, { w: 'flaw', c: .48, alt: ['flow', 'flaw'] }
+  ];
+  function hwInk(h) {
+    var weight = h.ink === 'bold' ? 2.4 : h.ink === 'thin' ? 1 : 1.6;
+    var n = h.sampleN || 0;
+    var words = HW_SAMPLE.slice(0, n).map(function (s, i) {
+      return '<text x="' + s.x + '" y="58" class="md-hw__w' + (i === n - 1 && h.state === 'writing' ? ' is-new' : '') + '" ' +
+        'style="stroke-width:' + weight + 'px">' + s.w + '</text>';
+    }).join('');
+    return '<svg class="md-hw__svg" viewBox="0 0 420 84" preserveAspectRatio="xMinYMid meet" aria-hidden="true">' + words + '</svg>';
+  }
+  function hwRead(h) {
+    return (h.read || []).map(function (r, i) {
+      var unsure = r.c < .7 && !r.ok;
+      return unsure
+        ? '<button type="button" class="md-hw__unsure" data-act="hw:pick:' + i + '" aria-expanded="' + (h.pick === i) + '" ' +
+            'aria-label="' + esc(r.w) + ' — not sure about this word. Choose the right one">' + esc(r.w) + '<span aria-hidden="true">?</span></button>'
+        : '<span class="md-hw__word' + (r.ok ? ' is-fixed' : '') + '">' + esc(r.w) + '</span>';
+    }).join(' ');
+  }
+  function hwUnsure(h) { return (h.read || []).filter(function (r) { return r.c < .7 && !r.ok; }).length; }
+  function hwText(h) { return (h.read || []).map(function (r) { return r.w; }).join(' '); }
+  /* The writing surface and its review strip, above the composer. */
+  function hwSurface(h) {
+    var st = h.state;
+    var btn = function (act, icon, label, dis) {
+      return '<button class="md-icon-button md-icon-button--standard md-hw__tb" type="button" data-act="' + act + '" aria-label="' + esc(label) + '" title="' + esc(label) + '"' +
+        (dis ? ' disabled' : '') + '>' + MI(icon) + '</button>';
+    };
+    var b = function (act, label, k, dis) { return '<button class="md-button md-button--' + (k || 'text') + ' md-button--small" type="button" data-act="' + act + '"' + (dis ? ' disabled' : '') + '>' + label + '</button>'; };
+    if (st === 'unavailable' && h.dismissed) return '';
+    if (st === 'unavailable')
+      return '<div class="md-vx__panel" role="status"><p class="md-vx__ph">' + MI('draw') + '<span>Handwriting isn’t available here</span></p>' +
+        '<p class="md-vx__pt">' + esc(h.unavailableText || 'This device has no pen or touch input. Type your request instead.') + '</p>' +
+        '<div class="md-vx__pa">' + b('hw:type', 'Type instead', 'filled') + '</div></div>';
+    if (!/^(writing|recognizing|recognized|editing|failed|pad)$/.test(st)) return '';
+    var hasInk = (h.sampleN || 0) > 0 || (h.strokes || []).length > 0;
+    var review = st === 'recognized' || st === 'editing';
+    return '<section class="md-hw__pad" data-hw="' + st + '" aria-label="Handwriting">' +
+      '<div class="md-hw__bar">' +
+        '<span class="md-hw__lab">' + MI('stylus') + '<span>' + (st === 'recognizing' ? esc(h.statusText || 'Recognizing your writing…')
+          : review ? 'Your handwriting' : 'Write with a stylus or your finger') + '</span></span>' +
+        (h.undo !== false ? btn('hw:undo', 'undo', 'Undo last stroke', !hasInk || st === 'recognizing') : '') +
+        btn('hw:clear', 'eraser', 'Clear handwriting', !hasInk || st === 'recognizing') +
+        btn('hw:close', 'close', 'Close handwriting — nothing is added') +
+      '</div>' +
+      '<div class="md-hw__surface' + (st === 'recognizing' ? ' is-reading' : '') + '">' +
+        hwInk(h) + '<canvas class="md-hw__canvas" data-hw-canvas aria-label="Handwriting area. Draw with a pen, finger or mouse." role="img"></canvas>' +
+        (!hasInk ? '<span class="md-hw__ph">Write here</span>' : '') +
+      '</div>' +
+      (review
+        ? '<div class="md-hw__read" role="group" aria-label="Recognized text">' +
+            '<span class="md-hw__k">Recognized</span>' +
+            '<span class="md-hw__txt" data-emphasis="' + esc(h.emphasis || 'strong') + '">' + hwRead(h) + '</span>' +
+            (h.pick !== null && h.pick !== undefined && h.read[h.pick]
+              ? '<span class="md-hw__alts" role="group" aria-label="Choose the word">' +
+                  h.read[h.pick].alt.map(function (a) { return '<button type="button" class="md-hw__alt" data-act="hw:alt:' + esc(a) + '">' + esc(a) + '</button>'; }).join('') +
+                '</span>' : '') +
+            (hwUnsure(h) ? '<span class="md-hw__note">' + hwUnsure(h) + ' word needs a look — tap it to choose.</span>' : '') +
+          '</div>' : '') +
+      '<div class="md-hw__acts">' +
+        (st === 'failed'
+          ? '<p class="md-hw__err" role="alert">' + MI('error') + esc(h.failureText || 'Couldn’t recognize this writing.') + ' Your ink is kept.</p>' +
+            b('hw:type', 'Switch to typing') + (h.keep !== false ? b('hw:keep', 'Keep original') : '') + b('hw:rewrite', 'Rewrite') + b('hw:retry', 'Retry', 'filled')
+          : review
+            ? b('hw:edit', 'Edit text') + b('hw:insert', 'Add to message', 'filled', !!hwUnsure(h))
+            : (h.sample !== false && !hasInk ? b('hw:sample', 'Write a sample', 'tonal') : '') +
+              b('hw:done', 'Recognize', 'filled', !hasInk || st === 'recognizing')) +
+      '</div>' +
+    '</section>';
+  }
+  function hwMarker(h) {
+    if (!h.fromInk) return '';
+    return '<span class="ax__vxfrom" role="note">' + MI('draw') + '<span>From handwriting — check it before you send' +
+      (h.attachInk ? ' · original attached' : '') + '</span>' +
+      '<button class="md-button md-button--text md-button--small" type="button" data-act="hw:undoinsert" aria-label="Undo — take the handwriting text back out">Undo</button></span>';
+  }
+  /* Real ink: a canvas the person can draw on. Its strokes are kept
+     as the original; recognising them (there is no recogniser in a
+     pattern library) honestly ends in Couldn't recognize. */
+  function hwBind(root, h, io) {
+    var cv = root && root.querySelector('[data-hw-canvas]');
+    if (!cv) return;
+    var r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    cv.width = Math.max(1, r.width * dpr); cv.height = Math.max(1, r.height * dpr);
+    var g = cv.getContext('2d'); g.scale(dpr, dpr);
+    var weight = h.ink === 'bold' ? 3.2 : h.ink === 'thin' ? 1.4 : 2.2;
+    var ink = getComputedStyle(cv).color || '#1d1b20';
+    function draw() {
+      g.clearRect(0, 0, r.width, r.height);
+      g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = weight; g.strokeStyle = ink;
+      (h.strokes || []).forEach(function (st) {
+        g.beginPath(); st.forEach(function (p, i) { if (i) g.lineTo(p[0] * r.width, p[1] * r.height); else g.moveTo(p[0] * r.width, p[1] * r.height); }); g.stroke();
+      });
+    }
+    draw();
+    if (h.state === 'recognizing' || h.state === 'recognized' || h.state === 'editing') return;
+    var cur = null;
+    cv.addEventListener('pointerdown', function (e) {
+      if (h.state === 'recognizing') return;
+      cv.setPointerCapture(e.pointerId);
+      var b = cv.getBoundingClientRect();
+      cur = [[(e.clientX - b.left) / b.width, (e.clientY - b.top) / b.height]];
+      h.strokes = (h.strokes || []).concat([cur]);
+      if (h.state !== 'writing') { h.state = 'writing'; if (io.mark) io.mark('writing'); }
+      var ph = root.querySelector('.md-hw__ph'); if (ph) ph.remove();
+      [].forEach.call(root.querySelectorAll('.md-hw__tb[disabled], [data-act="hw:done"][disabled]'), function (x) { x.disabled = false; });
+      var sb = root.querySelector('[data-act="hw:sample"]'); if (sb) sb.remove();
+      clearTimeout(h.autoT);
+    });
+    cv.addEventListener('pointermove', function (e) {
+      if (!cur) return;
+      var b = cv.getBoundingClientRect();
+      cur.push([(e.clientX - b.left) / b.width, (e.clientY - b.top) / b.height]); draw();
+    });
+    var end = function () {
+      if (!cur) return; cur = null;
+      if (h.mode === 'auto') { clearTimeout(h.autoT); h.autoT = setTimeout(function () { if (io.recognize) io.recognize(); else hwAct('hw:done', h, io); }, 1400); }
+    };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  }
+  /* Controller. io: { paint(), announce(t), mark(state) → move the read-out } */
+  function hwAct(a, h, io) {
+    var say = function (t) { if (io.announce) io.announce(t); };
+    var paint = function () { if (io.paint) io.paint(); };
+    var recognize = function () {
+      clearTimeout(h.autoT);
+      var run = h.run = (h.run || 0) + 1;
+      h.state = 'recognizing'; paint(); say(h.statusText || 'Recognizing your writing…');
+      setTimeout(function () {
+        if (h.run !== run || h.state !== 'recognizing') return;
+        /* The sample is read (with one uncertain word); free ink is not. */
+        if ((h.strokes || []).length || h.messy || !h.sampleN) {
+          h.state = 'failed'; paint(); say((h.failureText || 'Couldn’t recognize this writing.') + ' Your ink is kept. Rewrite, retry, keep the original, or switch to typing.'); return;
+        }
+        h.read = HW_READ.map(function (x) { return { w: x.w, c: x.c, alt: x.alt }; }); h.pick = null;
+        if (h.mode === 'auto' && !hwUnsure(h)) return hwAct('hw:insert', h, io);
+        h.state = 'recognized'; paint();
+        say('Recognized: ' + hwText(h) + '. One word is uncertain — “flaw”. Choose the right word before adding it.');
+      }, h.readMs || 1300);
+    };
+    io.recognize = recognize;
+    if (a === 'hw:open' && h.state === 'unavailable') { h.dismissed = false; paint(); say(h.unavailableText || 'Handwriting isn’t available here. Type instead.'); return true; }
+    if (a === 'hw:open') { h.state = 'pad'; h.strokes = []; h.sampleN = 0; h.read = null; paint(); say('Handwriting open. Write with a stylus or your finger.'); return true; }
+    if (a === 'hw:sample') {
+      h.strokes = []; h.sampleN = 0; h.state = 'writing'; var run = h.run = (h.run || 0) + 1; paint();
+      (function next() {
+        if (h.run !== run || h.state !== 'writing') return;
+        if (h.sampleN >= HW_SAMPLE.length) { if (h.mode === 'auto') recognize(); else { paint(); say('Done writing. Press Recognize when ready.'); } return; }
+        setTimeout(function () { if (h.run !== run || h.state !== 'writing') return; h.sampleN++; paint(); next(); }, 750);
+      })();
+      return true;
+    }
+    if (a === 'hw:done' || a === 'hw:retry') { recognize(); return true; }
+    if (a === 'hw:undo') {
+      h.run = (h.run || 0) + 1;
+      if ((h.strokes || []).length) h.strokes = h.strokes.slice(0, -1); else if (h.sampleN) h.sampleN--;
+      h.state = (h.strokes || []).length || h.sampleN ? 'writing' : 'pad'; h.read = null; paint(); say('Last stroke removed.'); return true;
+    }
+    if (a === 'hw:clear' || a === 'hw:rewrite') { h.run = (h.run || 0) + 1; h.strokes = []; h.sampleN = 0; h.read = null; h.state = 'pad'; paint(); say('Handwriting cleared. Write again.'); return true; }
+    if (a === 'hw:close') { h.run = (h.run || 0) + 1; h.strokes = []; h.sampleN = 0; h.read = null; h.state = h.fromInk ? 'inserted' : 'ready'; h.focusField = true; paint(); say('Handwriting closed. Nothing was added.'); return true; }
+    if (a.indexOf('hw:pick:') === 0) { var i = +a.slice(8); h.pick = h.pick === i ? null : i; paint(); return true; }
+    if (a.indexOf('hw:alt:') === 0) {
+      var w = a.slice(7), r0 = h.read[h.pick];
+      if (r0) { r0.w = w; r0.ok = true; }
+      h.pick = null; h.state = 'editing'; paint(); say('Changed to “' + w + '”. ' + (hwUnsure(h) ? '' : 'Ready to add to the message.')); return true;
+    }
+    if (a === 'hw:edit') { h.read.forEach(function (r) { r.ok = true; }); h.before = h.text || ''; h.text = vxJoin2(h.before, hwText(h)); h.fromInk = true; h.attachInk = h.keep !== false; h.state = 'inserted'; h.focusField = true; paint();
+      say('The recognized text is in the message to edit. Nothing was sent.'); return true; }
+    if (a === 'hw:insert') {
+      if (hwUnsure(h)) { say('One word still needs a look.'); return true; }
+      h.before = h.text || ''; h.text = vxJoin2(h.text, hwText(h)); h.fromInk = true; h.attachInk = h.keep !== false;
+      h.state = 'inserted'; h.focusField = true; paint();
+      say('Added to the message: ' + hwText(h) + '. ' + (h.attachInk ? 'Your handwriting is attached as the original. ' : '') + 'Nothing was sent.'); return true;
+    }
+    if (a === 'hw:undoinsert') { h.text = h.before || ''; h.fromInk = false; h.attachInk = false; h.state = 'ready'; h.focusField = true; paint(); say('Handwriting text removed. Back to what you had typed.'); return true; }
+    if (a === 'hw:keep') { h.before = h.text || ''; h.fromInk = true; h.attachInk = true; h.keptOnly = true; h.state = 'inserted'; h.focusField = true; paint();
+      say('Your handwriting is attached to the message as an image. No text was guessed.'); return true; }
+    if (a === 'hw:detach') { h.attachInk = false; if (h.keptOnly) { h.fromInk = false; h.keptOnly = false; h.state = 'ready'; } paint(); say('Handwritten original removed from the message.'); return true; }
+    if (a === 'hw:type') { h.run = (h.run || 0) + 1; if (h.state === 'unavailable') h.dismissed = true; h.state = h.state === 'unavailable' ? 'unavailable' : 'ready'; h.focusField = true; paint(); return true; }
+    return false;
+  }
+  function vxJoin2(typed, add) {
+    var t = (typed || '').replace(/\s+$/, '');
+    return t ? t + ' ' + add : add;
+  }
+
+  /* ══ Gesture Input · point at the screen to give context ══
+     Contextual selection only: circle, highlight, tap or drag a
+     region over what is on screen, and it joins the request as
+     a named selection. A gesture never runs an action. An
+     ambiguous selection asks; nothing is guessed. Every target
+     is also a real button, so a keyboard (or a person who can't
+     draw) selects the same things.
+
+     g: { state: ready|selecting|made|added|using|cleared|failed,
+          tool, types[], pick {id,label}, sels[], cands[], path[],
+          auto, confirm, multi, labelText, ambiguousText, failText,
+          emphasis, boundary, messy } */
+  var GE_T = [
+    { id: 'signups', label: 'Sign-ups tile' }, { id: 'activation', label: 'Activation tile' },
+    { id: 'revenue', label: 'Revenue tile' }, { id: 'conversion', label: 'Conversion chart' },
+    { id: 'funnel', label: 'Funnel table' }
+  ];
+  var GE_TOOLS = { circle: ['lasso', 'Circle'], highlight: ['highlighter', 'Highlight'], tap: ['touch', 'Tap'], region: ['regionSelect', 'Region'] };
+  function geT(id) { for (var i = 0; i < GE_T.length; i++) if (GE_T[i].id === id) return GE_T[i]; return null; }
+  function geLabel(g, t) { return String(g.labelText || 'Selected: {name}').replace('{name}', t.label); }
+  function geTypes(g) { var t = (g.types || ['circle', 'highlight', 'tap', 'region']).filter(function (k) { return GE_TOOLS[k]; }); return t.length ? t : ['tap']; }
+  function geHas(g, id) { return (g.sels || []).some(function (x) { return x.id === id; }); }
+  /* The dashboard the selection is made on. The same surface in the
+     Live Preview (compact) and the simulator (full). */
+  function geDash(g, compact) {
+    var st = g.state, sel = st === 'selecting';
+    var cls = function (id) {
+      var c = '';
+      if (g.pick && g.pick.id === id && (st === 'made' || sel)) c += ' is-pick';
+      if (geHas(g, id)) c += ' is-sel';
+      if ((g.cands || []).indexOf(id) !== -1 && st === 'failed') c += ' is-cand';
+      if (st === 'using' && geHas(g, id)) c += ' is-using';
+      return c;
+    };
+    var pickBtn = function (t) {
+      return sel ? '<button type="button" class="md-ge__hit" data-act="ge:tap:' + t.id + '" aria-label="Select ' + esc(t.label) + '"></button>' : '';
+    };
+    var tag = function (t) {
+      if (st === 'using' && geHas(g, t.id)) return '<span class="md-ge__tag" role="status">' + MI('visibility') + 'Aria is looking at this</span>';
+      if (geHas(g, t.id) && st !== 'made') return '<span class="md-ge__tag md-ge__tag--quiet">' + MI('check') + 'Selected</span>';
+      return '';
+    };
+    var madeBar = function (t) {
+      if (st !== 'made' || !t) return '';
+      return '<div class="md-ge__made" role="group" aria-label="' + esc(t.label) + ' selected">' +
+        '<span class="md-ge__made-l">' + MI('check') + esc(t.label) + '</span>' +
+        '<button class="md-button md-button--text md-button--small" type="button" data-act="ge:adjust">Adjust</button>' +
+        '<button class="md-button md-button--text md-button--small" type="button" data-act="ge:clear">Clear</button>' +
+        '<button class="md-button md-button--filled md-button--small" type="button" data-act="ge:add">Add to message</button></div>';
+    };
+    var tile = function (id, k, v, d, down) {
+      var t = geT(id);
+      return '<div class="md-ge__t md-ge__tile' + cls(id) + '" data-ge-t="' + id + '">' + pickBtn(t) + tag(t) +
+        '<span class="md-ge__k">' + k + '</span><span class="md-ge__v">' + v + '</span><span class="md-ge__d' + (down ? ' is-down' : '') + '">' + d + '</span>' + '</div>';
+    };
+    var conv = geT('conversion'), fun = geT('funnel');
+    var chart = '<div class="md-ge__t md-ge__chart' + cls('conversion') + '" data-ge-t="conversion">' + pickBtn(conv) + tag(conv) +
+      '<span class="md-ge__k">Conversion · last 30 days</span>' +
+      '<svg viewBox="0 0 300 96" preserveAspectRatio="none" aria-hidden="true">' +
+        '<polyline class="md-ge__grid" points="0,24 300,24"/><polyline class="md-ge__grid" points="0,56 300,56"/><polyline class="md-ge__grid" points="0,88 300,88"/>' +
+        '<polyline class="md-ge__line" points="0,40 30,36 60,38 90,33 120,35 150,31 180,34 200,52 220,62 250,66 275,64 300,68"/>' +
+      '</svg><span class="md-ge__axis"><span>1 Sep</span><span>14 Sep</span><span>30 Sep</span></span>' + '</div>';
+    var funnel = '<div class="md-ge__t md-ge__funnel' + cls('funnel') + '" data-ge-t="funnel">' + pickBtn(fun) + tag(fun) +
+      '<span class="md-ge__k">Funnel</span>' +
+      '<dl><dt>Visit</dt><dd>100%</dd><dt>Sign up</dt><dd>18%</dd><dt>Activate</dt><dd>6.1%</dd><dt>Pay</dt><dd>2.9%</dd></dl>' + '</div>';
+    var types = geTypes(g);
+    var bar = sel
+      ? '<div class="md-ge__bar" role="toolbar" aria-label="Select on screen">' +
+          '<span class="md-ge__bar-l">' + MI(GE_TOOLS[g.tool] ? GE_TOOLS[g.tool][0] : 'lasso') + '<span>' +
+            (g.tool === 'tap' ? 'Tap what you mean' : g.tool === 'region' ? 'Drag a box around what you mean' : g.tool === 'highlight' ? 'Highlight what you mean' : 'Circle what you mean') +
+'</span></span><span class="md-ge__kb">or Tab to it</span>' +
+          (types.length > 1 ? '<span class="md-ge__tools" role="radiogroup" aria-label="Gesture">' + types.map(function (k) {
+            return '<button type="button" role="radio" class="md-ge__tool" data-act="ge:tool:' + k + '" aria-checked="' + (g.tool === k) + '" aria-label="' + GE_TOOLS[k][1] + '" title="' + GE_TOOLS[k][1] + '">' + MI(GE_TOOLS[k][0]) + '<span>' + GE_TOOLS[k][1] + '</span></button>';
+          }).join('') + '</span>' : '') +
+          '<button class="md-button md-button--text md-button--small" type="button" data-act="ge:cancel">Cancel</button>' +
+        '</div>' : '';
+    return '<section class="md-ge__dash' + (compact ? ' md-ge__dash--compact' : '') + '" data-ge="' + esc(st) + '" data-tool="' + esc(g.tool || 'circle') + '" ' +
+        'data-boundary="' + esc(g.boundary || 'dashed') + '" data-emphasis="' + esc(g.emphasis || 'strong') + '" aria-label="Self-serve analytics, September">' +
+      bar +
+      '<div class="md-ge__grid2">' +
+        '<div class="md-ge__tiles">' + tile('signups', 'Sign-ups', '12,480', '+4% vs Aug') + tile('activation', 'Activation', '32%', '−9 pts', true) + tile('revenue', 'Revenue', '£418k', '+12%') + '</div>' +
+        '<div class="md-ge__row">' + chart + funnel + '</div>' +
+      '</div>' +
+      madeBar(g.pick) +
+      (sel ? '<svg class="md-ge__ink" data-ge-ink aria-hidden="true"' + ((g.path || [])[0] && g.path[0][2] === 'n' ? ' viewBox="0 0 1 1" preserveAspectRatio="none"' : '') + '><path d="' + geD(g.path || [], g.tool) + '"/></svg>' : '') +
+    '</section>';
+  }
+  function geD(pts, tool) {
+    if (!pts.length) return '';
+    if (tool === 'region' && pts.length > 1) {
+      var a = pts[0], b = pts[pts.length - 1];
+      return 'M' + a[0] + ' ' + a[1] + 'H' + b[0] + 'V' + b[1] + 'H' + a[0] + 'Z';
+    }
+    return 'M' + pts.map(function (p) { return (+p[0]).toFixed(3) + ' ' + (+p[1]).toFixed(3); }).join('L');
+  }
+  /* Above the composer: what could not be identified, and the cleared note. */
+  function gePanel(g) {
+    var b = function (act, label, k) { return '<button class="md-button md-button--' + (k || 'text') + ' md-button--small" type="button" data-act="' + act + '">' + label + '</button>'; };
+    if (g.state === 'failed') {
+      var c = (g.cands || []).map(geT).filter(Boolean);
+      return '<div class="md-vx__panel md-ge__panel" role="alert">' +
+        '<p class="md-vx__ph">' + MI('help') + '<span>' + (c.length ? esc(g.ambiguousText || 'Your selection covers more than one thing. Which did you mean?') : esc(g.failText || 'Couldn’t tell what you selected — nothing is there to select.')) + '</span></p>' +
+        (c.length ? '<div class="md-ge__cands" role="group" aria-label="Choose one">' + c.map(function (t) { return b('ge:choose:' + t.id, esc(t.label), 'tonal'); }).join('') + '</div>' : '') +
+        '<div class="md-vx__pa">' + b('ge:describe', 'Describe it instead') + b('ge:clear', 'Clear') + b('ge:refine', 'Try again', 'filled') + '</div></div>';
+    }
+    if (g.state === 'cleared')
+      return '<div class="md-vx__panel md-ge__panel md-ge__panel--quiet" role="status"><p class="md-vx__ph">' + MI('check') + '<span>Selection cleared — Aria won’t use ' + esc(g.lastLabel || 'it') + '.</span></p>' +
+        '<div class="md-vx__pa">' + b('ge:open', 'Select something else', 'tonal') + '</div></div>';
+    return '';
+  }
+  /* Real pointer gestures on the dashboard. */
+  function geBind(root, g, io) {
+    var dash = root && root.querySelector('.md-ge__dash'), ink = dash && dash.querySelector('[data-ge-ink]');
+    if (!dash) return;
+    root._geG = g; root._geIO = io;
+    if (!root._geKey) {
+      root._geKey = function (e) { var G = root._geG; if (e.key === 'Escape' && G && G.state === 'selecting') { e.preventDefault(); e.stopPropagation(); geAct('ge:cancel', G, root._geIO); } };
+      root.addEventListener('keydown', root._geKey, true);
+    }
+    if (!ink || g.tool === 'tap') return;
+    var path = ink.querySelector('path'), pts = null;
+    var at = function (e) { var r = dash.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    ink.addEventListener('pointerdown', function (e) { ink.setPointerCapture(e.pointerId); pts = [at(e)]; g.path = pts; path.setAttribute('d', geD(pts, g.tool)); });
+    ink.addEventListener('pointermove', function (e) { if (!pts) return; pts.push(at(e)); path.setAttribute('d', geD(pts, g.tool)); });
+    var end = function () {
+      if (!pts) return;
+      var p = pts; pts = null;
+      if (p.length < 3) { g.path = []; path.setAttribute('d', ''); return; }
+      var xs = p.map(function (q) { return q[0]; }), ys = p.map(function (q) { return q[1]; });
+      var box = { l: Math.min.apply(0, xs), t: Math.min.apply(0, ys), r: Math.max.apply(0, xs), b: Math.max.apply(0, ys) };
+      if (g.tool === 'highlight') { box.t -= 10; box.b += 10; }
+      var dr = dash.getBoundingClientRect(), barea = Math.max(1, (box.r - box.l) * (box.b - box.t)), hits = [];
+      [].forEach.call(dash.querySelectorAll('[data-ge-t]'), function (el) {
+        var r = el.getBoundingClientRect(), tl = r.left - dr.left, tt = r.top - dr.top, tr = tl + r.width, tb = tt + r.height;
+        var ix = Math.max(0, Math.min(tr, box.r) - Math.max(tl, box.l)), iy = Math.max(0, Math.min(tb, box.b) - Math.max(tt, box.t));
+        var ov = ix * iy;
+        if (ov / (r.width * r.height) > .3 || ov / barea > .3) hits.push({ id: el.getAttribute('data-ge-t'), ov: ov });
+      });
+      hits.sort(function (a, b) { return b.ov - a.ov; });
+      geAct('ge:hit:' + hits.map(function (h) { return h.id; }).join(','), g, io);
+    };
+    ink.addEventListener('pointerup', end); ink.addEventListener('pointercancel', end);
+  }
+  /* Controller. io: { paint(), announce(t) } */
+  function geAct(a, g, io) {
+    var say = function (t) { if (io.announce) io.announce(t); };
+    var paint = function () { if (io.paint) io.paint(); };
+    var rest = function () { return (g.sels || []).length ? 'added' : 'ready'; };
+    if (a === 'ge:open') {
+      if (g.state === 'unavailable') return true;
+      if (g.state === 'selecting') return geAct('ge:cancel', g, io);
+      g.state = 'selecting'; g.path = []; g.cands = []; g.pick = null;
+      if (geTypes(g).indexOf(g.tool) === -1) g.tool = geTypes(g)[0];
+      g.focusDash = true; paint();
+      say('Selecting. ' + (g.tool === 'tap' ? 'Tap' : 'Circle') + ' what you mean on the dashboard, or Tab to it and press Enter. Escape cancels. Nothing is done with a selection until you add it.');
+      return true;
+    }
+    if (a.indexOf('ge:tool:') === 0) { g.tool = a.slice(8); g.path = []; paint(); say(GE_TOOLS[g.tool][1] + ' selected.'); return true; }
+    if (a === 'ge:cancel') { g.state = rest(); g.path = []; g.pick = null; g.focusField = true; paint(); say('Selection cancelled. Nothing was added.'); return true; }
+    if (a === 'ge:demo') {
+      if (g.state !== 'selecting') geAct('ge:open', g, io);
+      g.demoRun = (g.demoRun || 0) + 1;
+      var mine = g.demoRun, N = 24, k = 0, both = !!g.messy;
+      var cx = both ? .66 : .38, cy = .74, rx = both ? .36 : .3, ry = both ? .25 : .22;
+      g.path = []; g.demoBox = { cx: cx, cy: cy, rx: rx, ry: ry };
+      (function step() {
+        if (g.demoRun !== mine || g.state !== 'selecting') return;
+        if (k > N) {
+          geAct('ge:hit:' + (both ? 'conversion,funnel' : 'conversion'), g, io); return;
+        }
+        var th = -Math.PI / 2 + (k / N) * Math.PI * 2.1;
+        g.path.push([cx + rx * Math.cos(th), cy + ry * Math.sin(th), 'n']); k++;
+        var r = io.root && io.root(), pe = r && r.querySelector('[data-ge-ink] path');
+        if (pe) { pe.parentNode.setAttribute('viewBox', '0 0 1 1'); pe.parentNode.setAttribute('preserveAspectRatio', 'none'); pe.setAttribute('d', geD(g.path, 'circle')); }
+        else paint();
+        setTimeout(step, 28);
+      })();
+      return true;
+    }
+    if (a.indexOf('ge:hit:') === 0 || a.indexOf('ge:tap:') === 0 || a.indexOf('ge:choose:') === 0) {
+      var ids = a.split(':')[2].split(',').filter(Boolean);
+      g.path = [];
+      if (!ids.length) { g.state = 'failed'; g.cands = []; paint(); say(g.failText || 'Couldn’t tell what you selected — nothing is there to select.'); return true; }
+      if (ids.length > 1 && g.confirm !== false) {
+        g.state = 'failed'; g.cands = ids; paint();
+        say((g.ambiguousText || 'Your selection covers more than one thing. Which did you mean?') + ' ' + ids.map(function (i) { return geT(i).label; }).join(' or ') + '.'); return true;
+      }
+      var t = geT(ids[0]); g.pick = { id: t.id, label: t.label }; g.cands = [];
+      if (g.auto) return geAct('ge:add', g, io);
+      g.state = 'made'; paint(); say(t.label + ' selected. Add to message, Adjust, or Clear.');
+      return true;
+    }
+    if (a === 'ge:add') {
+      if (!g.pick) return true;
+      var p = g.pick, replaced = null;
+      if (!geHas(g, p.id)) {
+        if (!g.multi && (g.sels || []).length) { replaced = g.sels[0]; g.sels = []; }
+        g.sels = (g.sels || []).concat([{ id: p.id, label: p.label }]);
+      }
+      g.pick = null; g.state = 'added'; g.focusField = true; paint();
+      say(geLabel(g, p) + ' — added to the message as context.' + (replaced ? ' It replaces ' + replaced.label + '.' : '') + ' Nothing was sent.');
+      return true;
+    }
+    if (a === 'ge:adjust') { g.state = 'selecting'; g.path = []; paint(); say('Adjust the selection. Circle or tap again.'); return true; }
+    if (a === 'ge:refine') { g.state = 'selecting'; g.path = []; g.cands = []; g.pick = null; paint(); say('Try the selection again.'); return true; }
+    if (a === 'ge:clear') {
+      var had = g.state === 'made' || g.state === 'failed';
+      g.pick = null; g.cands = []; g.path = [];
+      if (had) { g.state = rest(); g.focusField = true; paint(); say('Selection cleared. Nothing was added.'); return true; }
+      if ((g.sels || []).length) { g.lastLabel = g.sels.map(function (x) { return x.label; }).join(' and '); g.sels = []; g.state = 'cleared'; paint(); say('Selection cleared. Aria won’t use the ' + g.lastLabel + '.'); }
+      return true;
+    }
+    if (a.indexOf('ge:remove:') === 0) {
+      var i = +a.slice(10), x = (g.sels || [])[i]; if (!x) return true;
+      g.sels = g.sels.filter(function (_, j) { return j !== i; });
+      g.lastLabel = x.label;
+      g.state = g.sels.length ? 'added' : 'cleared'; paint();
+      say('Removed ' + x.label + '. Aria won’t use it.'); return true;
+    }
+    if (a === 'ge:describe') { g.state = rest(); g.cands = []; g.path = []; g.pick = null; g.focusField = true; g.describe = true; paint(); say('Describe what you mean in the message instead.'); return true; }
+    return false;
+  }
+
+  /* ══ Structured Input · a compact form the agent asks with ══
+     When a request needs exact values, the agent offers a small
+     form beside the conversation. AI-suggested values are marked
+     and editable; what you set is never changed for you; checks
+     sit next to their field; a consequential step is reviewed and
+     confirmed; a failure keeps everything; and you can see exactly
+     what the agent received.
+
+     f: { state: empty|partial|complete|invalid|ready|submitted|failed,
+          v{task,owner,due,priority}, sug{k:true}, edited{k:true},
+          err{k:msg}, busy, fail, id, req{owner,due}, suggest, confirm,
+          preserve, density, layout, closed, undone, ...copy } */
+  var SI_TODAY = '2026-10-06';
+  var SI_SUG = { task: 'Fix export timeout', owner: 'Maya Chen', due: '2026-10-12', priority: 'High' };
+  var SI_WHY = { task: 'From the blocker title', owner: 'Maya owns CSV export', due: 'Before the 2.4 code freeze (13 Oct)', priority: 'Blocks 3 customers' };
+  var SI_OWNERS = ['Maya Chen', 'Dev Patel', 'Priya Shah', 'Sam Ortiz'];
+  var SI_PRI = ['Low', 'Medium', 'High'];
+  function siDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso + 'T12:00:00'), M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], W = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return isNaN(d) ? iso : W[d.getDay()] + ' ' + d.getDate() + ' ' + M[d.getMonth()];
+  }
+  function siReq(f, k) { return k === 'task' || k === 'priority' || !!(f.req || {})[k]; }
+  function siKeys() { return ['task', 'owner', 'due', 'priority']; }
+  function siDerive(f) {
+    var v = f.v || {}, keys = siKeys();
+    var any = keys.some(function (k) { return (v[k] || '').trim(); });
+    var done = keys.every(function (k) { return !siReq(f, k) || (v[k] || '').trim(); });
+    return done ? 'complete' : any ? 'partial' : 'empty';
+  }
+  function siCheck(f) {
+    var v = f.v || {}, e = {};
+    siKeys().forEach(function (k) { if (siReq(f, k) && !(v[k] || '').trim()) e[k] = (f.requiredText || 'Required') + '.'; });
+    if ((v.task || '').length > 80) e.task = 'Keep it under 80 characters.';
+    if (v.due && v.due <= SI_TODAY) e.due = f.dateText || 'Pick a date after today (Tue 6 Oct).';
+    return e;
+  }
+  function siPayload(f) {
+    var v = f.v || {}, out = { type: 'task', title: v.task || '', linkedTo: 'EXP-210' };
+    if (v.owner) out.owner = v.owner; if (v.due) out.due = v.due; if (v.priority) out.priority = v.priority.toLowerCase();
+    return out;
+  }
+  function siPayloadHTML(f) {
+    return '<pre class="md-si__json" tabindex="0" aria-label="What Aria receives">' + esc(JSON.stringify(siPayload(f), null, 2)) + '</pre>';
+  }
+  function siMark(f, k) {
+    if ((f.edited || {})[k]) return '<span class="md-si__mark md-si__mark--you">' + MI('person') + 'Edited by you</span>';
+    /* No “Suggested” badge on the fields (user request, 7 Oct). */
+    return '';
+  }
+  function siField(f, k) {
+    var v = f.v || {}, err = (f.err || {})[k], id = 'si-' + k, hid = id + '-h', eid = id + '-e', req = siReq(f, k);
+    var lab = { task: f.taskLabel || 'Task', owner: 'Owner', due: 'Due date', priority: 'Priority' }[k];
+    var help = { task: f.helpText || 'What needs doing, in a few words.', owner: 'Who will do it.', due: 'When it should be done.', priority: '' }[k];
+    var desc = (help ? hid : '') + (err ? ' ' + eid : '');
+    var ctl;
+    if (k === 'task') ctl = '<input class="md-si__in" id="' + id + '" data-si-f="task" type="text" value="' + esc(v.task || '') + '"' + (req ? ' aria-required="true"' : '') + (err ? ' aria-invalid="true"' : '') + ' aria-describedby="' + desc.trim() + '" autocomplete="off">';
+    else if (k === 'owner') ctl = '<select class="md-si__in" id="' + id + '" data-si-f="owner"' + (req ? ' aria-required="true"' : '') + (err ? ' aria-invalid="true"' : '') + ' aria-describedby="' + desc.trim() + '">' +
+      '<option value=""' + (!v.owner ? ' selected' : '') + '>Choose…</option>' + SI_OWNERS.map(function (o) { return '<option' + (v.owner === o ? ' selected' : '') + '>' + o + '</option>'; }).join('') + '</select>';
+    else if (k === 'due') ctl = '<input class="md-si__in" id="' + id + '" data-si-f="due" type="date" min="2026-10-07" value="' + esc(v.due || '') + '"' + (req ? ' aria-required="true"' : '') + (err ? ' aria-invalid="true"' : '') + ' aria-describedby="' + desc.trim() + '">';
+    else ctl = '<span class="md-si__seg" role="radiogroup" aria-labelledby="' + id + '-l"' + (err ? ' aria-describedby="' + eid + '"' : '') + '>' + SI_PRI.map(function (p) {
+      return '<button type="button" role="radio" class="md-si__segb" data-act="si:pri:' + p + '" aria-checked="' + (v.priority === p) + '">' + p + '</button>'; }).join('') + '</span>';
+    return '<div class="md-si__f' + (err ? ' is-err' : '') + '" data-si-k="' + k + '">' +
+      '<span class="md-si__lr"><' + (k === 'priority' ? 'span id="' + id + '-l"' : 'label for="' + id + '"') + ' class="md-si__l">' + lab + (req ? '<span aria-hidden="true"> *</span>' : ' <span class="md-si__opt">(optional)</span>') + '</' + (k === 'priority' ? 'span' : 'label') + '>' + siMark(f, k) + '</span>' +
+      ctl +
+      (help ? '<span class="md-si__h" id="' + hid + '">' + esc(help) + '</span>' : '') +
+      (err ? '<span class="md-si__e" id="' + eid + '" role="alert">' + MI('error') + esc(err) + '</span>' : '') +
+    '</div>';
+  }
+  /* The card. */
+  function siCard(f) {
+    var st = f.state, b = function (act, label, k, dis) { return '<button class="md-button md-button--' + (k || 'text') + ' md-button--small" type="button" data-act="' + act + '"' + (dis ? ' disabled' : '') + '>' + label + '</button>'; };
+    var head = '<header class="md-si__hd"><span class="md-si__t">' + MI('editNote') + '<span>Follow-up task</span></span>' +
+      '<span class="md-si__src">For blocker <b>EXP-210</b> · CSV export times out</span></header>';
+    var open = '<section class="md-si" data-si="' + esc(st) + '" data-density="' + esc(f.density || 'comfortable') + '" data-layout="' + esc(f.layout || 'grouped') + '" aria-label="Follow-up task form">';
+    if (f.closed) return '<section class="md-si md-si--closed" aria-label="Follow-up task form"><p class="md-si__closed">' + MI('close') + '<span>Form closed — no task was created.</span>' + b('si:reopen', 'Reopen') + '</p></section>';
+    if (st === 'submitted')
+      return open + head + '<div class="md-si__done" role="status"><p class="md-si__ok">' + MI('check') + '<span>Task created — <b>' + esc(f.id || 'EXP-214') + '</b></span></p>' +
+        '<dl class="md-si__sum">' + siSum(f) + '</dl>' +
+        '<details class="md-si__rx"><summary>What Aria received</summary>' + siPayloadHTML(f) + '</details>' +
+        '<div class="md-si__acts">' + b('si:undo', 'Undo') + b('noop', 'Open task', 'tonal') + '</div></div></section>';
+    if (st === 'ready')
+      return open + head + '<div class="md-si__rev"><p class="md-si__q">' + esc(f.confirmText || 'Aria will create this task in Orbit and link it to EXP-210. You can undo it afterwards.') + '</p>' +
+        '<dl class="md-si__sum">' + siSum(f) + '</dl>' +
+        '<details class="md-si__rx"><summary>What Aria will receive</summary>' + siPayloadHTML(f) + '</details>' +
+        '<div class="md-si__acts">' + b('si:back', 'Back to edit', 'text', f.busy) + b('si:submit', f.busy ? 'Creating…' : 'Create task', 'filled', f.busy) + '</div></div></section>';
+    var keys = siKeys(), done = keys.filter(function (k) { return (f.v[k] || '').trim(); }).length;
+    var nerr = Object.keys(f.err || {}).length;
+    return open + head +
+      (st === 'failed' ? '<p class="md-si__fail" role="alert">' + MI('error') + '<span>' + esc(f.failText || 'Couldn’t create the task — Orbit didn’t respond.') + (f.preserve !== false ? ' Your details are kept.' : '') + '</span></p>' : '') +
+      (st === 'invalid' ? '<p class="md-si__sumerr" role="alert">' + MI('error') + '<span>' + nerr + (nerr === 1 ? ' field needs' : ' fields need') + ' a look before review.</span></p>' : '') +
+      ((st === 'empty' || st === 'partial') && f.suggest !== false && !siKeys().every(function (k) { return (f.v[k] || '').trim(); }) ? '<p class="md-si__fill">' + MI('spark') + '<span>Aria can suggest values from the blocker. You review every one.</span>' + b('si:suggest', 'Suggest values', 'tonal') + '</p>' : '') +
+      '<div class="md-si__grid">' + keys.map(function (k) { return siField(f, k); }).join('') + '</div>' +
+      '<div class="md-si__acts"><span class="md-si__prog">' + done + ' of 4 filled</span>' +
+        b('si:cancel', 'Cancel') +
+        (st === 'failed' ? b('si:retry', 'Retry', 'filled') : b('si:review', f.confirm === false ? 'Create task' : 'Review', 'filled')) +
+      '</div></section>';
+  }
+  function siSum(f) {
+    var v = f.v;
+    return [['Task', v.task], ['Owner', v.owner || '—'], ['Due', siDate(v.due) || '—'], ['Priority', v.priority]].map(function (r, i) {
+      var k = siKeys()[i];
+      return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1] || '') + ((f.sug || {})[k] && !(f.edited || {})[k] && f.v[k] === SI_SUG[k] ? ' <span class="md-si__tagsm">Suggested</span>' : (f.edited || {})[k] ? ' <span class="md-si__tagsm md-si__tagsm--you">Edited</span>' : '') + '</dd></div>';
+    }).join('');
+  }
+  /* Live editing: values follow the controls without a repaint. */
+  function siBind(root, f, io) {
+    if (!root) return;
+    [].forEach.call(root.querySelectorAll('[data-si-f]'), function (el) {
+      var k = el.getAttribute('data-si-f');
+      var upd = function (commit) {
+        f.v[k] = el.value;
+        if ((f.sug || {})[k] && el.value !== SI_SUG[k]) f.edited[k] = true;
+        if (f.err && f.err[k] && !siCheck(f)[k]) { delete f.err[k]; commit = true; }
+        if (commit) { if (f.state !== 'failed') f.state = Object.keys(f.err || {}).length ? 'invalid' : siDerive(f); f.focusKey = k; if (io.paint) io.paint(); }
+      };
+      el.addEventListener('input', function () { upd(false); });
+      el.addEventListener('change', function () { upd(true); });
+    });
+    if (f.focusKey) {
+      var el = root.querySelector('[data-si-f="' + f.focusKey + '"], [data-si-k="' + f.focusKey + '"] [role="radio"][aria-checked="true"], [data-si-k="' + f.focusKey + '"] [role="radio"]');
+      f.focusKey = null;
+      if (el) setTimeout(function () { if (el.isConnected) el.focus({ preventScroll: true }); }, 0);
+    }
+  }
+  /* Controller. io: { paint(), announce(t), wait(ms) → Promise } */
+  function siAct(a, f, io) {
+    var say = function (t) { if (io.announce) io.announce(t); };
+    var paint = function () { if (io.paint) io.paint(); };
+    var later = io.wait || function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+    f.v = f.v || {}; f.sug = f.sug || {}; f.edited = f.edited || {}; f.err = f.err || {};
+    if (a === 'si:suggest') {
+      siKeys().forEach(function (k) { if (!(f.v[k] || '').trim()) { f.v[k] = SI_SUG[k]; f.sug[k] = true; } });
+      f.state = siDerive(f); paint(); say('Suggested values added and marked. Check each one — nothing you set was changed.'); return true;
+    }
+    if (a.indexOf('si:pri:') === 0) {
+      var p = a.slice(7); f.v.priority = p; if (f.sug.priority && p !== SI_SUG.priority) f.edited.priority = true;
+      delete f.err.priority; if (f.state !== 'failed') f.state = Object.keys(f.err).length ? 'invalid' : siDerive(f); f.focusKey = 'priority'; paint(); say('Priority: ' + p + '.'); return true;
+    }
+    if (a === 'si:review') {
+      f.err = siCheck(f);
+      var bad = Object.keys(f.err);
+      if (bad.length) { f.state = 'invalid'; f.focusKey = bad[0]; paint(); say(bad.length + (bad.length === 1 ? ' field needs' : ' fields need') + ' a look: ' + bad.map(function (k) { return f.err[k]; }).join(' ')); return true; }
+      if (f.confirm === false) return siAct('si:submit', f, io);
+      f.state = 'ready'; paint(); say('Review: ' + f.v.task + ', ' + (f.v.owner || 'no owner') + ', due ' + (siDate(f.v.due) || 'no date') + ', ' + f.v.priority + ' priority. Create task, or go back to edit.');
+      return true;
+    }
+    if (a === 'si:back' || a === 'si:edit') { f.busy = false; f.state = siDerive(f); f.focusKey = 'task'; paint(); say('Back to editing. Nothing was created.'); return true; }
+    if (a === 'si:submit' || a === 'si:retry') {
+      if (Object.keys(siCheck(f)).length) return siAct('si:review', f, io);
+      var run = f.run = (f.run || 0) + 1;
+      f.state = 'ready'; f.busy = true; paint(); say('Creating the task…');
+      later(1300).then(function () {
+        if (f.run !== run) return;
+        f.busy = false;
+        if (f.fail) {
+          if (f.preserve === false) { f.v = { task: '', owner: '', due: '', priority: '' }; f.sug = {}; f.edited = {}; }
+          f.state = 'failed'; paint(); say((f.failText || 'Couldn’t create the task — Orbit didn’t respond.') + (f.preserve !== false ? ' Your details are kept. Retry, or edit.' : ''));
+          if (io.failed) io.failed(f); return;
+        }
+        f.id = 'EXP-214'; f.state = 'submitted'; paint(); say('Task created: ' + f.id + ', ' + f.v.task + '.');
+        if (io.created) io.created(f);
+      });
+      return true;
+    }
+    if (a === 'si:undo') { f.state = siDerive(f); f.undone = true; paint(); say('Task ' + (f.id || '') + ' deleted. Your details are still here.'); if (io.undone) io.undone(f); return true; }
+    if (a === 'si:cancel') { f.run = (f.run || 0) + 1; f.busy = false; f.closed = true; paint(); say('Form closed. No task was created.'); return true; }
+    if (a === 'si:reopen') { f.closed = false; f.state = f.state === 'submitted' ? 'submitted' : siDerive(f); f.focusKey = 'task'; paint(); say('Form reopened with your details.'); return true; }
+    return false;
+  }
+
+  /* ══ THE FOUR ACTIONS THAT ARE ALWAYS THERE (user request, 7 Oct) ══
+     Every prompt composer carries + (add context), the model chip
+     (model · effort), the microphone and Send — in every pattern, every
+     preview and every simulator. A host that already owns one of them
+     (its own + menu, its own model chip, its own voice session) keeps
+     it. Anything a host does not own is supplied here, with its state
+     kept on the host's own state object (axdUse) and its actions sent
+     back as `axd:*`, which both runners hand to axdAct. */
+  var AXD_PLUS = ['Attach a file', 'Add context'];
+  var axdCur = null;
+  function axdUse(state) { axdCur = state || null; }
+  function axdState() { return axdCur || (axdCur = {}); }
+  function axdVx(D) {
+    if (!D.vx) D.vx = vxSession({ granted: true, script: 'and summarise the key decisions'.split(' ') });
+    return D.vx;
+  }
   function composer(o) {
+    o = Object.assign({}, o || {});
+    var D = axdState(), M = window.MaterialModel;
+    var dPlus = !o.plus, dModel = !o.model && !!M, dMic = !o.dictation && o.mode !== 'voice';
+    if (dPlus) { o.plus = AXD_PLUS; o.plusOpen = !!D.plusOpen; o.sub = ''; o.subAt = null; o.chips = (D.chips || []).slice(); }
+    if (dModel) {
+      o.models = M.MODELS; o.model = D.model || 'balanced'; o.effort = D.effort || M.EFFORT_DEFAULT;
+      o.modesOpen = !!D.modesOpen; o.effortOpen = !!D.effortOpen; o.modes = null;
+      o.modelOpts = Object.assign({ showAuto: true, showFor: true, showEffort: true, modelsHeading: 'Models' }, o.modelOpts || {});
+    }
+    if (dMic) {
+      var v = axdVx(D), live = /^(listening|paused|processing)$/.test(v.state);
+      if (!live) {
+        if (v.fromVoice && /^(transcribed|editing)$/.test(v.state)) {
+          var ht = o.text || '';
+          /* The host has not caught up with the transcript yet: show it. */
+          if (ht === (v.hostText || '')) o.text = v.text;
+          else if (ht !== (v.text || '')) {
+            if (!ht.trim()) { v.state = 'ready'; v.fromVoice = false; }
+            else { v.state = 'editing'; v.text = ht; v.hostText = ht; }
+          }
+        } else if (v.state !== 'permission') v.text = o.text || '';
+      }
+      o.dictation = v; o.__dMic = true;
+    }
+    o.mic = true;
+    var html = composerCore(o);
+    if (dPlus) html = html.replace(/data-act="ax:(plus|add:\d+|unchip:\d+)"/g, 'data-act="axd:$1"');
+    if (dModel) html = html.replace(/data-act="ax:mode"/g, 'data-act="axd:mode"').replace(/data-act="model:/g, 'data-act="axd:model:');
+    if (dMic) html = html.replace(/data-act="(voice:start|vx:[a-z]+)"/g, 'data-act="axd:$1"');
+    return html;
+  }
+  /* The default controls' behaviour. io: { paint(), announce(t), container } */
+  function axdAct(a, D, io) {
+    var M = window.MaterialModel, say = function (t) { if (io.announce) io.announce(t); };
+    a = a.slice(4);
+    var field = function () { return io.container && io.container.querySelector('[data-ax-field]'); };
+    if (a === 'plus') { D.plusOpen = !D.plusOpen; D.modesOpen = D.effortOpen = false; io.paint(); return true; }
+    if (a.indexOf('add:') === 0) { D.plusOpen = false; D.chips = (D.chips || []).concat([AXD_PLUS[+a.slice(4)]]); io.paint(); say(AXD_PLUS[+a.slice(4)] + ' added.'); return true; }
+    if (a.indexOf('unchip:') === 0) { var i = +a.slice(7); D.chips = (D.chips || []).filter(function (_, j) { return j !== i; }); io.paint(); return true; }
+    if (a === 'mode') {
+      if (D.modesOpen || D.effortOpen) { D.modesOpen = D.effortOpen = false; } else D.modesOpen = true;
+      D.plusOpen = false; io.paint(); return true;
+    }
+    if (a.indexOf('model:') === 0 && M) {
+      var m = a.slice(6);
+      if (m === 'effort:focus') return true;
+      if (m.indexOf('pick:') === 0) { D.model = m.slice(5); D.modesOpen = false; D.effortOpen = true; if (M.holdTrack) M.holdTrack(); io.paint();
+        say(((M.byId(M.MODELS, D.model)) || {}).label + ' selected. Now set the effort.'); return true; }
+      if (m.indexOf('effort:') === 0) { var e = m.slice(7); if (M.EFFORT.some(function (x) { return x.id === e; })) { D.effort = e; io.paint(); } return true; }
+      if (m === 'back') { D.effortOpen = false; D.modesOpen = true; if (M.holdMenu) M.holdMenu(); io.paint(); return true; }
+      if (m === 'auto:on') { D.model = 'default'; D.modesOpen = false; D.effortOpen = true; io.paint(); return true; }
+      if (m === 'auto:off') { D.model = 'balanced'; io.paint(); return true; }
+      return true;
+    }
+    if (a === 'voice:start' || a.indexOf('vx:') === 0) {
+      var v = axdVx(D);
+      if (a === 'voice:start') { var f0 = field(); v.text = f0 ? f0.value : (v.text || ''); v.hostText = v.text; D.plusOpen = D.modesOpen = D.effortOpen = false; }
+      vxAct(a, v, {
+        root: function () { return io.container && (io.container.querySelector('.md-vx') || io.container.querySelector('.ax__composer')); },
+        paint: function () {
+          io.paint();
+          if (!/^(listening|paused|processing)$/.test(v.state)) {
+            var f = field();
+            if (f && f.value !== (v.text || '')) { f.value = v.text || ''; f.dispatchEvent(new Event('input', { bubbles: true })); }
+            if (v.focusField && f) { v.focusField = false; f.focus({ preventScroll: true }); try { f.setSelectionRange(f.value.length, f.value.length); } catch (er) {} }
+          }
+        },
+        announce: say
+      });
+      /* Undo hands back exactly what was typed: push it into the host's field. */
+      if (a === 'vx:undo') {
+        var fu = field(), back = v.text || '';
+        if (fu && fu.value !== back) { fu.value = back; fu.dispatchEvent(new Event('input', { bubbles: true })); io.paint(); }
+      }
+      return true;
+    }
+    return false;
+  }
+  function composerCore(o) {
     var V = window.MaterialVoice;
     /* SIZE is a state of this one composer, not a second component.
        `initial` is the large empty-workspace invitation (Initial CTA):
@@ -7466,9 +8183,13 @@
        composer behaves exactly as it always has. */
     var entry = o.entry || '';
     var fieldLabel = o.label || ('Ask ' + o.agent);
-    var voice = o.mode === 'voice' && V;
+    /* DICTATION (Voice Input): a richer voice session on the same
+       bar — see VOICE INPUT · DICTATION above. */
+    var dict = o.dictation || null;
+    var dLive = !!(dict && VX_LIVE.test(dict.state));
+    var voice = (o.mode === 'voice' && V) || dLive;
     var vs = o.voice || 'listening';
-    var meta = voice ? (V.STATES[vs] || V.STATES.listening) : null;
+    var meta = voice && V ? (V.STATES[vs] || V.STATES.listening) : null;
     var busy = !!o.busy, blocked = !!o.blocked;
     /* RUNNING is the agent working on a request this composer sent
        (Open Input). Unlike `busy`, the field stays live — the draft
@@ -7543,7 +8264,9 @@
       : '';
 
     var body;
-    if (voice) {
+    if (dLive) {
+      body = vxBody(dict);
+    } else if (voice) {
       /* Left slot stays a control of the same size, so the bar
          does not visibly re-rhythm when the mode changes. It is
          the microphone, now showing that it is on — the same
@@ -7631,9 +8354,21 @@
         /* The microphone appears only where speaking is actually
            a way of asking in this scenario. A control with no use
            in the scenario it is standing in is furniture. */
+        (o.gesture
+          ? '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="ge:open" ' +
+              'aria-label="Select on screen" aria-pressed="' + (o.gesture.state === 'selecting') + '" title="Select on screen">' + MI('lasso') + '</button>'
+          : '') +
+        (o.handwriting
+          ? '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="hw:open" ' +
+              'aria-label="' + (o.handwriting.state === 'unavailable' ? 'Handwriting unavailable' : 'Write by hand') + '" ' +
+              'aria-pressed="' + /^(pad|writing|recognizing|recognized|editing|failed)$/.test(o.handwriting.state) + '"' +
+              (o.handwriting.state === 'unavailable' ? ' aria-disabled="true"' : '') + ' title="Write by hand">' + MI('draw') + '</button>'
+          : '') +
         (o.mic
           ? '<button class="ax__cbtn ax__cbtn--mic md-icon-button md-icon-button--standard" type="button" data-act="voice:start" ' +
-            'aria-label="Speak instead of typing"' +
+            'aria-label="' + (dict && dict.state === 'unavailable' ? 'Voice input unavailable' : 'Speak instead of typing') + '"' +
+            (dict && dict.state === 'unavailable' ? ' aria-disabled="true" title="No microphone was found"'
+              : dict ? ' title="Speak instead of typing"' : '') +
             (busy || blocked ? ' disabled' : '') + '>' + (V ? V.ICONS.mic : ICON_MIC) + '</button>'
           : '') +
         (running && o.stoppable !== false
@@ -7652,7 +8387,7 @@
           ICON_ARROW + '</button>');
     }
 
-    return '<form class="ax__composer" data-idle="' + (!busy && !blocked && !running) + '" ' +
+    var formHTML = '<form class="ax__composer" data-idle="' + (!busy && !blocked && !running) + '" ' +
         (running ? 'data-running="true" ' : '') +
         (err ? 'data-error="' + esc(err.kind || 'send') + '" ' : '') +
         (o.grow ? 'data-grow="smooth" ' : '') +
@@ -7668,6 +8403,18 @@
         errHTML +
         scopes +
         atts +
+        (dict && !dLive ? vxMarker(dict) : '') +
+        (o.visual ? viCard(o.visual) : '') +
+        (o.gesture && (o.gesture.sels || []).length
+          ? '<span class="ax__gesels" role="group" aria-label="Selected on screen">' + o.gesture.sels.map(function (x, i) {
+              return '<span class="ax__gesel' + (o.gesture.state === 'using' ? ' is-using' : '') + '">' + MI('lasso') + '<span>' + esc(geLabel(o.gesture, x)) + '</span>' +
+                '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="ge:remove:' + i + '" aria-label="Remove ' + esc(x.label) + ' from the message">' + MI('close') + '</button></span>';
+            }).join('') + '</span>'
+          : '') +
+        (o.handwriting ? hwMarker(o.handwriting) +
+          (o.handwriting.attachInk
+            ? '<span class="ax__ctxrow"><span class="ax__hwink" role="group" aria-label="Handwritten original attached">' + MI('draw') + '<span>Handwritten note</span>' +
+              '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="hw:detach" aria-label="Remove the handwritten original">' + MI('close') + '</button></span></span>' : '') : '') +
         body +
         /* An item may be a plain label, or an object that owns a
            SUBMENU — the flyout-into-flyout shape every mature
@@ -7713,6 +8460,39 @@
             }).join('') + '</div>'
           : '') +
       '</form>';
+    /* The default microphone (o.__dMic) never displaces a pattern's own frame. */
+    var hostDict = dict && !o.__dMic;
+    if (o.gesture && !hostDict && !o.visual) {
+      var gg = o.gesture;
+      return '<div class="md-ge-c" data-ge-state="' + esc(gg.state) + '">' +
+        '<span class="md-vx__sr" role="status" aria-live="polite" data-ge-sr></span>' +
+        gePanel(gg) + formHTML + '</div>';
+    }
+    if (o.handwriting && !hostDict && !o.visual) {
+      var hh = o.handwriting;
+      return '<div class="md-hw" data-hw-state="' + esc(hh.state) + '">' +
+        '<span class="md-vx__sr" role="status" aria-live="polite" data-hw-sr></span>' +
+        hwSurface(hh) + '<div class="md-hw__bar2">' + formHTML + '</div></div>';
+    }
+    if (o.visual && !hostDict) {
+      /* Visual context: the sharing bar and the messages that belong
+         to it sit above the composer; the card is inside it. */
+      var vv = o.visual;
+      return '<div class="md-vi" data-vi="' + esc(vv.state) + '"' + (vv.sharing ? ' data-sharing="true"' : '') + '>' +
+        '<span class="md-vx__sr" role="status" aria-live="polite" data-vi-sr></span>' +
+        viShareBar(vv) + viPanel(vv) +
+        '<div class="md-vi__bar">' + formHTML + '</div></div>';
+    }
+    if (!dict) return formHTML;
+    /* The voice session's own furniture: the gradient that answers
+       the voice (behind the bar, never over it) and the messages that
+       sit above it. Only a host that passes `dictation` gets these. */
+    return '<div class="md-vx" data-vx="' + esc(dict.state) + '" data-glow="' + esc(dict.glow || 'standard') + '" ' +
+        'data-emphasis="' + esc(dict.emphasis || 'strong') + '" data-density="' + esc(dict.density || 'comfortable') + '">' +
+      '<span class="md-vx__sr" role="status" aria-live="polite" data-vx-sr></span>' +
+      vxPanel(dict) +
+      '<div class="md-vx__bar"><span class="md-vx__glow" aria-hidden="true"></span>' + formHTML + '</div>' +
+    '</div>';
   }
 
   function composerHTML(sim, s, phase) {
@@ -7928,7 +8708,7 @@
         ? lines * (parseFloat(getComputedStyle(el).lineHeight) || 22) +
           (parseFloat(getComputedStyle(el).paddingTop) || 0) +
           (parseFloat(getComputedStyle(el).paddingBottom) || 0)
-        : 72;
+        : 72 + Math.max(0, (parseFloat(getComputedStyle(el).paddingTop) || 0) + (parseFloat(getComputedStyle(el).paddingBottom) || 0) - 4);
       el.style.height = 'auto';
       el.style.height = Math.min(el.scrollHeight, cap) + 'px';
     }
@@ -7968,6 +8748,7 @@
         var br = bigWas.getBoundingClientRect();
         from = { x: br.left - wb.left, y: br.top - wb.top, w: br.width, h: br.height };
       }
+      axdUse(s.__axd || (s.__axd = {}));
       root.innerHTML =
         bar(sim.controls ? sim.controls(s) : []) +
         appShell(sim, s) +
@@ -8052,6 +8833,9 @@
         var noComposer = !root.querySelector('.ax__composer');
         var off = noComposer ||
                   !!root.querySelector('.ax__canvas .sim-turn, .ax__canvas .wf-you, .ax__canvas .sim-ask') ||
+                  /* Voice / Visual Input: zero state only — any voice or
+                     visual state past the first one has no halo. */
+                  !!root.querySelector('.md-vx:not([data-vx="ready"]), .md-vi:not([data-vi="none"])') ||
                   ph === 'thinking' || ph === 'working' || ph === 'blocked' || ph === 'done' ||
                   txt !== base[nk] || !!(s.axQueue && s.axQueue.length);
         if (off && haloOn) {
@@ -8132,6 +8916,7 @@
        destroyed. Two copies of this would drift. */
     function run(action, el) {
       ctx.el = el || null;
+      if (action.indexOf('axd:') === 0) { axdAct(action, s.__axd || (s.__axd = {}), { paint: paint, announce: ctx.announce, container: root }); return; }
       if (shellAct(action, ctx)) return;
       var out = sim.act(action, ctx);
       if (out && typeof out.then === 'function') {
@@ -8336,6 +9121,15 @@
     /* Proactive Suggestions: the card and its controller. */
     pro: { render: proRender, notice: proNotice, resolve: proResolve, act: proAct },
     /* Randomize: the control + direction card, and its controller. */
-    rnd: { render: rndRender, act: rndAct, DEMO: RND_DEMO }
+    rnd: { render: rndRender, act: rndAct, DEMO: RND_DEMO },
+    /* Voice Input (dictation into the shared composer). */
+    axd: { use: axdUse, act: axdAct, state: axdState },
+    vx: { act: vxAct, start: vxStart, halt: vxHalt, join: vxJoin, SCRIPT: VX_SCRIPT, clock: vxClock, session: vxSession },
+    /* Visual Input (visual context on the shared composer). */
+    vi: { act: viAct, sources: viSources, thumb: viThumb, ITEMS: VI_ITEMS, SRC: VI_SRC },
+    /* Handwriting Input (a writing surface on the shared composer). */
+    si: { act: siAct, bind: siBind, card: siCard, derive: siDerive, SUG: SI_SUG, date: siDate, payload: siPayload },
+    ge: { act: geAct, bind: geBind, dash: geDash, T: GE_T, label: geLabel },
+    hw: { act: hwAct, bind: hwBind, unsure: hwUnsure, text: hwText, READ: HW_READ, SAMPLE: HW_SAMPLE }
   };
 })();

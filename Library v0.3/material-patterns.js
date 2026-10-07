@@ -1667,22 +1667,25 @@
       ],
 
       flow: [
-        'The editor is open. Link and Attach carry ordinary icons; Rewrite and Summarize carry the AI-action mark &mdash; Rewrite with its word, Summarize as an icon button.',
-        'The pointer rests on Summarize: its tooltip says &ldquo;Summarize with AI&rdquo;. Tabbing to it shows the same tooltip with a focus ring; Escape hides it.',
-        'They press Rewrite. The actions disable, the working mark turns beside &ldquo;Aria is rewriting&hellip;&rdquo;, and a tool line names what was checked.',
-        'The rewritten text arrives with the generated mark and its label &mdash; a different shape from the action that produced it.',
-        'They press the generated mark: it says what Aria did, and offers Undo.',
-        'They clear the draft: the AI actions dim but stay focusable, and their tooltip says why &mdash; &ldquo;Write something first&rdquo;.'
+        'AI action. The release-note editor is open; only Rewrite carries the AI-action mark, beside its word. Link and Attach carry ordinary icons, and &ldquo;Import changelog&rdquo; &mdash; new, but not AI &mdash; carries the word &ldquo;New&rdquo;.',
+        'Hover or tab to Rewrite: the Material state layer, the focus ring on focus, and the tooltip &ldquo;Rewrite with AI&rdquo;. Escape hides it.',
+        'Agent working. They press Rewrite: its mark becomes the turning working mark and its word &ldquo;Rewriting&hellip;&rdquo;, a status line says what is happening, and Stop is offered. Screen readers hear &ldquo;Agent working: rewriting release note&rdquo;.',
+        'Tool use. While it works, an activity line led by the tool mark names what Aria used &mdash; &ldquo;Style guide checked&rdquo; &mdash; and opens to show what the tool found.',
+        'AI-generated content. The rewritten text carries &ldquo;Generated with AI&rdquo; once, with its own mark &mdash; not the star that started it. Pressing it says what Aria did and offers the original back.',
+        'Disabled. They clear the draft: Rewrite dims to 38% but keeps its mark and stays focusable, and its tooltip says why &mdash; &ldquo;Write something first&rdquo;.'
       ],
 
       statesList: [
-        { name: 'Default', desc: '<em>Trigger:</em> a surface with AI actions, at rest. <em>Behaviour:</em> AI actions carry the action mark in the emphasis colour; ordinary controls carry ordinary icons. <em>Action:</em> point, tab or press. <em>Next:</em> Hover, Focus, Pressed.' },
-        { name: 'Hover', desc: '<em>Trigger:</em> a pointer rests on an AI action. <em>Behaviour:</em> the 8% state layer; an icon-only action shows its tooltip. <em>Action:</em> move away or press. <em>Next:</em> Default or Pressed.' },
-        { name: 'Focus', desc: '<em>Trigger:</em> keyboard focus on an AI action. <em>Behaviour:</em> the visible focus ring and 12% layer; the tooltip shows on focus too; Escape hides it. <em>Action:</em> Enter or Space. <em>Next:</em> Pressed or Default.' },
-        { name: 'Pressed', desc: '<em>Trigger:</em> an AI action is pressed. <em>Behaviour:</em> the 12% pressed layer. <em>Action:</em> release. <em>Next:</em> Agent working.' },
-        { name: 'Agent working', desc: '<em>Trigger:</em> an AI action was released. <em>Behaviour:</em> the working mark turns beside a status line; tool lines name what the agent used; the actions disable; the content stays readable. <em>Action:</em> wait or Stop. <em>Next:</em> Generated content, or Default when stopped.' },
-        { name: 'Generated content', desc: '<em>Trigger:</em> the agent finished. <em>Behaviour:</em> the result carries the generated mark and label; pressing it explains and offers Undo. <em>Action:</em> keep, edit or Undo. <em>Next:</em> Default.' },
-        { name: 'Disabled', desc: '<em>Trigger:</em> nothing to act on, or the agent is busy. <em>Behaviour:</em> AI actions at 38%, still focusable, with a tooltip saying why. <em>Action:</em> provide something to act on. <em>Next:</em> Default.' }
+        { name: 'AI action &middot; Resting', desc: '<em>Trigger:</em> a surface with an AI action, at rest. <em>Behaviour:</em> the AI-action mark beside a verb, in the emphasis colour. <em>Meaning:</em> AI will do something specific when pressed. <em>Action:</em> point, tab or press. <em>Next:</em> Hover, Focus or Pressed.' },
+        { name: 'AI action &middot; Hover', desc: '<em>Trigger:</em> a pointer rests on it. <em>Behaviour:</em> the 8% state layer and the tooltip. <em>Meaning:</em> the same action, offered. <em>Action:</em> press or move away. <em>Next:</em> Pressed or Resting.' },
+        { name: 'AI action &middot; Focus', desc: '<em>Trigger:</em> keyboard focus. <em>Behaviour:</em> the visible focus ring, the 12% layer and the tooltip; Escape hides the tooltip. <em>Meaning:</em> ready for Enter or Space. <em>Action:</em> press or Tab on. <em>Next:</em> Pressed or Resting.' },
+        { name: 'AI action &middot; Pressed', desc: '<em>Trigger:</em> being pressed. <em>Behaviour:</em> the 12% pressed layer. <em>Meaning:</em> &ldquo;I asked AI to do this.&rdquo; <em>Action:</em> release. <em>Next:</em> Working.' },
+        { name: 'Working', desc: '<em>Trigger:</em> the user activates an AI action. <em>Behaviour:</em> the action changes from the AI-action mark to the turning working mark, with a status line; screen readers hear &ldquo;Agent working: &hellip;&rdquo;. <em>Meaning:</em> the requested AI operation is running. <em>Action:</em> wait, or Stop where the product supports cancelling. <em>Next:</em> Complete, Stopped or Error.' },
+        { name: 'Complete', desc: '<em>Trigger:</em> the work finished. <em>Behaviour:</em> the action returns to its AI-action mark; a short line confirms the result with Undo, and the content carries the generated mark. <em>Meaning:</em> done; can run again. <em>Action:</em> keep, Undo or run again. <em>Next:</em> Resting.' },
+        { name: 'Disabled', desc: '<em>Trigger:</em> nothing to act on, or the agent is busy. <em>Behaviour:</em> 38%, still focusable, the mark unchanged, a tooltip saying why. <em>Meaning:</em> still an AI action, unavailable now. <em>Action:</em> provide something to act on. <em>Next:</em> Resting.' },
+        { name: 'Generated content &middot; Disclosed', desc: '<em>Trigger:</em> content AI wrote or changed. <em>Behaviour:</em> one label with the generated mark, under what it describes &mdash; once per block. <em>Meaning:</em> this came from AI. <em>Action:</em> hover or focus for a sentence; press for details. <em>Next:</em> Details.' },
+        { name: 'Generated content &middot; Details', desc: '<em>Trigger:</em> the label is pressed. <em>Behaviour:</em> a rich tooltip says what AI did and from what, and offers the original. <em>Meaning:</em> what changed and how to reverse it. <em>Action:</em> show the original, or Escape. <em>Next:</em> Disclosed.' },
+        { name: 'Tool use &middot; Used / Details', desc: '<em>Trigger:</em> the agent used a tool or system. <em>Behaviour:</em> an activity line led by the tool mark names the tool and the act; pressing it expands what the tool found. <em>Meaning:</em> the agent used another capability. <em>Action:</em> expand or collapse. <em>Next:</em> Used.' }
       ],
 
       variants: [
@@ -1690,7 +1693,8 @@
         { name: 'Icon with tooltip', desc: 'Icon-only for dense toolbars and inline field actions; the tooltip and accessible name say what happens and that AI does it.' },
         { name: 'Outlined / Filled', desc: 'Material Symbols Outlined by default; Filled for 16px and below, where outlined marks lose their inner detail.' },
         { name: 'Primary / Neutral emphasis', desc: 'Primary by default. Neutral (on-surface-variant) for very dense surfaces &mdash; the shapes still differ, so nothing rests on colour.' },
-        { name: 'Approved glyphs', desc: 'One alternative per role (Wand for actions, Inserted for generated content, Tools for tool use), chosen once per product. No uploads, no free choice of glyph.' }
+        { name: 'Approved glyphs', desc: 'One alternative per role (Wand for actions, Inserted for generated content, Tools for tool use), chosen once per product. No uploads, no free choice of glyph.' },
+        { name: 'Where the roles appear', desc: 'Buttons and icon buttons (AI action, 18 / 24px), composer controls, generated-content labels and chips, activity rows (working and tool use), compact side panels and mobile. Inline marks sit at 16&ndash;24px inside 40&ndash;48px targets; the same role keeps the same mark in every one of them.' }
       ],
 
       content: [
@@ -1728,10 +1732,10 @@
         'In usability tests: can people say, for each control, whether it runs AI, and for each block, whether AI wrote it?'
       ],
 
-      composed: ['Md3Button', 'Md3IconButton', 'Md3Tooltip', 'Md3Chip', 'Md3TextField', 'Md3Card'],
+      composed: ['Md3Button', 'Md3IconButton', 'Md3Tooltip', 'Md3Chip', 'Md3TextField', 'Md3Card', 'Material Symbols'],
       related: [['iconography', 'Iconography'], ['proactive', 'Proactive Suggestions'], ['suggested-prompts', 'Suggested Prompts']],
       pkg: 'nucleux-m3-ai-icons',
-      usage: "<!-- Nucleux Md3 components + the Tailwind build from @nucleux/tokens -->\n<link rel=\"stylesheet\" href=\"nucleux-md3.css\" />\n\n<!-- 1 · AI action: the action mark, with its verb -->\n<button type=\"button\" class=\"md3-btn … bg-md-secondary-container text-md-on-secondary-container\">\n  <span class=\"relative shrink-0\"><svg class=\"md-aii md-aii--action mi\"><!-- star_shine --></svg></span>\n  <span class=\"relative\">Rewrite</span>\n</button>\n\n<!-- 2 · Icon-only AI action: name + tooltip say \"with AI\" -->\n<span class=\"md3-tip relative inline-flex\">\n  <button type=\"button\" class=\"md3-iconbtn …\" aria-label=\"Summarize with AI\" aria-describedby=\"tip-sum\">…</button>\n  <span role=\"tooltip\" id=\"tip-sum\" class=\"md3-tip__pop …\">Summarize with AI</span>\n</span>\n\n<!-- 3 · Agent working: the working mark, only while it works -->\n<div role=\"status\"><svg class=\"md-aii md-aii--working mi\"><!-- progress_activity --></svg> Aria is rewriting…</div>\n\n<!-- 4 · Generated content: its own mark and label -->\n<button type=\"button\" class=\"md3-chip …\" aria-expanded=\"false\">\n  <svg class=\"md-aii md-aii--generated mi\"><!-- chat_info --></svg> Generated with AI\n</button>\n\n<script>\n  // <AiIcon role=\"action\" />  <AiIcon role=\"generated\" />  <AiIcon role=\"working\" />  <AiIcon role=\"tool\" />\n  // vocabulary={{ action: 'spark', generated: 'aiInfo', working: 'working', tool: 'tool' }}  — set once per product\n</script>",
+      usage: "<!-- The product names a MEANING; Nucleux maps it to the approved mark, words and motion. -->\n<AiIcon role=\"ai-action\" label=\"Rewrite\" />                   <!-- star_shine, in a tonal Md3Button -->\n<AiIcon role=\"ai-action\" showLabel={false} tooltip=\"Summarize with AI\" />  <!-- icon-only: name + tooltip -->\n<AiIcon role=\"agent-working\" label=\"Rewriting release note…\" />  <!-- turning progress_activity + role=status -->\n<AiIcon role=\"tool-use\" label=\"Style guide checked\" />        <!-- build, on an activity line -->\n<AiIcon role=\"generated-content\" label=\"Generated with AI\" /> <!-- chat_info, in an Md3Chip, once per block -->\n\n<!-- Set once per product: an approved alternative glyph, never a free choice. -->\n<AiIconProvider glyphs={{ \"ai-action\": \"wand\", \"tool-use\": \"handyman\" }} />",
       examples: [
         {
           id: 'icons-roles',
@@ -2803,105 +2807,91 @@
       stageId: 'initially',
       sub: 'Expressive Input',
       subId: 'expressive-input',
-      oneline: 'Speak the request from the same composer you would type it in.',
-      intent: 'Voice as a MODE of the shared prompt composer &mdash; same bar, same place, about a line taller.',
-      what: 'One composer with two modes. In <b>text</b> it is the ordinary bar with a microphone in it; press that, and the middle of the same bar swaps the field for a small activity indicator and a line of status. The width, the place, the radius system and the 34px controls do not change. What was said arrives in the workspace as text, and the bar goes back to being a text bar.',
+      oneline: 'Speak the request into the same composer; see the words, correct them, send them yourself.',
+      intent: 'Speech as an INPUT method into the shared composer: speech → transcript → editable text → the person sends. Not a separate voice assistant.',
+      what: 'The ordinary composer, with a microphone in it. Pressing it (after a plain-words permission request the first time) turns the same bar into a voice session: a lit microphone with a dot and a running clock, the words as they are heard after anything already typed, and Pause, Stop and Cancel. Stop ends capture and puts the transcript in the field, marked <b>From voice</b> with Undo — it never sends. The person edits it and sends it like anything typed. A soft gradient behind the bar answers the voice and is gone when voice ends.',
       why: 'Voice is the input people reach for when typing is slow, awkward or impractical &mdash; which is exactly when a silent mistake is most expensive. Nearly everything that goes wrong here is either a state that was never designed or a decision to build too much: the microphone that is open and does not look it, the animation that runs whether or not anything is heard, the failure that takes the keyboard away with it, and the voice mode that becomes a screen of its own and throws away the work the question was about.',
       when: 'Wherever a request is quicker said than typed, and the product already has a composer to say it into. Not as a novelty alternative to a keyboard that is there and working, and not at all where the request commits something that a misheard word would commit wrongly &mdash; there, hold the text for correction first.',
-      how: 'Build it as a mode of the composer you already have, not as a second component and never as a screen. Start only on a deliberate action. Grow the container by about a line and no more &mdash; a bar that triples in height has navigated, whatever the code says. Drive the indicator from the real signal so silence looks like silence, and keep it small enough that it reads as part of the bar rather than as the subject of the page. Say every state in words, in a live region. Leave the keyboard route inside the same bar when voice fails. And put the result in the workspace, because the durable artefact of a spoken request is text.',
-      expressive: 'The restraint is the expression. One bar changes mode, and the measure of how well it is done is how little moves: the width holds, the place holds, the controls stay at 34px, and the container gains about a line and one step of shape. Colour is state and never decoration &mdash; the strokes keep the primary hue while the microphone is open, because a hue change there would claim something changed about the microphone, and drain to outline when it is muted, because something did. Length carries amplitude, and it is a smoothed value rather than a random one: the easing constant is the whole difference between a voice and a flicker. The ambient gradient behind the composer is untouched &mdash; it keeps drifting on its own twenty-second cycles off the agent&rsquo;s phase. The indicator communicates audio, the gradient communicates atmosphere, and a voice mode that speeds the gradient up has confused the two.',
-
+      how: 'Build it as a mode of the composer you already have (<code>AgentComposer voice={…}</code>), never a VoiceComposer or a screen. Ask for the microphone in words — what, why, when it is on, how to stop. While capturing, show it persistently: lit microphone, dot, clock, the words heard. Keep the verbs distinct: <b>Pause</b> (mic off, keep progress), <b>Resume</b>, <b>Stop</b> (end, keep what was said, do not send), <b>Cancel</b> (discard this recording; typed text stays). Put the transcript in the field for review, marked and undoable. When the speech cannot be trusted, do not guess: keep what was heard and offer Retry, Edit captured text and Type instead. Voice stays optional; when it is unavailable the composer carries on.',
+      expressive: 'The bar is the expression. While the microphone is on, a soft, low-contrast gradient sits behind the composer and answers the voice: each word swells it a little (≈4% scale, a short opacity rise), silence lets it settle, Pause dims it, transcribing turns its 18-second drift into a slow 14-second directional flow, and it fades away the moment the words land in the field. No orb, no full-screen glow, no colour change on error — errors use the semantic error accent in the panel and motion stops. Under reduced motion the gradient is still and the words carry every state.',
       precedent: [
-        { name: 'Gemini, on the web',
-          what: 'The clearest argument for <b>restraint</b> in this pattern. The composer is the same bar whether you are typing or speaking, the voice feedback is small and local to it, and the interface around it does not react at all. Worth taking the proportions and the calm and none of the execution &mdash; the shape, palette and motion here are the Nucleux Material system&rsquo;s.' },
-        { name: 'System dictation &mdash; iOS, Android, Windows',
-          what: 'The older half of the pattern, and the reason a microphone glyph needs no explanation. Speech into an ordinary text field, held as editable text, sent by the person. Worth copying exactly: <b>the field does not send itself</b>.' },
-        { name: 'Gemini Live, Copilot Voice',
-          what: 'The other end of the same idea: a full spoken session, a large surface, and a voice that talks back. Useful mainly for knowing where the line is &mdash; this pattern sits deliberately on the other side of it, because a research workspace does not need a voice-only assistant in order to answer one question.' }
+        { name: 'ChatGPT — dictation and Voice',
+          url: 'https://www.getvoibe.com/resources/dictate-in-chatgpt/',
+          what: 'Two different things: the dictation microphone turns speech into text in the message box to review and send; Voice is a live spoken conversation. Voice now also runs inside the same chat rather than a separate screen.' },
+        { name: 'Microsoft 365 Copilot Chat — dictate messages',
+          url: 'https://support.microsoft.com/en-us/microsoft-365-copilot/dictate-messages-to-microsoft-365-copilot-chat',
+          what: 'Dictation fills the compose box; the person reviews and sends. Copilot Voice is the separate conversational mode.' },
+        { name: 'Gemini Live',
+          url: 'https://support.google.com/gemini/answer/15274899',
+          what: 'An explicit live state with Hold (pause) and End, and the conversation continues in text afterwards — clear, named controls for pausing and ending.' },
+        { name: 'Platform microphone indicators (iOS, Android, browsers)',
+          url: 'https://support.apple.com/guide/iphone/control-access-to-hardware-features-iph168c4bbd5/ios',
+          what: 'A persistent indicator whenever the microphone is in use — the reason this pattern keeps a lit microphone, a dot and a clock on screen for the whole capture.' }
       ],
-
       anatomy: [
-        { part: 'Shared prompt composer',
-          role: 'The component. Not a voice composer beside a text composer &mdash; one bar with a text mode and a voice mode, used by every simulator in the library. Forking it is the failure this pattern is written against.' },
-        { part: 'Microphone control',
-          role: 'Inside the bar, where a send button is, because speaking is a way of sending. Shown only where the scenario actually supports it. Pressing it is the one deliberate action that opens the microphone, and pressing it again is the way back.' },
-        { part: 'Voice activity indicator',
-          role: 'Five capsules, about as tall as a line of text, in the space the field occupied. Length is a smoothed amplitude; the middle strokes take more of it than the outer ones, which is what stops the row reading as a bar chart.' },
-        { part: 'Status line',
-          role: 'The text equivalent of the indicator, in a live region, because these states change without anybody pressing anything.' },
-        { part: 'Heard line',
-          role: 'One line, clipped. Enough to prove it is hearing this particular person; not a transcript panel, and never something that grows the bar while somebody is talking into it.' },
-        { part: 'Mute and Cancel',
-          role: 'The only two controls that mean anything while the microphone is open, at the same 34px as every other control in the bar. Muting and backing out are different intentions and never one button.' },
-        { part: 'Workspace',
-          role: 'Where the answer lands. The durable artefact of a spoken request is text, and it belongs in the same place a typed request would have put it.' },
-        { part: 'Ambient gradient',
-          role: 'The simulator\u2019s existing atmosphere, unchanged. It moves on the agent\u2019s phase over tens of seconds. The indicator carries audio; the gradient carries atmosphere; swapping those roles is what makes a calm interface loud.' }
+        { part: 'Shared composer', role: 'The same AgentComposer in every state. Voice changes what the bar contains, not which bar it is.' },
+        { part: 'Microphone control', role: 'In the bar at rest (“Speak instead of typing”); unavailable with its reason when there is no microphone.' },
+        { part: 'Permission panel', role: 'Above the bar, not a modal: what, why, when it is on, how to stop. Allow microphone / Not now.' },
+        { part: 'Active-capture indicator', role: 'Lit microphone with a dot, the voice activity strokes, and “Listening · 0:04”. Persistent for the whole capture.' },
+        { part: 'Heard line', role: 'What was typed, then the words as they are heard (two lines, clipped).' },
+        { part: 'Pause / Resume · Stop · Cancel', role: 'Pause keeps progress; Stop keeps the words and never sends; Cancel discards this recording and keeps typed text.' },
+        { part: 'From-voice marker', role: '“From voice — check it before you send”, with Undo, above the field once the words land.' },
+        { part: 'Recovery panel', role: 'Couldn’t understand: what was heard, Retry, Edit captured text, Type instead.' },
+        { part: 'Voice gradient', role: 'Behind the bar only while voice is on; answers each word, settles in silence, drifts while transcribing, gone after.' }
       ],
-
       flow: [
-        'The ordinary composer, with a microphone in it. Nothing is listening before it is pressed.',
-        'Pressing it changes the mode of that same bar: same width, same place, about a line taller, with a spring rather than a jump.',
-        'Open and visibly not hearing anything &mdash; the strokes sit at rest, because an open microphone drawn like a heard one is the commonest lie here.',
-        'Speech arrives and the strokes follow amplitude with smooth interpolation, gaps included. One clipped line shows what is being heard.',
-        'The utterance ends and the same strokes shorten and slow. Processing is the indicator doing less, not a spinner dropped where the voice used to be.',
-        'The answer appears in the workspace, as text, exactly where a typed request would have put it.',
-        'The bar returns to text mode. Nothing navigated, and nothing about the rest of the screen moved.',
-        'Where voice fails &mdash; no permission, microphone taken &mdash; the bar says so and keeps the keyboard route inside itself.'
+        'Ready: the composer, with a few words already typed (“For the 2.4 release,”) and a microphone.',
+        'Permission required: the first press asks in plain words — what the microphone is for, when it is on, how to stop it. Allow microphone, or Not now.',
+        'Listening: the same bar becomes the voice session — lit microphone with a dot, “Listening · 0:04”, the typed words then the words being heard, Pause / Stop / Cancel. The gradient behind it swells with each word.',
+        'Paused: the microphone turns off and the dot goes; every word so far is kept. Resume carries on.',
+        'Processing: Stop (or silence, or the time limit) ends capture — “Transcribing…”. Nothing is sent.',
+        'Transcribed: the bar is a text composer again; the words join what was typed, marked “From voice — check it before you send”, with Undo.',
+        'Editing transcript: the person corrects it (“…, and highlight anything blocking launch.”) and sends it like anything typed.',
+        'Couldn’t understand: too little was clear — nothing is guessed; what was heard is kept, with Retry, Edit captured text and Type instead.',
+        'Unavailable: no microphone — the mic is unavailable with its reason, and typing carries on.'
       ],
-
-      /* SIX states, and the same six the component preview
-         offers &mdash; a documented list that does not match the list
-         you can actually click through is a list nobody trusts
-         twice. The first is the composer at rest, because the
-         claim of the pattern is that voice is a mode of THAT. */
       statesList: [
-        { name: 'Default', desc: 'The ordinary composer, with a microphone in it where the scenario supports speaking. Nothing else about it is special, and that is the whole argument.' },
-        { name: 'Listening', desc: 'Same bar, about a line taller. The strokes sit at rest because nothing is being said &mdash; the distinction between an open microphone and a heard one is the one this pattern exists to draw.' },
-        { name: 'Speaking', desc: 'The strokes follow real amplitude with smooth interpolation, gaps included, and one clipped line shows what is being heard. No colour change: nothing about the microphone changed.' },
-        { name: 'Processing', desc: 'The same strokes, shorter and slower. Containment rather than a spinner, and visibly LESS than listening, or the indicator goes on implying something is still being heard.' },
-        { name: 'Muted', desc: 'Colour drains and the strokes stop moving with speech. An indicator that still moves while muted is claiming to hear you.' },
-        { name: 'Error', desc: 'The semantic error accent, no motion, and a sentence saying what happened &mdash; with the keyboard route still inside the same bar, because voice failing is not a reason to lose the composer.' }
+        { name: 'Ready', desc: '<em>Trigger:</em> the composer at rest. <em>Behaviour:</em> a microphone in the bar; no gradient, no capture. <em>Meaning:</em> type, or speak instead. <em>Action:</em> press the microphone. <em>Next:</em> Permission required or Listening.' },
+        { name: 'Permission required', desc: '<em>Trigger:</em> first press, no access yet. <em>Behaviour:</em> a panel above the bar: what, why, when, how to stop. <em>Meaning:</em> nothing is recording. <em>Action:</em> Allow microphone, or Not now. <em>Next:</em> Listening or Ready.' },
+        { name: 'Listening', desc: '<em>Trigger:</em> capture starts. <em>Behaviour:</em> lit microphone + dot + clock, words as heard, Pause / Stop / Cancel; the gradient answers each word. <em>Meaning:</em> the microphone is on; nothing is sent. <em>Action:</em> Pause, Stop or Cancel. <em>Next:</em> Paused, Processing or Ready.' },
+        { name: 'Paused', desc: '<em>Trigger:</em> Pause. <em>Behaviour:</em> “Paused · microphone off”, the dot goes, the gradient settles; the words stay. <em>Meaning:</em> not listening; progress kept. <em>Action:</em> Resume, Stop or Cancel. <em>Next:</em> Listening, Processing or Ready.' },
+        { name: 'Processing', desc: '<em>Trigger:</em> Stop, silence or the time limit. <em>Behaviour:</em> “Transcribing…”, the gradient drifts slowly; only Cancel. <em>Meaning:</em> turning speech into text; nothing sent. <em>Action:</em> wait or Cancel. <em>Next:</em> Transcribed or Couldn’t understand.' },
+        { name: 'Transcribed', desc: '<em>Trigger:</em> transcription done. <em>Behaviour:</em> the words in the field, marked From voice, with Undo; caret in the field. <em>Meaning:</em> this is what was understood — not sent. <em>Action:</em> edit, Undo or Send. <em>Next:</em> Editing transcript, Ready or sent.' },
+        { name: 'Editing transcript', desc: '<em>Trigger:</em> the person changes the transcript. <em>Behaviour:</em> “From voice · edited”; Undo still returns to what was typed before. <em>Meaning:</em> your correction wins. <em>Action:</em> Send. <em>Next:</em> sent → Ready.' },
+        { name: 'Couldn’t understand', desc: '<em>Trigger:</em> too little could be made out. <em>Behaviour:</em> a panel says so and keeps what was heard; nothing is put in the field. <em>Meaning:</em> nothing lost, nothing guessed. <em>Action:</em> Retry, Edit captured text or Type instead. <em>Next:</em> Listening, Editing transcript or Ready.' },
+        { name: 'Unavailable', desc: '<em>Trigger:</em> no microphone, or the device blocks it. <em>Behaviour:</em> the microphone is unavailable with its reason; typing unchanged. <em>Meaning:</em> voice is off; the composer is not. <em>Action:</em> type. <em>Next:</em> Ready.' }
       ],
-
       variants: [
-        { name: 'Voice as a composer mode', desc: 'The default, and this pattern. A microphone in the shared bar; the bar changes mode and changes back. Almost always the right first version, and the only one that costs a product nothing to keep.' },
-        { name: 'Press and hold', desc: 'Capture lasts exactly as long as the finger does. The safest form on touch: nothing can be left open, and the state is carried by the hand rather than by the screen.' },
-        { name: 'Hold the transcript for correction', desc: 'The spoken text lands in the field, editable, and the person presses send. Slower, and correct wherever the request commits something &mdash; the field does not send itself.' },
-        { name: 'Full spoken session', desc: 'Two-way, with the agent talking back, barge-in and an end control. A different pattern with a different surface, and worth building only where the reply is genuinely conversational. A session wrapped around a one-shot answer is a slower composer.' }
+        { name: 'Dictation (default)', desc: 'Speech → transcript in the field → the person sends. This pattern.' },
+        { name: 'Live conversation', desc: 'Speech → the agent answers aloud. A different pattern (Voice & Tone, conversation); it can share this bar’s capture states and controls.' },
+        { name: 'Words as heard / after Stop', desc: 'Live words in the bar, or only once capture ends — for short phrases or privacy.' },
+        { name: 'Auto-stop after silence', desc: 'Off, 2 s or 5 s. Stopping keeps the words and never sends.' },
+        { name: 'Compact / Comfortable', desc: '40px targets, 48px on phones; compact for side panels.' },
+        { name: 'Gradient off / subtle / standard', desc: 'Off still leaves the lit microphone, dot and clock.' }
       ],
-
       content: [
-        'Name the state in words as well as in motion: \u201cListening\u2026\u201d, \u201cThinking\u2026\u201d, \u201cMicrophone muted\u201d. Five small strokes are not a label, and they are nothing at all under reduced motion.',
-        'Keep the heard line to one line. A transcript that grows the composer as somebody speaks is a composer that moves under their hand.',
-        'Answer silence with a sentence, not a spinner: \u201cI didn\u2019t hear anything, so nothing was sent.\u201d',
-        'When voice fails, say what happened and leave the keyboard route in the same bar. \u201cAnother application is using the microphone. Type instead, or try again.\u201d',
-        'Never write \u201cListening\u2026\u201d while the microphone is still arming. It is a small lie that costs the first three words.'
+        'Name the state in words beside the clock: “Listening · 0:04”, “Paused · microphone off”, “Transcribing…”.',
+        'Ask for the microphone in plain words: what it is for, when it is on, how to stop it.',
+        'Label controls by what they do to the words: “Stop — keeps what you said”, “Cancel — discard this recording, your typed text stays”.',
+        'Mark the result: “From voice — check it before you send”, with Undo.',
+        'When it fails, say what happened (“Couldn’t make out all of that”) — never only “Something went wrong” — and offer Retry, Edit captured text and Type instead.'
       ],
-
       a11y: [
-        'Every spoken request produces text in the workspace. That is what makes the pattern usable without hearing, and reviewable afterwards by anybody.',
-        'Everything reachable by voice is reachable without it. The microphone is an additional control in a bar that still has a field in it; it is never the only route.',
-        'Listening, speaking, processing, muted and error are announced through a live region and labelled in text, so the state never depends on seeing five small strokes move.',
-        'The microphone control carries aria-pressed and a label that names what pressing it will do next, not what it is doing now.',
-        'The indicator is aria-hidden. The status beside it is the accessible equivalent, and two announcements of one fact is one too many.',
-        'Every control in voice mode is reachable and operable from the keyboard, and pressing one does not throw focus back to the top of the document.',
-        'No time limits that punish slow or disfluent speech, and no automatic send on a pause. A stammer is not the end of a sentence.',
-        'Under prefers-reduced-motion the sway stops and the amplitude driver never starts. Length, colour and the words carry the whole state set &mdash; and if they cannot, the states were never carrying it.'
+        'Every state change is announced in a polite live region in words (“Microphone on. Listening.”, “Paused…”, “Transcribed into the message… Nothing was sent.”) — never the animation.',
+        'Pause, Resume, Stop and Cancel are buttons with accessible names that say what happens to the words.',
+        'The microphone is never the only route: the field stays in the same bar, and Unavailable / Not now return focus to it.',
+        'Capture is shown by shape and words (lit microphone, dot, clock, label), not by colour alone.',
+        'Targets are 40px (48px on phones); the voice session does not wrap into two rows.',
+        'Under reduced motion the gradient and the dot are still; the indicator is pinned; the words carry each state.'
       ],
-
       donts: [
-        'Don\u2019t build a second composer for voice. One component with a voice mode, or the two will drift and the product will have two ways to ask for the same thing.',
-        'Don\u2019t take over the screen. A bar that becomes a full-height surface has navigated, whatever the code says, and it throws away the context the question was about.',
-        'Don\u2019t let the indicator get big. It is feedback attached to a control, not the subject of the page; the moment it dominates, the composer has stopped being the thing you are using.',
-        'Don\u2019t animate it on a timer. A loop that runs whether or not anything is being heard is worse than no feedback: it makes a hung microphone look healthy.',
-        'Don\u2019t draw it as equaliser bars. Stepped rectangles read as playback; capsules with a smoothed length and a resting dot read as listening.',
-        'Don\u2019t make the background react to amplitude. The gradient is atmosphere and moves on the agent\u2019s phase; coupling it to the voice is how a calm interface becomes a loud one.',
-        'Don\u2019t use one control for \u201cmute my microphone\u201d and \u201cclose voice mode\u201d. They are different intentions.',
-        'Don\u2019t leave the microphone open silently, ever \u2014 and don\u2019t open it without a deliberate action.',
-        'Don\u2019t lose the keyboard when voice fails. The field is in the same bar; put it back.'
+        'Don’t send when the person presses Stop — Stop keeps the words for review.',
+        'Don’t clear typed text on Cancel; Cancel discards only the recording.',
+        'Don’t make voice a separate screen or a separate composer.',
+        'Don’t guess when the speech was unclear; keep what was heard and ask.',
+        'Don’t leave capture ambiguous — no hidden or ending-on-its-own microphone without words.',
+        'Don’t use a giant orb, a full-screen glow, or a red flood on error.'
       ],
-
       metrics: [
         'How often the microphone is pressed and then cancelled without anything being said, which measures whether people can tell the bar is listening.',
         'How often a voice request is followed immediately by the same request typed \u2014 the signal that recognition is failing quietly.',
@@ -2912,8 +2902,7 @@
       composed: ['Icon Button', 'Text Field', 'Chip', 'Menu', 'Tooltip'],
       related: [['open-input', 'Open Input'], ['handwriting', 'Handwriting Input'], ['caveat', 'Caveat']],
       pkg: 'nucleux-m3-voice-input',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/composer.css\" />\n\n<!-- ONE component. mode switches it; voiceState says what it is doing.\n     There is no VoiceComposer, and adding one is the bug. -->\n\n<!-- text -->\n<form class=\"ax__composer\" data-mode=\"text\">\n  <button class=\"ax__cbtn\" aria-label=\"Add context\"><!-- + --></button>\n  <input class=\"ax__field\" placeholder=\"Ask Aria about the feedback\u2026\" />\n  <button class=\"ax__cbtn ax__cbtn--mic\" aria-label=\"Speak instead of typing\">\n    <!-- mic -->\n  </button>\n  <button class=\"ax__cbtn ax__cbtn--send\" type=\"submit\" aria-label=\"Send\"></button>\n</form>\n\n<!-- voice: the SAME bar. Same width, same place, one line taller. -->\n<form class=\"ax__composer\" data-mode=\"voice\" data-voice=\"speaking\">\n  <button class=\"ax__cbtn ax__cbtn--mic is-on\" aria-pressed=\"true\"\n          aria-label=\"Stop voice input\"><!-- mic --></button>\n\n  <span class=\"ax__voice\">\n    <!-- five capsules; --amp is written per frame, --w is each\n         stroke\u2019s share of it. Nothing else animates. -->\n    <span class=\"md-va\" data-state=\"speaking\" data-vx-live=\"user\" aria-hidden=\"true\">\n      <i style=\"--w:.52\"><b></b></i><i style=\"--w:.86\"><b></b></i>\n      <i style=\"--w:1\"><b></b></i><i style=\"--w:.80\"><b></b></i>\n      <i style=\"--w:.48\"><b></b></i>\n    </span>\n    <span class=\"ax__vtext\">\n      <span class=\"ax__vstatus\" role=\"status\" aria-live=\"polite\">Listening\u2026</span>\n      <span class=\"ax__vline\">\u201cCompare the onboarding feedback\u2026</span>\n    </span>\n  </span>\n\n  <button class=\"ax__cbtn\" aria-pressed=\"false\" aria-label=\"Mute the microphone\"></button>\n  <button class=\"ax__cbtn\" aria-label=\"Cancel voice input\"></button>\n</form>",
-
+      usage: '<AgentComposer\n  voice={{\n    listeningLabel: "Listening",\n    permissionText: "Microphone access is needed to capture your voice. It’s on only while the bar says Listening, and you can stop at any time.",\n    failureText: "Couldn’t make out all of that.",\n    showWordsAsHeard: true,   // live words in the bar\n    pause: true,              // Pause / Resume\n    editableTranscript: true, // words land in the field, marked From voice, with Undo\n    autoStopAfterSilence: 2,  // seconds; Stop never sends\n    maxDuration: 60,\n    gradient: "standard"      // off | subtle | standard\n  }}\n/>',
       examples: [
         {
           id: 'voice-session',
@@ -2946,113 +2935,88 @@
       stageId: 'initially',
       sub: 'Expressive Input',
       subId: 'expressive-input',
-      oneline: 'Attach an image, say what you want from it, get an answer that points at it.',
-      intent: 'An image as the evidence: attach it, say what you want from it, and get an answer that points back at it.',
-      what: 'An attachment surface where a picture is the evidence and the question is asked against it. Three moves, deliberately not collapsed into one: <b>attach</b> (drag, paste, camera, screenshot), <b>instruct</b> (what to do with it, in words), <b>analyse</b> (the reading, marked on the image rather than written beside it as prose).',
+      oneline: 'Show the agent an image, a photo or a window — as context on the composer, under your control.',
+      intent: 'Visual context joins the request in the shared composer: recognisable, removable, combined with words — and screen sharing is a visible, stoppable state.',
+      what: 'Under + in the shared composer: Upload image, Take photo, Choose a recent screenshot, Share screen — only the sources the product allows. What was chosen lands as a card with a real preview above the words (never replacing them), saying what the agent will see and when, with Replace and Remove. Nothing is read until Send. Sharing a window starts with a choice of the one window, and while it is on a persistent bar with a red dot says so and offers Stop sharing; stopping never ends the conversation. When the agent answers it names the visual it used.',
       why: 'Two things go wrong here and they are opposites. The first is answering too early: an image on its own is not a question, and a product that responds the moment one lands is guessing at intent &mdash; the same screenshot could mean &ldquo;what is this error?&rdquo;, &ldquo;is this the same bug as last week?&rdquo; or &ldquo;write me the fix&rdquo;. The second is answering too vaguely: a photograph carries far more than the model reliably reads, and an answer that does not say which part it used, or what was too dark or out of frame to judge, cannot be checked at all.',
       when: 'Where the evidence is visual and describing it in words is slower or less accurate: error screens and stack traces, damage and defects, whiteboards, receipts, labels, charts in somebody else&rsquo;s document, field and medical photographs.',
-      how: 'Keep attaching and instructing as two acts, and do not answer between them. Accept the image however it arrives &mdash; paste, drag, file, camera &mdash; and show it at a size the reader can actually judge. Mark the region the answer used. Name what could not be read rather than answering around it, and when a second image would settle it, ask for the <em>specific</em> one, not &ldquo;a clearer photo&rdquo;. Keep the original reachable and never crop it away. Say what happens to the image afterwards: a photo is the most personal thing most people will ever hand an agent.',
-      expressive: 'The region the answer came from is outlined in primary at tone 60 and nothing else on the image is tinted, so &ldquo;where it looked&rdquo; needs no legend. While it is reading, the outline is soft-edged and unresolved and hardens as the reading settles &mdash; the fluidity rule applied to a bounding box rather than to text. Confidence is carried by the same edge: a region it is unsure of stays dashed rather than acquiring a second colour, because a second hue would have to mean something on every other surface too. An attached image that has not yet been asked about is visibly waiting, not visibly working: no spinner, no shimmer, nothing that suggests an answer is on its way, because none is until somebody says what they want.',
-
+      how: 'Make the visual part of THIS request: a card in the composer with a preview big enough to recognise, the name, the line “Aria will see this when you send”, Replace and Remove. Explain camera and screen access in words before anything is captured — what, why, when it is on, how to stop — and let people choose the one window. Keep sharing visible for as long as it is on, and put Stop sharing next to the indicator. If a file cannot be used, say what can; if an image cannot be read, keep the message and offer Retry, Replace and Continue without it. Never let a visual trigger an action on its own.',
+      expressive: 'Expression sits on the visual itself: the card rises into the composer from below, a slow, low-contrast sheen crosses the preview while the agent reads it, and the shared window gets a soft boundary and a “Shared with Aria” tag — the window, never the whole screen. The active-sharing dot breathes slowly. Under reduced motion all of it is still and the words carry the state.',
       precedent: [
-        { name: 'Paste a screenshot &mdash; ChatGPT, Claude, Copilot',
-          what: 'The image attaches to the message and sits there. The instruction is typed alongside it and the request is sent as one thing. Attaching and asking are two acts in that order, and the reply refers to what is in the image &mdash; which is exactly the contract this pattern formalises.' },
-        { name: 'Point the camera and ask',
-          what: 'Live camera in assistant apps: the image is a stream and the question is asked about what is in front of the lens now. It makes the hardest part obvious &mdash; saying which frame the answer was actually about.' },
-        { name: 'Circle to Search &mdash; Android',
-          what: 'The crossover with contextual selection: a region of what is already on screen becomes the visual query without an image ever being attached by hand. Worth knowing about here, because it is the version with no attachment step at all.' }
+        { name: 'Gemini Live — camera and screen sharing', url: 'https://support.google.com/gemini/answer/15274899',
+          what: 'Show the assistant what you see through the camera or by sharing your screen; sharing is started explicitly and shows while it is on.' },
+        { name: 'Microsoft Copilot Vision', url: 'https://blogs.windows.com/windows-insider/2025/07/15/copilot-on-windows-vision-desktop-share-begins-rolling-out-to-windows-insiders/',
+          what: 'You choose the app or screen to share, a visible indicator shows that Vision is on, and you stop sharing explicitly.' },
+        { name: 'ChatGPT image input', url: 'https://help.openai.com/en/articles/8400551-image-inputs-for-chatgpt-faq',
+          what: 'An image becomes part of the ordinary conversation, combined with words, rather than a separate workflow.' }
       ],
-
       anatomy: [
-        { part: 'Attach surface',
-          role: 'Paste, drag, file picker, camera, screenshot. All four produce the same thing, and none of them is a question yet.' },
-        { part: 'Attached image',
-          role: 'Shown at a size the reader can judge, with the original always reachable. Visibly waiting rather than visibly working.' },
-        { part: 'Instruction',
-          role: 'What is wanted from the image, in words. This is the half that turns an attachment into a request, and it is the half products drop.' },
-        { part: 'Region',
-          role: 'The part of the image the answer came from, outlined on it. Soft while reading, hard once the reading settles.' },
-        { part: 'Gap statement',
-          role: 'What could not be read, named specifically. &ldquo;The top of the trace is cut off&rdquo;, not &ldquo;low quality image&rdquo;.' },
-        { part: 'Re-shoot request',
-          role: 'The one specific further image that would settle it. Never &ldquo;a clearer photo&rdquo;.' },
-        { part: 'Retention line',
-          role: 'What happens to the image afterwards, said at the point of attaching rather than in a policy.' }
+        { part: '+ menu', role: 'In the shared composer: only the sources the product allows — Upload image, Take photo, Choose a recent screenshot, Share screen.' },
+        { part: 'Visual card', role: 'Above the words in the composer: a real preview, the name, “Aria will see this when you send”, Replace and Remove.' },
+        { part: 'Permission panel', role: 'Before camera or screen: what is needed, why, when it is on, how to stop — and the one window to choose.' },
+        { part: 'Sharing bar', role: 'Persistent while a window is shared: a red dot, “Sharing ‘Q3 metrics dashboard’”, Stop sharing.' },
+        { part: 'Shared boundary', role: 'A soft outline and a “Shared with Aria” tag on the shared window only.' },
+        { part: 'Used line', role: 'On the answer: “Used: dashboard-sep.png”.' },
+        { part: 'Failure panel', role: 'Why it could not be read, with Retry, Replace and Continue without it; the message is kept.' }
       ],
-
       flow: [
-        'An image arrives &mdash; pasted, dragged, picked or captured. It attaches and nothing else happens.',
-        'The product says what it can see it is (a screenshot, a photo, a document scan) without saying what it thinks you want.',
-        'The instruction is typed alongside it. Until there is one, there is no request: the same screenshot supports three different questions.',
-        'Both go together. The image and the words are one message, not an image followed by a question about it.',
-        'Reading begins. The candidate region appears soft-edged while it is still being decided.',
-        'The reading settles: the region hardens, and the answer names it before it states a conclusion.',
-        'Anything unreadable is stated specifically, with the one further image that would fix it.',
-        'The image, the region and the reading stay attached to whatever the answer produced, so the next person can see what the decision was made on.'
+        'No visual: the composer with words typed — “Review this dashboard and tell me what looks unusual.”',
+        'Selecting: + lists the allowed sources.',
+        'Visual attached: dashboard-sep.png joins the composer as a card with a preview, “Aria will see this when you send”, Replace and Remove. The words are untouched.',
+        'Processing: Send — the card says “Aria is reading this image…”, with a slow sheen across the preview.',
+        'Ready: the message shows the image it carried; the answer names it — “Used: dashboard-sep.png”.',
+        'Permission required → Sharing: Share screen asks in words and lets you pick the one window; then a persistent bar — red dot, “Sharing ‘Q3 metrics dashboard’”, Stop sharing.',
+        'Unsupported: a video — the panel says what can be used instead; nothing was added.',
+        'Failed: a blurry photo — the message is kept; Retry, Replace or Continue without it.'
       ],
-
-      /* FIVE states, one per act plus the two that carry the
-         argument: an image sitting there doing nothing, and an
-         answer that admits what the crop removed. Formats, limits,
-         multiple images and retention are documented above rather
-         than listed as separate things to look at. */
       statesList: [
-        { name: 'Empty', desc: 'No image. The attach affordance names the four ways in — paste, drag, file, camera — and the drop target is the whole composer, not a 24px paperclip.' },
-        { name: 'Attached', desc: 'The image is here and nothing is happening. Visibly waiting, not visibly working: no spinner, because no answer is coming until somebody says what they want.' },
-        { name: 'Instructing', desc: 'The question typed against the image, sent as one message. This is the state most implementations do not have, because they answered two states ago.' },
-        { name: 'Region found', desc: 'The reading has settled: the edge hardens, the part it used reads hotter than the rest, and the answer names the region before it states a conclusion.' },
-        { name: 'Needs another shot', desc: 'Something specific could not be read, said out loud, with the one further image that would settle it — described precisely enough to take.' }
+        { name: 'No visual', desc: '<em>Trigger:</em> nothing shown yet. <em>Behaviour:</em> the composer; + offers sources. <em>Meaning:</em> the agent only has your words. <em>Action:</em> +. <em>Next:</em> Selecting.' },
+        { name: 'Selecting', desc: '<em>Trigger:</em> + pressed. <em>Behaviour:</em> only the allowed sources are listed. <em>Meaning:</em> nothing shared yet. <em>Action:</em> choose, or close. <em>Next:</em> Attached, Permission, Unsupported.' },
+        { name: 'Visual attached', desc: '<em>Trigger:</em> an image chosen. <em>Behaviour:</em> a preview card in the composer with Replace and Remove; words unchanged. <em>Meaning:</em> this is what the agent will see, when you send. <em>Action:</em> add words, Replace, Remove, Send. <em>Next:</em> Processing.' },
+        { name: 'Sharing', desc: '<em>Trigger:</em> a window chosen. <em>Behaviour:</em> persistent bar with a red dot and Stop sharing; the card is live; the window has a soft boundary. <em>Meaning:</em> the agent can see this window until you stop. <em>Action:</em> ask, or Stop sharing. <em>Next:</em> Processing, or No visual — the conversation continues.' },
+        { name: 'Processing', desc: '<em>Trigger:</em> sent with a visual. <em>Behaviour:</em> “Aria is reading this image…” and a slow sheen. <em>Meaning:</em> the visual is being used now. <em>Action:</em> wait. <em>Next:</em> Ready or Failed.' },
+        { name: 'Ready', desc: '<em>Trigger:</em> the agent finished. <em>Behaviour:</em> the message carries the visual; the answer says which visual it used. <em>Meaning:</em> you can see what the answer is based on. <em>Action:</em> follow up. <em>Next:</em> No visual.' },
+        { name: 'Permission required', desc: '<em>Trigger:</em> camera or screen chosen. <em>Behaviour:</em> what, why, when, how to stop — and the one window to pick. <em>Meaning:</em> nothing captured yet. <em>Action:</em> choose / Allow, or Cancel. <em>Next:</em> Sharing / Attached, or No visual.' },
+        { name: 'Unsupported', desc: '<em>Trigger:</em> a file that cannot be used. <em>Behaviour:</em> says what can be used; words kept. <em>Meaning:</em> nothing added. <em>Action:</em> choose an image, or continue without it. <em>Next:</em> Selecting or No visual.' },
+        { name: 'Failed', desc: '<em>Trigger:</em> the image could not be read. <em>Behaviour:</em> the card is marked; the message is kept; nothing was sent without it. <em>Meaning:</em> nothing lost. <em>Action:</em> Retry, Replace, Continue without it. <em>Next:</em> Processing, Selecting or No visual.' }
       ],
-
       variants: [
-        { name: 'Screenshot triage', desc: 'The commonest real use and the one worth designing for first: paste a screen, ask what is wrong with it. Text-heavy, so the region is usually a few lines rather than an object.' },
-        { name: 'Photograph as evidence', desc: 'Damage, defects, field conditions. Here the re-shoot request matters most, because a second photo is cheap and a wrong assessment is not.' },
-        { name: 'Live camera', desc: 'A stream rather than a file. Everything above still applies plus one thing: the answer has to say which frame it was about, or it cannot be checked at all.' },
-        { name: 'Region of the current screen', desc: 'No attachment step — the image is what is already on screen, selected in place. Documented under Gesture Input, and usually faster than attaching anything.' }
+        { name: 'Upload or recent screenshot', desc: 'A file joins the request as a card; nothing is read until Send.' },
+        { name: 'Take photo', desc: 'Camera permission first, in words; the camera is on only while the photo is taken.' },
+        { name: 'Share screen', desc: 'One chosen window, a persistent sharing bar and Stop sharing; stopping never ends the conversation.' }
       ],
-
       content: [
-        'Say what the image is, never what the person wants: “Screenshot, 1440 × 900” — not “Looks like you need help with an error”.',
-        'Name the region in the answer before the conclusion: “In the highlighted lines: …”.',
-        'Describe gaps specifically. “The first three lines of the trace are above the crop” beats “image unclear”.',
-        'Ask for exactly one further image and say how to take it: “Scroll up three lines and screenshot again.”',
-        'State retention where the image is attached: “Kept with this ticket. Not used for training.”'
+        'Say what the agent will see, and when: “Aria will see this when you send”.',
+        'Explain access before asking for it: “Only the window you choose will be shared. You’ll see “Sharing” while it’s on, and you can stop at any time.”',
+        'Name the visual in the answer: “Used: dashboard-sep.png”.',
+        'Unsupported says what can be used: “Aria can read images (PNG, JPG, HEIC). For a video, share your screen while it plays.”',
+        'Failure keeps the message: “Couldn’t read the image — it’s too blurry. Your message is kept.”'
       ],
-
       a11y: [
-        'Every attached image needs a text alternative, and the product should draft one from what it read rather than leaving an empty alt attribute.',
-        'The reading is the accessible version of the image. It is produced and exposed as text, not hidden behind a hover on the region.',
-        'The region is announced in words as well as drawn: “Region used: lines 4 to 9 of the stack trace.” An outline alone is not available to everyone.',
-        'Confidence is never colour alone — it is the edge, and it is also stated in the sentence.',
-        'Attaching works from the keyboard end to end: a real file input, a labelled button, and paste into a focused composer.',
-        'Drop targets are large; nothing depends on landing a drag inside a small icon.',
-        'Nothing auto-submits on attach, which is also an accessibility property: it gives everyone time to say what they actually wanted.',
-        'Images can be removed with a labelled control, and removing one does not clear the typed instruction.'
+        'The card is a labelled group (“Visual context: dashboard-sep.png. Aria will see this when you send”); Replace and Remove name the image.',
+        'Sharing is announced when it starts and stops; the bar is a status region with a real Stop sharing button next to it.',
+        'Visual input is never the only route: everything can also be described in words in the same composer.',
+        'Failures and unsupported files are alerts with the next step as buttons; the message is kept.',
+        'Active sharing is shown by words, an icon and a dot, not colour alone; the dot and sheen stop under reduced motion.'
       ],
-
       donts: [
-        'Don’t answer the moment an image lands. An image is not a question, and guessing which of three questions it was is how a confident irrelevant answer gets produced.',
-        'Don’t shrink the image below the size at which a person could check the reading against it.',
-        'Don’t crop the original away. The crop is a view; the original is the evidence.',
-        'Don’t answer around a part you could not read. Say which part.',
-        'Don’t ask for “a better photo”. Ask for the specific one.',
-        'Don’t tint the whole image or add a second colour for confidence. One outline, and let the edge carry certainty.',
-        'Don’t make the attachment silently permanent. Say what happens to it, at the moment it is handed over.',
-        'Don’t treat multiple images as one blob. Each one is referenced separately or none of them can be checked.'
+        'Don’t hide visual context behind a paperclip once it matters to the request.',
+        'Don’t remove the person’s words when a visual is added, replaced or removed.',
+        'Don’t share more than the window that was chosen, or keep sharing without a visible indicator.',
+        'Don’t end the conversation when sharing stops.',
+        'Don’t take an action because something was shown — the visual is context, not consent.',
+        'Don’t surround the whole screen with a glowing border.'
       ],
-
       metrics: [
-        'How often an image is sent with no instruction — high numbers mean the composer is not asking for one clearly enough.',
-        'How often the answer names a region, and how often a person disagrees with the region it named.',
-        'Re-shoot requests that actually produce a second image. A low rate usually means the request was not specific enough to act on.',
-        'Answers produced from an image where something was stated as unreadable, which is where wrong conclusions cluster.'
+        'Visuals removed or replaced before sending — the preview doing its job.',
+        'Sharing sessions stopped by the person vs left running; time to Stop sharing.',
+        'Failed reads, and which way on (Retry, Replace, Continue without it).',
+        'Answers that name the visual they used.'
       ],
-
       composed: ['Card', 'Chip', 'Button', 'Progress', 'Text Field'],
       related: [['attachments', 'Attachments'], ['gesture', 'Gesture Input'], ['caveat', 'Caveat']],
       pkg: 'nucleux-m3-visual-input',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- Attached, and deliberately NOT working yet: nothing is being\n     asked until the instruction beneath it says what to ask. -->\n<figure class=\"md-vis\">\n  <div class=\"md-vis__frame\">\n    <img src=\"trace.png\" alt=\"Screenshot of a stack trace\" />\n    <!-- the region the reading came from, once there is one -->\n    <span class=\"md-vis__region\" style=\"--x:8%;--y:34%;--w:84%;--h:30%\"></span>\n  </div>\n  <p class=\"md-vis__meta\">Screenshot &middot; 1440 &times; 900 &middot; kept with this ticket</p>\n\n  <figcaption class=\"md-vis__read\">\n    <p class=\"md-vis__t\">In the highlighted lines: a null map key in\n      <code>ScheduleResolver</code>.</p>\n    <p class=\"md-vis__gap\">The first three frames are above the crop &mdash;\n      scroll up three lines and screenshot again if you need the origin.</p>\n  </figcaption>\n</figure>",
-
+      usage: '<AgentComposer\n  visual={{\n    sources: ["upload", "camera", "recent", "screen"],\n    showPreview: true,   // a card, not a paperclip\n    replace: true, remove: true,\n    screenText: "Only the window you choose will be shared. You’ll see “Sharing” while it’s on, and you can stop at any time.",\n    cameraText: "Camera access lets Aria see what you choose to show. It’s on only while you take the photo.",\n    unsupportedText: "Aria can read images (PNG, JPG, HEIC). For a video, share your screen while it plays."\n  }}\n/>',
       examples: [
         {
           id: 'visual-region',
@@ -3090,126 +3054,93 @@
       stageId: 'initially',
       sub: 'Expressive Input',
       subId: 'expressive-input',
-      oneline: 'Write with a pen; the product takes it as input.',
-      intent: 'Writing with a pen into an ordinary field, or keeping the ink itself as the record. A platform input method, not an AI feature.',
-      what: 'Two related things that are routinely confused. <b>Writing into a field</b>: the pen goes straight into an ordinary text field, the strokes convert as you write, and the ink is transient &mdash; the text is the artefact. <b>Writing as ink</b>: notes, annotation, working out a problem, where the strokes <em>are</em> the record and recognition is an overlay produced on request.',
-      why: 'Getting these two backwards is the usual failure. Products build a special &ldquo;handwriting mode&rdquo; with a button, a canvas and an Insert action, when the platform already lets a pen write into any field with no mode at all &mdash; and then they throw the ink away in the one place it mattered, which is a page of working that a person needs to be able to appeal to. The agent is downstream of all of this: it receives text and should never be able to tell how the text arrived.',
-      when: 'On any pen-capable surface. Field writing wherever there is a field &mdash; which is everywhere, and needs no feature work beyond respecting the platform. Ink as the record where the mark carries meaning a keystroke would lose: maths, diagrams, annotation, signatures, anything drawn in front of somebody.',
-      how: 'Do not add a handwriting button. Let the pen write into the fields that already exist, accept strokes that start slightly outside them, and let a collapsed control expand into the real field when someone starts writing on it. Support the correction gestures people already know &mdash; scratch out to delete, a vertical stroke to split, a circle to select &mdash; because the alternative is a keyboard appearing in the middle of a pen interaction. Where the ink is the record, keep it exactly as drawn, put the reading beneath it rather than over it, and mark the words the recogniser was unsure of. Then hand the agent text, and say nothing about the pen.',
-      expressive: 'Ink is never smoothed or beautified: the original has to stay the thing a reader can appeal to, and a stroke corrected into a shape it never had is a quiet lie about what somebody wrote. Recognised text arrives beneath it on emphasized easing, word by word in stroke order, so the correspondence between mark and reading needs no leader line. Low-confidence words carry a dotted underline in the agent&rsquo;s own primary and never a second hue &mdash; doubt is a state of the reading, and the system already has a colour for the agent&rsquo;s readings. A correction springs, because a person made it. The one piece of chrome this pattern is allowed is the handwriting bounds, and only while a pen is near: a surface that shows where it will accept ink, then gets out of the way.',
-
+      oneline: 'Write the request by hand; see what was recognized, settle anything uncertain, and add it to your message yourself.',
+      intent: 'A pen in the shared composer. Handwriting, recognized text and accepted text stay distinct, and nothing uncertain is ever accepted silently.',
+      what: 'A pen button in the shared composer opens a writing pad above it; the composer stays where it was and keeps whatever was typed. Strokes appear as they are drawn, with Undo for the last stroke and Clear for all of it. Recognize reads the ink and shows the result under it — the ink stays in view. A word the recognizer was unsure of is a button marked “?” with alternatives, and Add to message waits until it is settled. Added text joins the typed words (never replacing them), marked “From handwriting” with Undo, and the ink can travel with the message as the original. If the writing cannot be read, nothing is guessed: Rewrite, Retry, Keep original or Switch to typing.',
+      why: 'Recognition is a reading, not a fact. If it is silently accepted, a wrong word (“flaw” for “flow”) becomes the instruction, and nobody can see where it came from. Keeping the three layers apart — what was written, what was read, what you accepted — is what lets a person trust handwriting as a way to write a request, and lets the agent work from words the person actually chose.',
+      when: 'On pen- and touch-capable surfaces, for short requests, notes and annotations where writing is quicker or more natural than typing. Not as the only way in: the field always works, and on a device without pen or touch the pen is shown unavailable and typing carries on.',
+      how: 'Put handwriting in the composer people already use — a pen button, not a separate composer. Open the pad above the field and keep what was typed. Show the ink as drawn; offer Undo stroke and Clear. Recognize on request (or after a pause, if the product converts automatically) and show the reading under the ink. Mark uncertain words, offer the likely alternatives, and block Add to message until they are settled. Append — never overwrite — and mark the result “From handwriting” with Undo. Keep the original ink as context unless the person removes it. On failure, keep the ink and offer Rewrite, Retry, Keep original and Switch to typing. Never send anything because writing finished.',
+      expressive: 'The ink is never smoothed or beautified — it is the original. While it is being read, a slow, low-contrast sheen crosses the pad and the ink stays visible beneath it. The uncertain word carries a dotted underline and a “?” in the error tone (stronger or subtler by setting), and a corrected word settles into the agent’s primary. Text added to the composer arrives with the “From handwriting” marker. Under reduced motion the sheen and the writing animation stop; the words carry every state.',
       precedent: [
-        { name: 'Stylus input in text fields &mdash; Android',
-          url: 'https://developer.android.com/develop/ui/views/touch-and-input/stylus-input/stylus-input-in-text-fields',
-          what: 'On Android 14 and later, text fields accept stylus handwriting <b>by default</b> &mdash; there is no handwriting button and no mode. The handwriting bounds extend beyond the field itself (40dp vertically, 10dp horizontally), so a stroke that starts slightly outside still lands in it, and a handwriting delegator lets a collapsed control &mdash; a search bar, say &mdash; expand into the real field the moment someone writes on it.' },
-        { name: 'Scribble &mdash; iPadOS',
-          what: 'The same contract with a published gesture vocabulary: write anywhere a keyboard would go, scratch a word out to delete it, draw a vertical line to insert a space, circle a word to select it. The gestures matter more than the recognition: they are what stop a pen interaction from ending at a keyboard.' },
-        { name: 'Ink kept as ink &mdash; note-taking apps',
-          what: 'The other half. Strokes are the document, searchable as ink, with recognition available on demand rather than applied in place. The reason the two halves must not be merged: here, converting is destructive.' }
+        { name: 'Stylus input in text fields — Android', url: 'https://developer.android.com/develop/ui/views/touch-and-input/stylus-input/stylus-input-in-text-fields',
+          what: 'Stylus handwriting goes into ordinary text fields, so handwriting is a way of entering text rather than a separate surface — the same principle as using the shared composer here.' },
+        { name: 'Scribble — iPadOS', what: 'Write wherever a keyboard would go, with correction gestures (scratch out, circle to select) — the pen stays a pen until the text is right.' },
+        { name: 'Ink kept as ink — note-taking apps', what: 'The strokes are kept as the original and recognition is available on demand, so the reading can always be checked against what was written.' }
       ],
-
       anatomy: [
-        { part: 'The field',
-          role: 'An ordinary text field. Not a canvas, not a modal, not a special surface &mdash; the thing that already exists, which now happens to accept a pen.' },
-        { part: 'Handwriting bounds',
-          role: 'The area around the field where a stroke still counts as writing into it. Larger than the field, because people do not aim at a 40dp target with a pen.' },
-        { part: 'Delegator',
-          role: 'A collapsed control that expands into the real field when writing starts on it. Without one, every compact search bar is a pen dead-end.' },
-        { part: 'Correction gestures',
-          role: 'Scratch out to delete, vertical stroke to insert, circle to select. The vocabulary that keeps the pen in hand.' },
-        { part: 'Ink layer',
-          role: 'Ink-as-record mode only: the strokes exactly as drawn, kept as the document.' },
-        { part: 'Reading',
-          role: 'The recognised text, beneath the ink rather than over it, with low-confidence words marked.' },
-        { part: 'Handoff',
-          role: 'What the agent actually receives: text. It should be unable to tell a written request from a typed one.' }
+        { part: 'Pen button', role: 'In the shared composer, beside the microphone. Pressed while the pad is open; disabled-looking (but explainable) when handwriting is unavailable.' },
+        { part: 'Writing pad', role: 'Above the composer, never instead of it. A ruled surface with the status line, Undo stroke, Clear and Close.' },
+        { part: 'Ink', role: 'Exactly what was drawn. Kept on the pad through recognizing and failure, and optionally attached to the message as the original.' },
+        { part: 'Recognized strip', role: 'Under the ink: “Recognized”, the words, and any uncertain word as a button marked “?” with alternatives.' },
+        { part: 'Add to message', role: 'The one step that turns recognized text into accepted text. Disabled while anything is uncertain.' },
+        { part: 'From-handwriting marker', role: 'On the composer after adding: says where the words came from, with Undo that restores exactly what was typed.' },
+        { part: 'Handwritten note chip', role: 'The original ink travelling with the message, removable without removing the words.' }
       ],
-
       flow: [
-        'A pen approaches a field. Nothing is switched on, because nothing was switched off.',
-        'Strokes land in the field &mdash; including strokes that start just outside it &mdash; and convert as they are written. A collapsed control expands into its real field rather than refusing the pen.',
-        'Mistakes are fixed with the pen: scratch a word out, draw a line to insert, circle to select. The keyboard does not appear.',
-        'Where the ink is the record instead, the strokes stay and the reading is produced beneath them on request.',
-        'Words the recogniser was unsure of are marked, and correcting one costs a tap rather than a re-read.',
-        'The corrected text &mdash; never the raw reading &mdash; is what goes to the agent.',
-        'The agent answers in text, against text. Nothing in its reply refers to the pen, because the pen was an input method and not a topic.'
+        'Ready: “Next sprint:” is typed; the pen opens the pad above the composer.',
+        'Writing: “Review onboarding flow” in ink. Undo removes the last stroke; nothing is recognized yet.',
+        'Recognizing: “Recognizing your writing…” — the ink stays visible under a slow sheen.',
+        'Recognized: “Review onboarding flaw?” — one word is uncertain, so Add to message waits.',
+        'Editing recognition: tap “flaw?”, choose “flow”.',
+        'Added to message: “Next sprint: Review onboarding flow” — appended, marked From handwriting, with Undo; the ink is attached as the original.',
+        'Send: the message says it came from handwriting; Aria plans a screen-by-screen review of the flow.',
+        'Couldn’t recognize: messy ink — kept on the pad; Rewrite, Retry, Keep original or Switch to typing.'
       ],
-
-      /* FIVE states, spanning the two modes this pattern covers:
-         an ordinary field a pen can write into, and ink that is
-         itself the record. Bounds, delegation and the correction
-         gestures are properties of those states rather than states
-         of their own, and they are documented above. */
       statesList: [
-        { name: 'No pen', desc: 'A touch or mouse session. An ordinary text field and nothing at all about handwriting on screen — which is most of the time.' },
-        { name: 'Writing', desc: 'A pen writing straight into that same field: strokes at one-to-one, unsmoothed, converting behind the nib. No mode was entered, because none exists.' },
-        { name: 'Ink kept', desc: 'The other mode. The strokes are the document — maths, annotation, anything drawn in front of somebody — and they are a usable record before anything has read them.' },
-        { name: 'Low confidence', desc: 'A reading the recogniser could not settle, marked in place in the agent’s own colour. In an equation this is not a typo; it is a different equation.' },
-        { name: 'Corrected', desc: 'Settled with one tap. The mark comes off and the ink is untouched, because the ink was always the original.' }
+        { name: 'Ready', desc: '<em>Trigger:</em> the pen was pressed. <em>Behaviour:</em> the pad opens above the composer, which keeps what was typed. <em>Meaning:</em> nothing written yet. <em>Action:</em> write, or Close. <em>Next:</em> Writing.' },
+        { name: 'Writing', desc: '<em>Trigger:</em> ink on the pad. <em>Behaviour:</em> strokes as drawn; Undo stroke, Clear, Recognize. <em>Meaning:</em> the ink is the original, not text yet. <em>Action:</em> keep writing, Undo, Clear, Recognize. <em>Next:</em> Recognizing.' },
+        { name: 'Recognizing', desc: '<em>Trigger:</em> Recognize (or a pause, in automatic mode). <em>Behaviour:</em> status text; a slow sheen over the ink, which stays in view. <em>Meaning:</em> being read; nothing added. <em>Action:</em> wait. <em>Next:</em> Recognized or Couldn’t recognize.' },
+        { name: 'Recognized', desc: '<em>Trigger:</em> recognition finished. <em>Behaviour:</em> the reading under the ink; uncertain words are buttons marked “?”; Add to message disabled while any remain. <em>Meaning:</em> what was read, not yet what you said. <em>Action:</em> settle the word, or Edit text. <em>Next:</em> Editing recognition or Added.' },
+        { name: 'Editing recognition', desc: '<em>Trigger:</em> a word corrected. <em>Behaviour:</em> the corrected word is marked as yours; Add enabled. <em>Meaning:</em> it reads right; still not in the message. <em>Action:</em> Add to message. <em>Next:</em> Added to message.' },
+        { name: 'Added to message', desc: '<em>Trigger:</em> Add to message. <em>Behaviour:</em> appended to the typed words, marked From handwriting with Undo; the ink attached as Handwritten note. <em>Meaning:</em> accepted text; nothing sent. <em>Action:</em> edit, Undo, remove the original, Send. <em>Next:</em> Ready.' },
+        { name: 'Couldn’t recognize', desc: '<em>Trigger:</em> too little could be read. <em>Behaviour:</em> says so; the ink is kept; nothing guessed. <em>Meaning:</em> nothing lost, nothing added. <em>Action:</em> Rewrite, Retry, Keep original, Switch to typing. <em>Next:</em> Ready, Recognizing, or Added (original only).' },
+        { name: 'Unavailable', desc: '<em>Trigger:</em> no pen or touch input. <em>Behaviour:</em> the pen explains why; the field works as always. <em>Meaning:</em> typing never depends on handwriting. <em>Action:</em> type instead. <em>Next:</em> —' }
       ],
-
       variants: [
-        { name: 'Write into the field', desc: 'The default and the one that needs no feature: the platform already does it. Ink is transient, text is the record, and there is no button.' },
-        { name: 'Ink as the record', desc: 'For maths, diagrams, annotation and anything drawn in front of somebody. Strokes are the document; recognition is an overlay, produced on request, that never replaces them.' },
-        { name: 'Annotate an existing document', desc: 'Ink over somebody else’s page. The mark and the thing it marks are both kept, and the agent is told which is which.' },
-        { name: 'Signature and mark', desc: 'Where the stroke is the evidence and recognition is beside the point. Worth naming because it is the case where “convert to text” is actively wrong.' }
+        { name: 'Review first (default)', desc: 'Recognize on request and show the reading before anything joins the message. Right for requests, where a misread word changes the instruction.' },
+        { name: 'Convert automatically', desc: 'Recognize after a pause and add the text when every word is certain. Uncertain words still stop for a look, and the From-handwriting marker and Undo are always there.' },
+        { name: 'Original only', desc: 'Keep original after a failure: the ink is attached as an image and no text is guessed — for sketches, signatures or writing that is the point in itself.' }
       ],
-
       content: [
-        'Never label a control “Handwriting” or “Ink mode”. If a button is needed, the platform integration is missing.',
-        'Say what could not be read, and where: “I can’t read the exponent on the third line.” Not “recognition failed”.',
-        'When the reading changes the meaning, quote both: “x² or x2 — these are different questions.”',
-        'Never present a reading as the thing that was written. It is a reading of it, and the wording should say so.',
-        'Nothing in the agent’s reply should mention the pen. The input method is not a topic.'
+        'Say what is happening while the ink is read: “Recognizing your writing…”.',
+        'Name the uncertainty, and how to settle it: “1 word needs a look — tap it to choose.”',
+        'Say where accepted text came from: “From handwriting — check it before you send”.',
+        'Failure says what happened and what is kept: “Couldn’t recognize this writing. Your ink is kept.” — never “Error”.',
+        'Unavailable says why and what to do: “This device has no pen or touch input. Type your request instead.”'
       ],
-
       a11y: [
-        'A pen is an additional input, never a required one. Everything writable is typable, and the field is an ordinary field with an ordinary keyboard path.',
-        'Ink alone is not accessible content. Where the ink is the record, the recognised text is what makes it readable by a screen reader — so it is produced and exposed, not hidden behind a “convert” button.',
-        'Where recognition genuinely cannot read something, the product says so in text rather than leaving a silent image.',
-        'Low-confidence words are focusable, labelled (“Low confidence, tap to correct: unit 4”) and correctable from the keyboard.',
-        'Correction gestures each have a non-gesture equivalent: a word can be deleted, split or selected without drawing anything.',
-        'Handwriting bounds are generous by design, which is also a motor-accessibility property: nothing requires a precise stroke start.',
-        'Recognised text is never the only copy of a name, number or amount without a way to see the original.',
-        'The word-by-word arrival animation stops under prefers-reduced-motion; the reading simply appears.'
+        'The pen button is labelled “Write by hand” and reports pressed while the pad is open; when unavailable it stays focusable and explains why.',
+        'The pad is a labelled region; Undo stroke, Clear and Close are real buttons with names.',
+        'Recognizing, recognized, corrections and additions are announced in a polite live region.',
+        'The uncertain word is a button (“flaw — not sure about this word. Choose the right one”) and its alternatives are buttons — not colour alone: a “?” and a dotted underline mark it too.',
+        'Handwriting is never the only route: the same composer takes typed text, and Switch to typing is offered on failure.',
+        'After Add, Undo or Type instead, focus returns to the field; the sheen and writing animation stop under reduced motion.'
       ],
-
       donts: [
-        'Don’t build a handwriting mode with a button, a canvas and an Insert action. The platform already writes into every field; a mode is a worse version of something you already have.',
-        'Don’t smooth or beautify the ink. A stroke corrected into a shape it never had is a quiet lie about what somebody wrote.',
-        'Don’t replace the ink with the reading where the ink is the record. That is the one destructive operation in this pattern.',
-        'Don’t open a keyboard in the middle of a pen interaction to fix one word.',
-        'Don’t hide low-confidence words. An unmarked wrong word is the one that gets acted on — and in an equation it is a different equation.',
-        'Don’t present handwriting as an AI capability. Recognition is decades old; the agent is downstream of it and receives ordinary text.',
-        'Don’t require a precise stroke start. The bounds exist because people miss.'
+        'Don’t build a separate handwriting composer.',
+        'Don’t accept an uncertain word silently, or let auto-conversion skip it.',
+        'Don’t overwrite what was typed — append, and offer Undo.',
+        'Don’t discard the ink the moment it is recognized; let it travel as the original unless removed.',
+        'Don’t guess text when recognition fails; keep the ink and offer ways on.',
+        'Don’t send, or act, because writing finished.',
+        'Don’t beautify or smooth the ink.'
       ],
-
       metrics: [
-        'How often the keyboard appears during a pen session. Every occurrence is a gesture that was missing.',
-        'How often a marked word is corrected versus how often it is ignored — the second number tells you whether the mark is visible enough.',
-        'Strokes that started outside the bounds and were lost.',
-        'Requests sent with an uncorrected low-confidence word in them, which is the error this pattern exists to catch.'
+        'How often an uncertain word is corrected versus left as first read — a high correction rate on one word is a recognizer problem worth fixing.',
+        'Undo after Add to message: how often added handwriting is taken back out.',
+        'Couldn’t recognize → which way on (Rewrite, Retry, Keep original, Switch to typing).',
+        'Messages sent with the original ink attached, and how often the original is removed before sending.'
       ],
-
-      composed: ['Text Field', 'Card', 'Chip', 'Icon Button', 'Menu'],
-      related: [['voice-input', 'Voice Input'], ['gesture', 'Gesture Input'], ['visual-input', 'Visual Input']],
+      composed: ['Text Field', 'Icon Button', 'Button', 'Chip', 'Progress'],
+      related: [['voice-input', 'Voice Input'], ['visual-input', 'Visual Input'], ['open-input', 'Open Input']],
       pkg: 'nucleux-m3-handwriting',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- There is no handwriting button. This is an ordinary field that\n     the platform already lets a pen write into; the bounds around it\n     are why a stroke starting slightly outside still lands in it. -->\n<label class=\"md-ink__field\">\n  <span class=\"md-ink__bounds\" aria-hidden=\"true\"></span>\n  <input type=\"text\" value=\"is this working right?\" />\n</label>\n\n<!-- Ink as the record: the strokes stay, the reading sits beneath -->\n<div class=\"md-ink\">\n  <svg class=\"md-ink__strokes\" viewBox=\"0 0 420 64\" aria-label=\"Handwritten working\">\n    <!-- exactly as drawn: no smoothing, no beautification -->\n  </svg>\n  <p class=\"md-ink__read\">\n    x\n    <button class=\"md-ink__doubt\" aria-label=\"Low confidence, tap to correct: squared\">\n      squared\n    </button>\n    + 3x &minus; 4\n  </p>\n</div>",
-
+      usage: '<AgentComposer\n  handwriting={{\n    convert: "review",        // or "auto" — uncertain words still stop for a look\n    keepOriginal: true,       // the ink travels with the message\n    undoStroke: true,\n    statusText: "Recognizing your writing…",\n    failureText: "Couldn’t recognize this writing.",\n    unavailableText: "This device has no pen or touch input. Type your request instead."\n  }}\n/>',
       examples: [
         {
-          id: 'ink-field',
-          title: 'An ordinary field, with no handwriting button',
-          note: 'The platform already accepts a pen here. The only chrome the pattern adds is the bounds — larger than the field, because nobody aims a stylus at a 40dp target.',
-          code:
-'<label class="md-ink__field">\n' +
-'  <span class="md-ink__bounds" aria-hidden="true"></span>\n' +
-'  <span class="md-ink__value md-body-medium">is this working right?</span>\n' +
-'  <span class="md-ink__caret" aria-hidden="true"></span>\n' +
-'</label>\n' +
-'<p class="md-ink__hint md-body-small">\n' +
-'  Handwriting bounds — a stroke starting here still lands in the field.\n' +
-'</p>'
+          id: 'handwriting-review',
+          title: 'Recognized, with one word to settle',
+          note: 'The reading sits under the ink, never over it. The uncertain word is a button with a “?” — not just a colour — and Add to message waits until it is settled.',
+          code: '<div class="md-hw__read" role="group" aria-label="Recognized text">\n  <span class="md-hw__k">Recognized</span>\n  <span class="md-hw__txt" data-emphasis="strong">\n    <span class="md-hw__word">Review</span>\n    <span class="md-hw__word">onboarding</span>\n    <button type="button" class="md-hw__unsure"\n            aria-label="flaw — not sure about this word. Choose the right one">flaw<span aria-hidden="true">?</span></button>\n  </span>\n  <span class="md-hw__note">1 word needs a look — tap it to choose.</span>\n</div>'
         }
       ]
     },
@@ -3224,112 +3155,86 @@
       stageId: 'initially',
       sub: 'Expressive Input',
       subId: 'expressive-input',
-      oneline: 'Point at something on screen and ask about that.',
-      intent: 'Marking a region of what is already on screen so the next question can be about that, rather than a paragraph describing which part you mean.',
-      what: 'A selection layer summoned over whatever is currently displayed. A circle, a highlight, a scribble or a tap marks a region; the region resolves to something the product can name; it travels to the composer as a piece of context; the question is then typed or spoken against it.',
-      why: 'The expensive part of asking an agent about what you are looking at is not the question, it is the pointing. &ldquo;This spike&rdquo;, &ldquo;that column&rdquo;, &ldquo;the bit in the corner&rdquo; &mdash; written out, it costs a paragraph and still leaves the agent guessing; marked on screen, it costs one stroke and is unambiguous. And because the reference is a region rather than a description, the answer can be checked against it: you can see what it looked at.',
-      when: 'Wherever the subject of the question is already on screen and naming it in words is slower or less exact than pointing at it &mdash; charts and dashboards, dense tables, documents, maps, error screens, photographs. Not on surfaces where everything is already a named object with its own controls: there the control is faster than the gesture.',
-      how: 'Put the layer behind a deliberate invocation, so a stroke can never be made by accident inside the product. Accept all four marks and resolve them to one thing: a region. Snap to objects the product already knows about, and show the snapped bounds rather than asserting a label. Make the selection adjustable before anything is sent, and let it travel to the composer as a chip that can be removed without losing the typed question. Ship the keyboard path in the same release, not the next one.',
-      expressive: 'The region is one object in two positions, not two objects: it leaves the screen and arrives on the composer along a single path, which is why the chip needs no caption explaining where it came from. Everything under the layer dims exactly one surface step &mdash; enough to say the product is frozen, not so much that the content being selected becomes hard to read. The stroke follows the pointer one-to-one with no smoothing while it is being drawn and springs only when it is released, because motion that leads the input reads as the product guessing. Certainty is carried by the edge: while the region is being classified its boundary is soft and dashed, and it hardens to a solid primary outline the moment the snap resolves. A region the product cannot identify never hardens &mdash; which is how &ldquo;I do not know what this is&rdquo; gets said without introducing a second colour.',
-
+      oneline: 'Circle, highlight, tap or box what is on screen; it joins your request by name. A gesture only points — it never acts.',
+      intent: 'Contextual screen selection on the shared composer: point at the thing, see it named, add it to the request — and an ambiguous selection asks rather than guesses.',
+      what: 'Select on screen in the shared composer turns on a visible selecting mode: a toolbar on the content (Circle, Highlight, Tap, Region, Cancel) and every selectable item becomes a button, so Tab and Enter select the same things. A gesture that lands on one thing puts a boundary around it and names it, with Add to message, Adjust and Clear. Added context is a chip in the composer — “Selected: Conversion chart” — with ✕. When the agent uses it, the thing says so; the answer names what it used. A gesture that covers two things asks which; one that covers nothing says so; Describe it instead is always offered.',
+      why: '“Why did this drop?” only means something if the agent knows what “this” is. Pointing is the fastest way to say it, but a selection that is guessed, invisible or silently added sends the agent to the wrong thing — and a gesture that triggers an action is a gesture nobody can use safely. Naming the selection, keeping it removable, and asking when it is ambiguous make pointing trustworthy.',
+      when: 'Wherever a request is about something already on screen: a chart, a row, a region of a design, a paragraph. Not as the only way to refer to things — words always work — and never as a way to trigger actions.',
+      how: 'Put Select on screen in the composer people already use. Make selecting a mode you can see and leave (Cancel, Escape). Accept circle, highlight, tap and region — and make every target a real button for keyboard and switch users. Snap a gesture to the thing it covers, and name it. Wait for Add to message unless the product adds automatically; either way, the composer shows a named chip with ✕. If a gesture covers more than one thing, ask which; if it covers nothing, say so; always offer Try again, Describe it instead and Clear. While the agent uses the selection, show it on the selection; name it in the answer; keep it for follow-ups until it is cleared, and say when it is.',
+      expressive: 'The boundary sits on the selected thing only — dashed, solid or a soft glow — never around the whole screen. The circle draws as you draw it, in the primary colour, and the selection settles onto the element it snaps to. While the agent uses it, a slow, low-contrast sheen crosses that element under “Aria is looking at this”. Candidates in an ambiguous selection are marked in the tertiary tone. Under reduced motion nothing moves; words and boundaries carry the state.',
       precedent: [
-        { name: 'Circle to Search &mdash; Android',
-          what: 'Long-press the navigation handle to freeze the current screen, then <b>circle, highlight, scribble over or tap</b> anything on it. Results open beneath. The borders of the selection can be dragged to adjust it, and words typed into the search field refine the request without redrawing the mark. Four marks, one meaning: a region.' },
-        { name: 'Screenshot, then ask &mdash; ChatGPT, Claude, Copilot',
-          what: 'The same structure at a coarser grain: an image is attached and the region of interest is indicated by cropping or drawing on it before the question is typed. It proves the demand and shows the cost of doing it destructively &mdash; the crop throws the rest of the screen away, and the selection cannot be adjusted afterwards.' },
-        { name: 'Select, then act &mdash; every desktop OS',
-          what: 'The ancestor: select something, and a small set of things that can be done with <em>that</em> appears. This pattern is that same contract extended from characters to pixels, with an agent as the thing on the other end of it.' }
+        { name: 'Circle to Search — Android', url: 'https://support.google.com/websearch/answer/14508957?hl=en',
+          what: 'Circle, highlight, scribble or tap what is on screen to search it, without leaving the app. Several gestures, one meaning: “this”.' },
+        { name: 'Screenshot, then ask — chat assistants', what: 'An image is attached and the region is indicated by cropping or drawing. It proves the demand, and shows the cost of doing it destructively: the rest of the screen is thrown away and the selection cannot be adjusted.' },
+        { name: 'Select, then act — every desktop OS', what: 'The ancestor: select something and a small set of things that apply to that appears. Here the selection is context for a request — it never acts by itself.' }
       ],
-
       anatomy: [
-        { part: 'Entry point',
-          role: 'The visible, nameable way in &mdash; a control, a shortcut, or the platform&rsquo;s own long-press. There is always one, because a capability reachable only by a stroke nobody was taught is not a capability.' },
-        { part: 'Selection layer',
-          role: 'A modal surface over the frozen screen. It is what makes the stroke safe: inside it a drag is a selection, outside it a drag is still scrolling.' },
-        { part: 'Mark',
-          role: 'The stroke as drawn &mdash; circle, highlight, scribble, or a tap. Rendered at one-to-one while the pointer is down, then discarded once it has become a region.' },
-        { part: 'Region',
-          role: 'The resolved selection: bounds, plus the product&rsquo;s own name for what is inside them where it has one. Draggable handles make it correctable.' },
-        { part: 'Context chip',
-          role: 'The region as it appears on the composer. Carries the label and a remove control, and is the only record of what will actually be sent.' },
-        { part: 'Composer',
-          role: 'Where the question is written against the chip. Free text, not a menu &mdash; the selection fixes the subject, not the question.' },
-        { part: 'Keyboard path',
-          role: 'Tab through the regions the product already knows about, Enter to select. Produces the identical chip, with no stroke anywhere in it.' }
+        { part: 'Select on screen', role: 'A button in the shared composer, pressed while selecting.' },
+        { part: 'Selecting toolbar', role: 'On the content: what to do (“Circle what you mean — or Tab to it”), the allowed gestures, and Cancel.' },
+        { part: 'Targets', role: 'The things that can be selected. Each is a real button while selecting, so the keyboard reaches all of them.' },
+        { part: 'Boundary', role: 'Around the selected thing only. Dashed, solid or glow by setting.' },
+        { part: 'Selection bar', role: 'Names what was selected, with Adjust, Clear and Add to message.' },
+        { part: 'Context chip', role: 'In the composer: “Selected: Conversion chart”, with ✕.' },
+        { part: 'Using tag', role: '“Aria is looking at this” on the selection while the agent uses it.' },
+        { part: 'Ambiguity panel', role: 'Above the composer: “Which did you mean?”, a button per candidate, Try again, Describe it instead, Clear.' }
       ],
-
       flow: [
-        'The layer is invoked deliberately &mdash; long-press, shortcut, or a visible control. The screen freezes and dims one step, so nothing underneath can be pressed by mistake.',
-        'A mark is made: circle, highlight, scribble, or tap. The stroke tracks the pointer exactly and nothing is interpreted while it is down.',
-        'On release the mark closes into a region and snaps to the nearest object the product knows &mdash; a chart series, a paragraph, a table column. Where it knows nothing, the region stays raw pixels and says so.',
-        'The snapped bounds are shown with handles. The selection can be corrected here, and nothing has been sent yet.',
-        'The region travels to the composer and becomes a context chip. The layer closes; the product is usable again.',
-        'The question is typed or spoken against the chip. Removing the chip changes what is asked; it does not clear the sentence.',
-        'The answer names the region it used before it states a conclusion, and the chip stays so the same region can be asked about again.'
+        'Ready: the September dashboard, and the composer with Select on screen.',
+        'Selecting: the toolbar appears on the dashboard; every tile and chart is a button.',
+        'Selection made: a circle round the Conversion chart — it gets a boundary and is named, with Add to message, Adjust, Clear.',
+        'Context added: “Selected: Conversion chart” in the composer, with ✕.',
+        'Agent using selection: “Why did this drop?” — the chart says “Aria is looking at this”.',
+        'The answer: “In the Conversion chart: conversion fell from about 4.1% to 2.9% starting 14 Sep…” — Used: Conversion chart.',
+        'Selection cleared: ✕ — Aria won’t use the chart; select something else.',
+        'Couldn’t identify selection: a circle over the chart and the funnel — “Which did you mean?”'
       ],
-
-      /* FIVE states, not fifteen. This is the spine of the
-         interaction — nothing, the mark, the region it resolved to,
-         the region as a term in the request, the answer. Adjustment,
-         multiple regions, failure and the keyboard route are real
-         and are documented above and below; they are not separate
-         things to look at. */
       statesList: [
-        { name: 'Inactive', desc: 'No layer, no hidden stroke. One visible, nameable entry point — the only thing on screen that says this capability exists.' },
-        { name: 'Selecting', desc: 'The layer is up, the screen beneath is frozen and dimmed one step, and the stroke follows the pointer one-to-one. Nothing is interpreted while it is down.' },
-        { name: 'Selection confirmed', desc: 'The mark has closed and snapped to the nearest known object. The edge hardens, handles appear, and nothing has been sent — a selection that acts the moment it is drawn cannot be corrected, only undone.' },
-        { name: 'Context attached', desc: 'The region travels to the composer and becomes a chip. One object in a second position, which is why the chip needs no caption saying where it came from.' },
-        { name: 'Result', desc: 'The answer names the region it used before it states a conclusion, and the chip stays — so the same region can be asked about again without drawing it twice.' }
+        { name: 'Ready', desc: '<em>Trigger:</em> content on screen, composer below. <em>Behaviour:</em> Select on screen in the composer. <em>Meaning:</em> the agent only has your words. <em>Action:</em> Select on screen. <em>Next:</em> Selecting.' },
+        { name: 'Selecting', desc: '<em>Trigger:</em> Select on screen. <em>Behaviour:</em> toolbar on the content; gestures; Cancel; targets are buttons. <em>Meaning:</em> nothing selected or shared; pointing only. <em>Action:</em> circle, highlight, tap, box — or Tab + Enter; Escape cancels. <em>Next:</em> Selection made or Couldn’t identify.' },
+        { name: 'Selection made', desc: '<em>Trigger:</em> a gesture lands on one thing. <em>Behaviour:</em> boundary + a bar naming it; Adjust, Clear, Add to message. <em>Meaning:</em> what you pointed at; not in the message. <em>Action:</em> Add, Adjust, Clear. <em>Next:</em> Context added, Selecting, Ready.' },
+        { name: 'Context added', desc: '<em>Trigger:</em> Add to message (or automatic). <em>Behaviour:</em> a named chip with ✕ in the composer. <em>Meaning:</em> the agent will use it with your words, when you send. <em>Action:</em> ask, remove, select another. <em>Next:</em> Agent using selection, Selection cleared.' },
+        { name: 'Agent using selection', desc: '<em>Trigger:</em> sent with a selection. <em>Behaviour:</em> “Aria is looking at this” on it; the chip is outlined; the answer names it. <em>Meaning:</em> the selection, and only it, is being used; nothing changes. <em>Action:</em> wait. <em>Next:</em> Context added.' },
+        { name: 'Selection cleared', desc: '<em>Trigger:</em> ✕ or Clear selection. <em>Behaviour:</em> chip and boundary gone; a note says the agent won’t use it. <em>Meaning:</em> the conversation continues without it. <em>Action:</em> select something else, or type. <em>Next:</em> Selecting or Ready.' },
+        { name: 'Couldn’t identify selection', desc: '<em>Trigger:</em> the gesture covered two things, or nothing. <em>Behaviour:</em> candidates marked; “Which did you mean?”; Try again, Describe it instead, Clear. <em>Meaning:</em> nothing selected until you say. <em>Action:</em> choose, retry, describe, clear. <em>Next:</em> Selection made, Selecting, Ready.' }
       ],
-
       variants: [
-        { name: 'Tap to select', desc: 'For anything that is already an object &mdash; a chart series, a table cell, a photo in a grid. One tap, no stroke, and the fastest form of the pattern. Where it is available it should be the default.' },
-        { name: 'Highlight over text', desc: 'A stroke along a line selects the words rather than a rectangle. The context stays text, which makes the answer quotable and the selection copyable.' },
-        { name: 'Scribble to select', desc: 'A scratch over the region, for people who do not reliably draw closed loops. Resolves to exactly the same region as a circle.' },
-        { name: 'Pinned region', desc: 'The region stays beside the answer as a thumbnail after the fact, for work that will be read later by somebody who did not make the selection.' }
+        { name: 'Confirm, then add (default)', desc: 'A selection waits for Add to message. Right when the content is dense and a wrong target is easy.' },
+        { name: 'Add automatically', desc: 'A clear selection goes straight into the composer as a named chip with ✕. Ambiguous selections still ask.' },
+        { name: 'Several selections', desc: 'Each selection is its own chip, so “compare this with this” works; each is removed separately.' }
       ],
-
       content: [
-        'Name the region in the product&rsquo;s own nouns &mdash; &ldquo;Revenue &middot; 12&ndash;19 Sept&rdquo;, never &ldquo;Selection 1&rdquo;. A chip nobody can read is a chip nobody checks.',
-        'Teach the marks in one line inside the layer, once: &ldquo;Circle, highlight, scribble or tap anything.&rdquo; Not a tour, not a coach mark on second launch.',
-        'When the snap is uncertain, say what it matched and offer the raw region: &ldquo;Looks like the Revenue series &mdash; use the area I drew instead.&rdquo;',
-        'The answer states the region it used before it states its conclusion.',
-        'Failure describes what was under the mark, not that the mark was wrong. &ldquo;Nothing selectable here&rdquo; blames the surface; &ldquo;try again&rdquo; blames the person.'
+        'Name the selection by what it is: “Selected: Conversion chart” — not “Selection added”.',
+        'Say what the agent is using while it uses it: “Aria is looking at this”.',
+        'Ambiguity is a question: “Your selection covers more than one thing. Which did you mean?”',
+        'Say what clearing means: “Selection cleared — Aria won’t use the Conversion chart.”',
+        'In the answer, name the selection first: “In the Conversion chart: …”.'
       ],
-
       a11y: [
-        'A visible control does everything the stroke does. The gesture is an accelerator over a capability, never the capability itself &mdash; which is why the keyboard path is in the state list above rather than in a footnote.',
-        'Every region the product can identify is reachable by Tab in reading order and selectable with Enter or Space. Selecting by keyboard produces the same chip as selecting by stroke.',
-        'The layer is a focus trap with a named exit. Escape closes it and returns focus to the control that opened it.',
-        'The context chip has an accessible name and a real remove button &mdash; &ldquo;Remove Revenue &middot; 12&ndash;19 Sept&rdquo; &mdash; not an unlabelled glyph.',
-        'Selection changes are announced in a polite live region, because a stroke produces no text of its own for a screen reader to read.',
-        'Handles are drawn small and hit large: at least 48dp of touch target regardless of the visual size.',
-        'Dimming is never the only signal that the layer is open &mdash; it also has a visible title and its own control bar, so the state survives high-contrast and low-vision settings.',
-        'Nothing depends on drawing accuracy. Snapping, adjustable bounds and the tap variant all exist so that an imprecise or shaky stroke still lands on the right object.'
+        'Select on screen is a toggle button (aria-pressed); focus moves to the gesture toolbar when selecting starts.',
+        'Every target is a real button while selecting (“Select Conversion chart”), so Tab and Enter select without drawing.',
+        'Escape cancels selecting from anywhere in the pattern.',
+        'Selection, adding, removing, using and clearing are announced in a polite live region; ambiguity is an alert with buttons.',
+        'Selection is shown by a boundary, a tag and words, not colour alone; Describe it instead is always available.',
+        'Sheen and draw-in animations stop under reduced motion; targets are at least 48px on touch.'
       ],
-
       donts: [
-        'Don&rsquo;t make the stroke the only way to reach the context. That is the single failure that turns this pattern into an accessibility problem rather than an accelerator.',
-        'Don&rsquo;t interpret marks made in the product without the layer. The freeze is what lets a drag mean &ldquo;select&rdquo; here and &ldquo;scroll&rdquo; everywhere else.',
-        'Don&rsquo;t send anything while the selection is still being adjusted.',
-        'Don&rsquo;t clear the typed question when the chip is removed.',
-        'Don&rsquo;t fabricate a snap. A region the product cannot identify stays raw pixels and says so &mdash; a confident wrong label is worse than no label.',
-        'Don&rsquo;t implement this with hand tracking, air gestures or camera-based motion. The mark belongs on the surface the content is on; anything else is a different pattern with a worse hit rate.',
-        'Don&rsquo;t animate the region into the chip as a decorative flourish. It is one object moving; if it teleports, the reader has to work out the relationship for themselves.'
+        'Don’t let a gesture trigger an action — it only points.',
+        'Don’t guess between two things a gesture covered; ask.',
+        'Don’t add a selection without naming it in the composer.',
+        'Don’t make drawing the only way to select.',
+        'Don’t put a border around the whole screen.',
+        'Don’t keep using a selection after it is cleared — and say that it won’t be.'
       ],
-
       metrics: [
-        'The share of questions that arrive with a region attached rather than described in prose.',
-        'How often a selection is adjusted after the snap. A high number means the snapping is wrong, not that people are fussy.',
-        'How often the keyboard path is taken. Zero usually means it is broken, not unwanted &mdash; it is the route assistive technology takes.',
-        'Selections abandoned after the layer opened, which measures whether the marks the layer accepts match the marks people actually make.'
+        'How often a selection is adjusted or cleared before sending — high numbers mean snapping is landing on the wrong thing.',
+        'Ambiguous selections, and which way on (choose, retry, describe, clear).',
+        'Answers that name the selection they used, and follow-ups that reuse it.',
+        'Keyboard selections vs gesture selections.'
       ],
-
-      composed: ['Icon Button', 'Chip', 'Text Field', 'Scrim', 'Snackbar'],
-      related: [['visual-input', 'Visual Input'], ['open-input', 'Open Input']],
+      composed: ['Icon Button', 'Button', 'Chip', 'Card', 'Progress'],
+      related: [['visual-input', 'Visual Input'], ['handwriting', 'Handwriting Input'], ['attachments', 'Attachments']],
       pkg: 'nucleux-m3-selection',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<div class=\"md-sel\" data-state=\"confirmed\">\n  <div class=\"md-sel__stage\">\n  <!-- whatever was already on screen, frozen -->\n  <div class=\"md-sel__screen\"><!-- the dashboard --></div>\n\n  <div class=\"md-sel__layer\" role=\"dialog\" aria-label=\"Select something to ask about\">\n    <!-- the resolved region, snapped and adjustable -->\n    <div class=\"md-sel__region\" style=\"--x:46%;--y:18%;--w:26%;--h:52%\">\n      <span class=\"md-sel__label\">Revenue &middot; 12&ndash;19 Sept</span>\n      <span class=\"md-sel__h md-sel__h--nw\"></span>\n      <span class=\"md-sel__h md-sel__h--se\"></span>\n    </div>\n    <p class=\"md-sel__teach\">Circle, highlight, scribble or tap anything.</p>\n  </div>\n  </div>\n\n  <!-- the region, arrived on the composer as a term in the request -->\n  <div class=\"md-sel__bar\">\n    <button class=\"md-sel__chip\" aria-label=\"Remove Revenue, 12 to 19 September\">\n      Revenue &middot; 12&ndash;19 Sept\n    </button>\n    <input class=\"md-sel__q\" placeholder=\"Ask about this\" />\n  </div>\n</div>",
-
+      usage: '<AgentComposer\n  gesture={{\n    types: ["circle", "highlight", "tap", "region"],\n    autoAdd: false,            // a selection waits for Add to message\n    askWhenAmbiguous: true,    // never guess between two things\n    multiple: false,\n    label: "Selected: {name}",\n    ambiguousText: "Your selection covers more than one thing. Which did you mean?"\n  }}\n/>',
       examples: [
         {
           id: 'sel-chip',
@@ -3359,134 +3264,91 @@
       stageId: 'initially',
       sub: 'Expressive Input',
       subId: 'expressive-input',
-      oneline: 'Prose first; structure only where it changes the answer.',
-      intent: 'Asking in your own words, then being asked back only for the two or three constraints that would change the answer.',
-      what: 'Progressive disclosure of structure. The request is typed as a sentence. The agent works out which parameters it is missing, asks only for those, says what each one changes, states the default it will use if you skip one, and keeps the answers afterwards as a small set of named values that can be edited and re-run.',
-      why: 'A form in front of an agent asks for everything and teaches nothing: most fields do not change the answer, and the person filling them in cannot tell which ones do. Free prose is the opposite problem &mdash; expressive, and silently ambiguous in exactly the two or three places that decide the result. Asking afterwards, and only for what matters, gets both: the request stays a sentence, and the parts that would otherwise be guessed become values somebody chose.',
-      when: 'Wherever a request has a small number of parameters that materially change the output and getting one wrong is expensive or invisible: research and reporting, analytics, scheduling, search over structured records, anything that will be re-run later and compared.',
-      how: 'Take the sentence first. Work out what is genuinely missing &mdash; not everything the API accepts &mdash; and ask for at most a handful, with a line on each saying what it changes. Offer a default and let it be skipped; a question that cannot be skipped is a form field with a friendlier voice. Show the answers afterwards as a small visible set rather than burying them in the transcript, and let one be changed and the request re-run without retyping it. Where the product has its own nouns, let typing resolve them inline against real data so an invalid value is impossible rather than merely wrong.',
-      expressive: 'A settled constraint is a filled chip at 8dp &mdash; sharp, because it is data, and the same corner the Searching page gives a filter it wants you to check. The request itself stays prose at full emphasis, so the eye can see at a glance which parts of the ask are decided and which are still a sentence. A constraint springs as it settles, because a person chose it; a default the agent supplied arrives on emphasized easing and sits at lower emphasis until somebody touches it, which is the whole distinction between a value and an assumption. Questions arrive one group at a time rather than as a wall, and the group collapses into its answers as it is completed &mdash; the same surface transforming, not a panel closing and a summary appearing somewhere else.',
-
+      oneline: 'When a request needs exact values, the agent asks with a compact form — suggestions marked, every value yours to change, the consequential step confirmed.',
+      intent: 'A small form that complements open input: the request starts in words; the exact values are set in fields, checked next to each field, reviewed, and only then acted on.',
+      what: 'The person asks in the ordinary composer (“Create a follow-up task for this blocker”). Aria answers with a compact form — Task, Owner, Due date, Priority — with visible labels, helper text and required marks. Values Aria suggested are marked “Suggested”, with why, and stay editable; a changed value is marked “Edited by you” and never changed back. Review checks every field and puts each problem next to its field. A review step shows the values and exactly what Aria will receive, and waits for Create task. Success shows the outcome, what Aria received and Undo; failure keeps every value and offers Retry. The composer stays available the whole time.',
+      why: 'Free text is the right way to ask, and the wrong way to set a date or pick an owner. A form makes the values exact and checkable — but only if suggestions are visible as suggestions, nothing the person set is overwritten, errors say how to fix them, and anything that changes another system is reviewed first. Showing what the agent receives closes the loop: the person can see the request the agent will act on, not just the one they typed.',
+      when: 'When an action needs specific, validated values (create a task, book a slot, file an expense), or when a request is ambiguous in ways a few fields settle faster than questions. Not for open questions, and not instead of the composer — the person can always say it in words.',
+      how: 'Keep the form compact: only the fields the action needs, labelled, with helper text and required marks. Mark AI-suggested values in words, say why, keep them editable, and never change a value the person set. Validate on review (and clear an error the moment it is fixed); put each message under its field, say how to fix it, summarise the count, and move focus to the first problem. Review consequential actions: show the values, what was suggested and edited, and the exact payload; then Create. Show the outcome with Undo. On failure, keep everything and offer Retry. Cancel creates nothing.',
+      expressive: 'The form rises into the conversation as Aria’s answer. Suggested values carry the agent’s mark and primary container; your edits are neutral. Errors use the error tone and an icon, never colour alone. Creating shows a calm progress label rather than motion; the result settles in with a check. Under reduced motion nothing moves.',
       precedent: [
-        { name: 'Clarifying questions before deep research &mdash; ChatGPT, Claude, Gemini',
-          what: 'A broad research request is met with a short set of questions &mdash; scope, sources, what the output is for &mdash; and only then does the work start. This is the pattern in its purest shipped form: the prose comes first, and the structure is asked for afterwards and briefly.' },
-        { name: 'Slash commands and command palettes &mdash; Linear, Slack, Notion',
-          what: 'Typing a trigger reveals a small set of named parameters inline, resolved against real objects. It proves the second half: structure can appear inside a sentence without becoming a dialog.' },
-        { name: '@-mentions and typed chips',
-          what: 'Mentioning a person, file, channel or metric resolves against real data, so an invalid value is impossible rather than merely wrong &mdash; and the resulting chip carries its type, which is how a metric is never mistaken for a segment.' }
+        { name: 'Check answers — GOV.UK Design System', url: 'https://design-system.service.gov.uk/patterns/check-answers',
+          what: 'Let people check their answers before submitting, with a way to change each one — the model for the review step here.' },
+        { name: 'Error message — GOV.UK Design System', url: 'https://design-system.service.gov.uk/components/error-message',
+          what: 'Errors sit next to the field they belong to and say how to fix the problem — the model for validation here.' },
+        { name: 'Agent-proposed actions in chat assistants', what: 'Assistants that create calendar events, tasks or tickets increasingly show the values as a card to confirm or edit before acting, rather than acting on parsed text.' }
       ],
-
       anatomy: [
-        { part: 'The request',
-          role: 'An ordinary sentence. It stays prose throughout and is never rewritten into fields.' },
-        { part: 'Gap analysis',
-          role: 'What the agent decides it is missing. The design work is restraint: everything the API accepts is not what is missing.' },
-        { part: 'Question',
-          role: 'One constraint, with a line saying what it changes. A question that cannot explain its own effect should not be asked.' },
-        { part: 'Default',
-          role: 'What will be used if this is skipped, stated before it is skipped. Lower emphasis than a chosen value, because it is an assumption.' },
-        { part: 'Constraint set',
-          role: 'The answers as a small visible group of named values, editable in place after the fact.' },
-        { part: 'Typed entity',
-          role: 'The inline variant: a word in the sentence resolved against the product’s own schema, carrying its type.' },
-        { part: 'Re-run',
-          role: 'Change one value, ask the same question again, get a comparable answer. This is what makes the structure worth having.' }
+        { part: 'Header', role: 'What the form is for and what it is linked to: “Follow-up task · For blocker EXP-210”.' },
+        { part: 'Fields', role: 'Visible label, required mark or “(optional)”, helper text, the control, and the error slot under it.' },
+        { part: 'Edit mark', role: '“Edited by you” on a field whose suggested value was changed. Aria’s message, and the review summary, say which values were suggested.' },
+        { part: 'Error summary', role: '“1 field needs a look before review.” Counts what is wrong; the detail is on the field.' },
+        { part: 'Progress', role: '“3 of 4 filled”.' },
+        { part: 'Review', role: 'The values, which were suggested or edited, the confirmation sentence, and “What Aria will receive”.' },
+        { part: 'Outcome', role: '“Task created — EXP-214”, what Aria received, Undo and Open task.' }
       ],
-
       flow: [
-        'The request is typed as a sentence. Nothing is asked for in front of it.',
-        'The agent reads it and works out which parameters are actually missing — the ones that would change the answer, not the ones the API happens to accept.',
-        'It asks for those, in one short group, each with a line on what it changes.',
-        'Each question offers a default and can be skipped. Skipping states the assumption rather than silently making it.',
-        'As each is answered the question collapses into the value it produced — the same surface transforming, not a panel closing somewhere else.',
-        'The work runs, with the constraint set visible beside the result rather than buried in the transcript.',
-        'Any constraint can be changed afterwards and the request re-run. The sentence never has to be retyped.',
-        'Where the product has its own nouns, typing can resolve one inline instead — the same structure, reached from inside the sentence.'
+        'Open input: “Create a follow-up task for this blocker”.',
+        'Complete: a compact form — Task “Fix export timeout”, Owner Maya Chen [Suggested], Due Mon 12 Oct [Suggested], Priority High [Suggested].',
+        'Edit: the due date becomes Wed 14 Oct — marked “Edited by you”.',
+        'Validation error (if a past date is picked): “Pick a date after today” under the field; focus moves there.',
+        'Ready to submit: the values, what Aria will receive, Create task.',
+        'Submitted: “Task created — EXP-214”, Undo; Aria reports the outcome in the thread.',
+        'Couldn’t submit: Orbit didn’t respond — every value kept, Retry.'
       ],
-
-      /* FIVE states: prose, the questions, the skip that states its
-         assumption, the answer carrying its constraints, and the
-         inline variant. Editing, re-running and ambiguity are real
-         and documented above; they are not five more things to
-         click through. */
       statesList: [
-        { name: 'Free request', desc: 'A sentence, and nothing else. No fields, no dropdowns, no form standing between the person and the ask.' },
-        { name: 'Asking', desc: 'A short group of questions — three, not eight — each carrying a line saying what it changes. A question that cannot explain its own effect should not be asked.' },
-        { name: 'Skipped', desc: 'A question declined, with the default it will use stated in the same breath. A question that cannot be skipped is a required field in a friendlier voice.' },
-        { name: 'Answered', desc: 'The result with its constraints beside it as a small visible set — which is what lets one value be changed and the question re-run into a comparable number.' },
-        { name: 'Typed entity', desc: 'The inline variant: a word in the sentence resolved against the product’s own schema, carrying its type. Structure without a dialog.' }
+        { name: 'Empty', desc: '<em>Trigger:</em> exact values needed, none yet. <em>Behaviour:</em> labelled fields, helper text, required marks, “Suggest values”. <em>Meaning:</em> nothing happens until complete and confirmed. <em>Action:</em> fill, or ask for suggestions. <em>Next:</em> Partially completed.' },
+        { name: 'Partially completed', desc: '<em>Trigger:</em> some fields filled. <em>Behaviour:</em> a count; no errors yet. <em>Meaning:</em> carry on in any order. <em>Action:</em> fill the rest, or Cancel. <em>Next:</em> Complete.' },
+        { name: 'Complete', desc: '<em>Trigger:</em> every required field has a value. <em>Behaviour:</em> suggested values marked with why, all editable; Review ready. <em>Meaning:</em> suggestions are offers; your values are never changed. <em>Action:</em> edit, Review. <em>Next:</em> Ready to submit or Validation error.' },
+        { name: 'Validation error', desc: '<em>Trigger:</em> Review found a problem. <em>Behaviour:</em> message under the field, field marked invalid, summary count, focus moved. <em>Meaning:</em> nothing sent; values untouched. <em>Action:</em> fix — the error clears at once. <em>Next:</em> Complete.' },
+        { name: 'Ready to submit', desc: '<em>Trigger:</em> review passed. <em>Behaviour:</em> values, suggested/edited, the exact payload, Back to edit, Create task. <em>Meaning:</em> a change to another system waits for you. <em>Action:</em> Create, or Back. <em>Next:</em> Submitted or Couldn’t submit.' },
+        { name: 'Submitted', desc: '<em>Trigger:</em> created. <em>Behaviour:</em> outcome, what Aria received, Undo, Open task. <em>Meaning:</em> visible and reversible. <em>Action:</em> open, or Undo. <em>Next:</em> Complete (Undo).' },
+        { name: 'Couldn’t submit', desc: '<em>Trigger:</em> creating failed. <em>Behaviour:</em> an alert; every value kept; Retry, Cancel. <em>Meaning:</em> nothing created, nothing lost. <em>Action:</em> Retry, edit, Cancel. <em>Next:</em> Ready / Submitted, or Complete.' }
       ],
-
       variants: [
-        { name: 'Ask afterwards', desc: 'The default and the one this page argues for. Prose first, a short group of questions second, a constraint set third.' },
-        { name: 'Typed entities', desc: 'Structure inside the sentence: certain words resolve against the schema and become chips carrying their type. Right where the product has strong nouns and people know them.' },
-        { name: 'Remembered constraints', desc: 'Values carried from the last similar request, shown as defaults rather than applied silently. Cheap, and dangerous if it is not visible.' },
-        { name: 'Template with slots', desc: 'A known task with named blanks. Faster than either, and only correct where the task really is the same every time — otherwise it is a form again.' }
+        { name: 'Grouped (default)', desc: 'Fields in a two-column grid, labels above. Scans well with four to six fields.' },
+        { name: 'Inline', desc: 'Label beside the control, one per row. Denser to read down; right for narrow side panels.' },
+        { name: 'Compact', desc: 'Smaller controls, helper text hidden. For experienced users of a known form — keep errors and suggestion marks.' }
       ],
-
       content: [
-        'Ask at most three things. If there are eight, the product has not decided which ones matter.',
-        'Every question carries a line on what it changes: “Sources — public filings only, or include analyst notes?” with “this changes what I can cite”.',
-        'State the default in the skip, not after it: “Skip and I’ll use the last 12 months.”',
-        'Name a settled value in the product’s own nouns, with its type: “Segment · self-serve”.',
-        'When nothing is missing, say so in one line and start. A clarifying step that always fires is a toll booth.'
+        'Say what the form is for and what it is linked to: “Follow-up task · For blocker EXP-210”.',
+        'Say once, in Aria’s message, that values were suggested from the source — “I suggested the owner, date and priority from the blocker”.',
+        'Errors say how to fix it: “Pick a date after today (Tue 6 Oct)” — not “Invalid date”.',
+        'The confirmation says what will happen, and where: “Aria will create this task in Orbit and link it to EXP-210. You can undo it afterwards.”',
+        'Failure says what happened and what is kept: “Couldn’t create the task — Orbit didn’t respond. Your details are kept.”'
       ],
-
       a11y: [
-        'Questions are real form controls with real labels, not chips that only respond to a pointer. The whole group is reachable and answerable from the keyboard.',
-        'Each question’s “what this changes” line is associated with its control by aria-describedby, not left as adjacent text.',
-        'Skipping is a control, not an absence. There is always a labelled way to decline that states what will happen.',
-        'A settled constraint announces its name, type and value, and can be reopened for editing from the keyboard.',
-        'A default is distinguishable from a chosen value by more than its emphasis — the word “default” is in its accessible name.',
-        'The typed-entity variant is never the only route: the same values are reachable from a visible list.',
-        'Questions arriving after the request are announced politely, because they appear below where focus currently is.',
-        'Nothing times out. A question left unanswered stays a question.'
+        'Every field has a visible label tied to its control; required fields are marked in the label and with aria-required.',
+        'Helper text and errors are linked with aria-describedby; invalid fields carry aria-invalid; errors are announced.',
+        'On review, focus moves to the first field that needs a look; the summary counts them.',
+        'Priority is a radio group with arrow-free buttons and a visible checked state; suggestion and edit marks are words, not colour.',
+        'The payload is a focusable, labelled region; outcome and failure are live announcements.',
+        'Controls are at least 44px (48px on touch); nothing animates under reduced motion.'
       ],
-
       donts: [
-        'Don’t put a form in front of the request. That is the pattern this one replaces.',
-        'Don’t ask for everything the API accepts. Ask for what changes the answer.',
-        'Don’t ask a question you cannot explain the effect of.',
-        'Don’t make a question unskippable. If it truly cannot be skipped, it is not a clarification — it is a required field, and it should be stated as one.',
-        'Don’t apply a remembered or inferred value silently. A default nobody saw is a guess with a good reputation.',
-        'Don’t bury the constraints in the transcript. They have to be visible next to the result or the result cannot be reproduced.',
-        'Don’t require retyping the request to change one value.',
-        'Don’t turn the sentence into fields. The prose is the part a person is good at.'
+        'Don’t silently change a value the person set.',
+        'Don’t present suggestions as if they were the person’s own answers.',
+        'Don’t put errors only at the top, or say “Invalid” without saying how to fix it.',
+        'Don’t act on another system without a review step (or at least an immediate Undo).',
+        'Don’t clear the form when submitting fails.',
+        'Don’t replace the composer — the request can always be made in words.'
       ],
-
       metrics: [
-        'How often a question is skipped. A question skipped almost every time is one the product should be defaulting instead of asking.',
-        'How often a constraint is edited after the answer, which tells you the question was asked badly rather than answered badly.',
-        'Requests re-run with one value changed — the behaviour the whole pattern exists to enable.',
-        'Abandonment between the request and the first answer, which is what a clarifying step costs when it asks for too much.'
+        'How often each suggested value is accepted, edited or cleared — a field that is usually edited should not be suggested.',
+        'Review → Back to edit rate, and which fields are changed there.',
+        'Validation errors per field; repeated ones point at unclear labels or helper text.',
+        'Undo after Submitted; Retry success after Couldn’t submit.'
       ],
-
-      composed: ['Text Field', 'Chip', 'Menu', 'Badge', 'Button'],
-      related: [['templates', 'Templates'], ['open-input', 'Open Input']],
+      composed: ['Text Field', 'Select', 'Segmented Button', 'Button', 'Card'],
+      related: [['open-input', 'Open Input'], ['voice-input', 'Voice Input'], ['gesture', 'Gesture Input']],
       pkg: 'nucleux-m3-structured-input',
-      usage: "<link rel=\"stylesheet\" href=\"@nucleux/material/tokens.css\" />\n<link rel=\"stylesheet\" href=\"@nucleux/material/expressive-input.css\" />\n\n<!-- The request stays prose. The structure is asked for AFTER it,\n     and only for the things that change the answer. -->\n<p class=\"md-struct__req\">Create a customer research report on mid-market churn.</p>\n\n<div class=\"md-struct__ask\" role=\"group\" aria-label=\"Three things I need\">\n  <div class=\"md-struct__q\">\n    <p class=\"md-struct__qt\" id=\"q-aud\">Who is it for?</p>\n    <p class=\"md-struct__qw\">Changes how much background I include.</p>\n    <button class=\"md-echip\" aria-describedby=\"q-aud\">The exec team</button>\n    <button class=\"md-echip md-echip--unresolved\">Skip &mdash; I&rsquo;ll assume the product team</button>\n  </div>\n</div>\n\n<!-- Settled, and editable afterwards without retyping the sentence -->\n<div class=\"md-struct__set\">\n  <button class=\"md-echip\"><span class=\"md-echip__k\">audience</span>exec team</button>\n  <button class=\"md-echip md-echip--default\">\n    <span class=\"md-echip__k\">range</span>last 12 months &middot; default\n  </button>\n</div>",
-
+      usage: '<AgentForm\n  required={["task", "owner", "due", "priority"]}\n  suggestions              // marked “Suggested”, with why; always editable\n  confirm                  // review before creating\n  preserveOnFailure\n  confirmText="Aria will create this task in Orbit and link it to EXP-210. You can undo it afterwards."\n/>',
       examples: [
         {
-          id: 'struct-ask',
-          title: 'One question, with what it changes',
-          note: 'A question that cannot explain its own effect on the answer should not be asked. The skip states the assumption rather than silently making it.',
-          code:
-'<div class="md-struct__q">\n' +
-'  <p class="md-struct__qt md-body-medium" id="q-src">Which sources?</p>\n' +
-'  <p class="md-struct__qw md-body-small">Changes what I am able to cite.</p>\n' +
-'  <div class="md-struct__opts">\n' +
-'    <button class="md-echip" type="button" aria-describedby="q-src">\n' +
-'      Public filings only\n' +
-'    </button>\n' +
-'    <button class="md-echip" type="button" aria-describedby="q-src">\n' +
-'      Include analyst notes\n' +
-'    </button>\n' +
-'    <button class="md-echip md-echip--unresolved" type="button">\n' +
-'      Skip &mdash; I&rsquo;ll use public filings\n' +
-'    </button>\n' +
-'  </div>\n' +
-'</div>'
+          id: 'structured-suggested',
+          title: 'A suggested value, marked and editable',
+          note: 'The suggestion says it is one, and why. Change it and the mark becomes “Edited by you” — and Aria never changes it back.',
+          code: '<div class="md-si__f" data-si-k="owner">\n  <span class="md-si__lr">\n    <label for="si-owner" class="md-si__l">Owner<span aria-hidden="true"> *</span></label>\n  </span>\n  <select class="md-si__in" id="si-owner" aria-required="true" aria-describedby="si-owner-h">\n    <option>Maya Chen</option><option>Dev Patel</option>\n  </select>\n  <span class="md-si__h" id="si-owner-h">Who will do it.</span>\n</div>'
         }
       ]
     }

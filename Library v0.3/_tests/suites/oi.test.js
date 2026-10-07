@@ -100,11 +100,20 @@ const ST = '.pv-stage ', R = '[data-sim-root] ';
   ok('3.2 adding context keeps the text, and focus', c.value === draft && c.focused);
   await p.click(ST + '[data-act="voice:start"]'); await p.waitForTimeout(250);
   ok('3.3 voice is a mode of the same composer', (await p.$eval(ST + '.ax__composer', f => f.dataset.mode)) === 'voice');
-  await p.click(ST + '[data-act="voice:cancel"]'); await p.waitForTimeout(250);
+  await p.click(ST + '[data-act="vx:cancel"]'); await p.waitForTimeout(250);
   c = await F(ST);
   ok('3.4 leaving voice hands back the text, caret in the field', c.value === draft && c.focused);
+  /* The Voice Input session (6 Oct): Stop never sends; the words are appended, marked, undoable. */
+  await p.click(ST + '[data-act="voice:start"]'); await p.waitForTimeout(3200);
+  await p.click(ST + '[data-act="vx:stop"]'); await p.waitForTimeout(1600);
+  c = await F(ST);
+  ok('3.5 Stop: the spoken words join the draft, marked From voice, nothing sent', c.value.indexOf(draft) === 0 && /flag anything new since august/i.test(c.value) &&
+     !!(await p.$(ST + '.ax__vxfrom [data-act="vx:undo"]')), JSON.stringify(c.value));
+  await p.click(ST + '[data-act="vx:undo"]'); await p.waitForTimeout(300);
+  c = await F(ST);
+  ok('3.6 Undo restores exactly the typed draft', c.value === draft, JSON.stringify(c.value));
   await p.click('.pv-edit'); await p.waitForTimeout(350);
-  await p.evaluate(() => { const r = [...document.querySelectorAll('.pvc-row')].find(r => r.querySelector('.pvc-row__label').textContent === 'Model and effort'); r.querySelector('.pvc-switch').click(); });
+  await p.evaluate(() => { const i = document.querySelector('.pvc-input[data-cfg="placeholder"]'); i.value = i.value + ' '; i.dispatchEvent(new Event('input', { bubbles: true })); });
   await p.waitForTimeout(400);
   ok('3.5 a customizer change keeps the text too', (await F(ST)).value === draft);
   /* The chip no longer stacks the composer (user request, 1 Oct). Here
@@ -211,7 +220,7 @@ const ST = '.pv-stage ', R = '[data-sim-root] ';
   await p.click(R + '[data-act="model:pick:deep-reasoning"]'); await p.waitForTimeout(300);
   await p.click(R + '[data-act="ax:mode"]'); await p.waitForTimeout(250);
   await p.click(R + '[data-act="voice:start"]'); await p.waitForTimeout(250);
-  await p.click(R + '[data-act="voice:cancel"]'); await p.waitForTimeout(250);
+  await p.click(R + '[data-act="vx:cancel"]'); await p.waitForTimeout(250);
   c = await F(R + '.ax__dock ');
   ok('8.3 the draft survives the model menu and voice', c.value === 'Compare these risks with the previous release' && c.focused, JSON.stringify(c.value));
   await p.keyboard.down('Shift'); await p.keyboard.press('Enter'); await p.keyboard.up('Shift');

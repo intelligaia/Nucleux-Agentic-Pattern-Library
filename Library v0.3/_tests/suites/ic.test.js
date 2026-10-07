@@ -217,10 +217,8 @@ const ST = '.pv-stage ';
   ok('9.2 and still applied', (await C()).ph === 'Ask me anything');
   await p.fill('.pvc-input[data-cfg="placeholder"]', 'What would you like to work on?'); await p.waitForTimeout(350);
   ok('9.3 there is no size control any more (one look, as Open Input)', !(await p.$('.pvc-seg__btn[data-cfg="size"]')));
-  await sw('Model control');
-  ok('9.4 three secondary actions are flagged as competing', (await guard()).some(t => /compete/.test(t)));
-  ok('9.5 the model control is the Model Selection chip', !!(await p.$(ST + '.ax__mode--model')));
-  await sw('Model control');
+  ok('9.4 + · model · mic · send are always there, so there is no toggle for them (user request, 7 Oct)', !(await p.$('[data-cfg="showModel"], [data-cfg="showMic"], [data-cfg="showPlus"]')));
+  ok('9.5 the model control is the Model Selection chip', !!(await p.$(ST + '.ax__mode--model')) && !!(await p.$(ST + '.ax__cbtn--mic')) && !!(await p.$(ST + '[data-act="ax:plus"]')));
   ok('9.6 guidance is never part of the component markup', await p.$eval('.pv-code code', e => !/pv-guard/.test(e.textContent)));
 
   /* ══ 10 · every control does something ═════════════════════ */
@@ -251,8 +249,9 @@ const ST = '.pv-stage ';
   ok('11.1 Add context puts a chip on the request', /Attach a file/.test(await p.$eval(ST + '.ax__composer', e => e.innerText)));
   await p.click(ST + '[data-act="voice:start"]'); await p.waitForTimeout(300);
   const v = await p.$eval(ST + '.ax__composer', e => ({ mode: e.dataset.mode, size: e.dataset.size, h: e.getBoundingClientRect().height }));
+  ok('11.1b no microphone permission panel — voice starts listening at once', !(await p.$(ST + '[data-act="vx:allow"]')));
   ok('11.2 voice is a MODE of the same composer, at the same size', v.mode === 'voice' && v.size === 'initial' && v.h >= 56, JSON.stringify(v));
-  await p.click(ST + '[data-act="voice:cancel"]'); await p.waitForTimeout(300);
+  await p.click(ST + '[data-act="vx:cancel"]'); await p.waitForTimeout(300);
   ok('11.3 cancelling voice hands the field back', (await C()).focused);
 
   /* ══ 12 · targets ══════════════════════════════════════════ */

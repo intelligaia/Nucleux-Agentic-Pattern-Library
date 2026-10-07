@@ -36,8 +36,8 @@
   <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="nav-mega.css" />
@@ -892,6 +892,7 @@
        is through aria-label rather than through 40px of chrome. */
     .pv-select__btn { white-space: nowrap; }
     .pv-select__v { font-weight: 600; }
+    .pv-select__k { color: var(--fg-muted, #6b6b66); margin-right: 6px; font-weight: 400; }
     .pv-select__chev {
       width: 14px; height: 14px; color: var(--fg-muted);
       transition: transform 200ms var(--md-sys-motion-easing-emphasized);
@@ -964,8 +965,10 @@
        ONE SURFACE. The stage and the code pane both inherit it, so
        the frame reads as a single panel instead of a box holding
        two boxes. */
+    /* WHITE (user request, 5 Oct): the Live Preview ground is now
+       surface-container-lowest (#fff), with no stroke (user request). */
     .pv-frame {
-      --pv-ground: var(--ink-50, #f5f5f3);
+      --pv-ground: var(--md-sys-color-surface-container-lowest, #fff);
       border: 0;
       border-radius: var(--md-sys-shape-corner-large);
       background: var(--pv-ground);
@@ -997,6 +1000,11 @@
     .pv-stage:has(.ax__menu--effort) {
       align-items: end; padding-top: 210px;
     }
+    /* Initial CTA already carries its own lead and breathing room above
+       the composer, so it needs far less added room for the flyouts
+       (user request, 7 Oct). */
+    .pv-stage:has(.md-icta .ax__menu--model) { padding-top: 240px; }
+    .pv-stage:has(.md-icta .ax__menu--effort) { padding-top: 0; }
     .pv-code {
       position: relative; margin: 0; padding: 22px 24px;
       /* Matches .pv-stage's min-height so the frame is the same size
@@ -2780,6 +2788,36 @@
     .sim-aii-row .sim-rec__k { min-width: 0; }
     .sim-aii-whyw .md3-tip__pop { bottom: auto; top: 100%; margin: 8px 0 0; }
     .sim-aii[data-one="true"] .md-aii, .sim-aii-badge--mark .md-aii { color: var(--md-sys-color-primary); }
+    /* Release-note flow: the four stages, in the same four marks. */
+    .sim-aii-flow { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; }
+    .sim-aii-step {
+      display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 8px;
+      border-radius: var(--md-sys-shape-corner-small, 8px); border: 1px solid var(--md-sys-color-outline-variant);
+      color: var(--md-sys-color-on-surface-variant); font: 500 11.5px/16px var(--md-ref-typeface-plain); --aii-size: 16px;
+    }
+    .sim-aii-step { position: relative; }
+    .sim-aii-step + .sim-aii-step::before { content: "→"; position: absolute; left: -14px; color: var(--md-sys-color-outline); }
+    .sim-aii-step .md-aii { width: 16px; height: 16px; color: var(--md-sys-color-on-surface-variant); }
+    .sim-aii-step.is-now { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-color: transparent; }
+    .sim-aii-step.is-now .md-aii { color: var(--md-sys-color-primary); }
+    .sim-aii-step.is-past { color: var(--md-sys-color-on-surface); }
+    .sim-aii-doc { display: grid; gap: 6px; padding: 12px 16px; border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-low); }
+    .sim-aii-text { margin: 0; }
+    .sim-aii-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .sim-aii-statusin { display: inline-flex; align-items: center; gap: 8px; }
+    .sim-aii-activity { display: grid; gap: 4px; }
+    .sim-aii-tool {
+      display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 0 8px; border: 0;
+      border-radius: var(--md-sys-shape-corner-small, 8px); background: transparent; cursor: pointer; text-align: left;
+      color: var(--md-sys-color-on-surface-variant); font: 400 14px/20px var(--md-ref-typeface-plain); position: relative; overflow: hidden;
+    }
+    .sim-aii-tool::before { content: ""; position: absolute; inset: 0; background: currentColor; opacity: 0; }
+    .sim-aii-tool:hover::before { opacity: .08; }
+    .sim-aii-tool:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+    .sim-aii-act.is-busy, .sim-aii-act.is-busy[aria-disabled="true"] { opacity: 1; cursor: progress; }
+    .sim-aii-act.is-busy .md-aii { color: var(--md-sys-color-primary); }
+    .sim-aii-tooldetail { padding: 0 8px 0 36px; color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
     @media (prefers-reduced-motion: reduce) { .sim-aii-status, .sim-aii-tool { animation: none; } }
 
     .sim-rec { display: grid; gap: 2px; max-width: 520px; }
@@ -3212,6 +3250,9 @@
        size it and the centred stage shrink-wraps whatever is put
        in it. These two rules are what make every pattern's
        composer the same width regardless of its placeholder. */
+    /* One prompt width in every Live Preview (user request, 7 Oct): wider than the
+       simulators' working composer, the same in every pattern. */
+    .pv-stage { --ax-composer-max: 720px; }
     .pv-stage .ax__composer { width: 100%; max-width: var(--ax-composer-max); }
     .pv-stage .pv-ml { width: 100%; display: grid; justify-items: center; }
 
@@ -3283,6 +3324,12 @@
     .ax__composer[data-size="initial"] .ax__menu {
       bottom: auto; top: calc(100% + 10px);
     }
+    /* …except Model Selection and its effort step, which open upward
+       everywhere, as in the Model Selection pattern (user request, 7 Oct). */
+    .ax__composer[data-size="initial"] .ax__menu--model,
+    .ax__composer[data-size="initial"] .ax__menu--effort {
+      top: auto; bottom: calc(100% + 10px);
+    }
 
     /* ── Initial CTA · the empty workspace ────────────────────
        The surface the invitation lives on in the Live Preview: an
@@ -3294,7 +3341,7 @@
        in a side panel as it does full width. */
     .md-icta {
       --icta-max: var(--ax-composer-max);
-      position: relative; width: 100%; max-width: 760px; margin: 0 auto;
+      position: relative; width: 100%; max-width: calc(var(--ax-composer-max) + 48px); margin: 0 auto;
       height: 440px; display: flex; flex-direction: column;
       border-radius: var(--md-sys-shape-corner-extra-large, 28px);
       background: transparent;  /* no tint: the outline alone marks the workspace (user, 30 Sep) */
@@ -3372,6 +3419,12 @@
       width: 100%; padding: 12px 0 24px;
     }
     .sim-icta .ax__composer { width: 100%; max-width: var(--ax-composer-max); }
+    /* Model Selection opens upward here too (user request, 7 Oct): while
+       it is open the invitation drops to the foot of the empty canvas so
+       the whole list fits above it, the same move the Live Preview makes. */
+    .ax[data-empty="true"] .ax__canvas:has(.sim-icta .ax__menu--model),
+    .ax[data-empty="true"] .ax__canvas:has(.sim-icta .ax__menu--effort) { justify-content: flex-end; }
+    .sim:has(.sim-icta .ax__menu--model), .sim:has(.sim-icta .ax__menu--effort) { overflow: visible; }
     .sim-icta:focus-within .md-icta__keys { opacity: 1; }
     @media (max-width: 640px) {
       .ax[data-empty="true"] .ax__canvas { justify-content: flex-end; }
@@ -3387,7 +3440,7 @@
        disappears; only its own contents change. Container-aware, so it
        behaves in a side panel as it does full width. */
     .md-oi {
-      position: relative; width: 100%; max-width: 760px; margin: 0 auto;
+      position: relative; width: 100%; max-width: calc(var(--ax-composer-max) + 48px); margin: 0 auto;
       height: 420px; display: flex; flex-direction: column;
       border-radius: var(--md-sys-shape-corner-extra-large, 28px);
       background: transparent;  /* no tint: the outline alone marks the workspace (user, 30 Sep) */
@@ -3615,7 +3668,7 @@
     /* The Live Preview frame: the set and the shared composer docked
        at the bottom; the conversation, once started, above them. */
     .md-spv {
-      position: relative; width: 100%; max-width: 760px; margin: 0 auto;
+      position: relative; width: 100%; max-width: calc(var(--ax-composer-max) + 48px); margin: 0 auto;
       min-height: 380px; display: flex; flex-direction: column;
       border-radius: var(--md-sys-shape-corner-extra-large, 28px);
       background: transparent;  /* no tint: the outline alone marks the workspace (user, 30 Sep) */
@@ -3740,7 +3793,7 @@
     .md-rnd__confirm p { margin: 0; color: var(--md-sys-color-on-surface); font: 500 14px/20px var(--md-ref-typeface-plain); }
     .md-rnd[data-density="compact"] { gap: 8px; }
     .md-rnd[data-density="compact"] .md-rnd__card { padding: 8px 12px; }
-    .md-rndv { width: 100%; max-width: 600px; margin: 0 auto; display: grid; gap: 12px; align-content: end; min-height: 320px; }
+    .md-rndv { width: 100%; max-width: calc(var(--ax-composer-max) + 40px); margin: 0 auto; display: grid; gap: 12px; align-content: end; min-height: 320px; }
     .md-rndv__ctx { margin: 0 auto; color: var(--md-sys-color-on-surface-variant); font: 500 12px/16px var(--md-ref-typeface-plain); letter-spacing: .3px; }
     .md-rndv__sent { margin: 0; text-align: center; color: var(--md-sys-color-on-surface-variant); font: 400 13px/18px var(--md-ref-typeface-plain); }
     @media (prefers-reduced-motion: reduce) { .md-rnd__card { animation: none; } }
@@ -3848,7 +3901,7 @@
     .ac-opt .mi { width: 24px; height: 24px; fill: currentColor; }
     .ac-opt__s { font-weight: 500; }
     .ac-opt__d { font-size: 12px; }
-    .md-acv { width: 100%; max-width: 600px; margin: 0 auto; display: grid; gap: 16px; align-content: end; min-height: 300px; }
+    .md-acv { width: 100%; max-width: calc(var(--ax-composer-max) + 40px); margin: 0 auto; display: grid; gap: 16px; align-content: end; min-height: 300px; }
     .md-acv__thread { display: grid; gap: 12px; }
     @media (prefers-reduced-motion: reduce) { .ac-ghost__s, .ac-ghost__k { animation: none; } }
 
@@ -3862,10 +3915,9 @@
     .md-aii--working:not(.is-still) { animation: md-aii-turn 1.1s linear infinite; transform-origin: 50% 50%; }
     @keyframes md-aii-turn { to { transform: rotate(360deg); } }
 
-    .md-aiiv { container: aiiv / inline-size; display: grid; gap: 16px; width: 100%; max-width: 600px; margin: 0 auto; }
-    .md-aiiv { --aii-size: 18px; --aii-ink: var(--md-sys-color-primary); }
+    .md-aiiv { container: aiiv / inline-size; display: grid; gap: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
+    .md-aiiv { --aii-size: 20px; --aii-ink: var(--md-sys-color-primary); }
     .md-aiiv[data-size="16"] { --aii-size: 16px; }
-    .md-aiiv[data-size="20"] { --aii-size: 20px; }
     .md-aiiv[data-size="24"] { --aii-size: 24px; }
     .md-aiiv[data-emphasis="neutral"] { --aii-ink: var(--md-sys-color-on-surface-variant); }
     .md-aiiv__card { padding: 4px 0 16px; overflow: visible; }
@@ -3879,68 +3931,87 @@
     }
     .md-aiiv__tools { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .md-aiiv__sep { width: 1px; height: 24px; margin: 0 4px; background: var(--md-sys-color-outline-variant); }
-    .md-aiiv .md-aiiv__act .md-aii { --aii-size: 18px; }
+    /* Component sizes win inside controls: 18 in a button, 24 in an icon button. */
+    .md-aiiv .md3-btn.md-aiiv__act .md-aii { --aii-size: 18px; }
     .md-aiiv .md3-iconbtn.md-aiiv__act .md-aii { --aii-size: 24px; }
-    /* The AI-action mark carries the emphasis colour in every control, so an AI
-       action differs from its neighbours in colour as well as shape. */
-    .md-aiiv .md-aiiv__act .md-aii--action { color: var(--aii-ink); }
+    .md-aiiv .md-aiiv__act .md-aii { color: var(--aii-ink); }
+    .md-aiiv .md-aiiv__act[aria-disabled="true"] { opacity: .38; cursor: not-allowed; box-shadow: none; }
     .md-aiiv .md-aiiv__act[aria-disabled="true"] .md-aii--action { color: inherit; }
-    .md-aiiv__why { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .md-aiiv__status, .md-aiiv__tool {
-      display: flex; align-items: center; gap: 8px; margin: 12px 16px 0;
+    /* Working inside the action: the button keeps its size and place,
+       only its mark and word change. */
+    .md-aiiv[data-state="working"] .md-aiiv__act[aria-disabled="true"] { opacity: 1; cursor: progress; }
+    .md-aiiv__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    /* Status, completion and activity lines share one shape. */
+    .md-aiiv__line {
+      display: flex; align-items: center; gap: 8px; margin: 12px 16px 0; min-height: 40px;
       color: var(--md-sys-color-on-surface-variant);
       font: 400 var(--md-sys-typescale-body-medium-size)/var(--md-sys-typescale-body-medium-line) var(--md-ref-typeface-plain);
       animation: md-aii-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both;
     }
-    .md-aiiv__status .md-aii, .md-aiiv__tool .md-aii, .md-aiiv__gen .md-aii { color: var(--aii-ink); }
-    .md-aiiv__st { flex: 1 1 auto; }
-    .md-aiiv__status .md3-btn { margin-left: auto; }
+    .md-aiiv__line > .md-aii, .md-aiiv__line > .mi { color: var(--aii-ink); width: var(--aii-size); height: var(--aii-size); fill: currentColor; flex: 0 0 auto; }
+    .md-aiiv__done > .mi { color: var(--md-sys-color-on-surface-variant); }
+    .md-aiiv__st { flex: 1 1 auto; min-width: 0; }
+    .md-aiiv__line .md3-btn { margin-left: auto; }
+    .md-aiiv__done { margin: 8px 16px 0; }
     @keyframes md-aii-in { from { opacity: 0; transform: translateY(-4px); } }
-    .md-aiiv__summary {
-      display: grid; gap: 8px; justify-items: start; margin: 12px 16px 0; padding: 12px 16px;
-      border-radius: var(--md-sys-shape-corner-medium); background: var(--md-sys-color-surface-container-low);
-      animation: md-aii-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both;
+    /* Tool use: a real button, so it can be hovered, focused and opened. */
+    .md-aiiv__activity { margin: 12px 16px 0; display: grid; gap: 4px; }
+    .md-aiiv__activity .md3-tip { display: flex; }
+    .md-aiiv__tool {
+      position: relative; margin: 0; width: 100%; padding: 0 8px; border: 0; border-radius: var(--md-sys-shape-corner-small);
+      background: transparent; cursor: pointer; text-align: left; overflow: hidden;
     }
-    .md-aiiv__sumt { margin: 0; color: var(--md-sys-color-on-surface);
-      font: 400 var(--md-sys-typescale-body-medium-size)/var(--md-sys-typescale-body-medium-line) var(--md-ref-typeface-plain); }
+    .md-aiiv__tool::before { content: ""; position: absolute; inset: 0; background: currentColor; opacity: 0; transition: opacity var(--md-sys-motion-duration-short2, 100ms); }
+    .md-aiiv__tool:hover::before, .md-aiiv__tool.is-hover::before { opacity: .08; }
+    .md-aiiv__tool:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+    .md-aiiv__tool:focus-visible::before, .md-aiiv__tool:active::before { opacity: .12; }
+    .md-aiiv__tool > .mi:last-child { color: var(--md-sys-color-on-surface-variant); width: 20px; height: 20px; }
+    .md-aiiv__detail { padding: 4px 8px 4px 36px; color: var(--md-sys-color-on-surface-variant);
+      font: 400 var(--md-sys-typescale-body-small-size)/var(--md-sys-typescale-body-small-line) var(--md-ref-typeface-plain); }
+    .md-aiiv__detail p { margin: 0 0 4px; }
+    .md-aiiv__detail ul { margin: 0; padding-left: 18px; }
     .md-aiiv__doc { margin: 12px 16px 0; }
     .md-aiiv__field {
       display: block; box-sizing: border-box; min-height: 104px; resize: none; border-style: solid;
       font-family: var(--md-ref-typeface-plain); line-height: 1.5;
     }
     .md-aiiv__field[readonly] { color: var(--md-sys-color-on-surface-variant); }
-    .md-aiiv__doc.is-generated .md-aiiv__field { animation: md-aii-text var(--md-sys-motion-duration-long1, 450ms) var(--md-sys-motion-easing-standard) both; }
-    @keyframes md-aii-text { from { color: transparent; } }
     .md-aiiv__genrow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
     .md-aii-chip { border-style: solid; }
-    .md-aii-chip .md-aii { --aii-size: 18px; }
+    .md-aiiv__gen .md-aii { color: var(--aii-ink); width: var(--aii-size); height: var(--aii-size); }
+    .md-aiiv__gen.is-hover::before { opacity: .08; }
     .md-aiiv__whyw .md3-tip__pop { bottom: auto; top: 100%; margin: 8px 0 0; }
-    /* Role in focus: every instance of one meaning, outlined. */
-    .md-aiiv [data-ai-focus] { box-shadow: 0 0 0 2px var(--md-sys-color-surface), 0 0 0 4px var(--md-sys-color-primary); border-radius: var(--md-sys-shape-corner-small); }
-    .md-aiiv .md3-btn[data-ai-focus], .md-aiiv .md3-iconbtn[data-ai-focus] { border-radius: 999px; }
-    .md-aiiv__vocab {
-      list-style: none; margin: 0; padding: 0; display: grid; gap: 8px 16px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .md-aiiv__tipw.is-hover > .md3-tip__pop { visibility: visible; opacity: 1; }
+
+    /* Icon language: a compact reference list, not four cards. */
+    .md-aiiv__lang { display: grid; gap: 8px; }
+    .md-aiiv__langh {
+      margin: 0; color: var(--md-sys-color-on-surface-variant); text-transform: uppercase; letter-spacing: .08em;
+      font: 500 var(--md-sys-typescale-label-small-size)/var(--md-sys-typescale-label-small-line) var(--md-ref-typeface-plain);
     }
+    .md-aiiv__vocab { list-style: none; margin: 0; padding: 0; display: grid; }
     .md-aiiv__term {
-      display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center;
-      padding: 10px 12px; border-radius: var(--md-sys-shape-corner-medium);
-      background: var(--md-sys-color-surface-container-low);
+      display: grid; grid-template-columns: 76px minmax(0, 180px) minmax(0, 1fr); gap: 12px; align-items: center;
+      padding: 8px 12px; border-top: 1px solid var(--md-sys-color-outline-variant);
     }
-    .md-aiiv__term .md-aii { grid-row: span 2; color: var(--aii-ink); }
-    .md-aiiv__term.is-focus { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+    .md-aiiv__term:last-child { border-bottom: 1px solid var(--md-sys-color-outline-variant); }
+    .md-aiiv__term.is-current { background: var(--md-sys-color-surface-container-low); }
+    .md-aiiv__term.is-current { box-shadow: inset 3px 0 0 var(--md-sys-color-primary); }
+    .md-aiiv__sizes { display: inline-flex; align-items: center; gap: 6px; color: var(--aii-ink); }
+    .md-aiiv__px { display: inline-flex; }
+    .md-aiiv__px .md-aii { width: var(--aii-size); height: var(--aii-size); }
     .md-aiiv__tn { color: var(--md-sys-color-on-surface);
       font: 500 var(--md-sys-typescale-label-large-size)/var(--md-sys-typescale-label-large-line) var(--md-ref-typeface-plain); }
     .md-aiiv__tm { color: var(--md-sys-color-on-surface-variant);
       font: 400 var(--md-sys-typescale-body-small-size)/var(--md-sys-typescale-body-small-line) var(--md-ref-typeface-plain); }
-    @container aiiv (max-width: 460px) {
-      .md-aiiv__vocab { grid-template-columns: 1fr; }
+    @container aiiv (max-width: 480px) {
+      .md-aiiv__term { grid-template-columns: 76px minmax(0, 1fr); }
+      .md-aiiv__tm { grid-column: 2; }
       .md-aiiv__title { flex-basis: 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .md-aii--working:not(.is-still), .md-aiiv__status, .md-aiiv__tool, .md-aiiv__summary,
-      .md-aiiv__doc.is-generated .md-aiiv__field { animation: none; }
-      .md3-tip__pop { transition: none; }
+      .md-aii--working:not(.is-still), .md-aiiv__line { animation: none; }
+      .md3-tip__pop, .md-aiiv__tool::before { transition: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -6341,6 +6412,425 @@
     }
     .ax__composer[data-voice="error"] .ax__vstatus { color: var(--md-sys-color-error); }
 
+    /* ══ Voice Input · dictation into the shared composer ═════
+       The bar is the same composer. While capture is on: a lit
+       microphone with a dot (never in doubt), the clock, what has
+       been heard, and Pause / Stop / Cancel. The gradient sits
+       BEHIND the bar and answers the voice — a word swells it a
+       little, silence settles it, transcribing makes it drift —
+       and it goes the moment voice ends. */
+    .md-vx { position: relative; display: grid; gap: 10px; width: 100%; max-width: var(--ax-composer-max, 640px); }
+    .md-vx__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .md-vx__bar { position: relative; isolation: isolate; }
+    .md-vx__bar > .ax__composer { position: relative; z-index: 1; }
+    .md-vx__glow {
+      --vx-e: 0; --vx-base: 0;
+      position: absolute; z-index: 0; inset: -26px -30px; border-radius: 48px; pointer-events: none;
+      background:
+        radial-gradient(60% 90% at 18% 55%, color-mix(in oklab, var(--md-sys-color-primary-container) 95%, transparent), transparent 70%),
+        radial-gradient(55% 85% at 82% 45%, color-mix(in oklab, var(--md-sys-color-tertiary-container, #FFD8E4) 85%, transparent), transparent 70%),
+        radial-gradient(70% 100% at 50% 100%, color-mix(in oklab, var(--md-sys-color-inverse-primary, #D0BCFF) 60%, transparent), transparent 70%);
+      background-size: 160% 160%; background-position: 50% 50%;
+      filter: blur(18px);
+      opacity: min(1, calc(var(--vx-base) + var(--vx-e) * .25));
+      transform: scale(calc(1 + var(--vx-e) * .045));
+      transition: opacity 420ms var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)),
+                  transform 520ms var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1));
+    }
+    /* Resting / transcribed: nothing behind the bar. */
+    .md-vx[data-vx="listening"] .md-vx__glow { --vx-base: .85; animation: md-vx-drift 18s ease-in-out infinite alternate; }
+    .md-vx[data-vx="paused"] .md-vx__glow { --vx-base: .4; }
+    .md-vx[data-vx="processing"] .md-vx__glow { --vx-base: .7; animation: md-vx-flow 14s linear infinite; }
+    .md-vx[data-glow="subtle"] .md-vx__glow { inset: -10px -12px; filter: blur(14px); }
+    .md-vx[data-glow="subtle"][data-vx="listening"] .md-vx__glow { --vx-base: .32; }
+    .md-vx[data-glow="subtle"][data-vx="processing"] .md-vx__glow { --vx-base: .26; }
+    .md-vx[data-glow="off"] .md-vx__glow { display: none; }
+    @keyframes md-vx-drift { from { background-position: 40% 50%; } to { background-position: 60% 50%; } }
+    @keyframes md-vx-flow { from { background-position: 0% 50%; } to { background-position: 160% 50%; } }
+
+    /* The bar while capture is on. */
+    .md-vx .ax__composer[data-mode="voice"] { min-height: 64px; }
+    .md-vx[data-density="compact"] .ax__composer[data-mode="voice"] { min-height: 56px; }
+    .md-vx[data-density="comfortable"] .ax__composer .ax__cbtn { min-width: 40px; min-height: 40px; }
+    .md-vx .ax__composer[data-mode="voice"] .ax__cbtn .mi { width: 22px; height: 22px; fill: currentColor; }
+    .ax__vxmic {
+      position: relative; flex: 0 0 auto; display: inline-grid; place-items: center; width: 40px; height: 40px;
+      border-radius: 999px; color: var(--md-sys-color-on-surface-variant);
+      background: var(--md-sys-color-surface-container-high);
+    }
+    .ax__vxmic .mi { width: 22px; height: 22px; fill: currentColor; }
+    .ax__vxmic.is-live { color: var(--md-sys-color-on-primary-container); background: var(--md-sys-color-primary-container); }
+    .md-vx[data-emphasis="strong"] .ax__vxmic.is-live { color: var(--md-sys-color-on-primary); background: var(--md-sys-color-primary); }
+    .ax__vxdot {
+      position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%;
+      background: var(--md-sys-color-error); box-shadow: 0 0 0 2px var(--md-sys-color-surface-container-lowest);
+      animation: md-vx-dot 2.4s ease-in-out infinite;
+    }
+    @keyframes md-vx-dot { 50% { opacity: .45; } }
+    .md-vx .ax__vline { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ax__vtyped { color: var(--md-sys-color-on-surface-variant); }
+    .ax__vheard { color: var(--md-sys-color-on-surface); }
+    .ax__vhint { color: var(--md-sys-color-on-surface-variant); font-style: italic; }
+    .ax__vxstop { color: var(--md-sys-color-on-secondary-container); }
+
+    .md-vx .ax__cbtn--mic[aria-disabled="true"] { opacity: .38; cursor: not-allowed; }
+    /* "From voice": what was transcribed, and the way back. */
+    .ax__vxfrom {
+      flex: 1 0 100%; display: flex; align-items: center; gap: 6px; padding: 0 4px 0 10px; min-height: 32px;
+      color: var(--md-sys-color-on-surface-variant); font: 500 12px/16px var(--md-ref-typeface-plain);
+      animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both;
+    }
+    .ax__vxfrom .mi { width: 16px; height: 16px; fill: var(--md-sys-color-primary); }
+    .ax__vxfrom .md-button { margin-left: auto; }
+    .md-vx[data-vx="transcribed"] .ax__field, .md-vx[data-vx="editing"] .ax__field {
+      background: color-mix(in oklab, var(--md-sys-color-primary-container) 26%, transparent); border-radius: 12px;
+      padding: 10px 14px 14px; margin: 2px 6px 2px 0; box-sizing: border-box;
+      /* The usual 72px ceiling is for an unpadded field: keep three full lines plus the padding. */
+      max-height: 100px;
+    }
+    @keyframes md-vx-in { from { opacity: 0; transform: translateY(4px); } }
+
+    .md-vxp { width: 100%; max-width: var(--ax-composer-max, 640px); display: grid; gap: 14px; justify-items: stretch; }
+    .md-vxp__sent { justify-self: end; max-width: 88%; display: grid; gap: 4px; padding: 10px 14px; border-radius: 18px 18px 6px 18px;
+      background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+      animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .md-vxp__sent p { margin: 0; font: 400 14px/20px var(--md-ref-typeface-plain); }
+    .md-vxp__who { font: 500 11px/16px var(--md-ref-typeface-plain); opacity: .8; }
+    .md-vxp__then { font: 400 12px/16px var(--md-ref-typeface-plain); opacity: .8; }
+    .sim-vx-src { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; font-size: 11.5px; opacity: .75; }
+    .sim-vx-src .mi { width: 14px; height: 14px; fill: currentColor; }
+    .sim-vx-list { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13.5px; line-height: 1.45; }
+    .sim-vx-block { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 4px; border-radius: 6px;
+      background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); font: 500 11px/16px var(--md-ref-typeface-plain); }
+    /* Visual Input · simulator (Q3 dashboard) */
+    .sim-vi { display: grid; gap: 16px; max-width: 640px; }
+    .sim-vi-dash { position: relative; display: grid; gap: 12px; padding: 14px; border-radius: var(--md-sys-shape-corner-large, 16px);
+      background: var(--md-sys-color-surface-container-lowest); border: 1px solid var(--md-sys-color-outline-variant);
+      transition: box-shadow var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard), border-color 300ms; }
+    /* The shared window gets a soft, persistent boundary — the window, not the screen. */
+    .sim-vi-dash.is-shared { border-color: color-mix(in oklab, var(--md-sys-color-primary) 60%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--md-sys-color-primary-container) 80%, transparent), 0 8px 28px -14px color-mix(in oklab, var(--md-sys-color-primary) 45%, transparent); }
+    .sim-vi-tag { position: absolute; top: -11px; right: 12px; display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 999px;
+      background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: 500 11px/16px var(--md-ref-typeface-plain); }
+    .sim-vi-tag .mi { width: 14px; height: 14px; fill: currentColor; }
+    .sim-vi-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .sim-vi-tile { display: grid; gap: 2px; padding: 10px; border-radius: 10px; background: var(--md-sys-color-surface-container-low); }
+    .sim-vi-k { font: 400 11.5px/16px var(--md-ref-typeface-plain); color: var(--md-sys-color-on-surface-variant); }
+    .sim-vi-v { font: 500 17px/22px var(--md-ref-typeface-plain); color: var(--md-sys-color-on-surface); }
+    .sim-vi-d { font: 500 11px/16px var(--md-ref-typeface-plain); color: #1b6e3c; }
+    .sim-vi-d.is-down { color: var(--md-sys-color-error); }
+    .sim-vi-chart svg { display: block; width: 100%; height: 110px; }
+    .sim-vi-thread { display: grid; gap: 12px; }
+    .sim-vi-note { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--md-sys-color-on-surface-variant); font: 400 13px/18px var(--md-ref-typeface-plain); }
+    .sim-vi-note .mi { width: 18px; height: 18px; fill: currentColor; }
+    @media (max-width: 560px) { .sim-vi-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* ══ Visual Input · visual context on the shared composer ══ */
+    .md-vip { width: 100%; max-width: var(--ax-composer-max, 640px); display: grid; gap: 12px; }
+    .md-vip__st { display: grid; gap: 4px; justify-items: start; }
+    .md-vip__st svg { display: block; width: 132px; height: 91px; border-radius: 8px; box-shadow: 0 0 0 1px var(--md-sys-color-outline-variant); }
+    .md-vip__st small { font: 400 11.5px/16px var(--md-ref-typeface-plain); opacity: .8; }
+    .md-vip__ans { display: grid; gap: 4px; padding: 10px 14px; border-radius: 18px 18px 18px 6px; max-width: 92%;
+      background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface); }
+    .md-vip__ans p { margin: 0; font: 400 14px/20px var(--md-ref-typeface-plain); }
+    .md-vip__used { display: inline-flex; align-items: center; gap: 6px; color: var(--md-sys-color-on-surface-variant); font: 500 12px/16px var(--md-ref-typeface-plain); }
+    .md-vip__used .mi { width: 16px; height: 16px; fill: var(--md-sys-color-primary); }
+    .pv-stage:has(.md-vi .ax__menu--plus) { align-items: end; padding-top: 230px; }
+    .md-vi { position: relative; display: grid; gap: 10px; width: 100%; max-width: var(--ax-composer-max, 640px); }
+    .md-vi__bar { position: relative; }
+    /* The card: big enough to recognise what was shown, never a 16px clip. */
+    .ax__vis {
+      flex: 1 0 100%; display: flex; align-items: center; gap: 12px; padding: 6px 4px 6px 6px; margin-bottom: 2px;
+      border-radius: var(--md-sys-shape-corner-medium, 12px); background: var(--md-sys-color-surface-container-low);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      animation: md-vi-in var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both;
+    }
+    @keyframes md-vi-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+    .ax__vis__thumb { position: relative; flex: 0 0 auto; width: 96px; height: 66px; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 0 0 1px var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface); }
+    .ax__vis[data-thumb="compact"] .ax__vis__thumb { width: 56px; height: 40px; }
+    .ax__vis__thumb svg { display: block; width: 100%; height: 100%; }
+    .ax__vis__chip { flex: 0 0 auto; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 8px;
+      background: var(--md-sys-color-surface-container-high); }
+    .ax__vis__chip .mi { width: 18px; height: 18px; fill: var(--md-sys-color-on-surface-variant); }
+    .ax__vis__t { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+    .ax__vis__n { color: var(--md-sys-color-on-surface); font: 500 13.5px/18px var(--md-ref-typeface-plain); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ax__vis__l { display: flex; align-items: center; gap: 6px; color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
+    .ax__vis__live { width: 8px; height: 8px; border-radius: 50%; background: var(--md-sys-color-error); flex: 0 0 auto; animation: md-vx-dot 2.4s ease-in-out infinite; }
+    .ax__vis[data-vis-state="failed"] { border-color: color-mix(in oklab, var(--md-sys-color-error) 50%, transparent); }
+    .ax__vis[data-vis-state="failed"] .ax__vis__l { color: var(--md-sys-color-error); }
+    /* Reading: a slow, low-contrast sheen moves across what is being read —
+       the expressive feedback sits ON the visual, not around the screen. */
+    .ax__vis[data-vis-state="processing"] { border-color: color-mix(in oklab, var(--md-sys-color-primary) 40%, transparent); }
+    .ax__vis__sheen { position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(100deg, transparent 20%, color-mix(in oklab, var(--md-sys-color-primary-container) 75%, transparent) 50%, transparent 80%);
+      background-size: 250% 100%; animation: md-vi-sheen 2.8s var(--md-sys-motion-easing-standard, ease) infinite; mix-blend-mode: multiply; }
+    @keyframes md-vi-sheen { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+    .ax__vis .ax__cbtn .mi { width: 20px; height: 20px; fill: currentColor; }
+    /* Sharing is ACTIVE: a persistent bar, never a hidden state. */
+    .md-vi__share {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 6px 6px 12px; border-radius: 999px;
+      background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+      font: 400 13px/18px var(--md-ref-typeface-plain);
+      animation: md-vi-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both;
+    }
+    .md-vi__share[data-emphasis="subtle"] { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); }
+    .md-vi__share > span { flex: 1 1 200px; min-width: 0; }
+    .md-vi__share > .mi { width: 18px; height: 18px; fill: currentColor; }
+    .md-vi__share .md-button .mi { width: 18px; height: 18px; fill: currentColor; margin-right: 4px; }
+    .md-vi__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--md-sys-color-error); flex: 0 0 auto; animation: md-vx-dot 2.4s ease-in-out infinite; }
+    .md-vi__pick { display: grid; gap: 6px; margin-left: 28px; }
+    .md-vi__opt { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; text-align: left; cursor: pointer;
+      border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); }
+    .md-vi__opt:hover { background: color-mix(in oklab, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface)); }
+    .md-vi__opt:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+    .md-vi__opt .mi { width: 22px; height: 22px; fill: var(--md-sys-color-primary); flex: 0 0 auto; }
+    .md-vi__opt span { display: grid; } .md-vi__opt small { color: var(--md-sys-color-on-surface-variant); font-size: 12px; }
+    @media (max-width: 560px) { .ax__vis__thumb { width: 72px; height: 50px; } .md-vi .ax__cbtn { min-width: 48px; min-height: 48px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .ax__vis, .md-vi__share, .ax__vis__sheen, .ax__vis__live, .md-vi__dot { animation: none !important; }
+    }
+    /* ══ Handwriting Input · a writing surface on the shared composer ══
+       Ink stays ink; recognized text is set in type below it, with
+       uncertain words marked; accepted text is in the message. */
+    .md-hw { position: relative; display: grid; gap: 10px; width: 100%; max-width: var(--ax-composer-max, 640px); }
+    .md-hw__pad { display: grid; gap: 8px; padding: 8px 10px 10px; border-radius: var(--md-sys-shape-corner-large, 16px);
+      background: var(--md-sys-color-surface-container-lowest); border: 1px solid var(--md-sys-color-outline-variant);
+      animation: md-vi-in var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .md-hw__bar { display: flex; align-items: center; gap: 2px; }
+    .md-hw__lab { flex: 1 1 auto; display: inline-flex; align-items: center; gap: 8px; color: var(--md-sys-color-on-surface-variant); font: 500 12.5px/18px var(--md-ref-typeface-plain); }
+    .md-hw__lab .mi { width: 18px; height: 18px; fill: var(--md-sys-color-primary); }
+    .md-hw__tb { width: 40px; height: 40px; }
+    .md-hw__tb .mi { width: 20px; height: 20px; fill: currentColor; }
+    .md-hw__tb[disabled] { opacity: .38; }
+    /* The surface: ruled like paper, ink in on-surface — the handwriting dominates. */
+    .md-hw__surface { position: relative; height: 112px; border-radius: 12px; overflow: hidden; color: var(--md-sys-color-on-surface);
+      background: repeating-linear-gradient(to bottom, transparent 0 55px, color-mix(in oklab, var(--md-sys-color-outline-variant) 70%, transparent) 55px 56px), var(--md-sys-color-surface-container-low);
+      touch-action: none; }
+    .md-hw__svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .md-hw__w { font: 500 44px/1 'Caveat', 'Segoe Print', 'Bradley Hand', cursive; fill: currentColor; stroke: currentColor; paint-order: stroke; }
+    .md-hw__w.is-new { animation: md-hw-write 700ms var(--md-sys-motion-easing-standard, ease) both; }
+    @keyframes md-hw-write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+    .md-hw__canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; color: var(--md-sys-color-on-surface); }
+    /* Placeholder sits ON the first ruled line, like writing on paper — never struck through by it. */
+    .md-hw__ph { position: absolute; left: 16px; top: 31px; color: var(--md-sys-color-on-surface-variant); font: 400 14px/20px var(--md-ref-typeface-plain); opacity: .8; pointer-events: none; }
+    /* Interpretation still happening: a slow, low-contrast pass over the ink. */
+    .md-hw__surface.is-reading::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(100deg, transparent 25%, color-mix(in oklab, var(--md-sys-color-primary-container) 70%, transparent) 50%, transparent 75%);
+      background-size: 250% 100%; animation: md-vi-sheen 2.2s var(--md-sys-motion-easing-standard, ease) infinite; mix-blend-mode: multiply; }
+    .md-hw__read { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 10px;
+      background: var(--md-sys-color-surface-container); animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .md-hw__k { color: var(--md-sys-color-on-surface-variant); font: 500 11px/16px var(--md-ref-typeface-plain); text-transform: uppercase; letter-spacing: .06em; }
+    .md-hw__txt { color: var(--md-sys-color-on-surface); font: 400 16px/24px var(--md-ref-typeface-plain); }
+    .md-hw__word.is-fixed { background: color-mix(in oklab, var(--md-sys-color-primary-container) 60%, transparent); border-radius: 4px; padding: 0 2px; }
+    /* Uncertain: not color alone — a dotted underline and a question mark, and it is a button. */
+    .md-hw__unsure { font: inherit; color: inherit; border: 0; background: transparent; padding: 0 2px; cursor: pointer;
+      text-decoration: underline dotted 2px var(--md-sys-color-error); text-underline-offset: 4px; border-radius: 4px; }
+    .md-hw__txt[data-emphasis="strong"] .md-hw__unsure { background: color-mix(in oklab, var(--md-sys-color-error-container) 70%, transparent); }
+    .md-hw__unsure span { margin-left: 1px; color: var(--md-sys-color-error); font-weight: 600; }
+    .md-hw__unsure:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+    .md-hw__alts { display: inline-flex; gap: 6px; }
+    .md-hw__alt { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface); font: 500 13px/18px var(--md-ref-typeface-plain); cursor: pointer; }
+    .md-hw__alt:hover { background: color-mix(in oklab, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface)); }
+    .md-hw__note { flex: 1 0 100%; color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
+    .md-hw__acts { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 4px; }
+    .md-hw__err { flex: 1 1 100%; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--md-sys-color-error); font: 500 13px/18px var(--md-ref-typeface-plain); }
+    .md-hw__err .mi { width: 18px; height: 18px; fill: currentColor; }
+    .ax__hwink { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 2px 0 10px; border-radius: 8px;
+      border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-surface-variant); font: 500 12px/16px var(--md-ref-typeface-plain); }
+    .ax__hwink > .mi { width: 16px; height: 16px; fill: var(--md-sys-color-primary); }
+    .ax__hwink .ax__cbtn { width: 28px; height: 28px; min-width: 28px; min-height: 28px; }
+    .ax__hwink .ax__cbtn .mi { width: 16px; height: 16px; }
+    @media (max-width: 560px) { .md-hw__surface { height: 140px; } .md-hw__tb { width: 48px; height: 48px; } }
+    @media (prefers-reduced-motion: reduce) { .md-hw__pad, .md-hw__w.is-new, .md-hw__surface.is-reading::after, .md-hw__read { animation: none !important; } }
+    /* ══ Gesture Input · point at what is on screen ══
+       The selection lives on the content (a boundary on the one
+       thing chosen), and in the composer (a named chip). Never a
+       border around the whole screen. */
+    .md-ge__dash { position: relative; width: 100%; padding: 14px; border-radius: var(--md-sys-shape-corner-large, 16px);
+      background: var(--md-sys-color-surface-container-lowest); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-surface); }
+    .md-ge__dash[data-ge="selecting"] { border-color: var(--md-sys-color-primary); }
+    .md-ge__grid2 { display: grid; gap: 12px; }
+    .md-ge__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .md-ge__row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; }
+    .md-ge__t { position: relative; display: grid; align-content: start; gap: 2px; padding: 12px; border-radius: 12px; min-width: 0;
+      background: var(--md-sys-color-surface-container-low); outline: 2px solid transparent; outline-offset: 3px;
+      transition: outline-color var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, ease), background-color 200ms; }
+    .md-ge__k { color: var(--md-sys-color-on-surface-variant); font: 500 12px/16px var(--md-ref-typeface-plain); }
+    .md-ge__v { font: 500 22px/28px var(--md-ref-typeface-brand, var(--md-ref-typeface-plain)); }
+    .md-ge__d { color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
+    .md-ge__d.is-down { color: var(--md-sys-color-error); }
+    .md-ge__chart svg { width: 100%; height: 96px; display: block; margin-top: 6px; }
+    .md-ge__grid { fill: none; stroke: var(--md-sys-color-outline-variant); stroke-width: 1; vector-effect: non-scaling-stroke; }
+    .md-ge__line { fill: none; stroke: var(--md-sys-color-primary); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+    .md-ge__axis { display: flex; justify-content: space-between; color: var(--md-sys-color-on-surface-variant); font: 400 11px/16px var(--md-ref-typeface-plain); }
+    .md-ge__funnel dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; margin: 8px 0 0; font: 400 13px/18px var(--md-ref-typeface-plain); }
+    .md-ge__funnel dt { color: var(--md-sys-color-on-surface-variant); } .md-ge__funnel dd { margin: 0; font-weight: 500; }
+    .md-ge__dash--compact { padding: 12px; }
+    .md-ge__dash--compact .md-ge__v { font-size: 18px; line-height: 24px; }
+    .md-ge__dash--compact .md-ge__chart svg { height: 64px; }
+    .md-ge__dash--compact .md-ge__funnel dl { font-size: 12px; line-height: 16px; gap: 2px 6px; }
+    /* Selecting: a toolbar on the content, every target is a real button. */
+    .md-ge__bar { position: relative; z-index: 5; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: -4px -4px 10px; padding: 4px 4px 4px 12px; border-radius: 12px;
+      background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+      animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .md-ge__kb { color: color-mix(in oklab, currentColor 75%, transparent); font: 400 12px/16px var(--md-ref-typeface-plain); margin-right: auto; }
+    .md-ge__dash--compact .md-ge__tool span { display: none; } .md-ge__dash--compact .md-ge__tool { width: 36px; padding: 0; justify-content: center; }
+    .md-ge__bar-l { flex: 0 1 auto; display: inline-flex; align-items: center; gap: 8px; font: 500 13px/18px var(--md-ref-typeface-plain); }
+    .md-ge__bar-l .mi { width: 18px; height: 18px; fill: currentColor; }
+    .md-ge__tools { display: inline-flex; gap: 2px; padding: 2px; border-radius: 999px; background: color-mix(in oklab, var(--md-sys-color-surface) 70%, transparent); }
+    .md-ge__tool { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent;
+      color: inherit; font: 500 12px/16px var(--md-ref-typeface-plain); cursor: pointer; }
+    .md-ge__tool .mi { width: 16px; height: 16px; fill: currentColor; }
+    .md-ge__tool[aria-checked="true"] { background: var(--md-sys-color-surface); color: var(--md-sys-color-primary); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+    .md-ge__tool:focus-visible, .md-ge__hit:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+    .md-ge__hit { position: absolute; inset: 0; z-index: 3; border: 0; border-radius: 12px; background: transparent; cursor: pointer; pointer-events: none; }
+    .md-ge__dash[data-tool="tap"] .md-ge__hit { pointer-events: auto; }
+    .md-ge__dash[data-ge="selecting"] .md-ge__t:has(.md-ge__hit:hover), .md-ge__dash[data-ge="selecting"] .md-ge__t:has(.md-ge__hit:focus-visible) {
+      background: color-mix(in oklab, var(--md-sys-color-primary) 8%, var(--md-sys-color-surface-container-low)); }
+    .md-ge__ink { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; cursor: crosshair; touch-action: none; overflow: visible; }
+    .md-ge__ink path { fill: color-mix(in oklab, var(--md-sys-color-primary) 8%, transparent); stroke: var(--md-sys-color-primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+    .md-ge__dash[data-tool="highlight"] .md-ge__ink path { fill: none; stroke: color-mix(in oklab, var(--md-sys-color-tertiary-container, #ffd8e4) 80%, transparent); stroke-width: 18; mix-blend-mode: multiply; }
+    .md-ge__dash[data-tool="region"] .md-ge__ink path { stroke-dasharray: 6 4; }
+    .md-ge__dash[data-tool="tap"] .md-ge__ink { pointer-events: none; }
+    /* The selection: one boundary, on the one thing. */
+    .md-ge__t.is-pick, .md-ge__t.is-sel, .md-ge__t.is-cand { outline-color: var(--md-sys-color-primary); }
+    .md-ge__dash[data-boundary="dashed"] .md-ge__t:is(.is-pick, .is-sel, .is-cand) { outline-style: dashed; }
+    .md-ge__dash[data-boundary="glow"] .md-ge__t:is(.is-pick, .is-sel) { outline-color: transparent;
+      box-shadow: 0 0 0 2px var(--md-sys-color-primary), 0 0 18px 2px color-mix(in oklab, var(--md-sys-color-primary) 35%, transparent); }
+    .md-ge__dash[data-emphasis="strong"] .md-ge__t:is(.is-pick, .is-sel) { background: color-mix(in oklab, var(--md-sys-color-primary-container) 55%, var(--md-sys-color-surface-container-low)); }
+    .md-ge__t.is-cand { outline-color: var(--md-sys-color-tertiary, #7d5260); }
+    .md-ge__t.is-using::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+      background: linear-gradient(100deg, transparent 25%, color-mix(in oklab, var(--md-sys-color-primary-container) 75%, transparent) 50%, transparent 75%);
+      background-size: 250% 100%; animation: md-vi-sheen 2.2s var(--md-sys-motion-easing-standard, ease) infinite; mix-blend-mode: multiply; }
+    .md-ge__tag { position: absolute; right: 8px; top: 8px; z-index: 1; display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: 999px;
+      background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: 500 11px/16px var(--md-ref-typeface-plain); }
+    .md-ge__tag .mi { width: 14px; height: 14px; fill: currentColor; }
+    .md-ge__tag--quiet { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+    .md-ge__made { position: relative; z-index: 4; margin-top: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; padding: 4px 4px 4px 10px;
+      border-radius: 12px; background: var(--md-sys-color-surface-container-highest); box-shadow: 0 2px 6px rgb(0 0 0 / .15);
+      animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .md-ge__made-l { flex: 1 1 120px; display: inline-flex; align-items: center; gap: 6px; font: 500 13px/18px var(--md-ref-typeface-plain); min-width: 0; }
+    .md-ge__made-l .mi { width: 16px; height: 16px; fill: var(--md-sys-color-primary); }
+    .md-ge__cands { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 4px 30px; }
+    .md-ge__panel--quiet { background: var(--md-sys-color-surface-container); }
+    /* In the composer: a named context chip. */
+    .ax__gesels, .ax__ctxrow { flex: 1 0 100%; order: -1; display: flex; flex-wrap: wrap; gap: 6px; padding: 1px 2px 6px; }
+    .ax__gesel { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 2px 0 10px; border-radius: 8px;
+      background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); font: 500 12px/16px var(--md-ref-typeface-plain);
+      animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .ax__gesel > .mi { width: 16px; height: 16px; fill: currentColor; }
+    .ax__gesel .ax__cbtn { width: 28px; height: 28px; min-width: 28px; min-height: 28px; }
+    .ax__gesel .ax__cbtn .mi { width: 16px; height: 16px; }
+    .ax__gesel.is-using { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+    .md-ge-c { position: relative; display: grid; gap: 10px; width: 100%; max-width: var(--ax-composer-max, 640px); }
+    .md-gep { width: 100%; max-width: var(--ax-composer-max, 680px); display: grid; gap: 12px; }
+    @media (max-width: 560px) {
+      .md-ge__tiles { grid-template-columns: 1fr 1fr; } .md-ge__tiles > :last-child { display: none; }
+      .md-ge__row { grid-template-columns: 1fr; }
+      .md-ge__tool span { display: none; } .md-ge__tool { width: 40px; justify-content: center; padding: 0; height: 40px; }
+    }
+    .md-gep__try { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--md-sys-color-on-surface-variant); font: 400 13px/18px var(--md-ref-typeface-plain); }
+    @media (prefers-reduced-motion: reduce) { .md-ge__bar, .md-ge__made, .ax__gesel, .md-ge__t.is-using::after { animation: none !important; } .md-ge__t { transition: none; } }
+
+    /* ══ Structured Input · a compact form beside the conversation ══
+       Suggested values are marked in words; checks sit by their
+       field; the review shows exactly what the agent will get. */
+    .md-si { display: grid; gap: 12px; width: 100%; max-width: var(--ax-composer-max, 640px); padding: 14px 16px; border-radius: var(--md-sys-shape-corner-large, 16px);
+      background: var(--md-sys-color-surface-container-lowest); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-surface);
+      animation: md-vi-in var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both; }
+    .md-si__hd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+    .md-si__t { display: inline-flex; align-items: center; gap: 8px; font: 500 16px/24px var(--md-ref-typeface-brand, var(--md-ref-typeface-plain)); }
+    .md-si__t .mi { width: 20px; height: 20px; fill: var(--md-sys-color-primary); }
+    .md-si__src { color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
+    .md-si__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+    .md-si__f { display: grid; gap: 4px; min-width: 0; align-content: start; }
+    .md-si__f[data-si-k="task"] { grid-column: 1 / -1; }
+    .md-si__lr { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+    .md-si__l { font: 500 13px/18px var(--md-ref-typeface-plain); color: var(--md-sys-color-on-surface); }
+    .md-si__opt { color: var(--md-sys-color-on-surface-variant); font-weight: 400; }
+    .md-si__in { box-sizing: border-box; height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--md-sys-color-outline); background: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface); font: 400 15px/20px var(--md-ref-typeface-plain); min-width: 0; width: 100%; }
+    .md-si__in:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 0; border-color: var(--md-sys-color-primary); }
+    .md-si__f.is-err .md-si__in, .md-si__f.is-err .md-si__seg { border-color: var(--md-sys-color-error); }
+    .md-si__h { color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
+    .md-si__e { display: inline-flex; align-items: center; gap: 6px; color: var(--md-sys-color-error); font: 500 12px/16px var(--md-ref-typeface-plain); }
+    .md-si__e .mi { width: 16px; height: 16px; fill: currentColor; }
+    /* Suggested: words + the AI mark, never colour alone. */
+    .md-si__mark { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 999px;
+      background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); font: 500 11px/16px var(--md-ref-typeface-plain); max-width: 100%; }
+    .md-si__mark .mi { width: 14px; height: 14px; fill: currentColor; flex: 0 0 auto; }
+    .md-si__why { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .md-si__mark--you { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface-variant); }
+    .md-si__seg { display: inline-flex; border: 1px solid var(--md-sys-color-outline); border-radius: 999px; overflow: hidden; height: 44px; width: 100%; }
+    .md-si__segb { flex: 1 1 0; border: 0; background: transparent; color: var(--md-sys-color-on-surface); font: 500 13px/18px var(--md-ref-typeface-plain); cursor: pointer; }
+    .md-si__segb + .md-si__segb { border-left: 1px solid var(--md-sys-color-outline); }
+    .md-si__segb[aria-checked="true"] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+    .md-si__segb:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+    .md-si__acts { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 4px; }
+    .md-si__prog { margin-right: auto; color: var(--md-sys-color-on-surface-variant); font: 400 12px/16px var(--md-ref-typeface-plain); }
+    .md-si__fill, .md-si__fail, .md-si__sumerr, .md-si__ok, .md-si__closed { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0; padding: 8px 12px; border-radius: 10px; font: 400 13px/18px var(--md-ref-typeface-plain); }
+    .md-si__fill { background: var(--md-sys-color-surface-container); } .md-si__fill > span { flex: 1 1 200px; }
+    .md-si__fill .mi, .md-si__ok .mi, .md-si__fail .mi, .md-si__sumerr .mi, .md-si__closed .mi { width: 18px; height: 18px; fill: currentColor; flex: 0 0 auto; }
+    .md-si__fill .mi { fill: var(--md-sys-color-primary); }
+    .md-si__fail, .md-si__sumerr { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+    .md-si__ok { background: color-mix(in oklab, var(--md-sys-color-primary-container) 70%, transparent); color: var(--md-sys-color-on-primary-container); font-size: 14px; }
+    .md-si__closed { color: var(--md-sys-color-on-surface-variant); } .md-si__closed > span { flex: 1 1 auto; }
+    .md-si__q { margin: 0; font: 400 14px/20px var(--md-ref-typeface-plain); }
+    .md-si__rev, .md-si__done { display: grid; gap: 12px; }
+    .md-si__sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 0; padding: 12px; border-radius: 10px; background: var(--md-sys-color-surface-container-low); }
+    .md-si__sum dt { color: var(--md-sys-color-on-surface-variant); font: 500 11px/16px var(--md-ref-typeface-plain); text-transform: uppercase; letter-spacing: .05em; }
+    .md-si__sum dd { margin: 0; font: 500 14px/20px var(--md-ref-typeface-plain); }
+    .md-si__tagsm { color: var(--md-sys-color-primary); font: 500 11px/16px var(--md-ref-typeface-plain); margin-left: 4px; }
+    .md-si__tagsm--you { color: var(--md-sys-color-on-surface-variant); }
+    .md-si__rx summary { cursor: pointer; color: var(--md-sys-color-primary); font: 500 13px/20px var(--md-ref-typeface-plain); min-height: 32px; display: flex; align-items: center; }
+    .md-si__json { margin: 6px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--md-sys-color-surface-container); font: 400 12px/18px ui-monospace, SFMono-Regular, Menlo, monospace; overflow-x: auto; }
+    .md-si[data-density="compact"] { gap: 8px; padding: 10px 12px; } .md-si[data-density="compact"] .md-si__grid { gap: 8px 12px; }
+    .md-si[data-density="compact"] .md-si__in, .md-si[data-density="compact"] .md-si__seg { height: 36px; } .md-si[data-density="compact"] .md-si__h { display: none; }
+    .md-si[data-layout="inline"] .md-si__grid { grid-template-columns: 1fr; }
+    .md-si[data-layout="inline"] .md-si__f { grid-template-columns: 112px minmax(0, 1fr); align-items: center; column-gap: 12px; }
+    .md-si[data-layout="inline"] .md-si__f > :not(.md-si__lr) { grid-column: 2; }
+    .md-sip { width: 100%; max-width: var(--ax-composer-max, 640px); display: grid; gap: 12px; }
+    @media (max-width: 560px) { .md-si__grid, .md-si__sum { grid-template-columns: 1fr; } .md-si__in, .md-si__seg { height: 48px; }
+      .md-si[data-layout="inline"] .md-si__f { grid-template-columns: 1fr; } .md-si[data-layout="inline"] .md-si__f > :not(.md-si__lr) { grid-column: 1; } }
+    @media (prefers-reduced-motion: reduce) { .md-si { animation: none !important; } }
+
+    /* Voice and Visual Input carry the same lilac halo as the Initial CTA
+       behind the composer. While voice is live the halo steps back so the
+       voice's own gradient — which answers the words — is the one you see. */
+    /* Room for the halo to breathe, as on the Initial CTA stage. */
+    .md-vxp, .md-vip:not(.md-hwp) { min-height: 440px; align-content: center; }
+    .pv-aura > .ax__aura { transition: opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, ease); }
+    .pv-aura-host:has(.md-vx[data-vx="listening"], .md-vx[data-vx="paused"], .md-vx[data-vx="processing"]) .pv-aura .ax__aura,
+    .ax:has(.md-vx[data-vx="listening"], .md-vx[data-vx="paused"], .md-vx[data-vx="processing"]) .ax__aura.is-halo { opacity: 0; }
+    /* Messages above the bar: permission, couldn't understand, unavailable. */
+    .md-vx__panel {
+      display: grid; gap: 6px; padding: 14px 16px 10px; border-radius: var(--md-sys-shape-corner-large, 16px);
+      background: var(--md-sys-color-surface-container-low); border: 1px solid var(--md-sys-color-outline-variant);
+      animation: md-vx-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)) both;
+    }
+    .md-vx__panel--err { border-color: color-mix(in oklab, var(--md-sys-color-error) 45%, transparent); }
+    .md-vx__ph { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--md-sys-color-on-surface);
+      font: 500 var(--md-sys-typescale-title-small-size, 14px)/var(--md-sys-typescale-title-small-line, 20px) var(--md-ref-typeface-plain); }
+    .md-vx__ph .mi { width: 20px; height: 20px; fill: var(--md-sys-color-primary); flex: 0 0 auto; }
+    .md-vx__panel--err .md-vx__ph .mi { fill: var(--md-sys-color-error); }
+    .md-vx__pt { margin: 0 0 0 28px; color: var(--md-sys-color-on-surface-variant);
+      font: 400 var(--md-sys-typescale-body-medium-size, 14px)/var(--md-sys-typescale-body-medium-line, 20px) var(--md-ref-typeface-plain); }
+    .md-vx__pt q { color: var(--md-sys-color-on-surface); }
+    .md-vx__pa { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px; }
+    .md-vx__note { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 8px; color: var(--md-sys-color-on-surface-variant); font: 400 13px/18px var(--md-ref-typeface-plain); }
+    .md-vx__note .mi { width: 18px; height: 18px; fill: currentColor; }
+
+    @media (max-width: 560px) {
+      .md-vx .ax__composer .ax__cbtn { min-width: 48px; min-height: 48px; width: 48px; height: 48px; }
+      .md-vx .ax__vxmic { width: 44px; height: 44px; }
+      .md-vx__pa .md-button { min-height: 44px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .md-vx__glow, .ax__vxdot, .ax__vxfrom, .md-vx__panel { animation: none !important; transition: none; }
+      .md-vx__glow { transform: none; }
+    }
+
     @media (max-width: 560px) {
       /* The bar takes the width it is given; the indicator does
          not grow to fill it. */
@@ -7236,6 +7726,7 @@
         <a class="gnav__link" href="mcp.html">MCP</a>
         <a class="gnav__link" href="labs.html">Labs</a>
         <a class="gnav__link gnav__link--featured" href="design-system.html">Design System</a>
+        <a class="gnav__link" href="blog.html">Blog</a>
       </nav>
 
       <div class="gnav__actions">
