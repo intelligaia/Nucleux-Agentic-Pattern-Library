@@ -143,6 +143,8 @@
     .labs-hint__desc { margin-top: 10px; font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
     .labs-hint__src { display: inline-block; margin-top: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; }
   </style>
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body class="labs-body">
   <div class="labs-app">
@@ -236,7 +238,7 @@
     </div><!-- /.labs-head -->
 
     <!-- STAGE -->
-    <div class="labs-stage" id="labsStage">
+    <div class="labs-stage" id="labsStage" role="tabpanel" aria-label="Lab">
       <div class="labs-hint" id="labsHint">
         <div class="labs-hint__dot"></div>
         <div class="labs-hint__title">Loading…</div>
@@ -292,11 +294,25 @@
 
     var currentSrc = null;
 
-    tabs.forEach(function(t){
-      t.addEventListener('click', function(){
-        tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
-        t.classList.add('on'); t.setAttribute('aria-selected','true');
-        show(t);
+    function select(t, focus){
+      tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); x.tabIndex = -1; });
+      t.classList.add('on'); t.setAttribute('aria-selected','true'); t.tabIndex = 0;
+      if(focus) t.focus();
+      /* on a phone the tabs are a scrolling row — bring the chosen one in */
+      if(t.scrollIntoView) t.scrollIntoView({ block:'nearest', inline:'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      show(t);
+    }
+    tabs.forEach(function(t, i){
+      t.setAttribute('aria-controls', 'labsStage');
+      t.addEventListener('click', function(){ select(t); });
+      /* tablist keys: arrows move between labs, Home/End jump to the ends */
+      t.addEventListener('keydown', function(e){
+        var n = null;
+        if(e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
+        else if(e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if(e.key === 'Home') n = tabs[0];
+        else if(e.key === 'End') n = tabs[tabs.length - 1];
+        if(n){ e.preventDefault(); select(n, true); }
       });
     });
 
@@ -308,12 +324,13 @@
       var bySrc = tabs.filter(function(t){ return t.getAttribute('data-src').indexOf(hash) !== -1; })[0];
       start = byNum || bySrc || tabs[0];
     }
-    tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
-    start.classList.add('on'); start.setAttribute('aria-selected','true');
-    show(start);
+    select(start);
 
     /* ── Fullscreen: launch the active lab into the full screen ── */
     var fsBtn = document.getElementById('labsFs');
+    /* iPhone Safari cannot put an iframe into fullscreen; offering a
+       control that does nothing would be worse than not offering it */
+    if(fsBtn && !(document.fullscreenEnabled || document.webkitFullscreenEnabled)){ fsBtn.hidden = true; fsBtn = null; }
     if(fsBtn){
       fsBtn.addEventListener('click', function(){
         var f = frames[currentSrc];

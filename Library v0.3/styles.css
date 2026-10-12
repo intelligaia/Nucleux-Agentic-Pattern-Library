@@ -340,7 +340,11 @@ html.gnav-pending .gnav__actions { visibility: hidden; }
      the underline (is-current ::after) stops where the text stops. */
   left: calc(100% - var(--gnav-badge-room) + 6px);
   top: 50%;
-  transform: translateY(-50%);
+  /* Follows the label's right edge as the hover text grows or shrinks
+     about its centre (--sf-out, set by nav-splitflap.js), with the same
+     timing as the label, so the badge never floats away from the text. */
+  transform: translate(var(--sf-out, 0px), -50%);
+  transition: transform .35s cubic-bezier(.22,1,.36,1);
   padding: 2px 6px;
   border-radius: 999px;
   background: #FFC800;
@@ -352,17 +356,7 @@ html.gnav-pending .gnav__actions { visibility: hidden; }
   white-space: nowrap;
   pointer-events: none;
 }
-.gnav__mobile-link .gnav__badge {
-  margin-left: 8px;
-  margin-right: auto;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: #FFC800;
-  color: #000;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.3;
-}
+@media (prefers-reduced-motion: reduce) { .gnav__link--featured::before { transition: none; } }
 
 /* ── Components flyout ── */
 .gnav__item--has-flyout { position: relative; }
@@ -3768,13 +3762,6 @@ body.is-lbx-open { overflow: hidden; }
   /* centre column is empty now — keep the actions pinned to the right edge */
   .gnav__inner > .gnav__actions { grid-column: 3; }
 }
-@media (max-width: 720px) {
-  .brand__tagline { display: none; }
-  .gnav__sdk { display: none; }
-}
-@media (max-width: 480px) {
-  .gnav__cta span, .gnav__cta { font-size: 12px; padding: 8px 14px; }
-}
 @media (max-width: 640px) {
   :root { --gutter: 20px; }
   .framework__grid { grid-template-columns: 1fr; }
@@ -3782,90 +3769,6 @@ body.is-lbx-open { overflow: hidden; }
   .stat-item__v { font-size: 32px; }
 }
 
-/* ============================================================
-   MOBILE NAV — hamburger + slide-down panel
-   The inline centre nav collapses at ≤1420px (seven links since Blog, room for the hover labels); this hamburger +
-   panel (built by global.js on every page) restores navigation.
-   ============================================================ */
-.gnav__toggle {
-  display: none;
-  width: 42px; height: 42px;
-  align-items: center; justify-content: center;
-  border-radius: var(--r-3);
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--fg);
-  flex-shrink: 0;
-  transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
-}
-.gnav__toggle:hover { background: var(--ink-25); border-color: var(--fg); }
-.gnav__toggle svg { width: 20px; height: 20px; }
-.gnav__toggle .gnav__toggle-close { display: none; }
-.gnav__toggle[aria-expanded="true"] .gnav__toggle-open { display: none; }
-.gnav__toggle[aria-expanded="true"] .gnav__toggle-close { display: block; }
-
-.gnav__mobile {
-  position: fixed;
-  top: var(--nav-h);
-  left: 0; right: 0;
-  z-index: 59;
-  background: color-mix(in oklab, var(--bg) 95%, transparent);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-          backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-3);
-  padding: var(--s-3) var(--gutter) var(--s-6);
-  display: flex;
-  flex-direction: column;
-  transform: translateY(-10px);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity var(--dur-2) var(--ease),
-              transform var(--dur-2) var(--ease),
-              visibility 0s linear var(--dur-2);
-  max-height: calc(100dvh - var(--nav-h));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.gnav__mobile.is-open {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity var(--dur-2) var(--ease),
-              transform var(--dur-2) var(--ease);
-}
-.gnav__mobile-link {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 4px;
-  font-size: 17px;
-  font-weight: 500;
-  color: var(--fg);
-  border-bottom: 1px solid var(--border);
-}
-.gnav__mobile-link:active { color: var(--fg-mid); }
-.gnav__mobile-arrow { color: var(--fg-muted); flex-shrink: 0; }
-.gnav__mobile-actions {
-  display: flex; flex-direction: column; gap: var(--s-3);
-  margin-top: var(--s-5);
-}
-.gnav__mobile-actions .gnav__sdk,
-.gnav__mobile-actions .gnav__cta {
-  display: inline-flex;
-  justify-content: center;
-  width: 100%;
-  padding: 15px 20px;
-  font-size: 15px;
-}
-body.nav-open { overflow: hidden; }
-
-@media (max-width: 1420px) {
-  .gnav__toggle { display: inline-flex; }
-}
-@media (min-width: 1421px) {
-  .gnav__mobile { display: none; }
-}
 
 /* ============================================================
    MOBILE — home hero + display type readability
@@ -3900,10 +3803,6 @@ body.nav-open { overflow: hidden; }
   .hero__actions .btn { flex: 1 1 auto; justify-content: center; }
   .makers__bigword { font-size: clamp(30px, 8.6vw, 46px); line-height: 1.08; }
   .cat__name { font-size: clamp(30px, 9vw, 40px); }
-}
-@media (max-width: 560px) {
-  /* Contact stays reachable inside the mobile menu; drop it from the crowded bar */
-  .gnav__actions .gnav__cta { display: none; }
 }
 
 /* ============================================================
@@ -8231,3 +8130,473 @@ body.landing-dark:not(.landing-light) .brand__mark--inline { --brand-word: #EEF0
    nothing. This keeps the column open at the same height a populated one
    starts at. */
 .main:empty { min-height: 70vh; }
+
+/* ============================================================
+   RESPONSIVE FOUNDATION — shared by every page that loads styles.css
+
+   Breakpoints (the ones this codebase already used most, kept so the
+   page-level rules and these agree):
+     ≤ 1420  centre links collapse into the menu button
+     ≤ 1100  tablet — side rails and TOCs fold away
+     ≤  720  phone — compact header, full-height menu sheet,
+             full-screen search, stacked layouts
+     ≤  390  compact phone — tighter gutter
+     landscape phones: (orientation: landscape) and (max-height: 500px)
+
+   Nothing here detects a device. Every rule is a media query, so a
+   DevTools viewport change, a rotation or a window drag reflows the
+   page immediately.
+   ============================================================ */
+
+/* Large atmospheric pseudo-elements and decorative layers are allowed
+   to bleed past their section, but never to widen the page. `clip`
+   (unlike `hidden`) creates no scroll container, so position:sticky
+   inside still works. Both elements: if only <body> carries it, the
+   value propagates to the viewport instead of clipping the body, and a
+   phone's layout viewport still widens to fit the overflow. */
+html, body { overflow-x: clip; }
+
+@media (max-width: 720px) {
+  :root {
+    /* The bar is 60px of content plus the device's top inset (the
+       notch / Dynamic Island when the page runs edge to edge). Every
+       sticky offset in the site reads --nav-h, so they all follow. */
+    --nav-h: calc(60px + env(safe-area-inset-top, 0px));
+    /* section rhythm: desktop sections sit 96–160px apart; a phone
+       keeps breathing room without tripling the page length */
+    --sec-y: 56px;
+  }
+}
+@media (max-width: 390px) {
+  :root { --gutter: 16px; }
+}
+
+/* ============================================================
+   HEADER — compact on phones
+   [ NUCLEUX ]                       [ search ] [ menu ]
+   GitHub, Share on X, Contact and Sign In move into the menu
+   sheet (they stay one tap away, just not crowding a 402px bar).
+   ============================================================ */
+.gnav__toggle {
+  display: none;
+  position: relative;
+  width: 45px; height: 45px;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--fg) 16%, transparent);
+  background: transparent;
+  color: var(--fg);
+  transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), border-radius 260ms cubic-bezier(.22, 1, .36, 1);
+}
+.gnav__toggle svg { width: 22px; height: 22px; }
+.gnav__toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+@media (hover: hover) {
+  .gnav__toggle:hover { background: var(--surface); border-color: color-mix(in oklab, var(--fg) 26%, transparent); }
+}
+.gnav__toggle:active { background: var(--ink-50); border-radius: var(--r-hover, 16px); }
+
+@media (max-width: 1420px) {
+  .gnav__toggle { display: inline-flex; }
+}
+
+@media (max-width: 720px) {
+  .gnav {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .gnav__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  }
+  .gnav__inner > .gnav__actions { grid-column: 2; }
+  .brand__tagline { display: none; }
+  .gnav .brand__mark--inline { width: 112px; height: auto; }
+
+  /* desktop-only controls — all of them are in the menu sheet */
+  .gnav .gnav__inner .gnav__actions > .gnav__iconx,
+  .gnav .gnav__inner .gnav__actions > .gnav__sdk,
+  .gnav .gnav__inner .gnav__actions > .gnav__cta,
+  .gnav .gnav__inner .gnav__actions > .gnav__signup { display: none; }
+
+  .gnav .gnav__actions { gap: 8px; }
+  .gnav__toggle { width: 44px; height: 44px; }
+}
+
+/* Search in the bar. On desktop it is a field that grows out of the
+   icon on hover. With no hover (touch) — and always on a phone — it is
+   a plain 44px button that opens the full search surface; there is no
+   room for an inline field and a sticky :hover would leave it open. */
+@media (max-width: 720px), (hover: none) {
+  .gnav .gnav__inner .gnav__search.gnav__search--x { width: 44px; height: 44px; }
+  .gnav .gnav__inner .gnav__search--x .gnav__search-shell,
+  .gnav .gnav__inner .gnav__search--x:hover .gnav__search-shell,
+  .gnav .gnav__inner .gnav__search--x:focus-within .gnav__search-shell,
+  .gnav .gnav__inner .gnav__search--x.is-open .gnav__search-shell {
+    width: 44px; height: 44px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 16%, transparent);
+  }
+  .gnav .gnav__inner .gnav__search--x .gnav__search-btn { width: 44px; height: 44px; color: var(--fg); }
+  .gnav .gnav__inner .gnav__search--x .gnav__search-input { display: none; }
+  .gnav .gnav__inner .gnav__search--x .gnav__search-btn:active { background: var(--ink-50); }
+}
+/* Touch tablets keep the icon cluster, but a tap must not leave a
+   control stuck in its expanded hover state. */
+@media (hover: none) {
+  .gnav .gnav__inner .gnav__actions .gnav__iconx:hover {
+    width: 45px; background: transparent; box-shadow: none; border-radius: 22.5px;
+    border-color: color-mix(in oklab, var(--fg) 16%, transparent);
+  }
+  .gnav .gnav__inner .gnav__actions .gnav__iconx:hover .gnav__iconx-ico { left: 10.5px; }
+  .gnav .gnav__inner .gnav__actions .gnav__iconx:hover .gnav__iconx-label { opacity: 0; }
+}
+
+/* ============================================================
+   MENU SHEET (built by global.js)
+   Phones: full-height sheet over the page, its own header in the
+   exact place of the site header so the menu button reads as
+   turning into the close button.
+   721–1420: a drawer from the right over a scrim.
+   ============================================================ */
+body.nav-open { overflow: hidden; }
+.nx-msheet {
+  position: fixed;
+  inset: 0;
+  z-index: 230;
+}
+.nx-msheet[hidden] { display: none; }
+.nx-msheet__scrim {
+  position: absolute; inset: 0;
+  background: rgba(12, 12, 10, 0.38);
+  opacity: 0;
+  transition: opacity 280ms var(--ease);
+}
+.nx-msheet.is-open .nx-msheet__scrim { opacity: 1; }
+
+.nx-msheet__panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: 28px 0 0 28px;
+  box-shadow: var(--shadow-4);
+  transform: translate3d(104%, 0, 0);
+  transition: transform 420ms cubic-bezier(.2, 0, 0, 1);
+  outline: none;
+  overscroll-behavior: contain;
+}
+.nx-msheet.is-open .nx-msheet__panel { transform: none; }
+
+.nx-msheet__head {
+  flex: none;
+  height: var(--nav-h);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-inline: var(--s-6) var(--s-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.nx-msheet__head > :only-child { margin-left: auto; }
+.nx-msheet__brand { display: inline-flex; align-items: center; min-height: 44px; }
+.nx-msheet__brand svg { width: 112px; height: auto; }
+.nx-msheet__close {
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--fg) 16%, transparent);
+  color: var(--fg);
+  transition: background var(--dur-1) var(--ease), border-radius 260ms cubic-bezier(.22, 1, .36, 1);
+}
+.nx-msheet__close:active { background: var(--ink-50); border-radius: var(--r-hover, 16px); }
+.nx-msheet__close:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+.nx-msheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--s-3) var(--s-3) var(--s-6);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* a destination: label + its intent, the whole row is the target */
+.nx-msheet__link {
+  position: relative;
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 10px 14px 10px 16px;
+  border-radius: 18px;
+  text-align: left;
+  color: var(--fg);
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--dur-1) var(--ease), border-radius 260ms cubic-bezier(.22, 1, .36, 1);
+}
+.nx-msheet__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.nx-msheet__label {
+  display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.nx-msheet__intent {
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--fg-muted);
+  font-weight: 450;
+}
+.nx-msheet__go {
+  flex: none;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  color: var(--fg-muted);
+  transition: transform 320ms cubic-bezier(.22, 1, .36, 1), background var(--dur-1) var(--ease);
+}
+@media (hover: hover) {
+  .nx-msheet__link:hover { background: var(--ink-50); }
+  .nx-msheet__link:hover .nx-msheet__go { transform: translateX(2px); }
+}
+.nx-msheet__link:active { background: var(--ink-100); border-radius: 12px; }
+.nx-msheet__link:focus-visible,
+.nx-msheet__sublink:focus-visible,
+.nx-msheet__qa:focus-visible,
+.nx-msheet__primary:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+
+/* where you are: a tonal pill, a weight change and a leading bar —
+   never colour alone */
+.nx-msheet__link.is-current {
+  background: color-mix(in oklab, #8B57C7 10%, var(--surface));
+}
+.nx-msheet__link.is-current .nx-msheet__label { color: #4c1d95; }
+.nx-msheet__link.is-current::before {
+  content: "";
+  position: absolute;
+  left: 6px; top: 50%;
+  width: 4px; height: 24px;
+  margin-top: -12px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #21A4D7, #8B57C7);
+}
+.nx-msheet__badge,
+.nx-msheet__soon {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  line-height: 1.35;
+}
+.nx-msheet__badge { background: #FFC800; color: #000; }
+.nx-msheet__soon { background: var(--ink-100); color: var(--fg-mid); font-weight: 500; }
+
+/* Components: the hover flyout, expanded in place */
+.nx-msheet__go--caret { transition: transform 320ms cubic-bezier(.22, 1, .36, 1); }
+.nx-msheet__group.is-open .nx-msheet__go--caret { transform: rotate(180deg); }
+.nx-msheet__subs {
+  padding: 4px 0 10px 14px;
+  margin-left: 16px;
+  border-left: 1px solid var(--border);
+}
+.nx-msheet__subs[hidden] { display: none; }
+.nx-msheet__fam + .nx-msheet__fam { margin-top: 6px; }
+.nx-msheet__famlabel {
+  display: block;
+  padding: 10px 12px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.nx-msheet__sublink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 48px;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 14px;
+  color: var(--fg);
+  -webkit-tap-highlight-color: transparent;
+}
+.nx-msheet__sublink .nx-msheet__label { font-size: 16px; font-family: var(--font-body); letter-spacing: -0.01em; }
+.nx-msheet__sublink .nx-msheet__intent {
+  font-size: 13px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+@media (hover: hover) { a.nx-msheet__sublink:hover { background: var(--ink-50); } }
+a.nx-msheet__sublink:active { background: var(--ink-100); }
+.nx-msheet__sublink.is-current { background: color-mix(in oklab, #8B57C7 10%, var(--surface)); }
+.nx-msheet__sublink.is-current .nx-msheet__label { color: #4c1d95; font-weight: 600; }
+.nx-msheet__sublink.is-soon { color: var(--fg-muted); }
+
+/* foot: the account action and the header's icon cluster, labelled */
+.nx-msheet__foot {
+  flex: none;
+  padding: var(--s-4) var(--s-5) calc(var(--s-4) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  background: var(--surface);
+}
+.nx-msheet__primary {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 52px;
+  border-radius: var(--r-full);
+  background: var(--ink-950);
+  color: var(--ink-0);
+  font-size: 16px;
+  font-weight: 600;
+  transition: border-radius 260ms cubic-bezier(.22, 1, .36, 1), background var(--dur-1) var(--ease);
+}
+.nx-msheet__primary:active { border-radius: var(--r-hover, 16px); background: var(--ink-800); }
+.nx-msheet__quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--s-2); }
+.nx-msheet__qa {
+  min-height: 56px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in oklab, var(--fg) 14%, transparent);
+  color: var(--fg);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background var(--dur-1) var(--ease), border-radius 260ms cubic-bezier(.22, 1, .36, 1);
+}
+@media (hover: hover) { .nx-msheet__qa:hover { background: var(--ink-50); } }
+.nx-msheet__qa:active { background: var(--ink-100); border-radius: 12px; }
+
+/* entrance: the rows arrive just behind the surface, top to bottom */
+.nx-msheet__body > * {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition: opacity 260ms var(--ease), transform 460ms cubic-bezier(.2, 0, 0, 1);
+  transition-delay: calc(80ms + var(--i, 0) * 30ms);
+}
+.nx-msheet.is-open .nx-msheet__body > * { opacity: 1; transform: none; }
+
+@media (max-width: 720px) {
+  .nx-msheet__panel {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    transform: translate3d(0, -12px, 0);
+    opacity: 0;
+    transition: transform 380ms cubic-bezier(.2, 0, 0, 1), opacity 220ms var(--ease);
+  }
+  .nx-msheet.is-open .nx-msheet__panel { transform: none; opacity: 1; }
+  .nx-msheet__scrim { display: none; }
+  .nx-msheet__head {
+    padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  }
+  .nx-msheet__body { padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px)); }
+}
+/* landscape phone: the list scrolls, the foot gets out of the way */
+@media (orientation: landscape) and (max-height: 500px) {
+  .nx-msheet__link { min-height: 52px; }
+  .nx-msheet__foot { flex-direction: row; align-items: stretch; }
+  .nx-msheet__primary { flex: 1 1 40%; min-height: 48px; }
+  .nx-msheet__quick { flex: 1 1 60%; }
+  .nx-msheet__qa { min-height: 48px; flex-direction: row; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-msheet__panel, .nx-msheet__scrim, .nx-msheet__body > * { transition: none; }
+  .nx-msheet__body > * { transform: none; }
+}
+
+/* ============================================================
+   SEARCH — a full-screen surface on phones
+   The desktop popover becomes the whole screen: the field pinned at
+   the top (above the keyboard by construction), results scrolling
+   beneath it, and an explicit Cancel because there is no Esc key.
+   ============================================================ */
+.nx-search__cancel { display: none; }
+@media (max-width: 720px) {
+  .nx-search { padding: 0; place-items: stretch; }
+  .nx-search__backdrop { display: none; }
+  .nx-search__panel {
+    max-width: none;
+    height: 100%;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    transform: translate3d(0, 12px, 0);
+  }
+  .nx-search.is-open .nx-search__panel { transform: none; }
+  .nx-search__inputrow {
+    flex: none;
+    gap: 10px;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) var(--gutter) 8px;
+    min-height: calc(60px + env(safe-area-inset-top, 0px));
+  }
+  /* 16px stops iOS zooming the page when the field takes focus */
+  .nx-search__input { font-size: 16px; min-height: 44px; }
+  .nx-search__esc { display: none; }
+  .nx-search__cancel {
+    display: inline-flex; align-items: center;
+    min-height: 44px; padding: 0 4px 0 8px;
+    font-size: 15px; font-weight: 600; color: var(--fg);
+  }
+  .nx-search__results {
+    flex: 1 1 auto;
+    max-height: none;
+    min-height: 0;
+    overscroll-behavior: contain;
+    padding: 6px 8px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .nx-search__row { padding: 12px 12px; min-height: 64px; border-radius: 14px; grid-template-columns: minmax(0, 1fr); }
+  .nx-search__row-meta { white-space: normal; grid-row: 2; }
+  .nx-search__row-oneline { grid-row: 3; -webkit-line-clamp: 2; }
+  .nx-search__footer { display: none; }
+}
+@media (hover: none) { .nx-search__footer { display: none; } }
+
+/* ============================================================
+   ASK LUMEN — the floating launcher and its panel on phones
+   ============================================================ */
+@media (max-width: 720px) {
+  .nx-launcher {
+    right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    width: 52px; height: 52px;
+    padding: 0;
+    justify-content: center;
+  }
+  .nx-launcher__label { display: none; }
+  .nx-launcher__orb { width: 24px; height: 24px; }
+}
+/* the hero particle field follows the mouse; on touch it is ambient
+   only and must never sit between a finger and a control */
+@media (hover: none), (pointer: coarse) {
+  .scene__bg #hero-canvas { pointer-events: none; }
+}
+/* the field's own clear button would sit next to Cancel; one is enough */
+@media (max-width: 720px) {
+  .nx-search__input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+}
+/* landscape phone: a short screen, so the bar slims down and keeps
+   clear of the notch on whichever side it is */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --nav-h: 56px; }
+  .gnav__inner {
+    padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  }
+}

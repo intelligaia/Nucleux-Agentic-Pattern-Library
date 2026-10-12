@@ -8691,6 +8691,9 @@
   function mount(root, id) {
     var sim = SIMS[id];
     if (!sim) return;
+    /* Which scenario this root holds, so per-pattern responsive rules
+       (the Initial CTA's phone layout) can be scoped to it. */
+    root.setAttribute('data-sim-id', id);
 
     var s = JSON.parse(JSON.stringify(sim.initial));
     var busy = false;
@@ -8710,6 +8713,10 @@
           (parseFloat(getComputedStyle(el).paddingBottom) || 0)
         : 72 + Math.max(0, (parseFloat(getComputedStyle(el).paddingTop) || 0) + (parseFloat(getComputedStyle(el).paddingBottom) || 0) - 4);
       el.style.height = 'auto';
+      /* Not laid out (hidden for a moment while the window changes
+         shape): there is nothing to measure, so leave it at its
+         natural height rather than pin it at zero. */
+      if (!el.scrollHeight) { el.style.height = ''; return; }
       el.style.height = Math.min(el.scrollHeight, cap) + 'px';
     }
 
@@ -9054,7 +9061,10 @@
        often not inside root when either of those happens. */
     function closeMenus(e) {
       if (!root.isConnected) return;
-      if (!s.axPlus && !s.axModes && !s.axEffort) return;
+      /* The shared default + and model controls close the same way as
+         a host's own (user request, 7 Oct: one flyout behaviour). */
+      var D = s.__axd, dOpen = !!(D && (D.plusOpen || D.modesOpen || D.effortOpen));
+      if (!s.axPlus && !s.axModes && !s.axEffort && !dOpen) return;
       if (e && e.type === 'click' && e.target.closest &&
           e.target.closest('.ax__composer')) return;
       /* The repaint below destroys whatever was clicked, so the
@@ -9067,6 +9077,7 @@
         if (hit && root.contains(hit)) pending = hit.dataset.act;
       }
       s.axPlus = s.axModes = s.axEffort = false; s.axSubAt = null;
+      if (D) D.plusOpen = D.modesOpen = D.effortOpen = false;
       paint();
       if (pending) { e.preventDefault(); e.stopPropagation(); run(pending); }
     }

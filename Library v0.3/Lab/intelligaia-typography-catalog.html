@@ -138,10 +138,13 @@
   footer{padding:8vh 6vw;color:var(--mut);font-size:.8rem;border-top:1px solid var(--line)}
 
   @media(max-width:760px){
+    /* the 10-letter hero words must fit a phone's width at 17vw they ran ~20% wide */
+    .h1 .big{font-size:13.4vw}
     .hre .re-line1{flex-wrap:wrap}.hre .re-collage{order:3;flex-basis:100%;height:90px}
     .hbond .b-inner{font-size:clamp(1rem,4.4vw,1.4rem)}
   }
 </style>
+<script src="lab-touch.js"></script>
 </head>
 <body>
 <div id="cur"></div>

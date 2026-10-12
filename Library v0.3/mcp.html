@@ -528,6 +528,8 @@
       flex-shrink: 0;
     }
   </style>
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body class="has-shell">
 
@@ -690,7 +692,7 @@
               <h3 class="mcp-step__name">Configure your AI client</h3>
               <p class="mcp-step__desc">Add the server entry to your MCP client config — works with Claude Desktop, Cursor, Windsurf, and any JSON-RPC MCP host.</p>
               <div class="mcp-code">
-                <button class="mcp-code__copy" onclick="navigator.clipboard.writeText(`{\n  \"mcpServers\": {\n    \"nucleux\": {\n      \"command\": \"npx\",\n      \"args\": [\"@nucleux/mcp\"],\n      \"env\": {\n        \"NUCLEUX_WORKSPACE\": \"your-workspace-id\"\n      }\n    }\n  }\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
+                <button class="mcp-code__copy" onclick="navigator.clipboard.writeText(`{\n  &quot;mcpServers&quot;: {\n    &quot;nucleux&quot;: {\n      &quot;command&quot;: &quot;npx&quot;,\n      &quot;args&quot;: [&quot;@nucleux/mcp&quot;],\n      &quot;env&quot;: {\n        &quot;NUCLEUX_WORKSPACE&quot;: &quot;your-workspace-id&quot;\n      }\n    }\n  }\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
 <span class="c">// mcp.json</span>
 {
   <span class="k">"mcpServers"</span>: {

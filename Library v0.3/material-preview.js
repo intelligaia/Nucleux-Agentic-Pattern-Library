@@ -1459,7 +1459,7 @@
     }
     s.state = 'working';
     var nd = s.demo = {
-      on: 'working', chips: [], model: d.model, voice: null, next: '',
+      on: 'working', chips: [], model: d.model, effort: d.effort, voice: null, next: '',
       focus: true, flip: flip,
       turns: [{ who: 'you', text: text }, { who: 'aria', working: true }]
     };
@@ -4721,7 +4721,6 @@ card + '>\n' + head +
         var box = root.querySelector('.pv-stage .md-oi');
         if (!box || !d) return;
         oiGuard(root, s);
-        if (window.MaterialModel && window.MaterialModel.animate) window.MaterialModel.animate(root);
         var th = box.querySelector('.md-oi__thread');
         if (th) th.scrollTop = th.scrollHeight;
         var form = box.querySelector('.ax__composer');
@@ -5080,7 +5079,6 @@ card + '>\n' + head +
         var d = s.demo, c = s.cfg, S = window.MaterialSim;
         var box = root.querySelector('.pv-stage .md-spv');
         if (!box || !d || !S) return;
-        if (window.MaterialModel && window.MaterialModel.animate) window.MaterialModel.animate(root);
         var set = box.querySelector('.md-sp');
         var form = box.querySelector('.ax__composer');
         var field = box.querySelector('[data-ax-field]');
@@ -6611,7 +6609,6 @@ card + '>\n' + head +
       mounted: function (root, s) {
         /* Replays the open/close on the freshly painted node, so
            the list actually eases rather than snapping. */
-        if (window.MaterialModel) window.MaterialModel.animate(root);
         var field = root.querySelector('.pv-stage [data-ax-field]');
         if (field) {
           if (s.demo && s.demo.text) field.value = s.demo.text;
@@ -10170,7 +10167,10 @@ card + '>\n' + head +
                 '<path d="M300-200q-24 0-42-18t-18-42v-560q0-24 18-42t42-18h440q24 0 42 18t18 42v560q0 24-18 42t-42 18H300Zm0-60h440v-560H300v560ZM180-80q-24 0-42-18t-18-42v-620h60v620h500v60H180Zm120-180v-560 560Z"/></svg></button>' +
               '<code>' + highlight(prettyPrintHtml(code)) + '</code></pre>' +
           '</div>' +
-          (s.panel ? panelHTML(def, s.cfg, s.state, s.reset, hist) : '') +
+          /* On a phone the panel is a bottom sheet; the scrim behind it
+             closes it, like the close button. Hidden on larger screens. */
+          (s.panel ? '<button class="pvc-scrim" type="button" data-cfg-scrim tabindex="-1" aria-label="Close Customize"></button>' +
+                     panelHTML(def, s.cfg, s.state, s.reset, hist) : '') +
           '</div>' +
 
           /* The state read-out. Four rows, because a state that
@@ -10193,6 +10193,10 @@ card + '>\n' + head +
          was writing to, so anything script-driven has to be
          re-attached to the new one. */
       if (def.mounted) def.mounted(root, s);
+      /* The model flyout's hover glow, focus return and effort track are
+         wired by MaterialModel after every paint, in EVERY preview — not
+         only in the ones that remembered to (user request, 7 Oct). */
+      if (window.MaterialModel && window.MaterialModel.animate) window.MaterialModel.animate(root);
       pvMenuRoom(root);
       pvAura(root);
       if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
@@ -10277,6 +10281,10 @@ card + '>\n' + head +
          at, and it is not part of the component. */
       if (pre)   pre.innerHTML = highlight(prettyPrintHtml(code));
       if (def.mounted) def.mounted(root, s);
+      /* The model flyout's hover glow, focus return and effort track are
+         wired by MaterialModel after every paint, in EVERY preview — not
+         only in the ones that remembered to (user request, 7 Oct). */
+      if (window.MaterialModel && window.MaterialModel.animate) window.MaterialModel.animate(root);
       pvMenuRoom(root);
       pvAura(root);
       if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
@@ -10427,10 +10435,23 @@ card + '>\n' + head +
       sync(el.dataset.cfg);
     });
 
+    /* The phone sheet closes with Escape and hands focus back. */
+    function pvSheet() { return !!(window.matchMedia && matchMedia('(max-width: 640px)').matches); }
+    root.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || !s.panel || !pvSheet()) return;
+      if (!e.target.closest || !e.target.closest('.pvc')) return;
+      s.panel = false; paint();
+      var ob = root.querySelector('[data-cfg-open]'); if (ob) ob.focus({ preventScroll: true });
+    });
     root.addEventListener('click', function (e) {
       if (e.target.closest('[data-cfg-open]')) {
-        s.panel = !s.panel; s.reset = false; paint(); return; }
-      if (e.target.closest('[data-cfg-close]')) { s.panel = false; paint(); return; }
+        s.panel = !s.panel; s.reset = false; paint();
+        /* As a phone sheet, focus moves into it. */
+        if (s.panel && pvSheet()) { var cl = root.querySelector('.pvc__close'); if (cl) cl.focus({ preventScroll: true }); }
+        return; }
+      /* the phone sheet's scrim closes it too — its own hook, so [data-cfg-close]
+         still names exactly one control (the panel's close button) */
+      if (e.target.closest('[data-cfg-close], [data-cfg-scrim]')) { s.panel = false; paint(); return; }
 
       /* Original | Customized. Nothing is written; the stage is simply
          handed the defaults instead of the working values. */

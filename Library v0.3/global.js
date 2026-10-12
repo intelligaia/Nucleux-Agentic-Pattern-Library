@@ -461,11 +461,12 @@
       m.setAttribute("hidden", "");
       m.innerHTML = `
         <div class="nx-search__backdrop" data-search-close></div>
-        <div class="nx-search__panel" role="dialog" aria-label="Search patterns">
+        <div class="nx-search__panel" role="dialog" aria-modal="true" aria-label="Search patterns">
           <div class="nx-search__inputrow">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <input type="text" placeholder="Search 84 patterns by name, intent, surface…" class="nx-search__input" autocomplete="off" />
+            <input type="search" enterkeyhint="search" placeholder="Search 84 patterns by name, intent, surface…" class="nx-search__input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search patterns" aria-controls="nx-search-results" />
             <span class="nx-search__esc">esc</span>
+            <button type="button" class="nx-search__cancel" data-search-close>Cancel</button>
           </div>
           <div class="nx-search__results" id="nx-search-results"></div>
           <div class="nx-search__footer">
@@ -591,9 +592,11 @@
   // Search
   // ───────────────────────────────────────────────────────
   let searchActiveIdx = 0;
+  let searchOpener = null;
   function openSearch() {
     const m = $("#nx-search");
     if (!m) return;
+    if (m.hasAttribute("hidden")) searchOpener = document.activeElement;
     m.removeAttribute("hidden");
     document.body.classList.add("is-nx-search");
     requestAnimationFrame(() => m.classList.add("is-open"));
@@ -608,6 +611,9 @@
     m.classList.remove("is-open");
     document.body.classList.remove("is-nx-search");
     setTimeout(() => m.setAttribute("hidden", ""), 180);
+    /* back to whatever opened it — the header button, usually */
+    if (searchOpener && searchOpener.focus && document.contains(searchOpener)) searchOpener.focus({ preventScroll: true });
+    searchOpener = null;
   }
   function runSearch(q) {
     const results = $("#nx-search-results");
@@ -625,7 +631,7 @@
         <span class="nx-search__row-meta">${esc(stage.label)} · ${esc(sub.title)}</span>
         <span class="nx-search__row-oneline">${esc(p.oneline)}</span>
       </a>
-    `).join("") : `<div class="nx-search__empty">No matches. Try "disclosure", "streaming", or "consent".</div>`;
+    `).join("") : `<div class="nx-search__empty" role="status">No matches. Try "disclosure", "streaming", or "consent".</div>`;
   }
   function moveSearch(delta) {
     const rows = $$(".nx-search__row");
@@ -1328,88 +1334,298 @@
 })();
 
 /* ============================================================
-   MOBILE NAV — hamburger + slide-down panel
-   Self-contained. Builds from the existing .gnav on any page,
-   so every page gets a working mobile menu with no markup change.
+   MOBILE NAV — menu button + navigation sheet
+   Self-contained. Builds from the existing .gnav on any page, so
+   every page gets the same menu with no markup change.
+
+   ≤ 720px   a full-height sheet that covers the page (phones)
+   721–1420  a drawer from the right edge over a scrim (tablets and
+             narrow desktops, where the centre links are also hidden)
+
+   Desktop reveals each destination's intent on hover (MCP → Connect
+   to AI). Touch has no hover, so the sheet shows that intent as a
+   supporting line under each label instead of losing it. The
+   Components flyout — a hover panel on desktop — becomes an
+   expandable group listing the same destinations.
+
+   The sheet is a dialog: focus moves into it, Tab stays inside it,
+   Escape / the scrim / the close button dismiss it, and focus goes
+   back to the menu button. It never touches the URL, so Back and
+   deep links behave exactly as before.
    ============================================================ */
 (function () {
-  /* Also synchronous: the hamburger is appended to the same
-     right-hand cluster, so adding it after paint moved the same
-     buttons the search control did. */
+  var MQ_SHEET = "(max-width: 1420px)";   /* the centre links are hidden here */
+
+  /* Supporting lines. nav-splitflap.js owns the desktop hover labels and
+     shares them on window.NX_NAV_INTENTS; these few read better as a
+     sentence fragment on their own line than as a swap-in label. */
+  var INTENT_OVERRIDE = { "Design System": "Explore Gaiametry" };
+
+  var ICONS = {
+    chevron: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    caret:   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9.5l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    close:   '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    mail:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>',
+    github:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>',
+    x:       '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z"/></svg>'
+  };
+
+  function esc(t) {
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  /* pages that live under another destination in the menu */
+  var SECTION_OF = { "scenario.html": "practices.html", "sandbox.html": "practices.html" };
+  function here(href) {
+    if (!href) return false;
+    var page = (location.pathname.split("/").pop() || "index-v2.html").toLowerCase();
+    page = SECTION_OF[page] || page;
+    return href.split(/[?#]/)[0].toLowerCase() === page;
+  }
+
+  /* Read synchronously, before nav-splitflap.js replaces each label with
+     its flip-character spans and nav-mega.js rewrites the Components
+     trigger — so the labels and hrefs are the authored ones. */
+  function snapshot(center) {
+    var out = [];
+    if (!center) return out;
+    center.querySelectorAll(".gnav__link").forEach(function (a) {
+      var label = (a.textContent || "").replace(/\s+/g, " ").trim();
+      if (!label) return;
+      var isComponents = label.toLowerCase() === "components" || !!a.closest(".gnav__item");
+      out.push({
+        label: label,
+        href: isComponents ? null : a.getAttribute("href"),
+        components: isComponents,
+        featured: a.classList.contains("gnav__link--featured"),
+        current: a.classList.contains("is-current") || a.getAttribute("aria-current") === "page" ||
+                 (!isComponents && here(a.getAttribute("href")))
+      });
+    });
+    return out;
+  }
+
   function build() {
     var inner = document.querySelector(".gnav__inner");
     if (!inner || document.querySelector(".gnav__toggle")) return;
 
     var center  = inner.querySelector(".gnav__center");
     var actions = inner.querySelector(".gnav__actions");
+    var links   = snapshot(center);
+    var brand   = inner.querySelector(".brand");
 
-    // Hamburger toggle (append to the actions cluster so it sits at the far right)
     var toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "gnav__toggle";
     toggle.setAttribute("aria-label", "Open menu");
     toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", "nx-msheet");
     toggle.innerHTML =
-      '<svg class="gnav__toggle-open" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
-      '<svg class="gnav__toggle-close" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      '<svg class="gnav__toggle-open" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
     (actions || inner).appendChild(toggle);
 
-    // Slide-down panel (fixed to viewport, lives on <body>)
-    var panel = document.createElement("nav");
-    panel.className = "gnav__mobile";
-    panel.setAttribute("aria-label", "Mobile navigation");
+    var sheet = null, panel = null, lastFocus = null, built = false;
 
-    var html = "";
-    if (center) {
-      center.querySelectorAll("a").forEach(function (a) {
-        var ext = a.getAttribute("target") === "_blank"
-          ? ' target="_blank" rel="noopener noreferrer" aria-label="' + a.textContent.trim() + ' (opens in a new tab)"' : '';
-        html += '<a class="gnav__mobile-link" href="' + a.getAttribute("href") + '"' + ext + '>' +
-          a.textContent.trim() +
-          (a.classList.contains("gnav__link--featured") ? '<span class="gnav__badge">Featured</span>' : '') +
-          '<svg class="gnav__mobile-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-          '</a>';
+    function linkRow(l, intents) {
+      var intent = INTENT_OVERRIDE[l.label] || intents[l.label] || "";
+      return '<a class="nx-msheet__link' + (l.current ? " is-current" : "") + '" href="' + esc(l.href) + '"' +
+               (l.current ? ' aria-current="page"' : "") + ">" +
+               '<span class="nx-msheet__text">' +
+                 '<span class="nx-msheet__label">' + esc(l.label) +
+                   (l.featured ? '<span class="nx-msheet__badge">Featured</span>' : "") +
+                 "</span>" +
+                 (intent ? '<span class="nx-msheet__intent">' + esc(intent) + "</span>" : "") +
+               "</span>" +
+               '<span class="nx-msheet__go">' + ICONS.chevron + "</span>" +
+             "</a>";
+    }
+
+    function componentsGroup(l, intents) {
+      var fams = window.NX_NAV_FAMILIES || [
+        { id: "shadcn", label: "ShadCN", rows: [
+          { title: "Basic Components", desc: "Buttons, inputs, cards and the other foundational building blocks.", href: "basic-components.html" },
+          { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for AI-native flows.", href: "library.html" } ] },
+        { id: "material", label: "Material 3.0", rows: [
+          { title: "Basic Components", desc: "Coming soon", href: null },
+          { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.", href: "material-agentic.html" } ] }
+      ];
+      var intent = intents[l.label] || "";
+      var anyCurrent = false;
+      var body = fams.map(function (f) {
+        return '<div class="nx-msheet__fam" role="group" aria-label="' + esc(f.label) + '">' +
+                 '<span class="nx-msheet__famlabel" aria-hidden="true">' + esc(f.label) + "</span>" +
+                 f.rows.map(function (r) {
+                   if (!r.href) {
+                     return '<span class="nx-msheet__sublink is-soon" aria-disabled="true">' +
+                              '<span class="nx-msheet__label">' + esc(r.title) + '<span class="nx-msheet__soon">Soon</span></span>' +
+                            "</span>";
+                   }
+                   var cur = here(r.href); if (cur) anyCurrent = true;
+                   return '<a class="nx-msheet__sublink' + (cur ? " is-current" : "") + '" href="' + esc(r.href) + '"' + (cur ? ' aria-current="page"' : "") + ">" +
+                            '<span class="nx-msheet__label">' + esc(r.title) + "</span>" +
+                            '<span class="nx-msheet__intent">' + esc(r.desc) + "</span>" +
+                          "</a>";
+                 }).join("") +
+               "</div>";
+      }).join("");
+      var open = anyCurrent || l.current;
+      return '<div class="nx-msheet__group' + (open ? " is-open" : "") + '">' +
+               '<button type="button" class="nx-msheet__link nx-msheet__link--group' + (open ? " is-current" : "") + '" aria-expanded="' + open + '" aria-controls="nx-msheet-components">' +
+                 '<span class="nx-msheet__text">' +
+                   '<span class="nx-msheet__label">' + esc(l.label) + "</span>" +
+                   (intent ? '<span class="nx-msheet__intent">' + esc(intent) + "</span>" : "") +
+                 "</span>" +
+                 '<span class="nx-msheet__go nx-msheet__go--caret">' + ICONS.caret + "</span>" +
+               "</button>" +
+               '<div class="nx-msheet__subs" id="nx-msheet-components"' + (open ? "" : " hidden") + ">" + body + "</div>" +
+             "</div>";
+    }
+
+    function quickActions() {
+      /* Same destinations as the header's icon cluster, which is hidden on
+         phones — read from the live header so a per-page change (another
+         share URL, another repo) follows automatically. */
+      var gh = document.querySelector(".gnav__actions .gnav__sdk:not(.gnav__x)");
+      var x  = document.querySelector(".gnav__actions .gnav__x");
+      var ct = document.querySelector(".gnav__actions .gnav__cta");
+      var si = document.querySelector(".gnav__actions .gnav__signup");
+      var html = '<a class="nx-msheet__primary" href="' + esc(si ? si.getAttribute("href") : "signin.html") + '">Sign In</a>';
+      html += '<div class="nx-msheet__quick">';
+      html += '<a class="nx-msheet__qa" href="' + esc(ct ? ct.getAttribute("href") : "contact.html") + '">' + ICONS.mail + "<span>Contact</span></a>";
+      if (gh) html += '<a class="nx-msheet__qa" href="' + esc(gh.getAttribute("href")) + '" target="_blank" rel="noopener" aria-label="GitHub (opens in a new tab)">' + ICONS.github + "<span>GitHub</span></a>";
+      if (x)  html += '<a class="nx-msheet__qa" href="' + esc(x.getAttribute("href")) + '" target="_blank" rel="noopener" aria-label="Share on X (opens in a new tab)">' + ICONS.x + "<span>Share</span></a>";
+      html += "</div>";
+      return html;
+    }
+
+    function create() {
+      if (built) return;
+      built = true;
+      var intents = window.NX_NAV_INTENTS || {};
+      var rows = links.map(function (l) { return l.components ? componentsGroup(l, intents) : linkRow(l, intents); }).join("");
+
+      sheet = document.createElement("div");
+      sheet.className = "nx-msheet";
+      sheet.id = "nx-msheet";
+      sheet.hidden = true;
+      sheet.innerHTML =
+        '<div class="nx-msheet__scrim" data-msheet-close></div>' +
+        '<div class="nx-msheet__panel" role="dialog" aria-modal="true" aria-label="Site menu" tabindex="-1">' +
+          '<div class="nx-msheet__head">' +
+            (brand ? '<a class="nx-msheet__brand" href="' + esc(brand.getAttribute("href") || "index-v2.html") + '" aria-label="Nucleux home">' + (brand.querySelector("svg") ? brand.querySelector("svg").outerHTML : "Nucleux") + "</a>" : "<span></span>") +
+            '<button type="button" class="nx-msheet__close" data-msheet-close aria-label="Close menu">' + ICONS.close + "</button>" +
+          "</div>" +
+          '<nav class="nx-msheet__body" aria-label="Primary">' + rows + "</nav>" +
+          '<div class="nx-msheet__foot">' + quickActions() + "</div>" +
+        "</div>";
+      /* SVG gradient ids in the cloned logo would collide with the header's */
+      sheet.querySelectorAll(".nx-msheet__brand [id]").forEach(function (n) {
+        var old = n.id, nu = old + "-msheet";
+        n.id = nu;
+        sheet.querySelectorAll('.nx-msheet__brand [fill="url(#' + old + ')"]').forEach(function (u) { u.setAttribute("fill", "url(#" + nu + ")"); });
+      });
+      sheet.querySelectorAll(".nx-msheet__body > *").forEach(function (el, i) { el.style.setProperty("--i", i); });
+      document.body.appendChild(sheet);
+      panel = sheet.querySelector(".nx-msheet__panel");
+
+      sheet.addEventListener("click", function (e) {
+        if (e.target.closest("[data-msheet-close]")) { close(); return; }
+        var grp = e.target.closest(".nx-msheet__link--group");
+        if (grp) {
+          var g = grp.parentNode, subs = g.querySelector(".nx-msheet__subs");
+          var willOpen = grp.getAttribute("aria-expanded") !== "true";
+          grp.setAttribute("aria-expanded", String(willOpen));
+          g.classList.toggle("is-open", willOpen);
+          subs.hidden = !willOpen;
+          return;
+        }
+        var a = e.target.closest("a[href]");
+        if (a && a.target !== "_blank") close(true);
+      });
+      sheet.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { e.stopPropagation(); close(); return; }
+        if (e.key !== "Tab") return;
+        var f = Array.prototype.filter.call(panel.querySelectorAll('a[href], button:not([disabled])'), function (el) {
+          return el.offsetParent !== null;
+        });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       });
     }
-    html += '<div class="gnav__mobile-actions"></div>';
-    panel.innerHTML = html;
 
-    // Clone the SDK + Contact actions into the menu (so they stay reachable
-    // even where they are hidden from the top bar on small screens)
-    var mActions = panel.querySelector(".gnav__mobile-actions");
-    if (actions) {
-      actions.querySelectorAll(".gnav__sdk, .gnav__cta").forEach(function (a) {
-        mActions.appendChild(a.cloneNode(true));
-      });
-    }
-    document.body.appendChild(panel);
+    function isOpen() { return !!sheet && sheet.classList.contains("is-open"); }
 
-    function close() {
-      panel.classList.remove("is-open");
-      toggle.setAttribute("aria-expanded", "false");
-      toggle.setAttribute("aria-label", "Open menu");
-      document.body.classList.remove("nav-open");
-    }
     function open() {
-      panel.classList.add("is-open");
-      toggle.setAttribute("aria-expanded", "true");
-      toggle.setAttribute("aria-label", "Close menu");
+      create();
+      lastFocus = document.activeElement;
+      sheet.hidden = false;
       document.body.classList.add("nav-open");
+      toggle.setAttribute("aria-expanded", "true");
+      /* next frame, so the entrance transition runs from the hidden state */
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          sheet.classList.add("is-open");
+          var target = panel.querySelector(".nx-msheet__link.is-current") || panel.querySelector(".nx-msheet__link");
+          (target || panel).focus({ preventScroll: true });
+        });
+      });
     }
-    toggle.addEventListener("click", function () {
-      panel.classList.contains("is-open") ? close() : open();
-    });
-    panel.addEventListener("click", function (e) {
-      if (e.target.closest("a")) close();
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && panel.classList.contains("is-open")) close();
-    });
-    window.addEventListener("resize", function () {
-      if (window.innerWidth > 1420) close();
-    });
+    function close(navigating) {
+      if (!isOpen()) return;
+      sheet.classList.remove("is-open");
+      document.body.classList.remove("nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+      var done = function () { if (!sheet.classList.contains("is-open")) sheet.hidden = true; };
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      reduce ? done() : setTimeout(done, 320);
+      if (!navigating && lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+    }
+
+    toggle.addEventListener("click", function () { isOpen() ? close() : open(); });
+
+    /* Desktop again (centre links visible): the sheet has nothing to add. */
+    var mq = window.matchMedia(MQ_SHEET);
+    var onChange = function () { if (!mq.matches) close(); };
+    mq.addEventListener ? mq.addEventListener("change", onChange) : mq.addListener(onChange);
+
+    /* Back/forward cache restores the page as it was left — never with
+       the menu still covering it. */
+    window.addEventListener("pageshow", function () { if (isOpen()) close(true); });
   }
 
   if (document.querySelector(".gnav__inner")) build();
   else document.addEventListener("DOMContentLoaded", build);
+})();
+
+/* ============================================================
+   CODE BLOCKS — the Copy button stays put while code scrolls
+   Docs and MCP place Copy absolutely INSIDE the scrolling code
+   block, so on a phone it slid away with the first long line and
+   sat on top of the code. Each such block is wrapped once and the
+   button moves to the wrapper: same corner, same look on desktop,
+   but it no longer scrolls with the text. The button's own click
+   handler copies a literal string, so moving it changes nothing
+   about what is copied.
+   ============================================================ */
+(function () {
+  function wrapCodeBlocks() {
+    var btns = document.querySelectorAll(".dc-code > .dc-code__copy, .mcp-code > .mcp-code__copy");
+    Array.prototype.forEach.call(btns, function (btn) {
+      var code = btn.parentNode;
+      if (code.parentNode && code.parentNode.classList.contains("nx-codewrap")) return;
+      var wrap = document.createElement("div");
+      wrap.className = "nx-codewrap";
+      /* the block's own bottom margin moves to the wrapper, so blocks
+         keep the spacing they had between them */
+      var mb = getComputedStyle(code).marginBottom;
+      code.parentNode.insertBefore(wrap, code);
+      wrap.appendChild(code);
+      wrap.appendChild(btn);
+      if (mb && mb !== "0px") { wrap.style.marginBottom = mb; code.style.marginBottom = "0"; }
+      if (!btn.getAttribute("aria-label")) btn.setAttribute("aria-label", "Copy code");
+    });
+  }
+  if (document.readyState !== "loading") wrapCodeBlocks();
+  else document.addEventListener("DOMContentLoaded", wrapCodeBlocks);
 })();

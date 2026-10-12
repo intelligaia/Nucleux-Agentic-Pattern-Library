@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Mobile patterns — Nucleux</title>
+  <meta name="description" content="The Nucleux Material 3.0 agentic patterns on a phone: each pattern in real device frames at real widths, with its desktop-to-mobile parity." />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="nav-mega.css" />
+  <link rel="stylesheet" href="material-tokens.css" />
+  <style>
+    /* ============================================================
+       MOBILE PATTERNS — a review surface for the phone layouts of the
+       Material 3.0 patterns. Left: every pattern, grouped by stage
+       and category. Right: the selected pattern in real device frames
+       at real CSS widths (the iframe IS the phone viewport; nothing
+       is transformed or scaled). Only site tokens are used.
+       ============================================================ */
+    body { background: var(--bg); }
+    .mpx {
+      display: grid; grid-template-columns: 280px minmax(0, 1fr);
+      min-height: calc(100vh - var(--nav-h, 72px));
+    }
+    .mpx-nav {
+      position: sticky; top: var(--nav-h, 72px); align-self: start;
+      height: calc(100vh - var(--nav-h, 72px)); overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 24px 12px 32px 20px;
+    }
+    .mpx-nav__head { display: grid; gap: 2px; padding: 0 8px 14px; }
+    .mpx-nav__title { font-size: 15px; font-weight: 600; color: var(--fg); }
+    .mpx-nav__meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); }
+    .mpx-stage-h { margin: 18px 8px 6px; font-size: 13px; font-weight: 600; color: var(--fg); }
+    .mpx-sub-h { margin: 10px 8px 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-muted); }
+    .mpx-link {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      width: 100%; min-height: 36px; padding: 6px 10px; border: 0; border-radius: 10px;
+      background: transparent; text-align: left; font: inherit; font-size: 14px; color: var(--fg-alt);
+      cursor: pointer; text-decoration: none;
+    }
+    .mpx-link:hover { background: var(--ink-50); color: var(--fg); }
+    .mpx-link[aria-current="page"] { background: rgba(124, 58, 237, .09); color: #4c1d95; font-weight: 600; }
+    .mpx-link:focus-visible { outline: 2px solid #6d28d9; outline-offset: 1px; }
+    .mpx-badge { flex: none; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; }
+    .mpx-badge--ready { background: rgba(124, 58, 237, .12); color: #5b21b6; }
+    .mpx-badge--soon { background: var(--ink-100); color: var(--fg-muted); font-weight: 500; }
+
+    .mpx-main { padding: 32px clamp(20px, 3vw, 48px) 64px; min-width: 0; }
+    .mpx-crumb { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: #6d28d9; }
+    .mpx-title { margin: 0; font-size: clamp(28px, 3vw, 40px); font-weight: 600; letter-spacing: -.025em; line-height: 1.1; color: var(--fg); }
+    .mpx-lede { margin: 14px 0 0; max-width: 68ch; font-size: 16px; line-height: 1.55; color: var(--fg-mid); }
+    .mpx-note { margin: 10px 0 0; max-width: 78ch; font-size: 13.5px; line-height: 1.55; color: var(--fg-muted); }
+    .mpx-note a { color: #6d28d9; text-decoration: none; white-space: nowrap; }
+    .mpx-note a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .mpx-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 26px 0 22px; }
+    .mpx-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 999px; background: var(--ink-50); border: 1px solid var(--border); }
+    .mpx-seg button {
+      min-height: 34px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent;
+      font: inherit; font-size: 13px; color: var(--fg-mid); cursor: pointer; font-variant-numeric: tabular-nums;
+    }
+    .mpx-seg button[aria-checked="true"] { background: var(--surface); color: var(--fg); font-weight: 600; box-shadow: var(--shadow-2); }
+    .mpx-seg button:focus-visible { outline: 2px solid #6d28d9; outline-offset: 1px; }
+    .mpx-seg button .mpx-star { color: #6d28d9; margin-left: 3px; }
+    .mpx-size { font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); }
+
+    .mpx-seg[hidden] { display: none; }
+    .mpx-stage { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+    .mpx-device { margin: 0; min-width: 0; max-width: 100%; }
+    .mpx-device figcaption { margin: 10px 0 14px 4px; max-width: 72ch; font-size: 13px; line-height: 1.5; color: var(--fg-muted); }
+    .mpx-view button[aria-selected="true"] { background: var(--surface); color: var(--fg); font-weight: 600; box-shadow: var(--shadow-2); }
+    /* Frames are shown at true size. A 1092px-wide unfolded screen can
+       be wider than this column, so each stage scrolls on its own
+       instead of widening the page. Nothing is scaled. */
+    .mpx-canvas-wrap, .mpx-phone-wrap { max-width: 100%; overflow-x: auto; padding: 2px 2px 12px; }
+    .mpx-canvas-wrap[hidden], .mpx-phone-wrap[hidden] { display: none; }
+
+    /* ── Live preview: the app window on plain white. No bezel, no
+       system bars — only the window's size. ── */
+    .mpx-canvas {
+      position: relative; width: var(--w, 402px); height: var(--h, 874px);
+      background: #fff; box-shadow: 0 0 0 1px var(--border); border-radius: 14px; overflow: hidden;
+      transition: width 320ms var(--ease-out), height 320ms var(--ease-out);
+    }
+    .mpx-canvas iframe { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+    /* A fold, drawn as a guide: the band the layout keeps clear. */
+    .mpx-guide { position: absolute; z-index: 2; pointer-events: none; }
+    .mpx-guide[hidden] { display: none; }
+    .mpx-guide::before { content: ""; position: absolute; }
+    .mpx-guide[data-axis="v"] { top: 0; bottom: 0; left: calc(var(--pos) - var(--size) / 2); width: var(--size); background: rgba(124, 58, 237, .045); }
+    .mpx-guide[data-axis="v"]::before { top: 0; bottom: 0; left: 50%; border-left: 1px dashed rgba(109, 40, 217, .45); }
+    .mpx-guide[data-axis="h"] { left: 0; right: 0; top: calc(var(--pos) - var(--size) / 2); height: var(--size); background: rgba(124, 58, 237, .045); }
+    .mpx-guide[data-axis="h"]::before { left: 0; right: 0; top: 50%; border-top: 1px dashed rgba(109, 40, 217, .45); }
+
+    /* ── Simulator: the device. A bezel around a screen exactly
+       --w × --h CSS px; the app window is --app wide (the iPhone Duo
+       status rail belongs to the system, not the app). ── */
+    .mpx-phone {
+      --w: 402px; --h: 874px; --app: 402px; --rail: 0px; --kbh: 336px; --sa-t: 62px; --sa-b: 34px;
+      --r-out: 62px; --r-in: 51px;
+      width: max-content; padding: 11px; border-radius: var(--r-out); background: #121214;
+      box-shadow: 0 0 0 1.5px #2b2b30 inset, 0 30px 60px -30px rgba(16, 14, 24, .55);
+    }
+    .mpx-phone[data-chrome="duo"] { --r-out: 44px; --r-in: 34px; }
+    .mpx-phone[data-chrome="android"] { --r-out: 40px; --r-in: 30px; background: #1b1c1f; }
+    .mpx-phone[data-chrome="android"][data-pose="unfolded"],
+    .mpx-phone[data-chrome="android"][data-pose="tabletop"] { --r-out: 28px; --r-in: 18px; }
+    .mpx-screen {
+      position: relative; width: var(--w); height: var(--h);
+      border-radius: var(--r-in); overflow: hidden; background: #fff;
+      transition: width 320ms var(--ease-out), height 320ms var(--ease-out);
+    }
+    .mpx-screen iframe { position: absolute; left: 0; top: 0; display: block; width: var(--app); height: 100%; border: 0; background: #fff; }
+
+    /* iOS status bar + Dynamic Island + home indicator */
+    .mpx-status {
+      position: absolute; left: 0; right: 0; top: 0; height: 54px; z-index: 3; pointer-events: none;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 30px;
+      font: 600 16px/1 var(--font-display); color: #000;
+    }
+    .mpx-time { justify-self: center; }
+    .mpx-island { width: 124px; height: 36px; border-radius: 20px; background: #000; margin-top: 2px; }
+    .mpx-icons { justify-self: center; display: inline-flex; gap: 5px; align-items: center; }
+    .mpx-icons i { display: block; width: 17px; height: 11px; border-radius: 3px; background: #000; }
+    .mpx-icons i:nth-child(1) { width: 17px; clip-path: polygon(0 100%, 100% 0, 100% 100%); border-radius: 1px; }
+    .mpx-icons i:nth-child(2) { width: 15px; border-radius: 8px 8px 2px 2px; clip-path: polygon(50% 100%, 0 0, 100% 0); }
+    .mpx-icons i:nth-child(3) { width: 25px; height: 12px; border-radius: 4px; background: #000; }
+    .mpx-home {
+      position: absolute; left: calc(var(--app) / 2 - 68px); bottom: 8px; z-index: 5; width: 136px; height: 5px;
+      border-radius: 3px; background: #000; pointer-events: none;
+    }
+
+    /* iPhone Duo: the status rail on the trailing edge — camera, time,
+       status and a vertical home indicator. The app never draws here. */
+    .mpx-rail {
+      position: absolute; top: 0; right: 0; bottom: 0; width: var(--rail); z-index: 3; pointer-events: none;
+      display: none; flex-direction: column; align-items: center; gap: 14px; padding: 22px 0;
+      background: #f3f3f6; border-left: 1px solid rgba(0, 0, 0, .06);
+      font: 600 15px/1 var(--font-display); color: #000;
+    }
+    .mpx-rail__lens { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #3a3f52 0 25%, #0b0b0e 30%); box-shadow: 0 0 0 3px #e2e2e7; }
+    .mpx-rail .mpx-icons { flex-direction: column; gap: 7px; }
+    .mpx-rail__home { position: absolute; top: 50%; right: 14px; width: 5px; height: 120px; margin-top: -60px; border-radius: 3px; background: #000; }
+
+    /* Android: status bar with a punch-hole camera, gesture handle. */
+    .mpx-abar {
+      position: absolute; left: 0; right: 0; top: 0; height: 32px; z-index: 3; pointer-events: none;
+      display: none; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 18px;
+      font: 500 13px/1 var(--font-display); color: #1f1f1f;
+    }
+    .mpx-abar__hole { width: 14px; height: 14px; border-radius: 50%; background: #0b0b0e; }
+    .mpx-abar .mpx-icons { justify-self: end; gap: 6px; }
+    .mpx-abar .mpx-icons i { background: #1f1f1f; transform: scale(.85); }
+    .mpx-anav {
+      position: absolute; left: calc(var(--app) / 2 - 54px); bottom: 9px; z-index: 5; width: 108px; height: 4px;
+      border-radius: 2px; background: #1f1f1f; pointer-events: none; display: none;
+    }
+    .mpx-phone[data-chrome="duo"] .mpx-status, .mpx-phone[data-chrome="android"] .mpx-status,
+    .mpx-phone[data-chrome="duo"] .mpx-home, .mpx-phone[data-chrome="android"] .mpx-home { display: none; }
+    .mpx-phone[data-chrome="duo"] .mpx-rail { display: flex; }
+    .mpx-phone[data-chrome="android"] .mpx-abar { display: grid; }
+    .mpx-phone[data-chrome="android"] .mpx-anav { display: block; }
+
+    /* A crease: a hairline where the screen bends flat (inactive), a
+       shaded band where it divides the screen (active). */
+    .mpx-crease { position: absolute; z-index: 2; pointer-events: none; }
+    .mpx-crease[hidden] { display: none; }
+    .mpx-crease[data-axis="v"] { top: 0; bottom: 0; left: calc(var(--pos) - max(var(--size), 2px) / 2); width: max(var(--size), 2px); }
+    .mpx-crease[data-axis="h"] { left: 0; width: var(--app); top: calc(var(--pos) - max(var(--size), 2px) / 2); height: max(var(--size), 2px); }
+    .mpx-crease[data-active="false"] { background: rgba(0, 0, 0, .05); }
+    .mpx-crease[data-axis="v"][data-active="true"] { background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.09) 45%, rgba(0,0,0,.09) 55%, rgba(0,0,0,0)); box-shadow: 0 0 18px rgba(0,0,0,.06); }
+    .mpx-crease[data-axis="h"][data-active="true"] { background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.09) 45%, rgba(0,0,0,.09) 55%, rgba(0,0,0,0)); box-shadow: 0 0 18px rgba(0,0,0,.06); }
+
+    /* The on-screen keyboard: schematic, raised when a field inside the
+       device takes focus. It spans the app window only. The page is
+       told its height and reflows above it, as with a real keyboard. */
+    .mpx-kb {
+      position: absolute; left: 0; width: var(--app); bottom: 0; z-index: 4; height: var(--kbh);
+      padding: 40px 4px var(--sa-b); background: #d1d3d9; box-sizing: border-box;
+      transform: translateY(100%); visibility: hidden;
+      transition: transform 280ms cubic-bezier(.2, .8, .2, 1), visibility 0s linear 280ms;
+      display: grid;
+    }
+    .mpx-screen[data-kb="true"] .mpx-kb { transform: none; visibility: visible; transition: transform 280ms cubic-bezier(.2, .8, .2, 1), visibility 0s; }
+    .mpx-kb__keys { display: grid; grid-template-rows: repeat(4, 1fr); gap: 11px; padding: 6px 2px; }
+    .mpx-kb__row { display: flex; gap: 6px; justify-content: center; }
+    .mpx-kb__row span { flex: 0 1 34px; height: 100%; min-height: 30px; border-radius: 5px; background: #fff; box-shadow: 0 1px 0 #898a8d; }
+    .mpx-kb__row .w { flex-basis: 46px; background: #abb0ba; }
+    .mpx-kb__row .s { flex: 1 1 auto; }
+    .mpx-kb::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 36px; background: #e3e4e8; border-bottom: 1px solid #c4c6cc; }
+    .mpx-kb__done {
+      position: absolute; right: 8px; top: 3px; z-index: 1; height: 30px; padding: 0 12px; border: 0; border-radius: 15px;
+      background: transparent; color: #0a84ff; font: 600 15px/1 var(--font-display); cursor: pointer;
+    }
+    .mpx-phone[data-chrome="duo"] .mpx-kb__row span { flex-basis: 40px; }
+    .mpx-phone[data-chrome="android"] .mpx-kb { background: #e8eaed; }
+    .mpx-phone[data-chrome="android"] .mpx-kb::before { background: #f1f3f4; border-bottom-color: #dadce0; }
+    .mpx-phone[data-chrome="android"] .mpx-kb__row span { border-radius: 8px; box-shadow: none; }
+    .mpx-phone[data-chrome="android"] .mpx-kb__row .w { background: #d3e3fd; }
+    .mpx-phone[data-chrome="android"] .mpx-kb__done { color: #0b57d0; font-weight: 500; }
+    .mpx-phone[data-chrome="android"][data-pose="unfolded"] .mpx-kb__row span,
+    .mpx-phone[data-chrome="android"][data-pose="tabletop"] .mpx-kb__row span { flex-basis: 64px; }
+    @media (prefers-reduced-motion: reduce) { .mpx-kb, .mpx-screen, .mpx-canvas { transition: none; } }
+
+    .mpx-empty { max-width: 520px; padding: 28px; border: 1px dashed var(--border-strong); border-radius: var(--r-5); color: var(--fg-mid); }
+    .mpx-empty__t { margin: 0 0 6px; font-weight: 600; color: var(--fg); }
+    .mpx-empty p:last-child { margin: 0; font-size: 14px; line-height: 1.55; }
+
+    .mpx-parity { margin-top: 56px; max-width: 1100px; }
+    .mpx-parity h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.015em; color: var(--fg); }
+    .mpx-parity__lede { margin: 8px 0 18px; font-size: 14.5px; color: var(--fg-mid); }
+    .mpx-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-4); background: var(--surface); }
+    .mpx-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+    .mpx-table th, .mpx-table td { padding: 10px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+    .mpx-table th { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; color: var(--fg-muted); background: var(--ink-25); }
+    .mpx-table tr:last-child td { border-bottom: 0; }
+    .mpx-table td:first-child { font-weight: 600; color: var(--fg); white-space: nowrap; }
+    .mpx-table td { color: var(--fg-mid); }
+
+    @media (max-width: 1100px) {
+      .mpx { grid-template-columns: 1fr; }
+      .mpx-nav { position: static; height: auto; max-height: 50vh; border-right: 0; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+        <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M38.0781 11.5382C38.0781 5.9997 40.5397 3.23047 45.4627 3.23047H51.9243V6.92278H46.155C43.5397 6.92278 42.232 8.46124 42.232 11.5382C42.232 14.6151 43.5397 16.1535 46.155 16.1535H51.9243V19.8459H45.4627C40.5397 19.8459 38.0781 17.0766 38.0781 11.5382Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M54.2344 3.23047V19.8459H65.7728V16.1535H58.3882V3.23047H54.2344Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M68.0781 3.23047V19.8459H80.7704V16.1535H72.232V13.1535H79.8474V9.92278H72.232V6.92278H80.7704V3.23047H68.0781Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M83.5391 3V14.0769C83.5391 18.0769 85.8468 20.0769 90.4621 20.0769C95.0775 20.0769 97.3852 18.0769 97.3852 14.0769V3H93.2314V13.6154C93.2314 15.4615 92.3083 16.3846 90.4621 16.3846C88.616 16.3846 87.6929 15.4615 87.6929 13.6154V3H83.5391Z" fill="url(#paint0_linear_mark)"/>
+        <path d="M99.6959 3H104.773L108.465 8.53846L112.157 3H117.696L112.157 11.3077L117.696 19.6154H112.157L108.465 14.0769L104.773 19.6154H99.2344L105.234 11.3077L99.6959 3Z" fill="url(#paint1_linear_mark)"/>
+        <defs>
+        <linearGradient id="paint0_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        </defs>
+        </svg>
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item">
+          <a class="gnav__link is-current" href="#components">Components</a>
+        </div>
+        <a class="gnav__link" href="practices.html">Scenarios</a>
+        <a class="gnav__link" href="docs.html">Docs</a>
+        <a class="gnav__link" href="mcp.html">MCP</a>
+        <a class="gnav__link" href="labs.html">Labs</a>
+        <a class="gnav__link gnav__link--featured" href="design-system.html">Design System</a>
+        <a class="gnav__link" href="blog.html">Blog</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact.html">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="mpx">
+    <aside class="mpx-nav" aria-label="Mobile patterns">
+      <div class="mpx-nav__head">
+        <span class="mpx-nav__title">Mobile patterns</span>
+        <span class="mpx-nav__meta">iPhone 18 Pro · iPhone Duo · Galaxy Fold</span>
+      </div>
+      <nav class="mpx-nav__list" id="mpx-list"></nav>
+    </aside>
+
+    <main class="mpx-main" id="mpx-main">
+      <header class="mpx-hero">
+        <p class="mpx-crumb" id="mpx-crumb">Initially · Entry Points</p>
+        <h1 class="mpx-title" id="mpx-title">Initial CTA</h1>
+        <p class="mpx-lede" id="mpx-lede"></p>
+        <p class="mpx-note">
+          One adaptive component. Live preview gives the real pattern page the device’s window size on a
+          plain canvas; Simulator puts the product on the device itself, with its system bars, folds and
+          keyboard. The layout follows the window, never the device name — nothing is scaled.
+          <a id="mpx-desktop" href="material-pattern.html?id=initial-cta">Open the desktop pattern ↗</a>
+        </p>
+      </header>
+
+      <div class="mpx-bar" id="mpx-bar" role="toolbar" aria-label="Device">
+        <div class="mpx-seg" role="radiogroup" aria-label="Device" id="mpx-dev"></div>
+        <div class="mpx-seg" role="radiogroup" aria-label="Pose" id="mpx-pose" hidden></div>
+        <div class="mpx-seg" role="radiogroup" aria-label="Viewport width" id="mpx-widths"></div>
+        <div class="mpx-seg" role="radiogroup" aria-label="Text size" id="mpx-text"></div>
+        <span class="mpx-size" id="mpx-size" aria-live="polite"></span>
+      </div>
+
+      <div class="mpx-stage" id="mpx-stage">
+        <figure class="mpx-device" id="mpx-device">
+          <div class="mpx-seg mpx-view" role="tablist" aria-label="What is shown">
+            <button type="button" role="tab" id="mpx-tab-preview" aria-selected="true" aria-controls="mpx-canvas-wrap" data-view="preview">Live preview</button>
+            <button type="button" role="tab" id="mpx-tab-sim" aria-selected="false" aria-controls="mpx-phone-wrap" data-view="sim" tabindex="-1">Simulator</button>
+          </div>
+          <figcaption id="mpx-view-cap"></figcaption>
+          <div class="mpx-canvas-wrap" id="mpx-canvas-wrap" role="tabpanel" aria-labelledby="mpx-tab-preview">
+            <div class="mpx-canvas" id="mpx-canvas">
+              <iframe data-mode="preview" title="Initial CTA, Live Preview, at the device's window size" loading="eager"></iframe>
+              <span class="mpx-guide" aria-hidden="true" hidden></span>
+            </div>
+          </div>
+          <div class="mpx-phone-wrap" id="mpx-phone-wrap" role="tabpanel" aria-labelledby="mpx-tab-sim" hidden>
+            <div class="mpx-phone" id="mpx-phone" data-chrome="ios" data-pose="phone">
+              <div class="mpx-screen" id="mpx-screen">
+                <iframe data-mode="sim" title="Initial CTA, simulator, on the device" loading="eager"></iframe>
+                <div class="mpx-status" aria-hidden="true"><span class="mpx-time">9:41</span><span class="mpx-island"></span><span class="mpx-icons"><i></i><i></i><i></i></span></div>
+                <div class="mpx-abar" aria-hidden="true"><span>9:41</span><span class="mpx-abar__hole"></span><span class="mpx-icons"><i></i><i></i><i></i></span></div>
+                <div class="mpx-rail" aria-hidden="true"><span class="mpx-rail__lens"></span><span>9:41</span><span class="mpx-icons"><i></i><i></i><i></i></span><span class="mpx-rail__home"></span></div>
+                <span class="mpx-crease" aria-hidden="true" hidden></span>
+                <div class="mpx-kb" aria-hidden="true"><div class="mpx-kb__keys"></div><button type="button" class="mpx-kb__done" tabindex="-1">Done</button></div>
+                <span class="mpx-home" aria-hidden="true"></span>
+                <span class="mpx-anav" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </figure>
+        <div class="mpx-empty" id="mpx-empty" hidden>
+          <p class="mpx-empty__t">Not adapted for mobile yet</p>
+          <p>This pattern still has its desktop layout only. Initial CTA is the first pattern made fully
+          responsive; the others follow the same approach.</p>
+        </div>
+      </div>
+
+      <section class="mpx-parity" id="mpx-parity" aria-labelledby="mpx-parity-t">
+        <h2 id="mpx-parity-t">Desktop → mobile parity</h2>
+        <p class="mpx-parity__lede">Every desktop capability, where it lives on a phone, and how it is reached. Nothing is removed.</p>
+        <div class="mpx-table-wrap">
+          <table class="mpx-table">
+            <thead><tr><th scope="col">Capability</th><th scope="col">Desktop</th><th scope="col">Mobile &amp; foldables</th><th scope="col">Mobile interaction</th></tr></thead>
+            <tbody id="mpx-parity-rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="material-patterns.js"></script>
+  <script src="mobile-patterns.js?v=2"></script>
+  <script src="global.js"></script>
+  <script src="nav-splitflap.js"></script>
+  <script src="nav-mega.js"></script>
+</body>
+</html>

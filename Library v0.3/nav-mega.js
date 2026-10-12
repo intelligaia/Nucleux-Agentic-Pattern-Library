@@ -74,6 +74,10 @@
   ];
 
   var TITLE = 'Building blocks for agentic experiences';
+  /* Shared with the mobile menu (global.js): the Components flyout is a
+     hover panel on desktop, so on touch its destinations are listed in
+     the menu sheet instead. One definition, two presentations. */
+  window.NX_NAV_FAMILIES = FAMILIES;
 
   function rowHTML(row) {
     /* A row with no href is rendered as a span, not a disabled link: there

@@ -1,0 +1,727 @@
+/* ============================================================
+   NUCLEUX — AI-READINESS AUDIT SHOWCASE (homepage, section 2b)
+   Everything is scoped to #audit / .ax-*. Built from the site's
+   own tokens (styles.css + the landing light theme): --fg*,
+   --border, --surface, --ink-*, --r-*, --s-*, --ease-out and the
+   #6d28d9 violet the light theme uses for its eyebrows.
+
+   One motion system for the whole section:
+     curve   --ax-ease  (the site's --ease-out)
+     step    90ms between headline parts
+     travel  12px for blocks, one line-height for headline lines
+     score   900ms, digits and scale marker on the same value/curve
+   ============================================================ */
+#audit {
+  --ax-accent: #6d28d9;
+  --ax-accent-soft: rgba(109, 40, 217, 0.07);
+  --ax-ease: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  --ax-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --ax-step: 90ms;
+  position: relative;
+}
+body.landing-dark.landing-light #audit { padding-top: 55px; padding-bottom: 55px; }
+
+.ax {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-areas: "head panel" "foot panel";
+  grid-template-rows: auto auto;
+  column-gap: clamp(40px, 6vw, 96px);
+  align-items: center;
+}
+.ax__head { grid-area: head; align-self: end; }
+.ax__foot { grid-area: foot; align-self: start; }
+.ax-panel { grid-area: panel; }
+
+/* ── left: the claim ── */
+.ax__head { max-width: 520px; }
+.ax__eyebrow { display: block; color: var(--ax-accent); margin-bottom: var(--s-3); }
+.ax__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--fg);
+  margin: 0;
+  text-wrap: balance;
+}
+.ax-line { display: block; overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.ax-line__in { display: block; }
+.ax__title-em { color: var(--fg-mid); }
+.ax__sub {
+  margin: 26px 0 0;
+  font-size: 16px; line-height: 1.55;
+  color: var(--fg-mid);
+  max-width: 46ch;
+}
+.ax__foot { margin-top: var(--s-8); max-width: 520px; }
+.ax-cta { gap: 10px; }
+.ax-cta__arrow { transition: transform var(--dur-2) var(--ax-ease); }
+.ax-cta:hover .ax-cta__arrow, .ax-cta:focus-visible .ax-cta__arrow { transform: translate(2px, -2px); }
+.ax-cta--pending {
+  display: inline-flex; align-items: center;
+  padding: 13px 21px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 26px;
+  font-size: 14px; font-weight: 500;
+  color: var(--fg-mid);
+}
+.ax__note {
+  margin: var(--s-4) 0 0;
+  font-size: 13px; line-height: 1.5;
+  color: var(--fg-muted);
+  max-width: 44ch;
+}
+
+/* ── right: the instrument ── */
+.ax-panel {
+  margin: 0;
+  padding: 28px 32px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-6);
+  box-shadow: var(--shadow-2);
+}
+.ax-panel__top {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Shared button reset for the three explainable values. */
+.ax-score, .ax-metric {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit; color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-4);
+  cursor: help;
+  -webkit-tap-highlight-color: transparent;
+}
+.ax-score:focus-visible, .ax-metric:focus-visible, .ax-method__btn:focus-visible {
+  outline: 2px solid var(--ax-accent); outline-offset: 3px;
+}
+
+.ax-score { margin: 18px 0 0; padding: 0; }
+.ax-score__num {
+  display: flex; align-items: baseline; gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(60px, 6.4vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+.ax-score__of {
+  font-size: 0.26em; font-weight: 500; letter-spacing: 0;
+  color: var(--fg-muted);
+}
+.ax-score__label {
+  display: block; margin-top: 6px;
+  font-size: 15px; font-weight: 500; color: var(--fg-alt);
+}
+
+/* Odometer: each digit is a window onto a 0–9 reel. Decimal point
+   is a plain character between windows, so it never moves. */
+.ax-odo { display: inline-flex; align-items: flex-start; }
+.ax-odo__col {
+  display: inline-block;
+  height: 1.06em; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+}
+.ax-odo__reel {
+  display: flex; flex-direction: column;
+  transform: translateY(calc(var(--d) * -10%));
+}
+.ax-odo__reel > span { height: 1.06em; line-height: 1.06em; text-align: center; }
+.ax-odo__sep { line-height: 1.06em; }
+
+/* ── the scale ── */
+.ax-scale {
+  position: relative;
+  margin-top: 26px;
+  height: 78px;
+}
+.ax-scale__zone {
+  position: absolute; top: 0; height: 40px;
+  left: calc(var(--thr) * 1%); right: 0;
+  background: var(--ax-accent-soft);
+  border-radius: 0 var(--r-3) 0 0;
+}
+.ax-scale__zone span {
+  position: absolute; top: 6px; right: 8px;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em;
+  color: var(--ax-accent);
+}
+.ax-scale__track {
+  position: absolute; left: 0; right: 0; top: 34px; height: 6px;
+  border-radius: 3px;
+  background: var(--ink-100);
+  overflow: hidden;
+  transform-origin: left center;
+}
+.ax-scale__fill {
+  position: absolute; inset: 0;
+  background: var(--ax-accent);
+  transform-origin: left center;
+  transform: scaleX(calc(var(--v) / 100));
+}
+.ax-scale__thr {
+  position: absolute; top: 0; height: 48px;
+  left: calc(var(--thr) * 1%);
+}
+.ax-scale__thr-line {
+  position: absolute; left: -0.75px; top: 0; bottom: 0; width: 1.5px;
+  background: var(--fg);
+}
+/* The marker rides a full-width layer translated by --v%, so the
+   fill and the marker share one number and cannot disagree. */
+.ax-scale__pos {
+  position: absolute; left: 0; right: 0; top: 0; height: 48px;
+  transform: translateX(calc(var(--v) * 1%));
+  pointer-events: none;
+}
+.ax-scale__dot {
+  position: absolute; left: -8px; top: 29px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--surface);
+  border: 4px solid var(--ax-accent);
+  box-shadow: 0 1px 3px rgba(12, 12, 10, 0.18);
+}
+.ax-scale__val {
+  position: absolute; left: 0; top: 6px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  color: var(--fg);
+}
+.ax-scale__ticks {
+  position: absolute; left: 0; right: 0; top: 54px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted);
+}
+.ax-scale__end { position: absolute; left: 0; top: 0; }
+.ax-scale__end--max { left: auto; right: 0; }
+.ax-scale__thr-label {
+  position: absolute; top: 0;
+  right: calc((100 - var(--thr)) * 1%);
+  padding-right: 6px;
+  white-space: nowrap;
+  color: var(--fg-mid);
+}
+
+.ax-tier {
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+  margin: 10px 0 0;
+  padding: 5px 11px 5px 9px;
+  border-radius: 999px;
+  background: var(--ax-accent-soft);
+  color: var(--ax-accent);
+  font-size: 13px; font-weight: 600;
+}
+.ax-tier__rule { font-weight: 500; color: var(--fg-mid); }
+
+/* ── supporting metrics ── */
+.ax-panel__metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px;
+  margin-top: 24px; padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.ax-metric {
+  padding: 8px 10px; margin: 0 -10px;
+  width: calc(100% + 20px);
+  transition: background-color var(--dur-2) var(--ax-ease), transform var(--dur-2) var(--ax-spring);
+}
+.ax-metric:hover, .ax-metric.is-hint { background: var(--ink-50); transform: translateY(-1px); }
+.ax-metric__num {
+  display: flex; align-items: baseline; gap: 6px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.6vw, 36px); font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.035em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.ax-metric__of { font-size: 0.42em; font-weight: 500; letter-spacing: 0; color: var(--fg-muted); }
+.ax-metric__label { display: block; margin-top: 4px; font-size: 13.5px; color: var(--fg-mid); }
+.ax-pop { display: inline-flex; }
+.ax-pop__ch { display: inline-block; }
+
+/* ── hint: hover, focus, or tap ── */
+.ax-hint {
+  position: absolute; z-index: 3;
+  left: 0; top: calc(100% + 8px);
+  width: max-content; max-width: min(280px, 80vw);
+  padding: 8px 11px;
+  border-radius: var(--r-3);
+  background: var(--ink-950); color: var(--ink-0);
+  font-size: 12.5px; font-weight: 450; line-height: 1.45; letter-spacing: 0;
+  text-align: left;
+  box-shadow: var(--shadow-3);
+  opacity: 0; transform: translateY(-4px); visibility: hidden;
+  transition: opacity var(--dur-1) var(--ease), transform var(--dur-2) var(--ax-ease), visibility 0s linear var(--dur-2);
+  pointer-events: none;
+}
+.ax-metric .ax-hint { left: 10px; }
+.ax-metric + .ax-metric .ax-hint { left: auto; right: 10px; }
+.ax-score:hover .ax-hint, .ax-score:focus-visible .ax-hint, .ax-score.is-hint .ax-hint,
+.ax-metric:hover .ax-hint, .ax-metric:focus-visible .ax-hint, .ax-metric.is-hint .ax-hint {
+  opacity: 1; transform: none; visibility: visible;
+  transition: opacity var(--dur-1) var(--ease), transform var(--dur-2) var(--ax-ease), visibility 0s;
+}
+.ax-score .ax-hint { top: auto; bottom: calc(100% + 6px); }
+
+/* ── methodology ── */
+.ax-method { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.ax-nw { white-space: nowrap; }
+.ax-method__line > span { display: block; }
+.ax-method__line {
+  margin: 0;
+  font-family: var(--font-mono); font-size: 11.5px; line-height: 1.6;
+  color: var(--fg-mid);
+}
+.ax-method__btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 8px 0 0 -6px; padding: 4px 6px;
+  font: inherit; font-size: 13px; font-weight: 500; color: var(--fg);
+  background: none; border: 0; border-radius: var(--r-2);
+  cursor: pointer;
+}
+.ax-method__btn:hover { color: var(--ax-accent); }
+.ax-method__chev { transition: transform var(--dur-2) var(--ax-ease); }
+.ax-method__btn[aria-expanded="true"] .ax-method__chev { transform: rotate(180deg); }
+.ax-method__body {
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ax-ease);
+}
+.ax-method__body.is-open { grid-template-rows: 1fr; }
+.ax-method__inner { overflow: hidden; }
+.ax-method__inner p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--fg-mid); max-width: 62ch; }
+.ax-method__inner p:first-child { margin-top: 6px; }
+.ax-method__inner code { font-family: var(--font-mono); font-size: 12px; color: var(--fg-alt); }
+
+.ax-sr {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ============================================================
+   THE REVEAL — only when JS has armed it (never under reduced
+   motion). Armed = start positions; playing = final positions,
+   reached through one timeline of delays.
+     0–400    eyebrow, headline lines, description
+     360–800  panel, track, threshold
+     800–1700 score digits + marker + fill together
+     1600     tier
+     1700–    supporting metrics pop in
+     2100     methodology, CTA
+   ============================================================ */
+#audit.is-armed .ax-in { opacity: 0; transform: translateY(12px); }
+#audit.is-armed .ax-line__in { transform: translateY(105%); }
+#audit.is-armed .ax-scale__track { transform: scaleX(0); }
+#audit.is-armed .ax-scale__thr,
+#audit.is-armed .ax-scale__ticks,
+#audit.is-armed .ax-scale__zone { opacity: 0; }
+#audit.is-armed .ax-scale__fill { transform: scaleX(0); }
+#audit.is-armed .ax-scale__pos { transform: translateX(0); opacity: 0; }
+#audit.is-armed .ax-odo__reel { transform: translateY(0); }
+#audit.is-armed .ax-tier { opacity: 0; transform: translateY(6px); }
+#audit.is-armed .ax-pop__ch { opacity: 0; transform: translateY(0.4em); filter: blur(4px); }
+#audit.is-armed .ax-late { opacity: 0; transform: translateY(8px); }
+
+#audit.is-playing .ax-in {
+  opacity: 1; transform: none;
+  transition: opacity 560ms var(--ax-ease), transform 640ms var(--ax-ease);
+  transition-delay: calc(var(--t, 0) * var(--ax-step));
+}
+#audit.is-playing .ax-line__in {
+  transform: none;
+  transition: transform 640ms var(--ax-ease);
+  transition-delay: calc(var(--t, 0) * var(--ax-step));
+}
+#audit.is-playing .ax-scale__track { transform: none; transition: transform 520ms var(--ax-ease) 420ms; }
+#audit.is-playing .ax-scale__thr,
+#audit.is-playing .ax-scale__ticks,
+#audit.is-playing .ax-scale__zone { opacity: 1; transition: opacity 360ms var(--ease) 620ms; }
+#audit.is-playing .ax-scale__fill {
+  transform: scaleX(calc(var(--v) / 100));
+  transition: transform 900ms var(--ax-ease) 800ms;
+}
+#audit.is-playing .ax-scale__pos {
+  transform: translateX(calc(var(--v) * 1%)); opacity: 1;
+  transition: transform 900ms var(--ax-ease) 800ms, opacity 200ms var(--ease) 800ms;
+}
+#audit.is-playing .ax-odo__reel {
+  transform: translateY(calc(var(--d) * -10%));
+  transition: transform 900ms var(--ax-ease);
+  transition-delay: calc(800ms + var(--i) * 40ms);
+}
+#audit.is-playing .ax-tier { opacity: 1; transform: none; transition: opacity 360ms var(--ease) 1600ms, transform 420ms var(--ax-ease) 1600ms; }
+#audit.is-playing .ax-pop__ch {
+  opacity: 1; transform: none; filter: none;
+  transition: opacity 360ms var(--ease), transform 420ms var(--ax-ease), filter 360ms var(--ease);
+  transition-delay: calc(1700ms + var(--m, 0) * 120ms + var(--i) * 40ms);
+}
+.ax-metric + .ax-metric { --m: 1; }
+#audit.is-playing .ax-late { opacity: 1; transform: none; transition: opacity 420ms var(--ease) 2050ms, transform 520ms var(--ax-ease) 2050ms; }
+
+/* ── responsive ── */
+@media (max-width: 980px) {
+  .ax { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "panel" "foot"; row-gap: 32px; }
+  .ax__head { max-width: 640px; }
+  .ax__foot { margin-top: 0; }
+}
+@media (max-width: 560px) {
+  .ax-panel { padding: 22px 18px 18px; border-radius: var(--r-5); }
+  .ax-score__num { font-size: 64px; }
+  .ax-scale__zone span { display: none; }
+  .ax-tier__rule { display: none; }
+  .ax-panel__metrics { gap: 8px 14px; }
+  .ax-metric__num { font-size: 28px; }
+  .ax-hint { max-width: min(260px, 78vw); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ax-metric, .ax-cta__arrow, .ax-method__chev, .ax-method__body, .ax-hint { transition: none !important; }
+  .ax-metric:hover, .ax-metric.is-hint { transform: none; }
+}
+
+/* ============================================================
+   CONCEPT LAYOUT (8 Oct) — same structure as the other homepage
+   sections: label, heading and description on the left, the
+   audit report as one wide panel underneath. The panel reads in a
+   single row (score · scale · supporting metrics) with a slim
+   footer, so the section is shorter than the two-column version.
+   ============================================================ */
+.ax.ax--stack { display: block; }
+.ax--stack .ax__head { max-width: 760px; margin-bottom: var(--s-10); }
+.ax--stack .ax__title { max-width: 38ch; }
+.ax--stack .ax__sub { max-width: 620px; }
+
+.ax--stack .ax-panel { padding: 26px 32px 0; }
+.ax-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: clamp(28px, 4vw, 56px);
+}
+.ax--stack .ax-score { margin: 0; width: auto; }
+.ax--stack .ax-score__num { font-size: clamp(56px, 5.2vw, 80px); }
+.ax--stack .ax-scale { margin-top: 0; }
+.ax--stack .ax-tier { margin-top: 4px; }
+.ax--stack .ax-panel__metrics {
+  grid-template-columns: auto auto;
+  column-gap: 20px;
+  margin: 0; padding: 0 0 0 clamp(20px, 3vw, 36px);
+  border-top: 0;
+  border-left: 1px solid var(--border);
+  align-self: stretch; align-content: center;
+}
+.ax--stack .ax-metric { width: auto; margin: 0; }
+
+.ax--stack .ax-method { margin-top: 22px; padding-top: 0; }
+.ax-method__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px 32px;
+  padding: 14px 0 16px;
+}
+.ax-method__text { min-width: 0; }
+.ax--stack .ax-method__line { white-space: normal; }
+.ax--stack .ax__note { margin: 3px 0 0; font-size: 12.5px; max-width: none; }
+.ax-method__acts { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.ax--stack .ax-method__btn { margin: 0; }
+.ax--stack .ax-cta.btn { padding: 9px 16px; font-size: 13px; }
+.ax--stack .ax-cta--pending { padding: 8px 15px; font-size: 13px; }
+.ax--stack .ax-method__body .ax-method__inner { padding-bottom: 18px; }
+.ax--stack .ax-method__inner p:first-child { margin-top: 0; }
+
+@media (max-width: 1180px) {
+  .ax-row { grid-template-columns: auto minmax(0, 1fr); row-gap: 18px; }
+  .ax--stack .ax-panel__metrics {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    column-gap: 48px;
+    padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--border);
+  }
+}
+@media (max-width: 760px) {
+  .ax-row { grid-template-columns: minmax(0, 1fr); }
+  .ax--stack .ax-panel__metrics { grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  .ax-method__bar { flex-direction: column; align-items: flex-start; }
+  .ax-method__acts { flex-wrap: wrap; }
+}
+@media (max-width: 560px) {
+  .ax--stack .ax-panel { padding: 20px 18px 0; }
+  .ax--stack .ax-score__num { font-size: 60px; }
+}
+/* fixes after first render */
+.ax-method__body[hidden] { display: none; }            /* hidden must win over display:grid */
+.ax--stack .ax-method__body .ax-method__inner { padding-bottom: 0; }
+.ax--stack .ax-method__body.is-open .ax-method__inner > p:last-child { margin-bottom: 18px; }
+.ax--stack .ax__head { max-width: 960px; }
+.ax--stack .ax__title { max-width: none; }
+.ax--stack .ax-scale__zone span { display: none; }     /* the tier pill says it; the marker needs the room */
+.ax--stack .ax-method__line { font-size: 11px; }
+.ax--stack .ax-method__line > span { display: inline; } /* the 2-column version stacks these; here it is one line */
+.ax--stack .ax-method__btn { margin-left: -6px; }
+@media (max-width: 1180px) {
+  .ax-method__bar { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+/* methodology line + note removed (user, 8 Oct): the strip is just the two actions */
+.ax-method__bar { justify-content: flex-start; padding: 12px 0 14px; }
+
+/* ============================================================
+   NUMBER POP-IN — from transitions.dev (MIT, Jakub Antalik,
+   https://transitions.dev/detail.html?t=number-pop-in), added with
+   `npx transitions-dev add number-pop-in`. The .t-* CSS below is the
+   snippet as shipped; its motion tokens are scoped to this section
+   instead of :root so they cannot reach anything else on the page.
+   Used for all three audit scores (8 Oct, user request).
+   ============================================================ */
+#audit {
+  --digit-dur: 500ms;
+  --digit-distance: 8px;
+  --digit-stagger: 70ms;
+  --digit-blur: 2px;
+  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --digit-dir-x: 0;
+  --digit-dir-y: 1;
+}
+
+@keyframes t-digit-pop-in {
+  0%   {
+    transform: translate(
+      calc(var(--digit-distance) * var(--digit-dir-x)),
+      calc(var(--digit-distance) * var(--digit-dir-y))
+    );
+    opacity: 0;
+    filter: blur(var(--digit-blur));
+  }
+  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+}
+
+.t-digit-group {
+  display: inline-flex;
+  align-items: baseline;
+}
+.t-digit {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+.t-digit-group.is-animating .t-digit {
+  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+}
+.t-digit-group.is-animating .t-digit[data-stagger="1"] {
+  animation-delay: var(--digit-stagger);
+}
+.t-digit-group.is-animating .t-digit[data-stagger="2"] {
+  animation-delay: calc(var(--digit-stagger) * 2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-digit-group .t-digit { animation: none !important; }
+}
+
+/* Integration: hold the digits back until their beat — only when the
+   reveal is armed, never under reduced motion. Tokens are the shipped
+   defaults for all three scores. */
+#audit.is-armed .t-digit-group:not(.is-animating) .t-digit { opacity: 0; }
+.ax-digits { font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   MEASUREMENT BEAT (8 Oct) — the scale waits for its own trigger.
+   .is-playing reveals the heading and the panel; .is-measuring (set
+   when the panel row is half in view) runs the bar from 0 to the
+   score. Until then the bar is held at 0 even while playing.
+   Delays below are from the moment the scale starts.
+   ============================================================ */
+#audit.is-armed:not(.is-measuring) .ax-scale__track { transform: scaleX(0); }
+#audit.is-armed:not(.is-measuring) .ax-scale__fill { transform: scaleX(0); }
+#audit.is-armed:not(.is-measuring) .ax-scale__pos { transform: translateX(0); opacity: 0; }
+#audit.is-armed:not(.is-measuring) .ax-scale__thr,
+#audit.is-armed:not(.is-measuring) .ax-scale__ticks,
+#audit.is-armed:not(.is-measuring) .ax-scale__zone { opacity: 0; }
+#audit.is-armed:not(.is-measuring) .ax-tier { opacity: 0; transform: translateY(6px); }
+
+#audit.is-measuring .ax-scale__track { transform: none; transition: transform 420ms var(--ax-ease) 0ms; }
+#audit.is-measuring .ax-scale__thr,
+#audit.is-measuring .ax-scale__ticks,
+#audit.is-measuring .ax-scale__zone { opacity: 1; transition: opacity 320ms var(--ease) 180ms; }
+#audit.is-measuring .ax-scale__fill {
+  transform: scaleX(calc(var(--v) / 100));
+  transition: transform 1400ms var(--ax-slide) 350ms;
+}
+#audit.is-measuring .ax-scale__pos {
+  transform: translateX(calc(var(--v) * 1%)); opacity: 1;
+  transition: transform 1400ms var(--ax-slide) 350ms, opacity 200ms var(--ease) 350ms;
+}
+#audit.is-measuring .ax-tier { opacity: 1; transform: none; transition: opacity 360ms var(--ease) 1500ms, transform 420ms var(--ax-ease) 1500ms; }
+/* The bar's slide: an even ease-out (cubic), so the travel to the score
+   is visible rather than mostly spent in the first few frames. */
+#audit { --ax-slide: cubic-bezier(0.33, 1, 0.68, 1); }
+
+/* Second headline line set smaller (user, 8 Oct): it reads as the
+   follow-on to the claim, about two-thirds of the title size. */
+.ax--stack .ax__title-em { font-size: 0.64em; line-height: 1.2; letter-spacing: -0.015em; }
+.ax--stack .ax__title .ax-line + .ax-line { margin-top: 0.15em; }
+
+/* ============================================================
+   SUBTLE GROUND (8 Oct) — a soft violet wash behind the report so
+   the evidence section reads as its own moment. Edge-less on
+   purpose: the page has no seams between sections, so the wash
+   fades to the page colour well before the section's top and
+   bottom instead of being a band with edges. Same violet as the
+   eyebrow and the bar, at a few percent.
+   ============================================================ */
+#audit { isolation: isolate; }
+#audit::before {
+  content: "";
+  position: absolute; inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(62% 58% at 60% 64%, rgba(124, 58, 237, 0.13), rgba(124, 58, 237, 0) 72%),
+    radial-gradient(42% 42% at 20% 32%, rgba(124, 58, 237, 0.06), rgba(124, 58, 237, 0) 72%);
+}
+@media (max-width: 760px) {
+  #audit::before {
+    background: radial-gradient(95% 48% at 50% 62%, rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0) 74%);
+  }
+}
+
+/* ============================================================
+   DONUT CONCEPT (8 Oct) — the AI-readiness score as a ring instead
+   of the straight bar. 0 sits at the top and the ring fills
+   clockwise to the score; the AI-native zone (70–100) is a faint
+   outer arc and the threshold a tick across the ring at 70. All
+   geometry comes from audit-data.js (see ring() in the script).
+   ============================================================ */
+.ax-row.ax-row--donut { grid-template-columns: auto minmax(0, 1fr) auto; }
+.ax-score--donut { cursor: help; }
+.ax-donut {
+  position: relative; display: block;
+  width: 188px; height: 188px;
+}
+.ax-donut svg { display: block; overflow: visible; }
+.ax-donut__track { fill: none; stroke: var(--ink-100); stroke-width: 14; }
+.ax-donut__zone  { fill: none; stroke: rgba(124, 58, 237, 0.28); stroke-width: 4; }
+.ax-donut__fill  {
+  fill: none; stroke: var(--ax-accent); stroke-width: 14;
+  stroke-linecap: butt;                       /* ends exactly at the score */
+  stroke-dashoffset: var(--off);
+}
+.ax-donut__thr { stroke: var(--fg); stroke-width: 2; }
+.ax-donut__thr-label {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  fill: var(--fg-mid);
+}
+.ax-donut__center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.ax-donut__num {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 46px; line-height: 1; letter-spacing: -0.04em;
+  color: var(--fg); font-variant-numeric: tabular-nums;
+}
+.ax-donut__of { margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--fg-muted); }
+.ax-score--donut .ax-hint { left: 50%; transform: translate(-50%, -4px); bottom: calc(100% + 4px); }
+.ax-score--donut:hover .ax-hint, .ax-score--donut:focus-visible .ax-hint, .ax-score--donut.is-hint .ax-hint { transform: translate(-50%, 0); }
+
+/* Legend beside the ring: what the marks mean, in words. */
+.ax-legend__title { margin: 0 0 8px; font-size: 15px; font-weight: 500; color: var(--fg-alt); }
+.ax-legend .ax-tier { margin: 0; }
+.ax-legend__keys {
+  list-style: none; margin: 14px 0 0; padding: 0;
+  display: grid; gap: 7px;
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--fg-mid);
+}
+.ax-legend__keys li { display: flex; align-items: center; gap: 10px; }
+.ax-key { flex: none; display: inline-block; }
+.ax-key--score { width: 14px; height: 8px; border-radius: 2px; background: var(--ax-accent); }
+.ax-key--thr   { width: 2px; height: 14px; margin: 0 6px; background: var(--fg); }
+.ax-key--zone  { width: 14px; height: 4px; border-radius: 2px; background: rgba(124, 58, 237, 0.28); }
+
+/* The reveal: empty ring until the ring itself is on screen, then
+   it fills to the score on the same slide curve the bar used. */
+#audit.is-armed:not(.is-measuring) .ax-donut__fill { stroke-dashoffset: var(--C); }
+#audit.is-armed:not(.is-measuring) .ax-donut__zone,
+#audit.is-armed:not(.is-measuring) .ax-donut__thr,
+#audit.is-armed:not(.is-measuring) .ax-donut__thr-label,
+#audit.is-armed:not(.is-measuring) .ax-legend__keys { opacity: 0; }
+#audit.is-armed:not(.is-measuring) .ax-donut__track { opacity: 0; }
+#audit.is-measuring .ax-donut__track { opacity: 1; transition: opacity 360ms var(--ease) 0ms; }
+#audit.is-measuring .ax-donut__zone,
+#audit.is-measuring .ax-donut__thr,
+#audit.is-measuring .ax-donut__thr-label,
+#audit.is-measuring .ax-legend__keys { opacity: 1; transition: opacity 320ms var(--ease) 180ms; }
+#audit.is-measuring .ax-donut__fill {
+  stroke-dashoffset: var(--off);
+  transition: stroke-dashoffset 1400ms var(--ax-slide) 350ms;
+}
+@media (prefers-reduced-motion: reduce) { .ax-donut__fill { transition: none !important; } }
+
+@media (max-width: 1180px) {
+  .ax-row.ax-row--donut { grid-template-columns: auto minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .ax-row.ax-row--donut { grid-template-columns: auto minmax(0, 1fr); column-gap: 18px; }
+  .ax-donut { width: 150px; height: 150px; }
+  .ax-donut__num { font-size: 36px; }
+}
+@media (max-width: 400px) {
+  .ax-donut { width: 132px; height: 132px; }
+  .ax-donut__num { font-size: 32px; }
+  .ax-legend__keys { font-size: 10.5px; }
+}
+/* compact pass: a slightly smaller ring keeps the section short, and
+   the tier pill may wrap in the narrow phone legend */
+.ax-donut { width: 168px; height: 168px; }
+.ax-donut__num { font-size: 42px; }
+.ax-legend { min-width: 0; }
+.ax-legend .ax-tier { white-space: normal; max-width: 100%; }
+@media (max-width: 760px) { .ax-donut { width: 144px; height: 144px; } .ax-donut__num { font-size: 34px; } }
+@media (max-width: 400px) { .ax-donut { width: 124px; height: 124px; } .ax-donut__num { font-size: 30px; } .ax-legend .ax-tier { font-size: 12px; } }
+
+/* ============================================================
+   DONUT CONCEPT — TWO-COLUMN (8 Oct). Same structure as the live
+   section: claim left, results panel right. The ring is the hero of
+   the panel: big, with the score in its centre and the legend beside
+   it; supporting scores and methodology follow underneath.
+   ============================================================ */
+.ax--donut .ax-panel { padding: 28px 32px 22px; }
+.ax-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(24px, 3vw, 40px);
+  margin-top: 18px;
+}
+.ax-panel--donut .ax-donut { width: clamp(220px, 19vw, 280px); height: clamp(220px, 19vw, 280px); }
+.ax-panel--donut .ax-donut__num { font-size: clamp(54px, 5vw, 76px); letter-spacing: -0.045em; }
+.ax-panel--donut .ax-donut__of { font-size: 15px; margin-top: 6px; }
+.ax-panel--donut .ax-donut__thr-label { font-size: 12px; }
+.ax-panel--donut .ax-legend__title { font-size: 17px; margin-bottom: 10px; }
+.ax-panel--donut .ax-legend__keys { margin-top: 16px; gap: 9px; font-size: 12px; }
+.ax-panel--donut .ax-score--donut { width: auto; margin: 0; }
+.ax--donut .ax-panel__metrics { margin-top: 22px; }
+.ax--donut .ax-method { margin-top: 18px; }
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  /* narrow right column: legend under the ring */
+  .ax-hero { grid-template-columns: minmax(0, 1fr); row-gap: 18px; justify-items: start; }
+}
+@media (max-width: 560px) {
+  .ax-hero { grid-template-columns: minmax(0, 1fr); row-gap: 18px; justify-items: center; text-align: center; }
+  .ax-panel--donut .ax-donut { width: 232px; height: 232px; }
+  .ax-panel--donut .ax-donut__num { font-size: 58px; }
+  .ax-panel--donut .ax-legend { display: grid; justify-items: center; }
+  .ax-panel--donut .ax-legend__keys { justify-items: start; }
+  .ax-score--donut .ax-hint { bottom: auto; top: calc(100% + 6px); }
+}

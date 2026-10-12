@@ -54,6 +54,8 @@
     .ds-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--fg-mid); font-size: 14px; pointer-events: none; transition: opacity .3s; }
     .ds-frame-wrap.is-loaded .ds-loading { opacity: 0; }
   </style>
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body class="ds-embed">
 
@@ -199,6 +201,13 @@
     }
 
     function srcdocMode(html) {
+      /* Gaiametry asks phone visitors to switch to a desktop (a dialog,
+         once per session). Inside Nucleux the embed is laid out for the
+         phone already, so the notice is marked as seen for this session
+         before the frame loads. The frame shares this page's origin in
+         srcdoc mode, so it reads the same sessionStorage. Remove this
+         line to show Gaiametry's notice again. */
+      try { sessionStorage.setItem('gaiametry:mobile-notice', 'seen'); } catch (e) {}
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + GAIA + '">');
       frame.addEventListener('load', function onload() {
         try { wire(frame.contentWindow); }

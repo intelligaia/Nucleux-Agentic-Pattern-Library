@@ -234,6 +234,8 @@
       .form-foot__note { text-align: center; }
     }
   </style>
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body>
 
@@ -312,18 +314,18 @@
         <div class="form-row">
           <div class="form-group">
             <label for="name">Your name</label>
-            <input type="text" id="name" name="name" required autocomplete="name" placeholder="Alex Taylor" />
+            <input type="text" id="name" name="name" required autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="Alex Taylor" />
           </div>
 
           <div class="form-group">
             <label for="email">Email address</label>
-            <input type="email" id="email" name="email" required autocomplete="email" placeholder="alex@company.com" />
+            <input type="email" id="email" name="email" required autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" enterkeyhint="next" placeholder="alex@company.com" />
           </div>
         </div>
 
         <div class="form-group">
           <label for="message">Your inquiry</label>
-          <textarea id="message" name="message" required placeholder="What are you building, and where are you getting stuck?"></textarea>
+          <textarea id="message" name="message" required rows="5" placeholder="What are you building, and where are you getting stuck?"></textarea>
         </div>
 
         <div class="form-foot">
@@ -344,5 +346,20 @@
   <script src="global.js"></script>
 <script src="nav-splitflap.js"></script>
 <script src="nav-mega.js"></script>
+  <script>
+    /* The inquiry grows with what is typed instead of scrolling inside a
+       fixed box — on a phone a 5-line window onto a long message is hard
+       to review. Capped at half the screen; past that it scrolls. */
+    (function () {
+      var ta = document.getElementById('message');
+      if (!ta) return;
+      function fit() {
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(window.innerHeight * 0.5)) + 'px';
+      }
+      ta.addEventListener('input', fit);
+      window.addEventListener('resize', function () { if (ta.value) fit(); });
+    })();
+  </script>
 </body>
 </html>

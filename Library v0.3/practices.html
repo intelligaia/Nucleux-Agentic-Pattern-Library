@@ -41,6 +41,8 @@
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="nav-mega.css" />
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body class="has-shell">
 
@@ -402,7 +404,37 @@
       }));
       root.addEventListener("mouseenter", stopAuto);
       root.addEventListener("mouseleave", startAuto);
-      startAuto();
+
+      /* Touch: the slides follow a horizontal swipe. A vertical drag is
+         left to the page (touch-action: pan-y on the viewport), so
+         scrolling past the carousel never changes the slide. Once someone
+         has touched it, it stops rotating on its own — reading a slide on
+         a phone takes longer than the 7s auto-advance. */
+      const viewport = root.querySelector(".shape__viewport");
+      let sx = 0, sy = 0, tracking = false;
+      if (viewport) {
+        viewport.addEventListener("touchstart", (e) => {
+          const t = e.touches[0]; sx = t.clientX; sy = t.clientY; tracking = true;
+          stopAuto();
+        }, { passive: true });
+        viewport.addEventListener("touchend", (e) => {
+          if (!tracking) return; tracking = false;
+          const t = e.changedTouches[0];
+          const dx = t.clientX - sx, dy = t.clientY - sy;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { dx < 0 ? next() : prev(); }
+        }, { passive: true });
+        viewport.addEventListener("touchcancel", () => { tracking = false; }, { passive: true });
+      }
+      /* keyboard: the arrows are buttons already; Left/Right on the
+         carousel itself also work once focus is inside it */
+      root.addEventListener("keydown", (e) => {
+        if (e.target.closest("a, input, textarea")) return;
+        if (e.key === "ArrowRight") { next(); stopAuto(); }
+        else if (e.key === "ArrowLeft") { prev(); stopAuto(); }
+      });
+
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches &&
+          !matchMedia("(hover: none)").matches) startAuto();
     })();
   </script>
   <script>

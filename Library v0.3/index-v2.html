@@ -2012,6 +2012,9 @@
     }
   </style>
 
+  <!-- Responsive layer: after every page style above, so it wins on order. -->
+  <link rel="stylesheet" href="responsive.css" />
+
   <script>
     /* set before landing.js / the rotator run: the headline types itself in,
        so anything that animates inside it has to wait for the typing to end.
@@ -2913,14 +2916,24 @@
       addEventListener('scroll', function () {
         if (!queued) { queued = true; requestAnimationFrame(update); }
       }, { passive: true });
-      addEventListener('resize', function () { sizeTrack(); update(); });
+      addEventListener('resize', function () {
+        /* Narrowed past the pin's breakpoint (a rotation, a DevTools
+           device switch): a phone never pins this section, so retire the
+           track now rather than leave a desktop scroll track on a phone. */
+        if (window.innerWidth <= 900) { release(); return; }
+        if (released) return;
+        sizeTrack(); update();
+      });
       update();
     })();
 
     /* ═══ 4. HORIZONTAL LABS RAIL ═════════════════════════ */
     (function rail() {
       var grid = document.querySelector('#labs .practices__grid');
-      if (!grid || window.innerWidth <= 900) return;
+      /* Every width, not desktop only: on a phone six stacked cards were six
+         screens of near-identical tiles. As a rail they are one row you
+         swipe through, with the same progress bars. */
+      if (!grid) return;
 
       grid.classList.add('ag-rail');
       var wrap = document.createElement('div');
@@ -3171,4 +3184,24 @@
   })();
   </script>
 
+  <script>
+  /* Phone intro: the hero settles to its content height (see
+     responsive.css, --hero-rest) so section 2 rises over the full
+     transition instead of snapping. Re-measured when text reflows. */
+  (function () {
+    var hero = document.querySelector('.hero');
+    var c = hero && hero.querySelector('.hero__content');
+    if (!c) return;
+    function measure() {
+      var cs = getComputedStyle(hero);
+      var h = c.offsetHeight + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      hero.style.setProperty('--hero-rest', Math.ceil(h) + 'px');
+    }
+    measure();
+    /* the content's own size, not the hero's: the headline re-wraps as
+       the webfont lands and as the rotating phrase changes length */
+    if (window.ResizeObserver) new ResizeObserver(measure).observe(c);
+    else addEventListener('resize', measure);
+  })();
+  </script>
 </body>

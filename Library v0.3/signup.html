@@ -37,6 +37,8 @@
        an auth screen with the back button. */
     try { sessionStorage.setItem('nx-from-auth', '1'); } catch (e) {}
   </script>
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body class="auth">
 

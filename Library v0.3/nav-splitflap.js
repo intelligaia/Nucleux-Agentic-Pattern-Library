@@ -29,6 +29,9 @@
     'Design System': 'Gaiametry',
     'Blog':       'Read insights'
   };
+  /* Shared with the mobile menu (global.js), which shows each destination's
+     intent as a supporting line because touch has no hover to reveal it. */
+  window.NX_NAV_INTENTS = LABELS;
 
   var FLIP_DURATION  = 75;   // per intermediate glyph
   var STAGGER        = 25;   // per character index

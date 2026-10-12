@@ -216,6 +216,10 @@
 
   // ─── Frame loop ──────────────────────────────────────
   function tick() {
+    /* Not rendered (hidden on phones by responsive.css): skip the frame
+       work and look again shortly, so it resumes by itself if the
+       window is widened or the device rotated to a wider layout. */
+    if (!canvas.offsetWidth) { setTimeout(tick, 400); return; }
     state.t       += (state.targetT - state.t) * 0.03;     // slow morph
     state.opacity += (state.targetOpacity - state.opacity) * 0.08;
 
