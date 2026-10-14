@@ -1,0 +1,90 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="base.css">
+<style>
+  .field .a{width:420px;height:420px;left:120px;top:-200px;opacity:.20}
+  .field .v{width:540px;height:540px;right:-160px;bottom:-200px;opacity:.30}
+  .top{position:absolute;left:72px;top:68px}
+  .c5-head{position:absolute;left:72px;top:118px}
+  .c5-head .display{font-size:46px}
+  /* zones */
+  .zone-l{position:absolute;left:72px;top:250px;width:260px}
+  .zl-lab{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .swatch{border:1px dashed var(--border-strong);border-radius:18px;padding:22px;
+    background:radial-gradient(rgba(20,18,16,.04) 1px,transparent 1px);background-size:11px 11px;background-color:#FCFCFB}
+  /* proactive suggestion card (shared on both sides) */
+  .psug{display:flex;gap:11px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:14px;box-shadow:var(--shadow-card)}
+  .psug .ict{width:32px;height:32px;border-radius:9px;flex:none}
+  .psug .st{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--amber)}
+  .psug .msg{font-size:13px;color:var(--ink);font-weight:500;line-height:1.35;margin-top:3px;letter-spacing:-.01em}
+  /* arrow */
+  .arrow{position:absolute;left:356px;top:330px;width:150px;display:flex;align-items:center}
+  .arrow .lane{height:4px;flex:1;border-radius:3px;background:linear-gradient(90deg,#D97706,#E11D48 45%,#7C3AED)}
+  .arrow .head{width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;
+    border-left:13px solid #7C3AED;margin-left:-1px}
+  /* right workspace window */
+  .win{position:absolute;right:72px;top:238px;width:520px;height:300px;border-radius:18px;background:var(--surface);
+    border:1px solid var(--border);box-shadow:var(--shadow-float);overflow:hidden}
+  .win .bar{height:42px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--border);background:#FCFCFB}
+  .win .bar .dot{width:10px;height:10px;border-radius:50%;background:#E2E2DB}
+  .win .bar .ttl{margin-left:12px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+  .win .body{display:flex;height:calc(300px - 42px)}
+  .win .rail{width:62px;border-right:1px solid var(--border);padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:14px;background:#FCFCFB}
+  .win .rail .ri{width:30px;height:30px;border-radius:9px;background:#F0F0EA}
+  .win .rail .ri.on{background:var(--violet-soft)}
+  .win .thread{flex:1;padding:18px 18px}
+  .bubble{max-width:74%;font-size:12.5px;line-height:1.4;padding:9px 12px;border-radius:12px;letter-spacing:-.005em}
+  .bubble.user{margin-left:auto;background:var(--violet);color:#fff;border-bottom-right-radius:5px}
+  .ws-sug{margin-top:16px}
+  /* support steps */
+  .steps{position:absolute;left:0;right:0;bottom:62px;text-align:center;font-family:var(--font-mono);
+    font-size:13px;letter-spacing:.04em;color:var(--mid)}
+  .steps b{color:var(--ink);font-weight:600}
+  .steps .sep{color:var(--faint);margin:0 10px}
+</style></head>
+<body><div class="frame">
+  <div class="field"><div class="blob a"></div><div class="blob v"></div></div>
+  <div class="grain"></div>
+
+  <div class="eyebrow top"><span class="dot"></span>NUCLEUX · AGENTIC PATTERN LIBRARY</div>
+  <div class="c5-head"><div class="display">From pattern to&nbsp;product.</div></div>
+
+  <!-- isolated pattern -->
+  <div class="zone-l">
+    <div class="zl-lab">Reusable pattern</div>
+    <div class="swatch">
+      <div class="psug">
+        <span class="ict a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></span>
+        <div><div class="st">Proactive suggestion</div><div class="msg">Three invoices are overdue — draft reminders?</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="lane"></div><div class="head"></div></div>
+
+  <!-- same pattern, in product -->
+  <div class="win">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="ttl">Finance agent</span></div>
+    <div class="body">
+      <div class="rail"><span class="ri on"></span><span class="ri"></span><span class="ri"></span></div>
+      <div class="thread">
+        <div class="bubble user">How are we tracking on receivables this month?</div>
+        <div class="ws-sug">
+          <div class="psug">
+            <span class="ict a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></span>
+            <div><div class="st">Proactive suggestion</div><div class="msg">Three invoices are overdue — draft reminders?</div>
+              <div style="margin-top:10px;display:flex;gap:8px"><span class="btn primary" style="height:30px;font-size:12px;padding:0 13px">Draft</span><span class="btn" style="height:30px;font-size:12px;padding:0 13px">Dismiss</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="steps"><b>Pattern</b><span class="sep">→</span>States<span class="sep">→</span>Workflow<span class="sep">→</span>Code</div>
+
+  <div class="brand" style="position:absolute;left:72px;bottom:56px">
+    <div class="mark"><div class="ring"></div><div class="core"></div></div>
+    <div class="name">Nucleux</div>
+  </div>
+</div></body></html>

@@ -1,0 +1,63 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="base.css">
+<style>
+  .field .v{width:520px;height:520px;left:-160px;bottom:-220px;opacity:.30}
+  .field .a{width:460px;height:460px;right:-170px;top:-180px;opacity:.26}
+  .c2-head{position:absolute;left:72px;top:150px}
+  .c2-head .display{font-size:60px;line-height:1.02}
+  .c2-head .support{margin-top:20px;font-size:19px}
+  /* journey band */
+  .journey{position:absolute;left:72px;right:72px;bottom:96px;height:150px}
+  .track{position:absolute;left:8%;right:8%;top:58px;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,#D97706 0%,#E11D48 42%,#7C3AED 100%);opacity:.9}
+  .stage{position:absolute;top:0;width:150px;text-align:center;transform:translateX(-50%)}
+  .stage .node{width:16px;height:16px;border-radius:50%;background:var(--surface);
+    border:3px solid #fff;box-shadow:0 0 0 2px var(--border-strong),0 4px 10px rgba(20,18,16,.12);
+    margin:50px auto 0;position:relative;z-index:2}
+  .stage.on .node{box-shadow:0 0 0 2px #D97706,0 4px 12px rgba(217,119,6,.35)}
+  .stage.i .node{box-shadow:0 0 0 2px #E11D48,0 4px 12px rgba(225,29,72,.3)}
+  .stage.d .node{box-shadow:0 0 0 2px #B4257A,0 4px 12px rgba(180,37,122,.3)}
+  .stage.o .node{box-shadow:0 0 0 2px #7C3AED,0 4px 12px rgba(124,58,237,.3)}
+  .stage .st{position:absolute;top:0;left:0;right:0;font-family:var(--font-mono);font-size:12px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--mid);font-weight:500}
+  .stage .hint{margin-top:18px;display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;
+    border-radius:9999px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;
+    color:var(--ink);box-shadow:0 1px 2px rgba(20,18,16,.05);letter-spacing:-.01em}
+  .stage .hint .d{width:7px;height:7px;border-radius:50%}
+</style></head>
+<body><div class="frame">
+  <div class="field"><div class="blob v"></div><div class="blob a"></div></div>
+  <div class="grain"></div>
+
+  <div class="eyebrow" style="position:absolute;left:72px;top:68px"><span class="dot"></span>NUCLEUX · AGENTIC PATTERN LIBRARY</div>
+
+  <div class="c2-head">
+    <div class="display">One&nbsp;library.<br>Every agent moment.</div>
+    <div class="support">Coverage for the whole lifecycle — not a bag of components.</div>
+  </div>
+
+  <div class="journey">
+    <div class="track"></div>
+    <div class="stage on" style="left:8%">
+      <div class="st">Onboarding</div><div class="node"></div>
+      <div class="hint"><span class="d" style="background:#D97706"></span>Disclosure</div>
+    </div>
+    <div class="stage i" style="left:36%">
+      <div class="st">Initially</div><div class="node"></div>
+      <div class="hint"><span class="d" style="background:#E11D48"></span>Open&nbsp;Input</div>
+    </div>
+    <div class="stage d" style="left:64%">
+      <div class="st">During interaction</div><div class="node"></div>
+      <div class="hint"><span class="d" style="background:#B4257A"></span>Tool&nbsp;Approval</div>
+    </div>
+    <div class="stage o" style="left:92%">
+      <div class="st">Over time</div><div class="node"></div>
+      <div class="hint"><span class="d" style="background:#7C3AED"></span>Memory</div>
+    </div>
+  </div>
+
+  <div class="brand" style="position:absolute;right:72px;top:66px">
+    <div class="name">Nucleux</div>
+    <div class="mark"><div class="ring"></div><div class="core"></div></div>
+  </div>
+</div></body></html>
