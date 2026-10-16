@@ -77,24 +77,24 @@
     subcats: [
       { id: "trust", title: "Trust & Disclosure", desc: "What this is, what the rules are, and which data it stands on.",
         patterns: [
-          { id: "disclosure", name: "Disclosure", oneline: "A clear, visible label that tells the user they are interacting with an AI, not a person." },
-          { id: "consent", name: "Consent", oneline: "A first-run permission flow that asks the user before data is collected or used for training." },
-          { id: "caveat", name: "Caveat", oneline: "A small, persistent reminder that AI output can be wrong and should be checked." }
+          { id: "disclosure", name: "Disclosure", oneline: "Makes it clear where AI is involved — an AI action, an agent at work, or content AI produced — at the point it matters." },
+          { id: "consent", name: "Consent", oneline: "Asks before the agent accesses something sensitive or takes an important action — what, why, the scope, and two real choices." },
+          { id: "caveat", name: "Caveat", oneline: "Says what is incomplete, uncertain or out of date about this result — attached to it, with a next step." }
         ] },
       { id: "identity", title: "Identity", desc: "Who the agent appears to be — name, face, voice, and the edges of the persona.",
         patterns: [
-          { id: "avatar", name: "Avatar", oneline: "A consistent visual mark that represents the AI across every surface." },
-          { id: "name", name: "Name", oneline: "A consistent name for the AI so it can be referred to, talked to, and remembered." },
-          { id: "personality", name: "Personality", oneline: "A consistent voice and tone profile that governs how the AI speaks across the product." },
-          { id: "iconography", name: "Iconography", oneline: "A reserved set of icons that signal 'this action is AI-powered'." },
-          { id: "color", name: "Color", oneline: "A reserved accent colour or motion treatment that signals AI is active." }
+          { id: "avatar", name: "Avatar", oneline: "One mark for the agent on every surface — never mistakable for a person, with its working state on the mark itself." },
+          { id: "name", name: "Name", oneline: "A short, consistent name and role for the agent — the same on every surface, never a real person’s name." },
+          { id: "personality", name: "Personality", oneline: "Lets people choose how the agent writes — with a preview — while permissions, facts and safety language stay exactly the same." },
+          { id: "iconography", name: "Iconography", oneline: "One Material Symbol per AI meaning — action, working, tool use, generated — always with words, never one sparkle for everything." },
+          { id: "color", name: "Color", oneline: "Semantic colour roles from Nucleux tokens for the agent, attention, evidence and status — always paired with an icon and words." }
         ] },
       { id: "capability", title: "Capability Discovery", desc: "Showing what it can do before a user has to guess.",
         patterns: [
-          { id: "example-gallery", name: "Example Gallery", oneline: "A wall of curated outputs that shows users what's possible before they type." },
-          { id: "templates", name: "Templates", oneline: "Fill-in-the-blank prompt scaffolds that turn vague intent into a good question." },
-          { id: "nudges", name: "Nudges", oneline: "Tiny contextual hints that surface features the user hasn't discovered yet." },
-          { id: "disclaimer", name: "Disclaimer", oneline: "A first-impression clarification of what the AI is, isn't, and what it doesn't know." }
+          { id: "example-gallery", name: "Example Gallery", oneline: "A small set of real, product-specific tasks the agent does well — choosing one places an editable request in the composer." },
+          { id: "templates", name: "Templates", oneline: "A reusable setup for a repeatable workflow — previewed first, applied as editable fields, never run on its own." },
+          { id: "nudges", name: "Nudges", oneline: "A quiet, dismissible tip about a capability that would help right now — with a reason, and it doesn’t come back once dismissed." },
+          { id: "disclaimer", name: "Disclaimer / Agent Limits", oneline: "States what the agent can’t reliably do — briefly in general, specifically where it matters, and with a way forward when it hits a limit." }
         ] }
   ]},
   { id: "initially", num: "02", label: "Initially",

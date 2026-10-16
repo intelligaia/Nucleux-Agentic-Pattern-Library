@@ -94,28 +94,20 @@
     'disclosure': {
       type: ['signal', 'safety'], maturity: 'established',
       seen: ['ChatGPT', 'Claude', 'Gemini', 'Copilot', 'Perplexity'],
-      seenWhat: 'Every one of them marks AI-authored surfaces at the point of contact rather than ' +
-                'in a settings page, which is the part that makes it a pattern.',
-      whenNot: 'When the surface is unmistakably the assistant already &mdash; a dedicated chat ' +
-               'window does not need a label saying it is a chat window. Repeating the disclosure ' +
-               'everywhere is how it stops being read anywhere.'
+      seenWhat: 'Gemini in Docs and Copilot in Word label the drafts they insert and keep the action itself named (“Help me write”, “Rewrite”); ChatGPT and Claude show the agent working with a status and a stop. The convergence is three separate signals — action, work, result — at the point of contact, not a settings page.',
+      whenNot: 'When the surface is unmistakably the assistant already — a dedicated chat with the agent does not need every reply labelled. Labelling everything is how a label stops being read; mark what AI touched, where it touched it.'
     },
     'consent': {
       type: ['safety', 'interaction'], maturity: 'established',
       seen: ['ChatGPT', 'Claude', 'Gemini', 'Copilot'],
-      seenWhat: 'All four ask before data leaves the session or feeds training, and all four ' +
-                'separate the ask from the terms it refers to.',
-      whenNot: 'For a decision the person can reverse instantly and at no cost. A consent gate ' +
-               'in front of something harmless trains people to dismiss the ones that matter.'
+      seenWhat: 'Claude asks before a connector tool runs (allow once, always allow, or deny); ChatGPT’s agent stops for confirmation before consequential steps and lets the person take over; Copilot and Gemini route data access through an explicit connect step. All four ask at the moment of need, for a named scope, with refusal as a working path.',
+      whenNot: 'For a decision the person can reverse instantly and at no cost, or access they already granted for this purpose. A gate in front of something harmless — or asked twice for no reason — trains people to click through the ones that matter.'
     },
     'caveat': {
       type: ['signal', 'safety'], maturity: 'established',
       seen: ['ChatGPT', 'Gemini', 'Copilot', 'Perplexity'],
-      seenWhat: 'A short standing line attached to the answer surface, not a modal &mdash; the ' +
-                'convergent solution to a warning that has to survive being seen a thousand times.',
-      whenNot: 'On an answer the product can actually stand behind, such as a value read straight ' +
-               'out of a record. A caveat on something verifiable teaches people the caveat is ' +
-               'decorative.'
+      seenWhat: 'Perplexity and ChatGPT name the sources an answer used; Microsoft’s HAX guidance calls for low-confidence and incomplete-result alerts tied to the output; Copilot attaches references to drafted content. The shared move is a specific, attached limitation — not a blanket disclaimer.',
+      whenNot: 'On a result the product can stand behind — a value read straight from a record — or as a standing line on every answer. A generic caveat teaches people the caveat is decorative; general limits belong in Disclaimer.'
     },
     'disclaimer': {
       type: ['signal', 'safety'], maturity: 'established',
@@ -145,25 +137,25 @@
     },
     'personality': {
       type: ['behavior'], maturity: 'emerging',
-      seen: ['ChatGPT', 'Claude', 'Gemini'],
-      seenWhat: 'A declared and user-adjustable voice &mdash; custom instructions, writing styles, ' +
-                'per-assistant persona &mdash; rather than a tone that merely happens.',
+      seen: ['ChatGPT', 'Claude', 'Copilot'],
+      seenWhat: 'Preset writing styles the person chooses &mdash; ChatGPT&rsquo;s personalities, Claude&rsquo;s ' +
+                'styles &mdash; that change the wording and leave permissions and safety alone.',
       whenNot: 'In high-stakes or regulated output. Warmth in a medication instruction or a legal ' +
                'finding reads as an opinion about the content.'
     },
     'iconography': {
       type: ['signal'], maturity: 'established',
-      seen: ['Gemini', 'Copilot', 'Notion AI', 'Perplexity'],
-      seenWhat: 'A reserved glyph used only where the agent is involved, so its presence is itself ' +
-                'information.',
+      seen: ['Gemini', 'Copilot', 'Cloudscape', 'PatternFly'],
+      seenWhat: 'A small icon language for AI &mdash; action, working, generated &mdash; documented by ' +
+                'design systems such as Cloudscape and PatternFly, and always paired with words.',
       whenNot: 'On everything. A mark that appears on every button in the product has stopped ' +
                'marking anything.'
     },
     'color': {
       type: ['signal'], maturity: 'emerging',
-      seen: ['Copilot', 'Gemini', 'Notion AI'],
-      seenWhat: 'A reserved accent that signals agent activity, distinct from the product&rsquo;s ' +
-                'own primary.',
+      seen: ['Copilot', 'Gemini', 'Cloudscape'],
+      seenWhat: 'Semantic colour roles for the agent, attention and status, each carried with an ' +
+                'icon and a label rather than by colour alone.',
       whenNot: 'As the only carrier of a state. Colour is the fastest signal to read and the one ' +
                'some people cannot read at all &mdash; it accelerates a label, it does not replace it.'
     },
@@ -171,9 +163,9 @@
     /* ══ ONBOARDING · Capability Discovery ════════════════════ */
     'example-gallery': {
       type: ['capability'], maturity: 'established',
-      seen: ['Midjourney', 'Gemini', 'ChatGPT', 'Perplexity'],
-      seenWhat: 'Finished outputs shown before the person writes anything, so capability is ' +
-                'demonstrated rather than described.',
+      seen: ['ChatGPT', 'Claude', 'Gemini', 'Copilot'],
+      seenWhat: 'A few starter tasks on a new conversation that fill the composer instead of sending, ' +
+                'and step aside once work begins.',
       whenNot: 'When the examples are better than what the product typically produces. A gallery ' +
                'of best-case output is a promise the first real attempt will break.'
     },

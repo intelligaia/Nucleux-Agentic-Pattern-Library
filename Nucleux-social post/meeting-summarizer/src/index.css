@@ -1,0 +1,6 @@
+@import "@nucleux/tokens/styles.css";
+@import "@nucleux/md3-theme/theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

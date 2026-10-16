@@ -570,1309 +570,1426 @@
   var SIMS = {
 
     /* ──────────────────────────────────────────────────────
-       CONSENT · review & approval
+       CONSENT · conversation
 
-       purpose      the agent needs access it does not have
-       user goal    walk into a meeting prepared
-       agent goal   read the two sources the briefing needs
-       trigger      it hits the wall mid-task, not at sign-up
-       context      a meeting-prep agent, twenty minutes before
-       decision     allow, allow less, or refuse
-       after        it continues with exactly what it was given,
-                    and says what the gap cost
+       purpose      the agent needs access it does not have, mid-task
+       user goal    compare a meeting with the product brief
+       agent goal   read the brief — which lives in Google Drive
+       trigger      it reaches the brief and stops; it does not guess
+       context      a meeting workspace, the transcript already here
+       decision     Continue, Not now, or review exactly what is asked
+       after        allowed: connects, then the ORIGINAL task resumes.
+                    refused: nothing is opened, the request is kept,
+                    and there are two other ways to finish the job
        ────────────────────────────────────────────────────── */
     consent: {
-      shell: 'review',
+      shell: 'conversation',
       product: 'Cadence',
       agent: 'Aria',
-      note: 'Twenty minutes before a renewal call, the agent hits a source it has not been ' +
-            'given. Allow it, allow less, or refuse &mdash; the briefing changes either way.',
+      note: 'The request is ordinary; the permission is a consequence of it. Send it, and the agent stops at the one ' +
+            'step it is not allowed to take. <b>Continue</b> and <b>Not now</b> both lead somewhere useful.',
 
       initial: {
-        step: 'asked',
-        opts: { crm: true, files: true, mail: false },
-        granted: null, denied: false, brief: '', streaming: false, revoked: false
+        step: 'idle', turns: [], review: false, granted: false, expired: false, used: 0,
+        axText: 'Compare this meeting with the product brief.', opts: {}
       },
 
-      title: function () { return 'Prep &middot; Northwind renewal, 14:00'; },
+      title: function () { return 'Pricing sync &middot; Oct 14'; },
       pill: function (s) {
-        if (s.step === 'done')  return 'Briefed';
-        if (s.granted)          return countOn(s.granted) + ' sources';
-        return 'Blocked';
+        if (s.step === 'consent') return 'Waiting for you';
+        if (s.step === 'connecting') return 'Connecting';
+        if (s.step === 'working' || s.step === 'reading') return 'Aria working';
+        if (s.granted) return 'Google Drive · this conversation';
+        return '';
       },
-      decision: function (s) { return s.step === 'consent' ? consentCard(s) : ''; },
-
-      ask: function () {
-        return '<div class="sim-ask">' +
-          '<span class="sim-ask__who">You</span>' +
-          '<p class="sim-ask__t">Get me ready for the Northwind call at two.</p>' +
-        '</div>';
-      },
-
-      /* The steps are the reason the ask is legible: you can see
-         precisely which one it cannot finish, and why. */
-      progress: function (s) {
-        var g = s.granted;
-        var crm   = g ? (g.crm   ? 'done' : 'skipped') : (s.step === 'consent' ? 'blocked' : 'wait');
-        var files = g ? (g.files ? 'done' : 'skipped') : (s.step === 'consent' ? 'blocked' : 'wait');
-        return steps([
-          { label: 'Found the meeting', state: 'done',
-            note: 'Calendar &mdash; already allowed' },
-          { label: 'Read the account history', state: crm,
-            note: crm === 'skipped' ? 'Not allowed &mdash; skipped' : 'Salesforce' },
-          { label: 'Read last quarter&rsquo;s review deck', state: files,
-            note: files === 'skipped' ? 'Not allowed &mdash; skipped' : 'Drive' },
-          { label: 'Wrote the briefing',
-            state: s.step === 'done' ? 'done' : (s.step === 'working' ? 'run' : 'wait') }
-        ]);
+      phase: function (s) {
+        if (s.step === 'consent') return 'blocked';
+        if (s.step === 'connecting') return 'working';
+        if (s.step === 'working' || s.step === 'reading') return 'thinking';
+        if (s.step === 'answered') return 'done';
+        return 'idle';
       },
 
-      outcome: function (s) {
-        if (s.step === 'working') return working('Reading what you allowed…');
-        if (s.step !== 'done') return '';
-        var full = s.granted && s.granted.crm && s.granted.files;
-        return '<article class="sim-brief">' +
-          '<div class="sim-brief__head">' + mark('md-agentav--sm') +
-            '<span class="sim-brief__t">Northwind &middot; 14:00</span>' + chip() + '</div>' +
-          '<p class="sim-brief__b">' + caret(s.brief, s.streaming) + '</p>' +
-          (!full && !s.streaming
-            ? '<p class="sim-brief__gap">' +
-              (s.denied
-                ? 'Written from the invitation alone. I could not open the account history or ' +
-                  'the review deck, so treat anything about the relationship as unverified.'
-                : 'One source was not allowed, so the parts that would have come from it are ' +
-                  'missing rather than guessed.') + '</p>'
-            : '') +
-          (!s.streaming ? grantedStrip(s.granted) : '') +
-        '</article>';
+      thread: function (s) {
+        var M = md3(), C = window.MaterialConnect;
+        var drive = C && C.SERVICES ? C.SERVICES.googledrive : { logo: '', name: 'Google Drive' };
+        var logo = '<span class="tdx-logo" aria-hidden="true">' + drive.logo + '</span>';
+        function aria(inner) {
+          return '<div class="sim-turn">' + mark('md-agentav--sm') +
+            '<div class="sim-turn__body"><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' + inner + '</div></div>';
+        }
+        var meeting = '<div class="sim-cs-meet">' + MI('event') +
+          '<div><p class="sim-cs-meet__t">Pricing sync &middot; Oct 14</p>' +
+          '<p class="sim-cs-meet__s">Transcript, 42 min &middot; Jordan, Dana, Lee, Priya, Sam</p></div></div>';
+
+        var out = meeting + s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'J', t.text);
+          if (t.who === 'steps') return aria(steps(t.list));
+          if (t.who === 'conn') return aria('<div class="sim-cs-conn" role="status">' + logo +
+            '<span><b>Google Drive</b> connected for this conversation. Aria can read files your account can open.</span>' +
+            (s.granted ? M.button({ variant: 'text', label: 'Turn off', attrs: { 'data-act': 'revoke' } }) : '') + '</div>');
+          if (t.who === 'time') return '<p class="sim-cs-div" role="separator"><span class="sim-cs-time">' + MI('schedule') + t.text + '</span></p>';
+          if (t.who === 'note') return aria('<p class="wf-text sim-cs-note">' + t.text + '</p>' + (t.extra || ''));
+          return aria('<p class="wf-text">' + caret(t.text, t.live && s.streaming) + '</p>' +
+            (t.src ? '<p class="sim-src">' + t.src + '</p>' : ''));
+        }).join('');
+
+        if (s.step === 'idle' && !s.turns.length) {
+          out += '<p class="sim-stage__empty">The meeting transcript is here; the product brief is not — it is in Google Drive, ' +
+            'which Aria has never been given. Send the request and see where it stops.</p>';
+        }
+        if (s.step === 'working') out += aria(working('Reading the meeting transcript…'));
+        if (s.step === 'consent') {
+          var exp = s.expired;
+          var body = '<div class="tdx-cs__scope"><p class="tdx-cs__k">What Aria will be able to do</p>' +
+            M.list([{ leading: MI('visibility'), headline: 'Read files and folders your account can open' },
+                    { leading: MI('block'), headline: 'Can’t edit, share or delete anything' },
+                    { leading: MI('schedule'), headline: 'For this conversation only' }], { 'aria-label': 'Access requested' }) + '</div>' +
+            '<p class="tdx-cs__then md-body-small"><b>If you continue:</b> Google Drive asks you to confirm your account, then Aria ' +
+              'reads only the brief and finishes the comparison.</p>' +
+            '<div class="tdx-cs__review">' +
+              M.button({ variant: 'text', label: s.review ? 'Hide details' : 'Review details', icon: MI(s.review ? 'chevDown' : 'chevRight'),
+                attrs: { 'data-act': 'review', 'aria-expanded': String(!!s.review), 'aria-controls': 'sim-cs-more' } }) +
+              (s.review
+                ? '<dl class="tdx-cs__more" id="sim-cs-more">' +
+                    '<div><dt>' + MI('person') + 'Account</dt><dd>j.rivera@northwind.example</dd></div>' +
+                    '<div><dt>' + MI('history') + 'Activity</dt><dd>Every file Aria opens is listed in this conversation.</dd></div>' +
+                    '<div><dt>' + MI('tune') + 'Turn it off</dt><dd>From this conversation, or Settings › Connected apps.</dd></div>' +
+                  '</dl>'
+                : '') +
+            '</div>';
+          out += aria('<p class="wf-text">' + (exp
+              ? 'The brief is still in Google Drive, but the access you gave me has ended.'
+              : 'I’ve read the meeting. The product brief is in Google Drive, which I can’t open yet.') + '</p>' +
+            '<div class="tdx-cs sim-cs-ask">' + M.actionConfirmation({ id: 'sim-cs',
+              badge: exp ? 'Needs approval again' : 'Access request', icon: logo,
+              title: exp ? 'Google Drive access has expired' : 'Allow Aria to use Google Drive?',
+              description: exp
+                ? 'You allowed Google Drive 30 days ago. Access ends after 30 days so it doesn’t stay on indefinitely.'
+                : 'The product brief is in Google Drive. Aria needs to read it to compare it with this meeting.',
+              body: body, cancel: 'Not now', confirm: exp ? 'Allow again' : 'Continue', cancelAct: 'deny', confirmAct: 'allow' }) + '</div>');
+        }
+        if (s.step === 'connecting') {
+          out += aria('<div class="sim-cs-connecting" role="status">' + logo +
+            '<div><p class="wf-text">' + (s.pct < 60 ? 'Google Drive is confirming your account…' : 'Connecting to Google Drive…') + '</p>' +
+            M.progress(s.pct, 'Connecting to Google Drive') + '</div></div>');
+        }
+        if (s.step === 'reading') out += aria(working('Reading “Pricing brief v3” from Google Drive…'));
+        if (s.step === 'denied') {
+          out += aria('<p class="wf-text">Okay — I won’t use Google Drive, and nothing was opened. Your request is kept; ' +
+            'here are two other ways to finish it.</p>' +
+            '<div class="sim-cs-alts">' +
+              M.button({ variant: 'tonal', label: 'Continue without Drive', attrs: { 'data-act': 'without' } }) +
+              M.button({ variant: 'outlined', label: 'Add the brief as a file', icon: MI('attach'), attrs: { 'data-act': 'file' } }) +
+              M.button({ variant: 'text', label: 'Allow Google Drive', attrs: { 'data-act': 'ask' } }) +
+            '</div>');
+        }
+        return out;
       },
 
       controls: function (s) {
-        return s.step === 'asked' ? [] : [button('Start over', 'reset', 'text')];
+        var c = [];
+        if (s.granted && s.step === 'answered') c.push(button('Jump 30 days ahead', 'expire', 'outlined'));
+        if (s.step !== 'idle') c.push(button('Start over', 'reset', 'text'));
+        return c;
       },
 
       hint: function (s) {
-        if (s.step === 'asked')   return 'It got as far as it could on what it already had, ' +
-                                         'then stopped. The ask is a consequence of the work, ' +
-                                         'not a gate on the front door.';
-        if (s.step === 'consent') return 'Two sources, each with the reason it is needed for ' +
-                                         'THIS task. Refusing is a real option with a real answer.';
-        if (s.revoked)            return 'Taken back mid-session, and the briefing got smaller ' +
-                                         'in front of you &mdash; which is the proof the grant ' +
-                                         'was doing something.';
-        if (s.denied)             return 'Refused, and still briefed. A consent flow that ' +
-                                         'punishes no is not asking, it is demanding.';
-        if (s.granted && !(s.granted.crm && s.granted.files))
-                                  return 'Partial: it used what it was given and named the gap ' +
-                                         'instead of filling it in.';
-        if (s.step === 'done')    return 'Everything it read is listed under the briefing, and ' +
-                                         'any of it can be taken back from there.';
-        return '';
+        if (s.step === 'consent' && s.expired) return '<b>Expired.</b> It asks again — and says why it is asking again, rather than ' +
+          'acting as if this were the first time.';
+        if (s.step === 'consent') return '<b>Consent required.</b> Work stopped at the one step it is not allowed to take. What, why, the scope, ' +
+          'what happens next — and two real choices of equal size. Review the details, then decide.';
+        if (s.step === 'connecting') return '<b>Approved.</b> Only now does anything connect, and only for this conversation.';
+        if (s.step === 'reading') return 'The original task resumes on its own — you asked once.';
+        if (s.step === 'denied') return '<b>Denied.</b> Nothing was opened, the request survived, and the product still works: continue ' +
+          'without Drive, or hand Aria the one file it needs.';
+        if (s.revoked) return '<b>Revoked.</b> Access stopped at once. What was read is stated plainly; nothing new is opened.';
+        if (s.step === 'answered' && s.granted) return 'Allowed for this conversation only, with Turn off one press away. Try “Jump 30 days ' +
+          'ahead” to see what happens when access runs out.';
+        if (s.step === 'answered') return 'Finished without the permission — and clear about what that means for the answer.';
+        return 'Send the request in the composer. Aria will read the meeting, then stop where it needs your permission.';
       },
+
+      axSubmit: function (text, ctx) { return SIMS.consent.act('send:' + text, ctx); },
 
       act: async function (a, ctx) {
         var s = ctx.s;
-
-        /* Starting over re-runs the task, so it blocks again for the
-           same reason. Dropping the reader back on an idle screen
-           would lose the thing this simulator is about: the ask is a
-           consequence of work, not a button you press. */
+        var answer = 'The meeting moved away from the brief in two places. The brief prices the Team plan per seat; the meeting ' +
+          'agreed a flat price up to 25 seats. And the brief launches annual billing first, while Dana and Lee agreed to ship ' +
+          'monthly first. Everything else matches.';
         if (a === 'reset') {
+          Object.keys(s).forEach(function (k) { delete s[k]; });
           Object.assign(s, JSON.parse(JSON.stringify(SIMS.consent.initial)));
-          ctx.paint();
-          return SIMS.consent.act('start', ctx);
+          ctx.paint(); return;
         }
-        if (a === 'start') {
-          s.step = 'working'; ctx.paint();
-          await wait(1100);
-          s.step = 'consent'; ctx.paint(); return;
-        }
-        if (a.indexOf('scope:') === 0) {
-          var k = a.split(':')[1];
-          s.opts[k] = !s.opts[k];
-          ctx.el.classList.toggle('is-on', s.opts[k]);
-          ctx.el.setAttribute('aria-checked', String(s.opts[k]));
-          setTimeout(ctx.paint, reduce ? 0 : 240);
-          return;
-        }
-        if (a === 'allow' || a === 'deny') {
-          s.granted = a === 'deny'
-            ? { crm: false, files: false, mail: false }
-            : { crm: s.opts.crm, files: s.opts.files, mail: s.opts.mail };
-          s.denied = a === 'deny';
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText;
+          s.turns.push({ who: 'you', text: esc(text) }); s.axText = '';
+          if (s.granted && !s.expired) { return SIMS.consent.act('resume', ctx); }
           s.step = 'working'; ctx.paint();
           await wait(1200);
-          s.step = 'done'; ctx.paint();
-          await stream(ctx, 'brief', briefFor(s));
+          s.ask = { who: 'steps', list: [
+            { label: 'Read the meeting transcript', state: 'done', note: 'Already in this workspace' },
+            { label: 'Find the product brief', state: 'blocked', note: s.expired ? 'Google Drive access expired' : 'In Google Drive — not allowed yet' }] };
+          s.turns.push(s.ask);
+          s.step = 'consent'; s.review = false; ctx.paint();
+          ctx.announce && ctx.announce('Aria needs your permission to use Google Drive.');
           return;
         }
-        if (a.indexOf('revoke:') === 0) {
-          s.granted[a.split(':')[1]] = false;
-          s.revoked = true;
-          s.step = 'working'; ctx.paint();
-          await wait(900);
-          s.step = 'done'; ctx.paint();
-          await stream(ctx, 'brief', briefFor(s));
+        if (a === 'review') { s.review = !s.review; ctx.paint(); return; }
+        if (a === 'allow') {
+          s.step = 'connecting'; s.pct = 10; s.expired = false; ctx.paint();
+          ctx.announce && ctx.announce('Connecting to Google Drive.');
+          for (var p = 30; p <= 100; p += 35) { await wait(450); s.pct = Math.min(100, p); ctx.paint(); }
+          s.granted = true; s.revoked = false;
+          if (s.ask) s.ask.list[1] = { label: 'Find the product brief', state: 'done', note: 'Pricing brief v3 · Google Drive' };
+          s.turns.push({ who: 'conn' });
+          return SIMS.consent.act('resume', ctx);
+        }
+        if (a === 'resume') {
+          s.step = 'reading'; ctx.paint();
+          await wait(1300);
+          s.step = 'answered';
+          var t = { who: 'aria', text: '', live: true, src: 'Sources <b>Pricing sync transcript</b> &middot; <b>Pricing brief v3</b> (Google Drive)' };
+          s.turns.push(t); ctx.paint();
+          var words = answer.split(' ');
+          s.streaming = true;
+          for (var i = 0; i < words.length; i++) { t.text += (i ? ' ' : '') + words[i]; ctx.paint(); await wait(26); }
+          s.streaming = false; t.live = false; ctx.paint();
+          return;
+        }
+        if (a === 'deny') {
+          if (s.ask) s.ask.list[1] = { label: 'Find the product brief', state: 'skipped', note: 'Not allowed — nothing opened' };
+          s.step = 'denied'; ctx.paint();
+          ctx.announce && ctx.announce('Google Drive not allowed. Your request is kept.');
+          return;
+        }
+        if (a === 'ask') { s.step = 'consent'; s.review = false; ctx.paint(); return; }
+        if (a === 'without') {
+          s.step = 'answered';
+          s.turns.push({ who: 'aria', text: 'Without the brief, I can only summarise the decisions from this meeting: a flat price up to ' +
+            '25 seats, and monthly billing before annual. I haven’t compared them with the brief, so I can’t say what changed.' });
+          ctx.paint(); return;
+        }
+        if (a === 'file') {
+          if (s.ask) s.ask.list[1] = { label: 'Find the product brief', state: 'done', note: 'Added by you as a file' };
+          s.turns.push({ who: 'you', text: 'Here’s the brief. <span class="sim-cs-file">' + MI('doc') + 'Pricing brief v3.pdf</span>' });
+          s.step = 'reading'; ctx.paint();
+          await wait(1200);
+          s.step = 'answered';
+          s.turns.push({ who: 'aria', text: answer, src: 'Sources <b>Pricing sync transcript</b> &middot; <b>Pricing brief v3.pdf</b> (added by you)' });
+          ctx.paint(); return;
+        }
+        if (a === 'revoke') {
+          s.granted = false; s.revoked = true;
+          s.turns.push({ who: 'note', text: '<b>Google Drive turned off.</b> I can’t open new files from Drive. The brief I already ' +
+            'read is quoted above and stays in this conversation.' });
+          ctx.paint();
+          ctx.announce && ctx.announce('Google Drive turned off.');
+          return;
+        }
+        if (a === 'expire') {
+          s.expired = true;
+          s.turns.push({ who: 'time', text: '30 days later' });
+          s.axText = 'Check the brief again — has the Team price changed?';
+          s.step = 'idle'; ctx.paint(); return;
         }
       }
     },
 
     /* ──────────────────────────────────────────────────────
-       DISCLAIMER · onboarding / first run
+       DISCLAIMER / AGENT LIMITS · conversation
 
-       purpose      state the edges before anyone relies on them
-       user goal    find out whether this thing can do their job
-       agent goal   be trusted inside its limits, not outside
-       trigger      the very first time the panel is opened
-       context      a research assistant inside a knowledge tool
-       decision     acknowledge, then ask something at the edge
-       after        the limit it declared is the limit it enforces
+       purpose      say what the agent can't do, where it matters
+       user goal    turn this meeting's action items into Jira tasks
+       agent goal   do what it can, stop honestly at what it can't
+       trigger      the request needs Jira, which isn't connected
+       context      a meeting assistant; Jira not connected
+       decision     connect Jira, or continue with drafts
+       after        drafts kept; the work continues either way
        ────────────────────────────────────────────────────── */
     disclaimer: {
-      shell: 'onboarding',
-      product: 'Atlas',
+      shell: 'conversation',
+      product: 'Huddle',
       agent: 'Aria',
-      note: 'First time open. The limits are stated in full before anything can be asked &mdash; ' +
-            'then ask the one thing they rule out.',
+      note: 'Ask Aria to create Jira tasks from a meeting. The general limits are one line at the top; the specific one appears ' +
+            'when the request needs it, and again when Aria reaches it — with your drafts kept and two ways on.',
 
-      initial: { step: 'first', asked: null, answer: '', streaming: false, reopened: false },
+      initial: { step: 'idle', turns: [], open: false, jira: false, reviewed: false, created: false,
+                 axText: 'Create Jira tasks from these action items.', opts: {} },
 
-      title: function (s) {
-        return s.step === 'first' ? 'Research &middot; first run' : 'Research &middot; Q3 policy review';
+      title: function () { return 'Launch sync · action items'; },
+      pill: function (s) { return s.created ? '4 tasks created' : s.step === 'working' ? 'Aria working' : s.jira ? 'Jira connected' : 'Jira not connected'; },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var head = '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; AI agent</p>';
+        var out = md3Card('filled',
+          '<div class="cd-lm__head">' + MI('info') + '<p class="md-body-medium">Aria drafts tasks and summaries from your meetings. It can’t create Jira tasks until Jira is connected.</p></div>' +
+          '<div class="cd-acts">' + md3Button({ variant: 'text', label: s.open ? 'Hide details' : 'See what Aria can and can’t do', icon: MI(s.open ? 'chevDown' : 'chevRight'),
+            attrs: { 'data-act': 'limits', 'aria-expanded': String(!!s.open), 'aria-controls': 'sim-lm-more' } }) + '</div>' +
+          (s.open ? '<ul class="sim-lm__more md-body-small" id="sim-lm-more">' +
+            '<li><b>Can</b> — summarize meetings, find decisions, draft tasks and emails.</li>' +
+            '<li><b>Can’t</b> — join calls on its own; create Jira tasks without Jira.</li>' +
+            '<li><b>Needs your approval</b> — sending email, posting to channels.</li>' +
+            '<li><b>May get wrong</b> — decisions when speakers disagree; names in poor audio.</li></ul>' : ''),
+          'cd-lm sim-lm', { role: 'region', 'aria-label': 'What Aria can and can’t do' });
+        out += s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: t.text });
+          if (t.who === 'drafts') {
+            return md3Message({ role: 'assistant', avatar: av, head: head, body: 'I drafted 4 tasks from the action items:' +
+              '<ol class="sim-lm__drafts">' + SIM_DRAFTS.map(function (d) { return '<li>' + d + '</li>'; }).join('') + '</ol>' }) +
+              (s.created ? '' : md3Banner({ icon: MI('info'), cls: 'sim-lm__banner',
+                text: s.jira ? '<b>Jira is connected now.</b> Create the 4 tasks when you’re happy with the drafts.' : '<b>I couldn’t create them — Jira isn’t connected.</b> Your 4 drafts are kept here.',
+                actions: md3Button({ variant: 'text', label: s.jira ? 'Create 4 tasks' : 'Connect Jira', attrs: { 'data-act': s.jira ? 'create' : 'connect' } }) +
+                  (s.reviewed ? '' : md3Button({ variant: 'text', label: 'Review drafts', attrs: { 'data-act': 'review' } })) }));
+          }
+          return md3Message({ role: 'assistant', avatar: av, head: head, body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working('Reading the action items…');
+        if (!s.turns.length && /jira/i.test(s.axText || '') && !s.jira) {
+          out += '<div class="sim-lm__ctx">' + md3Card('outlined', '<div class="cd-lm__head">' + MI('info') +
+            '<p class="md-body-medium">Aria can draft these tasks, but Jira isn’t connected, so it can’t create them yet.</p></div>' +
+            '<div class="cd-acts">' + md3Button({ variant: 'text', label: 'Connect Jira', attrs: { 'data-act': 'connect' } }) + '</div>', 'cd-lm', { role: 'note', 'aria-label': 'Limit' }) + '</div>';
+        }
+        return out;
       },
-      pill: function (s) { return s.step === 'first' ? 'Not started' : 'Open'; },
 
-      overlay: function (s) {
-        if (s.step !== 'first') return '';
-        return '<section class="md-disclaim sc-rise" role="dialog" aria-modal="true" ' +
-            'aria-labelledby="sim-dc">' +
-          MI('spark', 'md-disclaim__ico') +
-          '<h2 class="md-disclaim__t md-title-medium" id="sim-dc">What Aria can and cannot do</h2>' +
-          '<p class="md-disclaim__b md-body-small">Aria is an assistant, not a person, and its ' +
-          'answers are generated from the sources below. Worth knowing before you rely on one:</p>' +
-          '<ul class="md-disclaim__list md-body-small">' +
-            '<li><span class="md-disclaim__k">Can</span><span>Search the 14,000 documents in ' +
-            'this workspace and quote them with a link.</span></li>' +
-            '<li><span class="md-disclaim__k">Will not</span><span>Share anything outside your ' +
-            'team, or act on a document without you approving it.</span></li>' +
-            '<li><span class="md-disclaim__k">Cannot see</span><span>Anything filed after ' +
-            '31 August, or the legal team&rsquo;s private space.</span></li>' +
-          '</ul>' +
-          '<div class="md-disclaim__foot">' +
-            '<button class="md-button md-button--text md-button--sm" type="button">Data &amp; ' +
-            'retention</button>' + button('Got it', 'ack') +
-          '</div>' +
-        '</section>';
+      controls: function (s) { return s.turns.length ? [button('Start over', 'reset', 'text')] : []; },
+
+      hint: function (s) {
+        if (s.created) return '<b>Done.</b> Once Jira was connected, the same drafts became tasks — nothing had to be redone.';
+        if (s.reviewed) return '<b>Recovery.</b> Work continues with the drafts. The limit is still one action away: connect Jira when ready.';
+        if (s.turns.length) return '<b>Limit encountered.</b> Aria did the part it can, said exactly what it couldn’t, kept the drafts and offered two next steps. Not the error colour — nothing failed.';
+        if (s.open) return '<b>Details.</b> Can, can’t, needs approval, may get wrong — and where to review.';
+        return 'The general limit is one line at the top. The request in the composer needs Jira — so the specific limit shows before you send. Send it anyway.';
       },
 
-      /* The starters exist so the first request is not a blank
-         page — and one of them deliberately walks into the limit
-         that was just stated. */
-      hero: function (s) {
-        /* Rendered behind the first-run scrim as well as after it.
-           A statement floating over an empty frame is a modal in a
-           vacuum; the point is that it is gating a real workspace
-           the reader can already see. */
-        if (s.asked) return '';
-        return '<div class="sim-hello">' + mark('md-agentav--lg') +
-          '<p class="sim-hello__t">Aria, research assistant</p>' +
-          '<p class="sim-hello__d">Ask about anything filed in this workspace. Answers quote ' +
-          'their source.</p>' +
-          '<div class="sim-starters"' + (s.step === 'first' ? ' inert' : '') + '>' +
-            '<button class="wf-chip" type="button" data-act="ask:policy">What changed in the ' +
-            'retention policy this year?</button>' +
-            '<button class="wf-chip" type="button" data-act="ask:sept">Summarise the September ' +
-            'filings</button>' +
-          '</div>' +
+      axSubmit: function (text, ctx) { return SIMS.disclaimer.act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a === 'limits') { s.open = !s.open; ctx.paint(); return; }
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS.disclaimer.initial))); ctx.paint(); return; }
+        if (a === 'connect') { s.jira = true; ctx.paint(); ctx.announce && ctx.announce('Jira connected. Your drafts are kept.'); return; }
+        if (a === 'review') { s.reviewed = true; s.turns.push({ who: 'agent', text: 'Here they are to review. Edit any of them — I’ll create them once Jira is connected, or you can copy them into Jira yourself.' }); ctx.paint(); return; }
+        if (a === 'create') { s.created = true; s.turns.push({ who: 'agent', text: 'Created 4 tasks in Jira: PAY-201 to PAY-204.' }); ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText;
+          if (!text) return;
+          s.turns.push({ who: 'you', text: esc(text) }); s.axText = '';
+          s.step = 'working'; ctx.paint();
+          await wait(1400);
+          s.step = 'idle'; s.turns.push({ who: 'drafts' }); ctx.paint();
+          ctx.announce && ctx.announce(s.jira ? 'Drafted 4 tasks.' : 'Drafted 4 tasks. Jira isn’t connected, so they weren’t created. Your drafts are kept.');
+        }
+      }
+    },
+
+
+    /* ──────────────────────────────────────────────────────
+       COLOR · workspace
+
+       purpose      colour that means something, from tokens only
+       user goal    get the launch checklist checked
+       agent goal   check it, ask once, report the result
+       trigger      they assign the checklist to Aria
+       context      a launch board with three tasks
+       decision     what needs me? what is done? what is wrong?
+       after        success, a warning elsewhere — readable in greyscale
+       ────────────────────────────────────────────────────── */
+    color: {
+      shell: 'workspace',
+      product: 'Launchpad',
+      agent: 'Aria',
+      note: 'A launch board. Assign the checklist to Aria and follow it from available to working, approval, source used and done — ' +
+            'every state a token role with its own glyph and words. Turn on greyscale: nothing is lost. Turn on colour only: everything is.',
+
+      initial: { step: 'available', opts: { grey: false, dark: false, dot: false } },
+      halo: false,
+
+      title: function () { return 'Release 2.4 &middot; launch board'; },
+      pill: function (s) { return { available: 'Ready', working: 'Aria working', attention: 'Needs you', success: 'Checklist complete', error: 'Tracker error' }[s.step]; },
+      phase: function (s) { return s.step === 'working' ? 'working' : s.step === 'success' ? 'done' : 'idle'; },
+
+      tools: function (s) {
+        var M = md3();
+        return M.button({ variant: 'text', label: 'Board', attrs: { 'data-act': 'noop' } }) +
+          '<span class="sim-tdx-gap" aria-hidden="true"></span>' +
+          (s.step === 'available' ? M.button({ variant: 'tonal', label: 'Assign checklist to Aria', icon: aiIcon('action'), attrs: { 'data-act': 'go' } }) : '') +
+          (s.step === 'error' ? M.button({ variant: 'tonal', label: 'Retry', icon: MI('refresh'), attrs: { 'data-act': 'go' } }) : '');
+      },
+
+      canvas: function (s) {
+        var o = s.opts, R = NX_ROLES;
+        var map = { available: ['neutralHigh', 'agent', 'Available', 'Aria can check this when you’re ready.'],
+                    working: ['agent', 'working', 'Checking 12 items…', 'Comparing each item with the release tracker.'],
+                    attention: ['attention', 'help', 'Needs your approval', 'Two items look done in the tracker. Mark them complete?'],
+                    success: ['neutral', 'checkCircle', 'Checklist complete', 'All 12 items pass.'],
+                    error: ['error', 'error', 'Couldn’t open the tracker', 'Nothing was checked. Your list is unchanged.'] }[s.step];
+        function status(role, icon, label, ink) {
+          if (o.dot) return '<span class="idv-status is-dot"><span class="idv-dot ' + R[ink ? 'success' : role] + '" aria-hidden="true"></span><span class="tdx-sr">' + label + '</span></span>';
+          return '<span class="idv-status ' + R[role] + (/^neutral/.test(role) ? ' ' + R.outline : '') + '"><span class="idv-status__i' + (ink ? ' ' + R.successInk : '') + '">' +
+            (icon === 'working' ? aiIcon('working') : MI(icon)) + '</span><span>' + label + '</span></span>';
+        }
+        function card(title, who, st, body, extra) {
+          return '<article class="idv-task ' + R.neutralLow + '"><header class="idv-task__h">' + who +
+            '<div class="idv-hero__t"><h3 class="md-title-small">' + title + '</h3></div>' + st + '</header>' +
+            '<p class="md-body-medium">' + body + '</p>' + (extra || '') + '</article>';
+        }
+        var aria = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: 'Aria, AI agent', src: NX_AGENT_ASSET });
+        var extra = (s.step === 'working' ? md3Progress(42, 'Checking the launch checklist') : '') +
+          (s.step === 'attention' ? '<div class="idv-acts">' + md3Button({ variant: 'filled', label: 'Approve', attrs: { 'data-act': 'approve' } }) +
+            md3Button({ variant: 'text', label: 'Not now', attrs: { 'data-act': 'deny' } }) + '</div>' : '') +
+          (s.step === 'success' ? '<span class="idv-evidence ' + R.evidence + '">' + MI('doc') + '<span>Used: Launch plan v3</span></span>' : '');
+        return '<div class="sim-idv sim-idv--color idv--color' + (o.dark ? ' dark' : '') + (o.grey ? ' is-grey' : '') + '">' +
+          card('Launch checklist', aria, status(map[0], map[1], map[2], s.step === 'success'), map[3], extra) +
+          card('Release notes', nxAvatar({ kind: 'human', name: 'Maya Chen', initials: 'MC', size: 32 }),
+            status('warning', 'warning', 'Due tomorrow', false), 'Maya &middot; 2 sections left.') +
+          card('Support macro', nxAvatar({ kind: 'human', name: 'Jordan Lee', initials: 'JL', size: 32 }),
+            status('neutralHigh', 'schedule', 'Not started', false), 'Jordan &middot; due Monday.') +
         '</div>';
       },
 
-      thread: function (s) {
-        if (!s.asked) return '';
-        var q = s.asked === 'sept' ? 'Summarise the September filings'
-                                   : 'What changed in the retention policy this year?';
-        return '<div class="wf-you"><div class="wf-bubble">' + q + '</div></div>' +
-          (s.step === 'working'
-            ? '<div class="sim-turn">' + mark('md-agentav--sm md-agentav--thinking') +
-              '<div>' + working('Searching the workspace…') + '</div></div>'
-            : '<div class="sim-turn">' + mark('md-agentav--sm') +
-              '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-              chip() + '</div>' +
-              '<p class="wf-text">' + caret(s.answer, s.streaming) + '</p></div></div>');
-      },
-
-      foot: function (s) {
-        if (s.step === 'first') return '';
-        /* The reminder sits BENEATH the composer, not above it. It
-           is a footnote to the thing you are about to send, and a
-           caption above an input reads as a label for it — which
-           this is not. Below, it is also the last thing in reading
-           order before you commit, which is when it is worth
-           anything at all. */
-        return '<form class="wf-ask" data-form>' +
-            '<input class="wf-ask__input" data-input type="text" autocomplete="off" ' +
-              'placeholder="Ask me anything" aria-label="Ask Aria">' +
-            '<button class="wf-ask__send" type="submit" aria-label="Send">' + ICON_SEND +
-            '</button>' +
-          '</form>' +
-          '<button class="md-disclaim-line md-body-small" type="button" data-act="reopen">' +
-            MI('info', 'md-disclaim-line__ico') +
-            'Aria can be wrong, and cannot see everything. What it knows.' +
-          '</button>';
-      },
-
       controls: function (s) {
-        return s.step === 'first' ? [] : [button('Start over', 'reset', 'text')];
+        return [toggle('Greyscale', 'opt:grey', s.opts.grey), toggle('Dark theme', 'opt:dark', s.opts.dark), toggle('Colour only', 'opt:dot', s.opts.dot),
+                button('Tracker fails', 'fail', 'outlined')]
+          .concat(s.step !== 'available' ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (s.step === 'first')   return 'Said once, at full size, before the first request. It ' +
-                                         'is a dialog here because nothing can be asked until ' +
-                                         'it has been read.';
-        if (s.reopened)           return 'Reopened from the line above the composer. A limit ' +
-                                         'stated once and then hidden is a limit nobody has.';
-        if (s.asked === 'sept')   return 'The limit it declared is the limit it enforces &mdash; ' +
-                                         'and it names the same cut-off it named at the start.';
-        if (s.asked)              return 'Inside its stated scope, so it simply answers, and ' +
-                                         'quotes where the answer came from.';
-        return 'What is left of the statement is one line above the composer, which reopens all ' +
-               'of it.';
+        if (s.opts.dot) return '<b>Anti-pattern.</b> Coloured dots only. In greyscale, to someone with colour blindness or to a screen reader user scanning visually, “needs you” and “done” are the same dot.';
+        if (s.opts.grey) return '<b>Greyscale.</b> Every status still has its glyph and its words, so nothing is lost when the colour is.';
+        return { available: 'Neutral surfaces; the only colour is Aria’s own container. Assign the checklist.',
+                 working: '<b>Agent role.</b> primary-container, the working glyph and the words.',
+                 attention: '<b>Attention role.</b> tertiary-container for “needs you” — not error, not warning.',
+                 success: '<b>Success.</b> The check glyph carries the success colour, the source sits in the evidence role (secondary-container), and the warning on Release notes keeps its own meaning.',
+                 error: '<b>Error role.</b> error-container, used only for a failure — with what failed and Retry.' }[s.step];
       },
 
       act: async function (a, ctx) {
         var s = ctx.s;
-        if (a === 'reset')  { Object.assign(s, JSON.parse(JSON.stringify(SIMS.disclaimer.initial)));
-                              ctx.paint(); return; }
-        if (a === 'ack')    { s.step = 'open'; ctx.paint(); return; }
-        if (a === 'reopen') { s.step = 'first'; s.reopened = true; ctx.paint(); return; }
-        if (a.indexOf('ask:') === 0) {
-          s.asked = a.split(':')[1];
-          s.step = 'working'; ctx.paint();
-          await wait(1100);
-          s.step = 'open'; ctx.paint();
-          await stream(ctx, 'answer', s.asked === 'sept'
-            ? 'I cannot see anything filed after 31 August &mdash; that is one of the three ' +
-              'limits from the start of this session, and September is entirely on the other ' +
-              'side of it. Records after that date would have to come from the filing system ' +
-              'directly.'
-            : 'Retention went from seven years to five in March, and the exception for ' +
-              'contested accounts was removed in June. Both changes are in <b>Policy 4.2 ' +
-              '&sect;3</b>, filed 12 June.');
+        if (a === 'noop') return;
+        if (a === 'opt:grey' || a === 'opt:dark' || a === 'opt:dot') { flip(ctx, a.slice(4)); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS.color.initial))); s.opts = o; ctx.paint(); return; }
+        if (a === 'fail') { s.run = (s.run || 0) + 1; s.step = 'error'; ctx.paint(); ctx.announce && ctx.announce('Couldn’t open the release tracker. Nothing was checked.'); return; }
+        if (a === 'deny') { s.step = 'available'; ctx.paint(); ctx.announce && ctx.announce('Nothing was marked done.'); return; }
+        if (a === 'approve') { s.step = 'success'; ctx.paint(); ctx.announce && ctx.announce('Checklist complete. All 12 items pass.'); return; }
+        if (a === 'go') {
+          var run = (s.run || 0) + 1; s.run = run;
+          s.step = 'working'; ctx.paint(); ctx.announce && ctx.announce('Aria is checking 12 items.');
+          await wait(1800); if (s.run !== run) return;
+          s.step = 'attention'; ctx.paint(); ctx.announce && ctx.announce('Aria needs your approval.');
         }
       }
     },
 
-    /* ──────────────────────────────────────────────────────
-       COLOR · document editor
-
-       purpose      say whose words these are, and for how long
-       user goal    finish a section they are stuck on
-       agent goal   draft into the document without owning it
-       trigger      the writer selects a line and asks for help
-       context      a document tool, mid-draft, file already owned
-       decision     keep it or throw it away
-       after        the accent leaves with the decision either way
-       ────────────────────────────────────────────────────── */
-    color: {
-      shell: 'document',
-      product: 'Notebook',
-      agent: 'Aria',
-      note: 'Ask for help on a paragraph you own. The accent marks what is not yours yet &mdash; ' +
-            'and leaves with the work. Then read it in greyscale.',
-
-      initial: { step: 'idle', text: '', streaming: false, kept: false, opts: { grey: false } },
-
-      title: function () { return 'Q3 retention policy &mdash; draft'; },
-      pill: function (s) {
-        if (s.step === 'drafting' || s.step === 'settled') return 'Unsaved';
-        return s.kept ? 'Edited by you' : 'Saved';
-      },
-      grey: function (s) { return s.opts.grey; },
-      live: function (s) { return s.step === 'drafting' || s.step === 'settled'; },
-
-      paper: function (s) {
-        var live = s.step === 'drafting' || s.step === 'settled';
-        return '<h1 class="sim-doc__h">Retention policy, Q3</h1>' +
-          '<p class="sim-doc__meta">Owned by you &middot; shared with 4 people</p>' +
-          '<p class="sim-doc__p">Records are held for five years from the close of the account. ' +
-          'The exception for contested accounts was withdrawn in June.</p>' +
-
-          (s.step === 'idle'
-            ? '<p class="sim-doc__p sim-doc__p--sel">Accounts closed before March 2024 are ' +
-              'governed by the previous schedule.' +
-              '<button class="sim-doc__ask" type="button" data-act="draft">' +
-              MI('spark', 'md-glyph') +
-              'Continue this paragraph</button></p>'
-            : '<p class="sim-doc__p">Accounts closed before March 2024 are governed by the ' +
-              'previous schedule.</p>')
-
-          + (live || s.kept
-            ? '<div class="sim-doc__block' + (live ? ' is-live' : '') +
-                (s.step === 'drafting' ? ' is-settling' : '') + '">' +
-                (s.step === 'drafting' && !s.text ? working('Aria is drafting…') : '') +
-                (s.text ? '<p class="sim-doc__p">' + caret(s.text, s.streaming) + '</p>' : '') +
-                (s.kept ? '<span class="sim-doc__prov">' + chip('Drafted by Aria, kept by you') +
-                          '</span>' : '') +
-              '</div>'
-            : '');
-      },
-
-      foot: function (s) {
-        if (s.step === 'drafting') {
-          return '<span class="sim-doc__who">' + mark('md-agentav--sm md-agentav--thinking') +
-            'Aria is writing in this document &mdash; nothing is saved yet</span>' +
-            button('Stop', 'stop', 'text');
-        }
-        if (s.step === 'settled') {
-          return '<span class="sim-doc__who">' + mark('md-agentav--sm') +
-            'Two sentences from Aria, unsaved</span>' +
-            button('Keep it', 'keep') + button('Throw it away', 'discard', 'text');
-        }
-        return '';
-      },
-
-      controls: function (s) {
-        return [toggle('Greyscale', 'opt:grey', s.opts.grey)]
-          .concat(s.step === 'idle' && !s.kept ? [] : [button('Start over', 'reset', 'text')]);
-      },
-
-      hint: function (s) {
-        if (s.opts.grey) return 'Hue removed and it still parses: the mark, the label and the ' +
-                                'outline carry the same split the colour did. Colour is never ' +
-                                'the only signal.';
-        if (s.step === 'drafting') return 'Unboxed while it is being written &mdash; tinted ' +
-                                          'ground, soft edge. The boundary hardens as the ' +
-                                          'sentences settle.';
-        if (s.step === 'settled')  return 'Settled but not yours: the accent is the product ' +
-                                          'saying this text is still the agent&rsquo;s to take back.';
-        if (s.kept)                return 'Kept, so the accent drains away. The words are the ' +
-                                          'document&rsquo;s now and only the chip records where ' +
-                                          'they came from.';
-        return 'Nothing of the agent is on screen, because the agent is not doing anything. ' +
-               'The accent is a state, not a brand.';
-      },
-
-      act: async function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'opt:grey') { flip(ctx, 'grey'); return; }
-        if (a === 'reset')    { var g = s.opts.grey;
-                                Object.assign(s, JSON.parse(JSON.stringify(SIMS.color.initial)));
-                                s.opts.grey = g; ctx.paint(); return; }
-        if (a === 'stop')     { s.step = 'idle'; s.text = ''; s.streaming = false;
-                                ctx.paint(); return; }
-        if (a === 'discard')  { s.step = 'idle'; s.text = ''; s.kept = false; ctx.paint(); return; }
-        if (a === 'keep')     { s.step = 'idle'; s.kept = true; ctx.paint(); return; }
-        if (a === 'draft') {
-          s.step = 'drafting'; s.text = ''; s.kept = false; ctx.paint();
-          await wait(900);
-          await stream(ctx, 'text',
-            'Those accounts keep the seven-year schedule until they close, and no record moves ' +
-            'to the shorter term retrospectively. Anything contested before June keeps the old ' +
-            'exception as well.');
-          s.step = 'settled'; ctx.paint();
-        }
-      }
-    },
 
     /* ──────────────────────────────────────────────────────
-       DISCLOSURE · inbox
+       DISCLOSURE · document
 
-       purpose   say a machine wrote this, where it could be
-                 mistaken for a colleague
-       context   a shared support inbox — three people and an agent
-                 all post into the same thread
-       decision  send the generated reply as it stands
-       after     it sits in the thread permanently, beside human
-                 turns, and is read by people who were not here
+       purpose      make AI involvement legible where it matters
+       user goal    tighten one paragraph of the 2.4 release notes
+       agent goal   rewrite it, and say so — before, during, after
+       trigger      the person reaches for Rewrite
+       context      a release-notes doc that two teammates also wrote
+       decision     run AI on this paragraph? keep what came back?
+       after        the paragraph carries its label wherever it goes,
+                    including for the reviewer who opens it next
        ────────────────────────────────────────────────────── */
     disclosure: {
-      shell: 'inbox',
-      product: 'Relay',
+      shell: 'workspace',
+      product: 'Folio',
       agent: 'Aria',
-      note: 'Three people and an agent post into the same thread. Send the generated reply, then ' +
-            'turn the markers off and read it as someone arriving cold.',
+      note: 'A release note three people wrote. Ask Aria to rewrite your paragraph and watch the three meanings stay apart: ' +
+            'the <b>action</b> says what it will do, the <b>working</b> state says it is doing it, and the <b>result</b> says ' +
+            'it came from AI — then open the document as the reviewer and check the label is still there.',
 
-      initial: { step: 'idle', text: '', streaming: false, sent: false, opts: { on: true } },
+      initial: { step: 'idle', open: false, original: false, opts: { reviewer: false } },
+      halo: false,
 
-      title: function () { return 'Billing &middot; duplicate charge, #2214'; },
-      pill: function (s) { return s.sent ? 'Answered' : 'Open'; },
-      audit: function () { return false; },
-
-      queue: function (s) {
-        return '<p class="sim-rail__k">Assigned to you</p>' +
-          [['Duplicate charge, #2214', 'Priya &middot; ' + (s.sent ? 'answered' : '12m'), true],
-           ['Seat count for August', 'R. Okonjo &middot; 2h', false],
-           ['Refund window', 'Billing &middot; 1d', false]].map(function (r) {
-            return '<div class="wf-ticket' + (r[2] ? ' is-current' : '') + '">' +
-              '<span class="wf-ticket__s">' + r[0] + '</span>' +
-              '<span class="wf-ticket__m">' + r[1] + '</span></div>';
-          }).join('');
+      title: function () { return 'Release notes &middot; 2.4'; },
+      pill: function (s) {
+        if (s.opts.reviewer) return 'Viewing as Dana';
+        return s.step === 'working' ? 'Aria working' : s.step === 'done' ? 'Draft · edited with Aria' : 'Draft';
+      },
+      phase: function (s) {
+        if (s.step === 'working') return 'working';
+        if (s.step === 'done') return 'done';
+        return 'idle';
       },
 
-      thread: function (s) {
-        var lab = s.opts.on;
-        var out =
-          human('Priya Nair', 'PN', 'Customer says they were charged twice in July. I can see ' +
-                'one charge in Stripe. Anyone else looked at this?', '09:41') +
-          human('Marco Diaz', 'MD', 'Not me. The second one might be the annual plan pro-rating ' +
-                '&mdash; it does that on upgrade.', '09:52');
-
-        if (s.step === 'working') {
-          out += '<div class="sim-turn">' + mark('md-agentav--sm md-agentav--thinking') +
-            '<div>' + working('Checking the billing record…') + '</div></div>';
+      tools: function (s) {
+        var M = md3();
+        if (s.opts.reviewer) {
+          return '<span class="sim-tdx-ro">' + MI('visibility') + 'Read only &middot; shared with you by Jordan</span>' +
+            M.button({ variant: 'text', label: 'Comment', attrs: { 'data-act': 'noop' } });
         }
-        if (s.sent || s.text) {
-          out += '<div class="sim-turn sc-rise">' +
-            (lab ? mark('md-agentav--sm')
-                 : '<span class="md-agentav md-agentav--sm md-agentav--human" ' +
-                   'aria-hidden="true">V</span>') +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-              (lab ? chip() : '') +
-              '<span class="sim-turn__time">10:03</span></div>' +
-            '<p class="wf-text">' + caret(s.text, s.streaming) + '</p></div></div>';
-        }
-        return out;
+        var busy = s.step === 'working';
+        var rw = busy
+          ? M.button({ variant: 'tonal', label: 'Rewriting…', icon: aiIcon('working'), cls: 'tdx-act is-busy',
+              attrs: { 'aria-disabled': 'true', 'aria-label': 'Agent working: rewriting with AI' } })
+          : M.button({ variant: 'tonal', label: 'Rewrite', icon: aiIcon('action'), cls: 'tdx-act',
+              attrs: { 'data-act': s.step === 'idle' ? 'pick' : 'rewrite', 'aria-label': 'Rewrite with AI',
+                       'aria-describedby': s.step === 'picked' ? 'sim-tdx-why' : null } });
+        return M.button({ variant: 'text', label: 'Preview', attrs: { 'data-act': 'noop' } }) +
+          M.button({ variant: 'text', label: 'Share', attrs: { 'data-act': 'noop' } }) +
+          '<span class="sim-tdx-gap" aria-hidden="true"></span>' + rw;
       },
 
-      foot: function (s) {
-        if (s.sent) {
-          return '<p class="sim-foot__note">Posted to the thread. Two of the four people on ' +
-                 'this ticket were not online when it went up.</p>' +
-                 button('Start over', 'reset', 'text');
-        }
-        if (s.text && !s.streaming) {
-          return button('Post it to the thread', 'send') +
-                 button('Discard', 'reset', 'text');
-        }
-        return s.step === 'working' ? '' : button('Ask Aria to answer', 'gen');
+      canvas: function (s) {
+        var M = md3(), busy = s.step === 'working', gen = s.step === 'done', picked = s.step === 'picked' || busy;
+        var ro = s.opts.reviewer;
+        var orig = 'This release has lots of fixes. Exports are faster now and the problems with sharing should be sorted, ' +
+                   'also the dashboard loads quicker for big teams.';
+        var neu = 'Exports run up to twice as fast, shared links no longer expire early, and dashboards load faster for large teams.';
+        function by(name) { return '<span class="sim-tdx-by">' + name + '</span>'; }
+
+        var why = s.step === 'picked' && !ro
+          ? '<p class="tdx-why md-body-small" id="sim-tdx-why">' + aiIcon('action') +
+              '<span><b>Rewrite with AI.</b> Aria rewrites the Highlights paragraph. You review the result before it ' +
+              'replaces your text.</span></p>'
+          : '';
+
+        var label = gen
+          ? '<div class="tdx-foot">' +
+              '<button type="button" class="' + md3ChipClass(false, false).replace('md-sp__chip', 'tdx-chip') + ' tdx-mark tdx-mark--outlined" ' +
+                'data-act="details" aria-expanded="' + !!s.open + '" aria-controls="sim-tdx-details">' +
+                '<span class="relative shrink-0">' + aiIcon('generated') + '</span>' +
+                '<span class="relative">Generated with AI</span>' +
+                '<span class="relative shrink-0 tdx-chip__t">' + MI(s.open ? 'chevDown' : 'chevRight') + '</span></button>' +
+              (ro ? '' : M.button({ variant: 'text', label: 'Undo', attrs: { 'data-act': 'undo' } })) +
+            '</div>' +
+            (s.open
+              ? '<div class="tdx-details" id="sim-tdx-details" role="region" aria-label="About this paragraph">' +
+                  M.card('outlined',
+                    '<dl class="tdx-facts">' +
+                      '<div><dt>What Aria did</dt><dd>' + (ro ? 'Rewrote Jordan’s paragraph, at Jordan’s request, to be shorter and clearer.'
+                        : 'Rewrote your paragraph to be shorter and clearer. It did not add features that are not in the changelog.') + '</dd></div>' +
+                      '<div><dt>What it used</dt><dd>' + (ro ? 'Jordan’s draft' : 'Your draft') + ' of this paragraph, and the 2.4 changelog (14 entries).</dd></div>' +
+                      '<div><dt>Not checked</dt><dd>Facts, figures and dates — “up to twice as fast” comes from changelog entry EXP-210.</dd></div>' +
+                      (ro ? '<div><dt>Kept by</dt><dd>Jordan, 10:42</dd></div>'
+                          : '<div><dt>Your original</dt><dd>' + (s.original ? '<q class="tdx-orig">' + orig + '</q>' : 'Kept. Undo brings it back.') + '</dd></div>') +
+                    '</dl>' +
+                    (ro ? '' : '<div class="tdx-details__acts">' + M.button({ variant: 'text', label: s.original ? 'Hide original' : 'Show original',
+                      attrs: { 'data-act': 'original', 'aria-pressed': String(!!s.original) } }) + '</div>'),
+                    'tdx-details__card') +
+                '</div>'
+              : '')
+          : '';
+
+        var status = busy
+          ? '<div class="tdx-status"><span class="tdx-sr">Agent working: rewriting the Highlights paragraph with AI</span>' +
+              M.progress(undefined, 'Rewriting with AI') +
+              M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'stop' } }) + '</div>'
+          : '';
+
+        var hl = '<section class="tdx-para' + (picked && !ro ? ' is-picked' : '') + (busy ? ' is-busy' : '') + (gen ? ' is-ai' : '') + '"' +
+            (busy ? ' aria-busy="true"' : '') + '>' +
+            '<h3 class="tdx-para__h md-title-small">Highlights ' + by(ro ? 'Jordan' : 'You') + '</h3>' +
+            (s.step === 'idle' && !ro
+              ? '<p class="tdx-para__t md-body-large tdx-pickable" data-act="pick">' + orig + '</p>'
+              : '<p class="tdx-para__t md-body-large' + (gen && s.fresh ? ' sc-rise' : '') + '">' + (gen ? neu : orig) + '</p>') +
+            status + label +
+          '</section>';
+
+        return '<div class="sim-tdx' + (ro ? ' is-reviewer' : '') + '">' +
+          '<article class="sim-tdx-doc">' +
+            why + hl +
+            '<section class="tdx-para"><h3 class="tdx-para__h md-title-small">Fixed ' + by('Dana') + '</h3>' +
+              '<p class="tdx-para__t md-body-large">Comments on archived projects open again. CSV exports keep their column order.</p></section>' +
+            '<section class="tdx-para"><h3 class="tdx-para__h md-title-small">Known issues ' + by('Lee') + '</h3>' +
+              '<p class="tdx-para__t md-body-large">Slow first load for teams over 500 seats. A fix is planned for 2.4.1.</p></section>' +
+          '</article>' +
+        '</div>';
       },
 
-      controls: function (s) { return [toggle('Show disclosure', 'opt:on', s.opts.on)]; },
+      controls: function (s) {
+        return [toggle('View as the reviewer', 'opt:reviewer', s.opts.reviewer)]
+          .concat(s.step !== 'idle' ? [button('Start over', 'reset', 'text')] : []);
+      },
 
       hint: function (s) {
-        if (!s.opts.on) return 'Same words, same position, no marker. Marco reads this tomorrow ' +
-                               'and has no way to know a model wrote it &mdash; which is the ' +
-                               'entire cost of leaving it out.';
-        if (s.sent)     return 'Marked at the head of the turn, so it stays marked wherever the ' +
-                               'thread is quoted, forwarded or cut.';
-        if (s.text)     return 'Marked before it is posted, too. The people who have to judge it ' +
-                               'are not only the ones who asked for it.';
-        return 'Two human turns are already here. That is what makes this a real test rather ' +
-               'than a specimen on a swatch.';
+        if (s.opts.reviewer && s.step === 'done') return '<b>Disclosure travels.</b> Dana did not watch the rewrite happen, and ' +
+          'she still sees which paragraph came from AI, what Aria did, and what nobody checked. Two paragraphs by people carry no label at all.';
+        if (s.opts.reviewer) return '<b>As the reviewer.</b> Nothing here was touched by AI yet, so nothing is labelled. ' +
+          'Switch back, rewrite the Highlights, then return.';
+        if (s.step === 'picked') return '<b>AI action.</b> Rewrite now applies to something, so it explains itself before it runs: ' +
+          'what it will do and that nothing is replaced until you review it. Press Rewrite.';
+        if (s.step === 'working') return '<b>AI working.</b> The action’s mark became the working mark and the button says what is ' +
+          'happening; the paragraph shows progress and a Stop. This is not the result yet.';
+        if (s.step === 'done') return '<b>AI-generated content.</b> The result carries “Generated with AI”, attached to the paragraph — ' +
+          'not to the page. Open it for what Aria did and what it did not check. Then turn on “View as the reviewer”.';
+        return 'Three people wrote this note; none of it is labelled, because no AI has touched it. Select your Highlights paragraph, or press Rewrite.';
       },
 
       act: async function (a, ctx) {
         var s = ctx.s;
-        if (a === 'opt:on') { flip(ctx, 'on'); return; }
-        if (a === 'reset')  { var o = s.opts.on;
-                              Object.assign(s, JSON.parse(JSON.stringify(SIMS.disclosure.initial)));
-                              s.opts.on = o; ctx.paint(); return; }
-        if (a === 'send')   { s.sent = true; ctx.paint(); return; }
-        if (a === 'gen') {
-          s.step = 'working'; ctx.paint();
-          await wait(1100);
-          s.step = 'idle'; ctx.paint();
-          await stream(ctx, 'text',
-            'Marco is right. The 14 July charge is a pro-rated upgrade, not a duplicate &mdash; ' +
-            'it is &pound;38.40 against a full month of &pound;96. Nothing to refund, but the ' +
-            'line item reads badly and we could rename it.');
+        if (a === 'noop') return;
+        if (a === 'opt:reviewer') { s.open = false; flip(ctx, 'reviewer'); return; }
+        if (a === 'reset') {
+          var o = JSON.parse(JSON.stringify(s.opts));
+          Object.assign(s, JSON.parse(JSON.stringify(SIMS.disclosure.initial)));
+          s.opts = o; ctx.paint(); return;
+        }
+        if (a === 'pick') {
+          s.step = 'picked'; ctx.paint();
+          ctx.announce && ctx.announce('Highlights paragraph selected. Rewrite with AI is available.');
+          var b = ctx.root && ctx.root.querySelector('.tdx-act[data-act="rewrite"]');
+          if (b) b.focus({ preventScroll: true });
+          return;
+        }
+        if (a === 'rewrite') {
+          var run = (s.run || 0) + 1; s.run = run;
+          s.step = 'working'; s.open = false; s.original = false; ctx.paint();
+          ctx.announce && ctx.announce('Agent working: rewriting the Highlights paragraph with AI.');
+          await wait(1900); if (s.run !== run || s.step !== 'working') return;
+          s.step = 'done'; s.fresh = true; ctx.paint(); s.fresh = false;
+          ctx.announce && ctx.announce('Highlights rewritten. Generated with AI. Undo is available.');
+          return;
+        }
+        if (a === 'stop') {
+          s.run = (s.run || 0) + 1; s.step = 'picked'; ctx.paint();
+          ctx.announce && ctx.announce('Stopped. Your paragraph is unchanged.'); return;
+        }
+        if (a === 'details') { s.open = !s.open; ctx.paint(); return; }
+        if (a === 'original') { s.original = !s.original; ctx.paint(); return; }
+        if (a === 'undo') {
+          s.step = 'picked'; s.open = false; s.original = false; ctx.paint();
+          ctx.announce && ctx.announce('Your original paragraph is back.');
         }
       }
     },
 
     /* ──────────────────────────────────────────────────────
-       CAVEAT · output / preview
+       CAVEAT · conversation
 
-       purpose   qualify THIS result, not the product in general
-       context   an analytics agent producing a figure that is
-                 about to be pasted into a board pack
-       decision  export it, having read what it does not include
-       after     the qualification travels with the export, or it
-                 was never doing anything
+       purpose      say what is uncertain about THIS result
+       user goal    a summary of this month's customer feedback
+       agent goal   summarise all 8 interviews — 2 will not open
+       trigger      it writes from 6 and must say so, specifically
+       context      a research workspace, interviews in a folder
+       decision     review the gap, reconnect, or use it as it is
+       after        the missing interviews are read, the summary
+                    updates, and the caveat leaves with its reason
        ────────────────────────────────────────────────────── */
     caveat: {
-      shell: 'output',
-      product: 'Ledger',
-      agent: 'Aria',
-      note: 'A figure on its way into a board pack. The caveat names what THIS number leaves ' +
-            'out &mdash; and repeats itself in the two seconds before it goes.',
-
-      initial: { step: 'ready', exported: false, opts: { on: true, kind: 'specific' } },
-
-      title: function () { return 'Q3 revenue &mdash; board pack'; },
-      pill: function (s) { return s.exported ? 'Exported' : 'Draft'; },
-
-      result: function (s) {
-        var ICO = MI('info', 'md-caveat__ico');
-        return '<div class="sim-figure">' +
-            '<p class="sim-figure__k">Revenue, quarter to date</p>' +
-            '<p class="sim-figure__v">&pound;4.12m</p>' +
-            '<p class="sim-figure__d">6.1% ahead of plan &middot; enterprise tier carrying ' +
-            'almost all of it</p>' +
-            chip('Calculated by Aria') +
-          '</div>' +
-          (s.opts.on
-            ? '<div class="md-caveat md-caveat--boxed sc-rise" role="note" ' +
-                'style="margin-top:16px;max-width:100%">' + ICO +
-                '<span>' + (s.opts.kind === 'specific'
-                  ? 'Two accounts are missing from this. Northwind and Contoso renewed outside ' +
-                    'Salesforce and are not counted &mdash; including them moves the figure by ' +
-                    'roughly a point.'
-                  : 'AI-generated content may be inaccurate. Please verify before use.') +
-                '</span></div>'
-            : '');
-      },
-
-      foot: function (s) {
-        if (s.exported) {
-          return '<span class="sim-doc__who">' + mark('md-agentav--sm') +
-            'Exported to the board pack' +
-            (s.opts.on ? ' &mdash; with the note attached to the figure' :
-                         ' &mdash; as a bare number') + '</span>' +
-            button('Start over', 'reset', 'text');
-        }
-        return '<span class="sim-doc__who">Going into slide 4 of the board pack</span>' +
-          button('Export to the pack', 'export') +
-          button('Ask Aria to check it', 'verify', 'outlined');
-      },
-
-      controls: function (s) {
-        return [toggle('Show the caveat', 'opt:on', s.opts.on),
-                segment([['specific', 'Specific'], ['generic', 'Generic']], s.opts.kind, 'kind')];
-      },
-
-      hint: function (s) {
-        if (!s.opts.on) return 'A number with nothing attached. It will be read on a slide by ' +
-                               'people who never saw where it came from.';
-        if (s.opts.kind === 'generic')
-                        return 'True of every answer, so it qualifies none of them. This is the ' +
-                               'form people stop reading in a week.';
-        if (s.exported) return 'The qualification went with the figure. A caveat that stays ' +
-                               'behind when the number leaves was decoration.';
-        return 'Bound to this result and naming what this result leaves out &mdash; which is ' +
-               'the only version worth the line it costs.';
-      },
-
-      act: async function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'opt:on')            { flip(ctx, 'on'); return; }
-        if (a.indexOf('kind:') === 0)  { s.opts.kind = a.split(':')[1]; ctx.paint(); return; }
-        if (a === 'reset')             { var o = JSON.parse(JSON.stringify(s.opts));
-                                         Object.assign(s, JSON.parse(JSON.stringify(SIMS.caveat.initial)));
-                                         s.opts = o; ctx.paint(); return; }
-        if (a === 'export')            { s.exported = true; ctx.paint(); return; }
-        if (a === 'verify') {
-          s.step = 'working'; ctx.paint();
-          await wait(1300);
-          s.step = 'ready'; s.opts.on = true; s.opts.kind = 'specific';
-          ctx.paint();
-        }
-      }
-    },
-
-    /* ──────────────────────────────────────────────────────
-       AVATAR · conversation
-
-       purpose   tell two authors apart at a glance
-       context   a project thread where a person and an agent both
-                 post, and the work is handed between them
-       decision  hand it over, or take it back
-       after     both marks sit in one thread and neither is
-                 mistakable for the other
-       ────────────────────────────────────────────────────── */
-    avatar: {
       shell: 'conversation',
-      product: 'Loop',
+      product: 'Fieldnotes',
       agent: 'Aria',
-      note: 'Watch the mark rather than the words: it rings while the agent works, and a person ' +
-            'joins the same thread wearing a different one.',
+      note: 'Limitation → explanation → recovery → resolution. Ask for the summary; two interviews will not open, and the ' +
+            'caveat says exactly that — then reconnect them and watch it go. Compare it with the generic line.',
 
-      initial: { step: 'idle', text: '', streaming: false, handed: false, opts: { off: false } },
+      initial: { step: 'idle', turns: [], more: false, phase: 'gap', axText: 'Summarize customer feedback from this month.',
+                 opts: { generic: false } },
 
-      title: function () { return 'Migration cutover &middot; 12 people'; },
-      pill: function (s) { return s.handed ? 'With Dana' : 'Open'; },
+      title: function () { return 'October interviews'; },
+      pill: function (s) {
+        if (s.step === 'working' || s.step === 'rerun') return 'Aria working';
+        if (s.step === 'reconnecting') return 'Reconnecting';
+        if (s.phase === 'gap' && s.step === 'answered') return '6 of 8 read';
+        if (s.step === 'answered') return '8 of 8 read';
+        return '';
+      },
+      phase: function (s) {
+        if (s.step === 'working' || s.step === 'rerun' || s.step === 'reconnecting') return 'thinking';
+        if (s.step === 'answered') return 'done';
+        return 'idle';
+      },
 
       thread: function (s) {
-        var muted = s.opts.off ? ' md-agentav--muted' : '';
-        var out = human('Dana Khoury', 'DK', 'Who is picking up the rollback plan? We said ' +
-                        'Thursday and it is Thursday.', '08:12');
+        var M = md3();
+        function aria(inner) {
+          return '<div class="sim-turn">' + mark('md-agentav--sm') +
+            '<div class="sim-turn__body"><div class="sim-turn__head"><span class="sim-turn__n">Aria</span></div>' + inner + '</div></div>';
+        }
+        var folder = '<div class="sim-cs-meet">' + MI('folder') +
+          '<div><p class="sim-cs-meet__t">Research &rsaquo; October</p>' +
+          '<p class="sim-cs-meet__s">8 interview notes &middot; Oct 2 – Oct 24</p></div></div>';
+        var pts = ['Onboarding takes too long for teams that import from spreadsheets (5 of 6 interviews).',
+                   'Shared links expiring early is the most frequent complaint.',
+                   'Two teams asked for a weekly digest instead of real-time alerts.'];
+        var added = 'Invoice exports confuse finance teams (2 of 8 interviews).';
 
-        if (s.step === 'working') {
-          out += '<div class="sim-turn">' + mark('md-agentav--sm md-agentav--thinking' + muted) +
-            '<div>' + working('Reading the cutover doc…') + '</div></div>';
+        var out = folder + s.turns.map(function (t) {
+          if (t.who === 'you') return human('You', 'J', t.text);
+          if (t.who === 'steps') return aria(steps(t.list));
+          if (t.who === 'summary') {
+            var full = s.phase !== 'gap';
+            var list = pts.concat(full ? [added] : []);
+            var shown = list.slice(0, t.n === undefined ? list.length : t.n);
+            var res = '<article class="sim-cv-res" aria-describedby="' + (s.opts.generic || s.phase !== 'gone' ? 'sim-cv-note' : '') + '">' +
+              '<p class="sim-cv-res__t">Customer feedback &middot; October</p>' +
+              '<ul class="tdx-cv__pts">' + shown.map(function (p) {
+                var isNew = s.phase === 'resolved' && p === added;
+                return '<li' + (isNew ? ' class="is-new"' : '') + '>' + p +
+                  (isNew ? ' <span class="tdx-cv__new">' + MI('sync') + 'Updated</span>' : '') + '</li>';
+              }).join('') + '</ul>';
+            if (t.n !== undefined && t.n < list.length) return aria(res + '</article>');
+            /* The caveat: specific, attached, calm — or the anti-pattern. */
+            var note = '';
+            if (s.opts.generic) {
+              note = '<div class="tdx-cv__note tdx-cv__note--inline" id="sim-cv-note">' +
+                M.aiCaveat('AI can make mistakes. Verify important information.') + '</div>';
+            } else if (s.phase === 'gap') {
+              var busy = s.step === 'reconnecting';
+              note = M.card('filled',
+                '<div class="tdx-cv__head">' + MI('info') + '<div>' +
+                  '<p class="tdx-cv__msg sim-cv-msg">2 of 8 interviews could not be opened, so this summary reflects 6.</p>' +
+                  '<p class="tdx-cv__why">Themes raised only in those two calls are missing, not just under-counted.</p></div></div>' +
+                '<div class="tdx-cv__acts">' +
+                  M.button({ variant: 'text', label: s.more ? 'Hide sources' : 'Review sources', icon: MI(s.more ? 'chevDown' : 'chevRight'),
+                    attrs: { 'data-act': 'more', 'aria-expanded': String(!!s.more), 'aria-controls': 'sim-cv-more' } }) +
+                  M.button({ variant: 'text', label: 'Reconnect', icon: MI('sync'),
+                    attrs: { 'data-act': 'reconnect', 'aria-disabled': busy ? 'true' : null } }) +
+                '</div>' +
+                (s.more ? '<div class="tdx-cv__more" id="sim-cv-more">' + M.list([
+                  { leading: MI('check'), headline: '6 interviews read', supporting: 'Ana, Bo, Chen, Dee, Femi, Ines' },
+                  { leading: MI('warning'), headline: 'Hana Kim &middot; Oct 3', supporting: 'Not opened — the file was moved' },
+                  { leading: MI('warning'), headline: 'Marcus Lee &middot; Oct 9', supporting: 'Not opened — sharing was removed' }],
+                  { 'aria-label': 'Interviews used' }) + '</div>' : '') +
+                (busy ? '<div class="tdx-cv__busy" role="status">' + M.progress(undefined, 'Reconnecting') +
+                  '<span>Reconnecting to Research › October…</span></div>' : '') +
+                (s.ready ? '<div class="sim-cv-ready" role="status">' + MI('checkCircle') +
+                  '<span>Both interviews are available again.</span>' +
+                  M.button({ variant: 'tonal', label: 'Update the summary', attrs: { 'data-act': 'rerun' } }) + '</div>' : ''),
+                'tdx-cv__note', { id: 'sim-cv-note', role: 'note', 'aria-label': 'Caveat about this summary' });
+            } else if (s.phase === 'resolved') {
+              note = M.card('outlined',
+                '<div class="tdx-cv__head tdx-cv__head--ok" role="status">' + MI('checkCircle') + '<div>' +
+                  '<p class="tdx-cv__msg sim-cv-msg">All 8 interviews read — summary updated</p>' +
+                  '<p class="tdx-cv__why">One theme was added from the two calls that were missing.</p></div></div>' +
+                '<div class="tdx-cv__acts">' + M.button({ variant: 'text', label: 'Dismiss', attrs: { 'data-act': 'dismiss' } }) + '</div>',
+                'tdx-cv__note tdx-cv__note--ok', { id: 'sim-cv-note' });
+            }
+            return aria(res + (note ? note : '') + '</article>' +
+              '<p class="sim-src">Sources <b>' + (s.phase === 'gap' ? '6' : '8') + ' interview notes</b> &middot; Research › October</p>');
+          }
+          return aria('<p class="wf-text">' + t.text + '</p>');
+        }).join('');
+
+        if (s.step === 'idle' && !s.turns.length) {
+          out += '<p class="sim-stage__empty">Eight interviews this month. Two of them will not open — Aria does not know that yet. ' +
+            'Send the request.</p>';
         }
-        if (s.text) {
-          out += '<div class="sim-turn">' + mark('md-agentav--sm' + muted) +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() +
-            '<span class="sim-turn__time">08:15</span></div>' +
-            '<p class="wf-text">' + caret(s.text, s.streaming) + '</p></div></div>';
-        }
-        if (s.handed) {
-          out += human('Dana Khoury', 'DK', 'Taking it. I will redo step 4 by hand &mdash; the ' +
-                       'database is not something I want automated at 2am.', '08:22') +
-            '<div class="sc-handoff sc-rise">' +
-              '<span class="md-agentav md-agentav--sm md-agentav--human" aria-hidden="true">DK' +
-              '</span><span>Owned by <b>Dana Khoury</b> &middot; Aria stood down</span></div>';
-        }
-        out += '<div class="sim-sizes-row"><span class="sim-sizes__k">The same mark at three ' +
-          'sizes</span><div class="sc-sizes">' +
-          [['md-agentav--sm', '28'], ['', '40'], ['md-agentav--lg', '56']].map(function (x) {
-            return '<span class="sc-size">' + mark(x[0] + muted) +
-              '<span class="sc-size__l">' + x[1] + '</span></span>';
-          }).join('') + '</div></div>';
+        if (s.step === 'working') out += aria(working(s.work || 'Finding this month’s interviews…'));
+        if (s.step === 'rerun') out += aria(working('Reading the 2 interviews and updating the summary…'));
         return out;
       },
 
-      foot: function (s) {
-        return (s.text ? '' : button('Ask Aria', 'ask')) +
-          button(s.handed ? 'Take it back' : 'Hand to Dana', 'hand', 'outlined') +
-          (s.text || s.handed ? button('Start over', 'reset', 'text') : '');
+      controls: function (s) {
+        return [toggle('Generic disclaimer instead', 'opt:generic', s.opts.generic)]
+          .concat(s.step !== 'idle' ? [button('Start over', 'reset', 'text')] : []);
       },
-
-      controls: function (s) { return [toggle('Stand Aria down', 'opt:off', s.opts.off)]; },
 
       hint: function (s) {
-        if (s.opts.off) return 'Stood down: the mark is muted everywhere at once, so no surface ' +
-                               'is still implying the agent is on this.';
-        if (s.handed)   return 'Two authors, one thread. A container with a glyph, or initials ' +
-                               'on a neutral ground &mdash; one glance, no reading.';
-        if (s.step === 'working') return 'The mark rings while it works. State lives on the ' +
-                                         'identity, not in a status line somewhere else.';
-        return 'One drawing at 28, 40 and 56. Only the glyph scales; the silhouette never changes.';
+        if (s.opts.generic) return 'The generic line is on every answer, so it says nothing about this one: not that 2 interviews are ' +
+          'missing, not which, not what to do. A reader learns to skip it. Switch it off to compare.';
+        if (s.step === 'working') return 'Searching and reading. One file was moved and one stopped being shared — the agent will not pretend otherwise.';
+        if (s.phase === 'gap' && s.ready) return '<b>Recovery.</b> The files are back, but nothing reruns behind your back: you choose to update the summary.';
+        if (s.phase === 'gap' && s.more) return '<b>Details expanded.</b> Which interviews, and why each one is missing.';
+        if (s.phase === 'gap' && s.step === 'answered') return '<b>Caveat visible.</b> Specific (2 of 8), why it matters (themes missing, not just ' +
+          'under-counted), and what to do — attached to the summary, in calm tones, not the error colour. The summary itself was not withheld.';
+        if (s.phase === 'resolved') return '<b>Resolved.</b> The caveat turned into what changed. Dismiss it when you have read it.';
+        if (s.phase === 'gone') return '<b>No longer relevant.</b> The reason for the caveat is gone, so the caveat is too. No standing warning stays behind.';
+        return 'Send the request in the composer.';
       },
+
+      axSubmit: function (text, ctx) { return SIMS.caveat.act('send:' + text, ctx); },
 
       act: async function (a, ctx) {
         var s = ctx.s;
-        if (a === 'opt:off') { flip(ctx, 'off'); return; }
-        if (a === 'hand')    { s.handed = !s.handed; ctx.paint(); return; }
-        if (a === 'reset')   { var o = s.opts.off;
-                               Object.assign(s, JSON.parse(JSON.stringify(SIMS.avatar.initial)));
-                               s.opts.off = o; ctx.paint(); return; }
-        if (a === 'ask') {
-          s.step = 'working'; ctx.paint();
-          await wait(1300);
-          s.step = 'idle'; ctx.paint();
-          await stream(ctx, 'text',
-            'Nobody is assigned. The plan has five steps and step 4 needs a database lock, so ' +
-            'it cannot run unattended &mdash; that is probably why it has sat.');
+        if (a === 'opt:generic') { flip(ctx, 'generic'); return; }
+        if (a === 'reset') {
+          var o = JSON.parse(JSON.stringify(s.opts));
+          Object.keys(s).forEach(function (k) { delete s[k]; });
+          Object.assign(s, JSON.parse(JSON.stringify(SIMS.caveat.initial)));
+          s.opts = o; ctx.paint(); return;
         }
+        if (a.indexOf('send:') === 0) {
+          s.turns.push({ who: 'you', text: esc(a.slice(5).trim() || s.axText) }); s.axText = '';
+          s.step = 'working'; s.work = 'Finding this month’s interviews…'; ctx.paint();
+          await wait(900);
+          s.work = 'Reading 8 interviews…'; ctx.paint();
+          await wait(1100);
+          s.cvSteps = { who: 'steps', list: [
+            { label: 'Found 8 interviews', state: 'done', note: 'Research › October' },
+            { label: 'Read 6 of 8', state: 'blocked', note: '2 could not be opened' },
+            { label: 'Wrote the summary from 6', state: 'done' }] };
+          s.turns.push(s.cvSteps);
+          s.work = 'Writing the summary…'; ctx.paint();
+          await wait(800);
+          var t = { who: 'summary', n: 0 }; s.turns.push(t); s.step = 'answered'; s.phase = 'gap';
+          for (var i = 1; i <= 3; i++) { t.n = i; ctx.paint(); await wait(240); }
+          delete t.n; ctx.paint();
+          ctx.announce && ctx.announce('Summary ready, with a caveat: 2 of 8 interviews could not be opened.');
+          return;
+        }
+        if (a === 'more') { s.more = !s.more; ctx.paint(); return; }
+        if (a === 'reconnect') {
+          if (s.step === 'reconnecting') return;
+          s.step = 'reconnecting'; s.ready = false; ctx.paint();
+          await wait(1500);
+          s.step = 'answered'; s.ready = true; s.more = false; ctx.paint();
+          ctx.announce && ctx.announce('Both interviews are available again. Update the summary when you are ready.');
+          return;
+        }
+        if (a === 'rerun') {
+          s.ready = false; s.step = 'rerun'; ctx.paint();
+          await wait(1600);
+          if (s.cvSteps) s.cvSteps.list = [
+            { label: 'Found 8 interviews', state: 'done', note: 'Research › October' },
+            { label: 'Read 8 of 8', state: 'done', note: '2 re-read after reconnecting' },
+            { label: 'Updated the summary', state: 'done', note: 'One theme added' }];
+          s.step = 'answered'; s.phase = 'resolved'; ctx.paint();
+          ctx.announce && ctx.announce('All 8 interviews read. Summary updated: one theme added.');
+          return;
+        }
+        if (a === 'dismiss') { s.phase = 'gone'; ctx.paint(); ctx.announce && ctx.announce('Caveat dismissed.'); }
       }
     },
 
     /* ──────────────────────────────────────────────────────
-       NAME · surfaces
+       AVATAR · workspace
 
-       purpose   one name, everywhere, including where design does
-                 not control the rendering
-       context   a service desk: chat, the ticket's audit log, and
-                 an email notification that leaves the product
-       decision  move between the three and check the claim
-       after     the same name and role line in all of them
+       purpose      one mark for the agent, and its state on the mark
+       user goal    a summary of the launch sync while it runs
+       agent goal   summarize, and be unmistakable as the agent
+       trigger      Maya asks Aria to summarize
+       context      a meeting with two people and one agent
+       decision     is that a colleague or the agent? is it working?
+       after        the summary is posted under the same mark
        ────────────────────────────────────────────────────── */
-    name: {
-      shell: 'surfaces',
-      product: 'Beacon',
+    avatar: {
+      shell: 'workspace',
+      product: 'Huddle',
       agent: 'Aria',
-      note: 'One name is a claim about every surface. Move between the conversation, the audit ' +
-            'log and an email that leaves the product entirely.',
+      note: 'A meeting with two people and an agent. Ask Aria for a summary and watch its mark: it rings while it works, and ' +
+            'it never looks like Maya or Jordan. Then break the image, or draw Aria like a person, and compare.',
 
-      initial: { step: 'idle', opts: { pane: 'chat', consistent: true } },
+      initial: { step: 'idle', posted: false, opts: { noimg: false, human: false } },
+      halo: false,
 
-      title: function (s) {
-        return s.opts.pane === 'log'   ? 'Ticket 5512 &middot; history'
-             : s.opts.pane === 'mail'  ? 'Sent to j.okafor@northwind.com'
-             : 'Ticket 5512 &middot; laptop replacement';
+      title: function () { return 'Launch sync &middot; 2.4'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.posted ? 'Summary posted' : 'Live &middot; 3'; },
+      phase: function (s) { return s.step === 'working' ? 'working' : s.posted ? 'done' : 'idle'; },
+
+      tools: function (s) {
+        var M = md3();
+        return '<span class="sim-idv-live">' + MI('wave') + 'Recording &middot; 24 min</span>' +
+          '<span class="sim-tdx-gap" aria-hidden="true"></span>' +
+          (s.step === 'working'
+            ? M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'stop' } })
+            : M.button({ variant: 'tonal', label: s.posted ? 'Summarize again' : 'Ask Aria to summarize', icon: aiIcon('action'), attrs: { 'data-act': 'ask' } }));
       },
-      pill: function (s) { return s.opts.consistent ? '' : 'Inconsistent'; },
 
-      tabs: function (s) {
-        return [['chat', 'Conversation'], ['log', 'Audit log'], ['mail', 'Email notification']]
-          .map(function (t) {
-            return '<button class="sim-tab" type="button" role="tab" aria-selected="' +
-              (s.opts.pane === t[0]) + '" data-act="pane:' + t[0] + '">' + t[1] + '</button>';
-          }).join('');
-      },
-
-      /* The switch is the argument: with it off, each surface uses
-         whatever name its own team happened to pick. */
-      surface: function (s) {
-        var n = s.opts.consistent;
-        if (s.opts.pane === 'log') {
-          return '<div class="sc-log">' +
-            logRow(n ? 'Aria' : 'Automation Service', n ? 'Assistant in Beacon' : 'system',
-                   'Ordered a replacement, pending approval', 'Today &middot; 11:04', true) +
-            logRow('Jo Okafor', 'Requester', 'Opened the ticket', 'Today &middot; 10:41', false) +
-          '</div>';
+      canvas: function (s) {
+        var M = md3(), o = s.opts, busy = s.step === 'working';
+        function aria(size, label) {
+          if (o.human) return nxAvatar({ kind: 'human', initials: 'AR', size: size, label: label === false ? false : 'Aria' });
+          return nxAvatar({ kind: 'agent', name: 'Aria', initials: 'AR', size: size, label: label === false ? false : 'Aria, AI agent',
+            src: o.noimg ? null : NX_AGENT_ASSET, fallback: o.noimg ? 'icon' : null });
         }
-        if (s.opts.pane === 'mail') {
-          return '<div class="sim-mail">' +
-            '<p class="sim-mail__hd"><b>From</b> ' +
-              (n ? 'Aria &lt;aria@beacon.example&gt;' : 'no-reply@beacon.example') + '</p>' +
-            '<p class="sim-mail__hd"><b>Subject</b> Your replacement laptop is on order</p>' +
-            '<div class="sim-mail__b">' +
-              '<div class="sc-notif__head">' + mark('md-agentav--sm') +
-                '<div><p class="sc-notif__n">' + (n ? 'Aria' : 'Beacon Assistant') + '</p>' +
-                '<p class="sc-notif__r">' + (n ? 'Assistant in Beacon &middot; not a person'
-                                               : 'Automated message') + '</p></div>' + chip() +
-              '</div>' +
-              '<p class="wf-text">Your replacement is ordered and should arrive Tuesday. Reply ' +
-              'here if the date does not work.</p>' +
-            '</div></div>';
+        function tile(av, name, role, extra) {
+          return '<li class="sim-idv-tile">' + av + '<span class="sim-idv-tile__t"><b>' + name + '</b>' +
+            '<span>' + role + '</span>' + (extra || '') + '</span></li>';
         }
-        return '<div class="sim-turn">' + mark('md-agentav--sm') +
-          '<div><div class="sim-turn__head"><span class="sim-turn__n">' +
-            (n ? 'Aria' : 'Beacon AI') + '</span>' + chip() + '</div>' +
-          '<p class="wf-text">I&rsquo;m <b>' + (n ? 'Aria' : 'Beacon AI') + '</b> &mdash; ' +
-          (n ? 'an assistant in Beacon, not a person.' : 'your virtual agent!') + ' I can order ' +
-          'hardware, chase approvals and tell you where a request has got to.</p>' +
-          '<div class="md-idcard" style="max-width:100%;margin-top:12px">' +
-            '<div class="md-idcard__head">' + mark('md-agentav--lg') +
-              '<div><p class="md-idcard__name md-title-medium">' + (n ? 'Aria' : 'Beacon AI') +
-              '</p><p class="md-idcard__role md-body-small">' +
-              (n ? 'Assistant in Beacon &middot; not a person' : 'Virtual agent') +
-              '</p></div></div></div>' +
-          '</div></div>';
+        var ring = '<span class="idv-av' + (busy ? ' is-working' : ' is-active') + '" data-size="40">' + aria(40) +
+          (busy && !o.human ? md3Circular(48, 'Agent working') : '') + '</span>';
+        var tiles = '<ul class="sim-idv-tiles" aria-label="In this meeting">' +
+          tile(nxAvatar({ kind: 'human', name: 'Maya Chen', initials: 'MC', size: 40 }), 'Maya Chen', 'Product lead') +
+          tile(nxAvatar({ kind: 'human', name: 'Jordan Lee', initials: 'JL', size: 40 }), 'Jordan Lee', 'Engineering') +
+          tile(o.human ? aria(40) : ring, 'Aria', o.human ? 'Meeting notes' : 'AI agent &middot; Meeting assistant',
+            o.human ? '' : '<span class="sim-idv-state"' + (busy ? ' role="status"' : '') + '>' + (busy ? 'Summarizing the meeting…' : 'In this meeting') + '</span>') +
+          '</ul>';
+        var notes = '<section class="sim-idv-notes" aria-labelledby="sim-idv-n">' +
+          '<h3 class="md-title-small" id="sim-idv-n">Meeting notes</h3>' +
+          md3Message({ role: 'assistant', avatar: nxAvatar({ kind: 'human', name: 'Maya Chen', initials: 'MC', size: 32, label: false }),
+            head: '<p class="idv-msg__h md-label-medium"><b>Maya Chen</b> &middot; 10:24</p>', body: 'Aria, can you summarize where we landed?' }) +
+          (busy ? md3Message({ role: 'assistant', avatar: aria(32, false), head: '<p class="idv-msg__h md-label-medium"><b>Aria</b>' + (o.human ? '' : ' &middot; AI agent') + '</p>', body: 'Working on the summary…' }) : '') +
+          (s.posted ? md3Message({ role: 'assistant', avatar: aria(32, false),
+              head: '<p class="idv-msg__h md-label-medium"><b>Aria</b>' + (o.human ? '' : ' &middot; AI agent') + '</p>',
+              body: '<b>Decisions</b> — ship 2.4 on Tuesday; keep the 50,000-row export limit.<br><b>Actions</b> — Maya: release notes. Jordan: the support macro.' }) : '') +
+          '</section>';
+        return '<div class="sim-idv' + (o.human ? ' is-anti' : '') + '">' + tiles + notes + '</div>';
       },
 
       controls: function (s) {
-        return [toggle('One name everywhere', 'opt:consistent', s.opts.consistent)];
+        return [toggle('Images unavailable', 'opt:noimg', s.opts.noimg), toggle('Draw Aria like a person', 'opt:human', s.opts.human)]
+          .concat(s.posted ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (!s.opts.consistent) return 'Three names for one agent: a chat persona, a system ' +
-                                       'account and a no-reply address. Nobody can report a ' +
-                                       'problem with something they cannot name.';
-        if (s.opts.pane === 'log')  return 'Same name and same role in a place design does not ' +
-                                           'control &mdash; written by the action, not by a ' +
-                                           'template someone styled.';
-        if (s.opts.pane === 'mail') return 'Outside the product altogether, and it still says ' +
-                                           'what it is before it says anything else.';
-        return 'Said once, with the role attached. The chip carries the disclosure so the name ' +
-               'never has to do that job as well.';
+        if (s.opts.human) return '<b>Anti-pattern.</b> A circle with initials and no label: Aria now looks exactly like Maya and Jordan. ' +
+          'Anyone glancing at the notes would assume a colleague wrote the summary.';
+        if (s.opts.noimg) return '<b>Fallback.</b> The image failed, so the package draws the agent glyph on muted. Same shape, same name, same label — still unmistakably the agent.';
+        if (s.step === 'working') return '<b>Working.</b> The ring turns on the avatar itself, and the words say what is happening — the ring is not the only signal.';
+        if (s.posted) return '<b>Posted.</b> The summary sits under the same mark as the tile. Two people are circles with initials; the agent is a rounded square with its own mark and “AI agent”.';
+        return 'Two people and an agent. Press “Ask Aria to summarize”.';
       },
 
-      act: function (a, ctx) {
+      axSubmit: function (text, ctx) { return SIMS.avatar.act('ask', ctx); },
+
+      act: async function (a, ctx) {
         var s = ctx.s;
-        if (a === 'opt:consistent')  { flip(ctx, 'consistent'); return; }
-        if (a.indexOf('pane:') === 0) { s.opts.pane = a.split(':')[1]; ctx.paint(); }
+        if (a === 'opt:noimg') { flip(ctx, 'noimg'); return; }
+        if (a === 'opt:human') { flip(ctx, 'human'); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS.avatar.initial))); s.opts = o; ctx.paint(); return; }
+        if (a === 'stop') { s.run = (s.run || 0) + 1; s.step = 'idle'; ctx.paint(); ctx.announce && ctx.announce('Stopped. Aria is still in the meeting.'); return; }
+        if (a === 'ask') {
+          if (s.step === 'working') return;
+          var run = (s.run || 0) + 1; s.run = run;
+          s.step = 'working'; s.posted = false; ctx.paint();
+          ctx.announce && ctx.announce('Aria is working: summarizing the meeting.');
+          await wait(2200); if (s.run !== run) return;
+          s.step = 'idle'; s.posted = true; ctx.paint();
+          ctx.announce && ctx.announce('Aria posted the summary.');
+        }
       }
     },
+
+
+    /* ──────────────────────────────────────────────────────
+       NAME · conversation
+
+       purpose      one name and one role, on every surface
+       user goal    get help with an order from the support agent
+       agent goal   be clearly named — and stay named after a rename
+       trigger      the conversation opens; later, an admin renames it
+       context      a help desk: chat, activity and an email
+       decision     who am I talking to, and is it a person?
+       after        the new name everywhere, with “formerly” for a while
+       ────────────────────────────────────────────────────── */
+    name: {
+      shell: 'conversation',
+      product: 'Northwind Desk',
+      agent: 'Aria',
+      note: 'The same agent in the chat, the activity log and the email it sends. Ask a question, then rename it as an admin — ' +
+            'or switch on inconsistent naming and see three products where there is one agent.',
+
+      initial: { step: 'idle', turns: [], renamed: false, axText: 'Where is my order 88-4120?', opts: { messy: false } },
+
+      title: function () { return 'Order 88-4120'; },
+      pill: function (s) { return s.step === 'working' ? (s.renamed ? 'Atlas' : 'Aria') + ' working' : 'Open'; },
+
+      thread: function (s) {
+        var o = s.opts, nm = s.renamed ? 'Atlas' : 'Aria';
+        var names = o.messy ? { chat: nm, log: 'Assistant', mail: 'Northwind AI Bot' } : { chat: nm, log: nm, mail: nm };
+        var was = s.renamed && !o.messy ? ' <span class="idv-was">(formerly Aria)</span>' : '';
+        var av = function (size, label) { return nxAvatar({ kind: 'agent', name: nm, size: size, label: label, src: NX_AGENT_ASSET }); };
+        var out = '<div class="sim-idv-intro">' + av(40, nm + ', AI agent, Customer Support Agent') +
+          '<div><p class="md-title-small">' + names.chat + was + ' ' + aiDisclosurePill('AI agent', null) + '</p>' +
+          '<p class="md-body-small idv-role">Customer Support Agent</p>' +
+          '<p class="md-body-medium">Hi, I’m ' + names.chat + ', an AI agent run by Northwind. I can track orders, start returns and update delivery details. ' +
+          'I’m not a person — ask for a teammate any time.</p></div></div>';
+        if (s.renamed) out += '<p class="idv-sys md-body-small" role="status">' + MI('edit') + '<span>An admin renamed Aria to <b>Atlas</b>. Role and permissions are unchanged.</span></p>';
+        out += s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: t.text });
+          return md3Message({ role: 'assistant', avatar: av(32, false),
+            head: '<p class="idv-msg__h md-label-medium"><b>' + names.chat + '</b> &middot; Customer Support Agent</p>', body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working(names.chat + ' is checking the order…');
+        if (s.turns.length > 1) {
+          out += '<div class="sim-idv-surfaces">' +
+            '<section aria-labelledby="sim-idv-act"><h3 class="md-label-large" id="sim-idv-act">Activity</h3>' +
+              md3List([{ leading: av(24, names.log + ', AI agent'), headline: names.log + ' looked up order 88-4120', supporting: '2 min ago' }], { 'aria-labelledby': 'sim-idv-act' }) + '</section>' +
+            '<section aria-labelledby="sim-idv-mail"><h3 class="md-label-large" id="sim-idv-mail">Email to you</h3>' +
+              md3Card('outlined', '<p class="md-body-small idv-role">From: ' + names.mail + ' (AI agent) via Northwind</p>' +
+                '<p class="md-body-medium">Your order 88-4120 arrives Thursday.</p>', 'sim-idv-mail') + '</section>' +
+          '</div>';
+        }
+        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Ask about the order in the composer.</p>';
+        return out;
+      },
+
+      controls: function (s) {
+        return [toggle('Inconsistent naming', 'opt:messy', s.opts.messy),
+                button(s.renamed ? 'Undo rename' : 'Rename to Atlas (admin)', s.renamed ? 'undo' : 'rename', 'outlined')]
+          .concat(s.turns.length ? [button('Start over', 'reset', 'text')] : []);
+      },
+
+      hint: function (s) {
+        if (s.opts.messy) return '<b>Anti-pattern.</b> “' + (s.renamed ? 'Atlas' : 'Aria') + '” in chat, “Assistant” in the log, “Northwind AI Bot” in the email. One agent now reads as three, and nobody can tell which one did what.';
+        if (s.renamed) return '<b>Renamed.</b> Atlas everywhere at once, “formerly Aria” beside it, and a line that says the role and permissions did not change.';
+        if (s.turns.length > 1) return '<b>One name.</b> The chat, the activity log and the email all say ' + (s.renamed ? 'Atlas' : 'Aria') + ', with the same role. Now try the admin rename.';
+        return 'The introduction says who it is, who runs it, what it does — and that it is not a person. Ask about the order.';
+      },
+
+      axSubmit: function (text, ctx) { return SIMS.name.act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a === 'opt:messy') { flip(ctx, 'messy'); return; }
+        if (a === 'rename') { s.renamed = true; ctx.paint(); ctx.announce && ctx.announce('Aria renamed to Atlas. Role and permissions are unchanged.'); return; }
+        if (a === 'undo') { s.renamed = false; ctx.paint(); ctx.announce && ctx.announce('Name restored to Aria.'); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS.name.initial))); s.opts = o; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          s.turns.push({ who: 'you', text: esc(a.slice(5).trim() || s.axText) }); s.axText = '';
+          s.step = 'working'; ctx.paint();
+          await wait(1300);
+          s.turns.push({ who: 'agent', text: 'It left the warehouse this morning and arrives Thursday. I’ve emailed you the tracking link.' });
+          s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
 
     /* ──────────────────────────────────────────────────────
        PERSONALITY · conversation
 
-       purpose   one voice, across registers and across bad news
-       context   a customer-support agent answering a real person
-                 whose order is late
-       decision  change the register, or break the data source
-       after     length moves, the news moves, the voice does not
+       purpose      change how the agent writes, never what it allows
+       user goal    a recap of the meeting, in a style they like
+       agent goal   adapt its voice; keep permission and caveat fixed
+       trigger      they switch personality mid-conversation
+       context      a meeting assistant about to post to a channel
+       decision     which voice? and is the permission still clear?
+       after        the voice changed; the permission did not
        ────────────────────────────────────────────────────── */
     personality: {
       shell: 'conversation',
-      product: 'Harbor',
+      product: 'Huddle',
       agent: 'Aria',
-      note: 'A customer whose order is late. Move the register, then break the source &mdash; ' +
-            'length changes and the news changes; the voice should not.',
+      note: 'Switch Aria between three personalities and read the same conversation each time. The reply changes; the permission ' +
+            'request and the caveat do not. Then let a playful personality override them, and see what breaks.',
 
-      initial: { step: 'answered', opts: { register: 'brief', broken: false, flatter: false } },
+      initial: { p: 'calm', changed: false, opts: { loose: false } },
 
-      title: function () { return 'Chat with Jo Okafor &middot; order 88214'; },
-      pill: function (s) { return s.opts.broken ? 'Carrier API down' : 'Live'; },
+      title: function () { return 'Launch sync &middot; recap'; },
+      pill: function (s) { return { calm: 'Calm & precise', warm: 'Warm', direct: 'Direct' }[s.p]; },
 
       thread: function (s) {
-        var o = s.opts, t;
-        if (o.broken) {
-          t = o.register === 'brief'
-            ? 'The carrier is not responding, so I cannot see where it is. Two options: I refund ' +
-              'the shipping now, or I check again in an hour and message you.'
-            : 'I cannot see your parcel at the moment &mdash; the carrier&rsquo;s tracking is ' +
-              'down and I do not want to guess at a date. Two things I can do now: refund the ' +
-              'shipping, or check again within the hour and message you either way. Say which ' +
-              'and I will do it.';
-        } else {
-          t = o.register === 'brief'
-            ? 'It is in Leeds, out for delivery tomorrow before 13:00. Two days late.'
-            : 'Your order reached the Leeds depot last night and is out for delivery tomorrow ' +
-              'before 13:00 &mdash; two days later than we told you. The delay was at our end, ' +
-              'so I have refunded the shipping without you asking.';
-        }
-        if (o.flatter) {
-          t = 'Great question! I&rsquo;m so sorry for the trouble, and I really appreciate your ' +
-              'patience with this. ' + t;
-        }
-        return human('Jo Okafor', 'JO', 'My order was supposed to be here Tuesday. Where is it?',
-                     '14:06') +
-          '<div class="sim-turn">' + mark('md-agentav--sm') +
-          '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' + chip() +
-          '<span class="sim-turn__time">14:06</span></div>' +
-          '<p class="wf-text">' + t + '</p></div></div>';
-      },
-
-      foot: function () {
-        return '<p class="sim-foot__note">A real customer, mildly annoyed, waiting. That is the ' +
-               'condition a voice profile actually has to survive.</p>';
+        var P = SIM_PERSONAS[s.p], o = s.opts;
+        var loose = o.loose && s.p !== 'calm';
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var head = '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; AI agent</p>';
+        return md3Message({ role: 'user', hideAvatar: true, body: 'Can you recap the meeting and post it to #launch?' }) +
+          (s.changed ? '<p class="idv-sys md-body-small" role="status">' + MI('tune') + '<span>Personality changed to <b>' + P.label + '</b>. ' +
+            (loose ? 'Permissions and caveats now follow the personality.' : 'Facts, permissions and safety are unchanged.') + '</span></p>' : '') +
+          md3Message({ role: 'assistant', avatar: av, head: head, body: P.recap }) +
+          md3Message({ role: 'assistant', avatar: av, head: head, body: P.unsure }) +
+          md3ActionConfirmation({ id: 'sim-idv-perm', badge: 'Permission', title: 'Send the recap to #launch?',
+            description: loose ? 'Mind if I pop this over to #launch for everyone? Totally up to you!' : 'Aria will post the recap in #launch, where 24 people can see it.',
+            confirm: 'Send', cancel: 'Not now', confirmAct: 'noop', cancelAct: 'noop' }) +
+          aiCaveat(loose ? 'Pretty sure I caught the important bits!' : 'Based on 40 of 52 minutes — the recording stopped early.');
       },
 
       controls: function (s) {
-        return [segment([['brief', 'Brief'], ['full', 'Explanatory']], s.opts.register, 'reg'),
-                toggle('Carrier API is down', 'opt:broken', s.opts.broken),
-                toggle('Let it flatter', 'opt:flatter', s.opts.flatter)];
+        return ['calm', 'warm', 'direct'].map(function (k) {
+          return button(SIM_PERSONAS[k].label, 'p:' + k, s.p === k ? 'filled' : 'outlined');
+        }).concat([toggle('Personality overrides trust', 'opt:loose', s.opts.loose)]);
       },
 
       hint: function (s) {
-        if (s.opts.flatter) return 'The failure mode: padding before substance, an apology for ' +
-                                   'nothing, and the answer pushed down the screen.';
-        return s.opts.broken
-          ? 'Bad news in the same voice as good news &mdash; options stated, no hedging, no ' +
-            'guessed date to make the moment easier.'
-          : 'Both registers put the answer first and say what was done without being asked. ' +
-            'Register is a setting; voice is not.';
+        if (s.opts.loose && s.p !== 'calm') return '<b>Anti-pattern.</b> The permission no longer says who will see the post, and the caveat no longer says 12 minutes are missing. Playful copy made both feel smaller than they are.';
+        if (s.changed) return '<b>Changed.</b> The recap and the uncertain line are in the new voice. The permission request and the caveat are word for word the same — that is the contract.';
+        return 'Aria writes calmly and precisely by default. Choose Warm or Direct above.';
       },
 
       act: function (a, ctx) {
         var s = ctx.s;
-        if (a.indexOf('reg:') === 0) { s.opts.register = a.split(':')[1]; ctx.paint(); return; }
-        if (a === 'opt:broken')      { flip(ctx, 'broken'); return; }
-        if (a === 'opt:flatter')     { flip(ctx, 'flatter'); }
+        if (a === 'noop') return;
+        if (a === 'opt:loose') { flip(ctx, 'loose'); return; }
+        if (a.indexOf('p:') === 0) {
+          var k = a.slice(2); if (k === s.p) return;
+          s.p = k; s.changed = k !== 'calm'; ctx.paint();
+          ctx.announce && ctx.announce('Personality changed to ' + SIM_PERSONAS[k].label.replace('&amp;', 'and') + '. Facts, permissions and safety are unchanged.');
+        }
       }
     },
+
 
     /* ──────────────────────────────────────────────────────
        ICONOGRAPHY · workspace
 
-       purpose   one reserved glyph, auditable across a screen
-       context   a writing app with a toolbar, a menu and inline
-                 controls — enough surface for the claim to fail on
-       decision  spend the mark on something that is not the agent
-       after     every genuine use stops being legible at once
+       purpose      one glyph per AI meaning, used consistently
+       user goal    tighten a support reply before sending it
+       agent goal   rewrite it; show action, work, tool and result
+       trigger      the agent presses Rewrite
+       context      a support desk reply editor
+       decision     what will this do? what is it doing? what did it do?
+       after        the reply carries “Generated with AI”
        ────────────────────────────────────────────────────── */
     iconography: {
       shell: 'workspace',
-      product: 'Quill',
+      product: 'Relay',
       agent: 'Aria',
-      note: 'A screen with enough controls for the claim to fail on. Audit the glyph, then spend ' +
-            'it on &ldquo;new&rdquo; and watch every honest use stop meaning anything.',
+      note: 'A support reply. Press Rewrite and watch four different marks appear for four different meanings — action, working, ' +
+            'tool use, generated. Then switch on “one sparkle for everything” and try to tell them apart.',
 
-      initial: { step: 'idle', menu: false, text: '', streaming: false,
-                 opts: { audit: false, misuse: false } },
+      initial: { step: 'idle', opts: { one: false, still: false } },
+      halo: false,
 
-      title: function () { return 'Release notes &mdash; 4.2'; },
-      pill: function (s) { return s.text ? 'Edited' : 'Saved'; },
-      audit: function (s) { return s.opts.audit; },
+      title: function () { return 'Reply to Dana &middot; #4417'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.step === 'done' ? 'Draft &middot; edited with Aria' : 'Draft'; },
+      phase: function (s) { return s.step === 'working' ? 'working' : s.step === 'done' ? 'done' : 'idle'; },
 
       tools: function (s) {
-        var items = [['ai', 'Rewrite this section', 'rewrite'],
-                     ['ai', 'Summarise the changelog', 'summarise'],
-                     ['-', '', ''],
-                     ['plain', 'Insert a table', 'noop'],
-                     ['plain', 'Add a comment', 'noop']];
-        return '<button class="sim-tool" type="button" data-act="noop">B</button>' +
-          '<button class="sim-tool" type="button" data-act="noop"><i>I</i></button>' +
-          '<span class="sim-tool__rule"></span>' +
-          '<button class="md-button md-button--filled md-button--sm" type="button" ' +
-            'data-act="rewrite">' + glyph16() + 'Rewrite with Aria</button>' +
-          '<button class="sim-tool" type="button" data-act="menu" aria-expanded="' +
-            !!s.menu + '" aria-label="More">' + ICON_DOTS + '</button>' +
-          (s.opts.misuse
-            ? '<span class="md-assist-chip md-assist-chip--tonal sim-tool__spacer">' +
-              MI('spark', 'md-assist-chip__icon') + 'New</span>'
-            : '') +
-          (s.menu
-            ? '<div class="md-menu sim-menu" role="menu">' + items.map(function (m) {
-                if (m[0] === '-') return '<div class="md-menu__rule" role="separator"></div>';
-                return '<button class="md-menu__item' +
-                  (m[0] === 'ai' ? ' md-menu__item--ai' : '') + '" role="menuitem" type="button" ' +
-                  'data-act="' + m[2] + '">' +
-                  (m[0] === 'ai'
-                    ? MI('spark')
-                    : MI('more')) +
-                  '<span class="md-body-medium">' + m[1] + '</span></button>';
-              }).join('') + '</div>'
-            : '');
+        var M = md3(), ic = simIco(s);
+        return M.button({ variant: 'text', label: 'Insert macro', attrs: { 'data-act': 'noop' } }) +
+          '<span class="sim-tdx-gap" aria-hidden="true"></span>' +
+          (s.step === 'working'
+            ? M.button({ variant: 'tonal', label: 'Rewriting…', icon: ic('working'), cls: 'is-busy', attrs: { 'aria-disabled': 'true', 'aria-label': 'Agent working: rewriting with AI' } }) +
+              M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'stop' } })
+            : M.tooltip({ id: 'sim-idv-tip', trigger: M.button({ variant: 'tonal', label: 'Rewrite', icon: ic('action'), attrs: { 'data-act': 'rewrite', 'aria-label': 'Rewrite with AI' } }),
+                content: 'Rewrite with AI', cls: 'sim-idv-tipw' }));
       },
 
       canvas: function (s) {
-        return '<h1 class="sim-doc__h">What&rsquo;s new in 4.2</h1>' +
-          '<p class="sim-doc__p">Search now runs against the whole archive rather than the last ' +
-          'ninety days.</p>' +
-          (s.step === 'working' ? working('Rewriting…') : '') +
-          (s.text ? '<p class="sim-doc__p">' + caret(s.text, s.streaming) + '</p>' +
-                    '<span class="sim-doc__prov">' + chip() + '</span>' : '') +
-          '<label class="md-field" style="margin-top:18px">' +
-            '<span class="md-field__label md-body-small">Summary for the changelog</span>' +
-            '<span class="md-field__row">' +
-              '<input class="md-field__input md-body-medium" type="text" ' +
-                'placeholder="One line for the release feed" />' +
-              '<button class="md-field-glyph" type="button" data-act="summarise" ' +
-                'aria-label="Write this with Aria">' + glyph16() + '</button>' +
-            '</span></label>';
+        var M = md3(), ic = simIco(s), busy = s.step === 'working', done = s.step === 'done';
+        var before = 'Hi Dana, sorry about this. The export thing is a known problem and we are kind of working on it, should be fixed soon hopefully.';
+        var after = 'Hi Dana — thanks for flagging this. CSV exports over 50,000 rows are failing; the fix ships in 2.4 on Tuesday. Until then, splitting the export by month works.';
+        var R = AI_ROLES;
+        return '<div class="sim-idv sim-idv--icons">' +
+          '<article class="sim-idv-reply">' +
+            '<p class="md-body-small idv-role">From Dana Khoury &middot; “Exports keep failing over 50k rows.”</p>' +
+            '<p class="md-body-large sim-idv-draft' + (busy ? ' is-busy' : '') + '">' + (done ? after : before) + '</p>' +
+            (busy ? '<div class="sim-idv-work" role="status">' + ic('working') + '<span>Rewriting the reply…</span></div>' : '') +
+            (s.tool ? '<p class="sim-idv-tool md-body-small">' + ic('tool') + '<span>Checked the tone guide and changelog EXP-210</span></p>' : '') +
+            (done ? '<div class="tdx-foot"><span class="' + md3ChipClass(false, false).replace('md-sp__chip', 'tdx-chip') + ' tdx-mark tdx-mark--outlined">' +
+              '<span class="relative shrink-0">' + ic('generated') + '</span><span class="relative">Generated with AI</span></span>' +
+              md3Button({ variant: 'text', label: 'Undo', attrs: { 'data-act': 'undo' } }) + '</div>' : '') +
+          '</article>' +
+          '<aside class="sim-idv-legend" aria-labelledby="sim-idv-lg"><h3 class="md-label-large" id="sim-idv-lg">Icon language</h3>' +
+            md3List(['action', 'working', 'tool', 'generated'].map(function (k) {
+              return { leading: ic(k, true), headline: R[k].name, supporting: R[k].means };
+            }), { 'aria-labelledby': 'sim-idv-lg' }) +
+          '</aside>' +
+        '</div>';
       },
 
       controls: function (s) {
-        return [toggle('Audit the glyph', 'opt:audit', s.opts.audit),
-                toggle('Spend it on &ldquo;new&rdquo;', 'opt:misuse', s.opts.misuse)];
+        return [toggle('One sparkle for everything', 'opt:one', s.opts.one), toggle('Reduced motion', 'opt:still', s.opts.still)]
+          .concat(s.step !== 'idle' ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (s.opts.misuse) return 'The mark now means &ldquo;a model runs here&rdquo; and ' +
-                                  '&ldquo;we shipped this recently&rdquo;. Both readings are ' +
-                                  'gone, on every screen at once.';
-        return s.opts.audit
-          ? 'Four outlined marks, four places a model runs: the toolbar action, two menu rows ' +
-            'and the field it can fill. A fifth anywhere else would show here too.'
-          : 'Bold and italic do not carry it. Only the controls that run the model do, which is ' +
-            'what makes it worth looking for.';
+        if (s.opts.one) return '<b>Anti-pattern.</b> The same sparkle now means “will run AI”, “is running”, “used a tool” and “was written by AI”. The icon tells nobody anything; only the words still do.';
+        if (s.step === 'working') return '<b>Working.</b> The action mark became the working mark' + (s.opts.still ? ' — still, because motion is reduced; the words carry it' : '') + '. Then the tool mark says what it consulted.';
+        if (s.step === 'done') return '<b>Generated.</b> A different mark again: this text came from AI. Four meanings, four glyphs, each with words.';
+        return 'Hover Rewrite: the spark means “pressing this runs AI”, and the tooltip says what it will do.';
       },
 
       act: async function (a, ctx) {
         var s = ctx.s;
-        if (a === 'opt:audit')  { flip(ctx, 'audit'); return; }
-        if (a === 'opt:misuse') { flip(ctx, 'misuse'); return; }
-        if (a === 'menu')       { s.menu = !s.menu; ctx.paint(); return; }
-        if (a === 'noop')       { s.menu = false; ctx.paint(); return; }
-        if (a === 'rewrite' || a === 'summarise') {
-          s.menu = false; s.step = 'working'; s.text = ''; ctx.paint();
-          await wait(900);
-          s.step = 'idle'; ctx.paint();
-          await stream(ctx, 'text', a === 'summarise'
-            ? 'Archive-wide search, faster exports, and two crashes fixed on import.'
-            : 'Search covers the entire archive now, not just the last ninety days &mdash; and ' +
-              'results come back in about a third of the time on large workspaces.');
+        if (a === 'noop') return;
+        if (a === 'opt:one') { flip(ctx, 'one'); return; }
+        if (a === 'opt:still') { flip(ctx, 'still'); return; }
+        if (a === 'reset' || a === 'undo') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS.iconography.initial))); s.tool = false; s.opts = o; ctx.paint(); return; }
+        if (a === 'stop') { s.run = (s.run || 0) + 1; s.step = 'idle'; s.tool = false; ctx.paint(); ctx.announce && ctx.announce('Stopped. Your reply is unchanged.'); return; }
+        if (a === 'rewrite') {
+          var run = (s.run || 0) + 1; s.run = run;
+          s.step = 'working'; s.tool = false; ctx.paint(); ctx.announce && ctx.announce('Agent working: rewriting with AI.');
+          await wait(1000); if (s.run !== run) return;
+          s.tool = true; ctx.paint();
+          await wait(1100); if (s.run !== run) return;
+          s.step = 'done'; ctx.paint(); ctx.announce && ctx.announce('Reply rewritten. Generated with AI.');
         }
       }
     },
 
-    /* ──────────────────────────────────────────────────────
-       EXAMPLE GALLERY · composer
 
-       purpose   teach range before anyone has to guess it
-       context   a market-research tool, first open, nothing to
-                 react to and no idea what it is good for
-       decision  open an example, then edit it rather than send it
-       after     the example ends in the composer, editable
+    /* ──────────────────────────────────────────────────────
+       EXAMPLE GALLERY · conversation
+
+       purpose      show what this agent is good at, before guessing
+       user goal    get something useful out of a new meeting tool
+       agent goal   be asked something it does well
+       trigger      a new, empty conversation
+       context      a meeting-intelligence workspace
+       decision     pick an example, edit it, or type their own
+       after        the gallery steps back once work starts
        ────────────────────────────────────────────────────── */
     'example-gallery': {
-      shell: 'composer',
-      product: 'Scout',
+      shell: 'conversation',
+      product: 'Huddle',
       agent: 'Aria',
-      note: 'A research surface with nothing on it. The examples show what came BACK, not only ' +
-            'what was typed &mdash; and open into the composer, editable.',
+      note: 'A new conversation in a meeting workspace. Pick an example — it lands in the composer, unsent. Edit it ' +
+            '(type, or use “Edit the request”), send it, and watch the gallery step back.',
 
-      initial: { step: 'browse', filter: 'All', open: null, q: '', text: '', streaming: false },
+      halo: false,
+      initial: { step: 'idle', turns: [], picked: null, more: false, axText: '', opts: { stay: false } },
 
-      title: function (s) { return s.step === 'browse' ? 'New research' : 'Renewal risk'; },
-      pill: function (s) { return s.step === 'answered' ? 'Answered' : 'Empty'; },
+      title: function () { return 'New conversation'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.turns.length ? 'In progress' : 'New'; },
 
-      context: function (s) {
-        if (s.step !== 'browse') return '';
-        return '<p class="sim-ctx__t">Nothing here yet. These are things people on your team ' +
-               'actually asked, with what came back.</p>';
+      thread: function (s) {
+        var o = s.opts, started = s.turns.length > 0;
+        var EX = SIM_EG;
+        function row(e, i) {
+          var on = s.picked === i && !started;
+          return '<button type="button" class="md3-listitem sim-cd-row ' + MD3_LIST_ITEM + ' ' + MD3_LIST_ITEM_INTERACTIVE + '" data-act="eg:' + i + '" aria-pressed="' + on + '">' +
+            '<span class="' + MD3_LIST_LEAD + '">' + MI(e.icon) + '</span>' +
+            '<span class="' + MD3_LIST_TEXT + '"><span class="' + MD3_LIST_HEAD + '">' + e.t + '</span>' +
+              '<span class="' + MD3_LIST_SUPPORT + '">' + e.d + '</span></span>' +
+            (on ? '<span class="cd-in md-label-small">In composer</span>' : '') + '</button>';
+        }
+        var out = '';
+        if (!started || o.stay || s.more) {
+          out += '<section class="sim-cd-gal' + (started ? ' is-quiet' : '') + '" aria-labelledby="sim-cd-gh">' +
+            '<h3 class="md-title-small" id="sim-cd-gh">' + (started ? 'More examples' : 'Try an example') + '</h3>' +
+            (started ? '<div class="cd-eg__row">' + EX.map(function (e, i) {
+                return '<button type="button" class="' + md3ChipClass(false, false) + '" data-act="eg:' + i + '"><span class="relative shrink-0">' + MI(e.icon) + '</span><span class="relative">' + e.t + '</span></button>';
+              }).join('') + '</div>'
+              : '<div class="md3-list sim-cd-list ' + MD3_LIST + '">' + EX.map(row).join('') + '</div>' +
+                '<p class="md-body-small cd-d">Or describe your own task in the composer.</p>') +
+          '</section>';
+        } else {
+          out += '<div class="sim-cd-more">' + md3Button({ variant: 'text', label: 'Show examples', icon: MI('lightbulb'), attrs: { 'data-act': 'more', 'aria-expanded': 'false' } }) + '</div>';
+        }
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        out += s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: t.text });
+          return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; AI agent</p>', body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working('Reading this week’s product meetings…');
+        return out;
       },
 
-      stage: function (s) {
-        if (s.step === 'open') {
-          var o = GAL[s.open];
-          return '<div class="md-ex-open sc-rise" role="dialog">' +
-            '<span class="md-ex__k md-label-small">' + o.k + '</span>' +
-            '<h3 class="md-tpl__name md-title-medium" style="margin-top:8px">' + o.ask + '</h3>' +
-            '<p class="md-ex-open__out md-body-medium">' + o.full + '</p>' +
-            '<div class="md-ex-open__foot">' +
-              button('Use this prompt', 'use') + button('Back', 'back', 'text') +
-            '</div></div>';
-        }
-        if (s.step === 'answered' || s.step === 'working') {
-          return '<div class="sim-turn">' + mark('md-agentav--sm' +
-              (s.step === 'working' ? ' md-agentav--thinking' : '')) +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-              (s.step === 'working' ? '' : chip()) + '</div>' +
-            (s.step === 'working' ? working('Reading the pipeline…')
-                                  : '<p class="wf-text">' + caret(s.text, s.streaming) + '</p>') +
-            '</div></div>';
-        }
-        var shown = GAL.filter(function (e) { return s.filter === 'All' || e.k === s.filter; });
-        return '<div class="wf-filters" role="group" aria-label="Filter examples">' +
-            ['All', 'Analysis', 'Drafting'].map(function (f) {
-              var on = s.filter === f;
-              return '<button class="md-filter' + (on ? ' is-on' : '') + '" type="button" ' +
-                'aria-pressed="' + on + '" data-act="filter:' + f + '">' +
-                MI('check', 'md-filter__tick') + f + '</button>';
-            }).join('') + '</div>' +
-          '<div class="sim-exs">' + shown.map(function (e) {
-            return '<button class="md-ex" type="button" data-act="open:' + GAL.indexOf(e) + '">' +
-              '<span class="md-ex__k md-label-small">' + e.k + '</span>' +
-              '<p class="md-ex__ask md-body-medium">' + e.ask + '</p>' +
-              '<p class="md-ex__out md-body-small">' + e.out + '</p></button>';
-          }).join('') + '</div>';
-      },
-
-      foot: function (s) {
-        if (s.step === 'open') return '';
-        return '<form class="wf-ask" data-form>' +
-            '<input class="wf-ask__input" data-input type="text" autocomplete="off" ' +
-              'value="' + esc(s.q) + '" placeholder="Or describe what you want to know" ' +
-              'aria-label="Ask Aria">' +
-            '<button class="wf-ask__send" type="submit" aria-label="Send">' + ICON_SEND +
-            '</button></form>' +
-          (s.step === 'browse' ? '' : button('Start over', 'reset', 'text'));
+      controls: function (s) {
+        return [button('Edit the request', 'edit', 'outlined'), toggle('Keep gallery after starting', 'opt:stay', s.opts.stay)]
+          .concat(s.turns.length ? [button('Start over', 'reset', 'text')] : []);
       },
 
       hint: function (s) {
-        if (s.step === 'open')     return 'The tile opens on what came back, because that is the ' +
-                                          'half that teaches range. The prompt alone teaches syntax.';
-        if (s.q && s.step === 'browse') return 'In the composer, editable and unsent. An example ' +
-                                          'that ends on a clipboard ends outside the product.';
-        if (s.step === 'answered') return 'It started as somebody else&rsquo;s question and ' +
-                                          'finished as yours, which is the whole distance a good ' +
-                                          'example has to carry.';
-        return 'Each tile is a real request with its real result. Two filters, three tiles &mdash; ' +
-               'a wall of them is the menu this replaces.';
+        if (s.step === 'working') return '<b>Active.</b> Normal work has started, so the gallery stepped back to one button.';
+        if (s.turns.length) return s.opts.stay ? '<b>Kept.</b> The examples stay, as a quiet row of chips under the work.' :
+          '<b>Out of the way.</b> “Show examples” brings them back; the conversation is the focus now.';
+        if (s.picked !== null && (s.axText || '') !== SIM_EG[s.picked].p) return '<b>Edited.</b> It is their request now. Send it from the composer.';
+        if (s.picked !== null) return '<b>Placed.</b> The example is in the composer, unsent. Edit it — try “Edit the request” — then send.';
+        return 'Three real things this product does, each with one line on what it uses. Choose one, or type your own.';
       },
 
-      submit: async function (text, ctx) {
-        if (!text.trim()) return;
-        ctx.s.q = '';
-        ctx.s.step = 'working'; ctx.paint();
-        await wait(1200);
-        ctx.s.step = 'answered'; ctx.paint();
-        await stream(ctx, 'text',
-          'Seven accounts are at risk by weighted value. Northwind and Contoso are the two that ' +
-          'matter: both have an open escalation and lost their champion this quarter.');
-      },
-
-      act: function (a, ctx) {
-        var s = ctx.s;
-        if (a.indexOf('filter:') === 0) { s.filter = a.split(':')[1]; ctx.paint(); return; }
-        if (a.indexOf('open:') === 0)   { s.open = +a.split(':')[1]; s.step = 'open';
-                                          ctx.paint(); return; }
-        if (a === 'back')  { s.step = 'browse'; ctx.paint(); return; }
-        if (a === 'use')   { s.q = GAL[s.open].ask; s.step = 'browse'; ctx.paint();
-                             var i = ctx.root && ctx.root.querySelector('[data-input]');
-                             if (i) i.focus({ preventScroll: true });
-                             return; }
-        if (a === 'reset') { Object.assign(s,
-                               JSON.parse(JSON.stringify(SIMS['example-gallery'].initial)));
-                             ctx.paint(); }
-      }
-    },
-
-    /* ──────────────────────────────────────────────────────
-       TEMPLATES · composer
-
-       purpose   turn a rough intent into a workable request
-       context   the weekly report somebody writes every Friday
-       decision  fill the slots, or leave the scaffold entirely
-       after     the assembled request stays editable
-       ────────────────────────────────────────────────────── */
-    templates: {
-      shell: 'composer',
-      product: 'Pulse',
-      agent: 'Aria',
-      note: 'The report someone writes every Friday. Fill the slots and watch the request ' +
-            'assemble &mdash; then leave the scaffold, because a scaffold you cannot leave is a form.',
-
-      initial: { step: 'list', picked: null, slots: {}, q: '', text: '', streaming: false },
-
-      title: function (s) { return s.picked ? TPL2[s.picked].name : 'New report'; },
-      pill: function (s) { return s.step === 'done' ? 'Generated' : 'Draft'; },
-
-      context: function (s) {
-        if (s.step !== 'list') return '';
-        return '<p class="sim-ctx__t">Friday, 16:10. This report has gone out 31 weeks running.</p>';
-      },
-
-      stage: function (s) {
-        if (s.step === 'list') {
-          return '<div class="md-tpl-list">' + Object.keys(TPL2).map(function (k) {
-            return '<button class="md-tpl-row" type="button" data-act="pick:' + k + '">' +
-              '<span><span class="md-tpl-row__n md-body-medium">' + TPL2[k].name + '</span>' +
-              '<span class="md-tpl-row__d md-body-small">' + TPL2[k].desc + '</span></span>' +
-              MI('arrowFwd', 'md-tpl-row__go') + '</button>';
-          }).join('') + '</div>';
-        }
-        if (s.step === 'working' || s.step === 'done') {
-          return '<div class="sim-turn">' + mark('md-agentav--sm' +
-              (s.step === 'working' ? ' md-agentav--thinking' : '')) +
-            '<div><div class="sim-turn__head"><span class="sim-turn__n">Aria</span>' +
-              (s.step === 'done' ? chip() : '') + '</div>' +
-            (s.step === 'working' ? working('Reading this week&rsquo;s numbers…')
-                                  : '<p class="wf-text">' + caret(s.text, s.streaming) + '</p>') +
-            '</div></div>';
-        }
-        var t = TPL2[s.picked];
-        var count = t.parts.filter(function (p) { return s.slots[p[1]]; }).length;
-        return '<section class="md-tpl">' +
-          '<p class="md-tpl__line md-body-large">' + t.parts.map(function (p) {
-            var on = !!s.slots[p[1]];
-            return p[0] + ' <button class="md-slot' + (on ? ' is-set' : '') + '" type="button" ' +
-              'data-act="slot:' + p[1] + '">' + (on ? p[2] : 'a ' + p[1]) +
-              MI('chevDown', 'md-slot__caret') + '</button>';
-          }).join(' ') + '.</p>' +
-          '<div class="md-tpl__foot">' +
-            '<button class="md-button md-button--filled md-button--sm" type="button" ' +
-              (count === t.parts.length ? 'data-act="run"' : 'disabled') + '>Run it</button>' +
-            '<button class="md-button md-button--text md-button--sm" type="button" ' +
-              'data-act="astext">Edit as text</button>' +
-            '<span class="md-tpl__count md-body-small">' + count + ' of ' + t.parts.length +
-            ' chosen</span>' +
-          '</div></section>';
-      },
-
-      foot: function (s) {
-        if (s.step === 'list' || s.step === 'form') {
-          return s.q
-            ? '<form class="wf-ask" data-form>' +
-              '<input class="wf-ask__input" data-input type="text" value="' + esc(s.q) + '" ' +
-              'aria-label="Your request"><button class="wf-ask__send" type="submit" ' +
-              'aria-label="Send">' + ICON_SEND + '</button></form>'
-            : '';
-        }
-        return button('Start over', 'reset', 'text');
-      },
-
-      hint: function (s) {
-        if (s.q)                 return 'Out of the scaffold and into plain text, mid-sentence, ' +
-                                        'with everything chosen so far carried across.';
-        if (s.step === 'form')   return 'Slots are named after decisions, not variables &mdash; ' +
-                                        'and nothing is filled in on your behalf.';
-        if (s.step === 'done')   return 'The template produced the request; the request produced ' +
-                                        'this. Neither step was hidden from you.';
-        return 'Two templates, because the queue has two reports. A gallery of forty is a menu ' +
-               'nobody reads.';
-      },
-
-      submit: async function (text, ctx) {
-        if (!text.trim()) return;
-        ctx.s.step = 'working'; ctx.paint();
-        await wait(1200);
-        ctx.s.step = 'done'; ctx.paint();
-        await stream(ctx, 'text', REPORT);
-      },
+      axSubmit: function (text, ctx) { return SIMS['example-gallery'].act('send:' + text, ctx); },
 
       act: async function (a, ctx) {
         var s = ctx.s;
-        if (a.indexOf('pick:') === 0) { s.picked = a.split(':')[1]; s.slots = {}; s.step = 'form';
-                                        ctx.paint(); return; }
-        if (a.indexOf('slot:') === 0) { var k = a.split(':')[1]; s.slots[k] = !s.slots[k];
-                                        ctx.paint(); return; }
-        if (a === 'astext') {
-          var t = TPL2[s.picked];
-          s.q = t.parts.map(function (p, i) {
-            return (i ? ' ' : '') + p[0] + ' ' + (s.slots[p[1]] ? p[2] : '…');
-          }).join('').replace(/&rsquo;/g, '’') + '.';
-          ctx.paint(); return;
+        if (a === 'opt:stay') { flip(ctx, 'stay'); return; }
+        if (a === 'more') { s.more = true; ctx.paint(); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS['example-gallery'].initial))); s.opts = o; ctx.paint(); return; }
+        if (a.indexOf('eg:') === 0) {
+          s.picked = +a.slice(3); s.axText = SIM_EG[s.picked].p; s.more = false; ctx.paint();
+          ctx.announce && ctx.announce('Example placed in the composer. Edit it, then send.'); return;
         }
-        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS.templates.initial)));
-                             ctx.paint(); return; }
-        if (a === 'run') {
+        if (a === 'edit') {
+          if (s.picked === null) { s.picked = 1; }
+          s.axText = SIM_EG[s.picked].edit; ctx.paint(); return;
+        }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText;
+          if (!text) return;
+          s.turns.push({ who: 'you', text: esc(text) }); s.axText = ''; s.more = false;
           s.step = 'working'; ctx.paint();
-          await wait(1200);
-          s.step = 'done'; ctx.paint();
-          await stream(ctx, 'text', REPORT);
+          await wait(1500);
+          s.turns.push({ who: 'agent', text: '<b>3 decisions are still open</b> from this week’s product meetings: the export limit (Mon), the 2.4 date (Tue) and pricing for Teams (Thu). Each was raised and deferred without an owner.' });
+          s.step = 'idle'; ctx.paint();
         }
       }
     },
 
+
     /* ──────────────────────────────────────────────────────
-       NUDGES · inbox
+       TEMPLATES · workspace
 
-       purpose   offer a capability at the moment it would have
-                 helped, on evidence
-       context   an expense queue somebody is clearing by hand
-       decision  take the offer, or refuse it for good
-       after     refusal is permanent; the offer does not return
+       purpose      start a known workflow without rebuilding it
+       user goal    a competitive analysis, same shape as last time
+       agent goal   fill a structure the person controls
+       trigger      they open Templates in a research tool
+       context      web access is off in this workspace
+       decision     preview, apply, fix what's missing, edit, run
+       after        values survive the detour; nothing ran early
        ────────────────────────────────────────────────────── */
-    nudges: {
-      shell: 'inbox',
-      product: 'Tally',
+    templates: {
+      shell: 'workspace',
+      product: 'Scout',
       agent: 'Aria',
-      note: 'Clear a few expense claims by hand. The offer appears only once there is evidence ' +
-            '&mdash; and refusing it means gone, not gone until Tuesday.',
+      note: 'A research workspace. Preview the Competitive analysis template, apply it, and hit the one thing it needs — web ' +
+            'access. Turn it on and see your values still there. Nothing runs until you press Run.',
 
-      initial: { step: 'idle', done: 0, nudge: false, dismissed: false, auto: false },
+      initial: { step: 'list', web: false, vals: { comp: '', crit: 'Pricing, onboarding, integrations', fmt: 'Comparison table' }, kept: false, opts: { overwrite: false } },
+      halo: false,
 
-      title: function () { return 'Expenses &middot; awaiting your approval'; },
-      pill: function (s) { return (6 - s.done) + ' left'; },
+      title: function () { return 'New research'; },
+      pill: function (s) { return { list: 'Draft', preview: 'Previewing template', applied: s.web ? 'Template applied' : 'Needs web access', working: 'Aria working', done: 'Report ready' }[s.step]; },
+      phase: function (s) { return s.step === 'working' ? 'working' : s.step === 'done' ? 'done' : 'idle'; },
 
-      queue: function (s) {
-        return '<p class="sim-rail__k">This week</p>' +
-          '<p class="sim-queue__n">' + s.done + ' approved by you</p>' +
-          (s.auto ? '<p class="sim-queue__n sim-queue__n--agent">3 checked by Aria</p>' : '') +
-          '<p class="sim-rail__note">Every claim under &pound;50 with a receipt. You have ' +
-          'approved 214 of these this year.</p>';
+      tools: function (s) {
+        return md3Button({ variant: 'text', label: 'Templates', icon: MI('doc'), attrs: { 'data-act': 'list' } }) +
+          '<span class="sim-tdx-gap" aria-hidden="true"></span>' +
+          '<span class="sim-idv-live">' + MI(s.web ? 'cloud' : 'block') + (s.web ? 'Web access on' : 'Web access off') + '</span>';
       },
 
-      thread: function (s) {
-        if (s.done >= 6) {
-          return '<div class="sim-empty-state">' + mark('md-agentav--lg') +
-            '<p class="sim-hello__t">Queue clear</p>' +
-            '<p class="sim-hello__d">' + (s.auto
-              ? 'Three of those were checked by Aria against the receipt and the policy. You ' +
-                'approved them; it did the reading.'
-              : 'All six by hand, as usual.') + '</p></div>';
+      canvas: function (s) {
+        var T = SIM_TPL;
+        var out = '<div class="sim-cd cd">';
+        if (s.step === 'list') {
+          out += '<h3 class="md-title-small cd-h">Templates</h3><div class="md3-list sim-cd-list ' + MD3_LIST + '">' +
+            [[T.t, T.d, 'search'], ['Interview synthesis', 'Themes and quotes across uploaded interviews.', 'forum'], ['Market sizing', 'A bottom-up estimate with stated assumptions.', 'dataset']].map(function (r, i) {
+              return '<button type="button" class="md3-listitem sim-cd-row ' + MD3_LIST_ITEM + ' ' + MD3_LIST_ITEM_INTERACTIVE + '" data-act="' + (i ? 'noop' : 'preview') + '">' +
+                '<span class="' + MD3_LIST_LEAD + '">' + MI(r[2]) + '</span><span class="' + MD3_LIST_TEXT + '"><span class="' + MD3_LIST_HEAD + '">' + r[0] + '</span>' +
+                '<span class="' + MD3_LIST_SUPPORT + '">' + r[1] + '</span></span></button>';
+            }).join('') + '</div>';
+        } else if (s.step === 'preview') {
+          out += md3Card('outlined',
+            '<div class="cd-tp__head"><span class="cd-card__i">' + MI('search') + '</span><div><h3 class="md-title-medium cd-h">' + T.t + '</h3><p class="md-body-medium cd-d">' + T.d + '</p></div></div>' +
+            '<div class="cd-tp__grid">' + T.secs.map(function (x) {
+              return '<div class="cd-tp__sec"><p class="md-label-medium cd-g">' + x[0] + '</p><ul class="cd-tp__ul md-body-medium">' + x[1].map(function (y) { return '<li>' + y + '</li>'; }).join('') + '</ul></div>';
+            }).join('') + '</div>' +
+            '<p class="md-body-small cd-need">' + MI('cloud') + 'Uses web access to read competitors’ public pages.</p>' +
+            '<p class="md-body-small cd-need">' + MI('info') + 'Applying fills in the setup. Nothing runs until you press Run.</p>' +
+            '<div class="cd-acts">' + md3Button({ variant: 'filled', label: 'Use template', attrs: { 'data-act': 'apply' } }) +
+              md3Button({ variant: 'text', label: 'Back', attrs: { 'data-act': 'list' } }) + '</div>', 'cd-tp__card');
+        } else if (s.step === 'applied') {
+          out += '<div class="cd-tp__bar">' + md3InputChip({ label: T.t, name: T.t + ' template', icon: MI('search'), removeAttrs: { 'data-act': 'remove' } }) +
+            '<span class="md-body-small cd-d">Produces: comparison table and summary</span></div>';
+          if (!s.web) out += md3Banner({ icon: MI('cloud'), text: '<b>This template needs web access.</b> It reads each competitor’s pricing and docs pages. Your values are kept.',
+            actions: md3Button({ variant: 'text', label: 'Turn on web access', attrs: { 'data-act': 'web' } }) + md3Button({ variant: 'text', label: 'Use workspace files only', attrs: { 'data-act': 'files' } }) });
+          if (s.filesOnly) out += '<p class="md-body-small cd-need">' + MI('info') + 'Using workspace files only — public pages won’t be read.</p>';
+          out += '<div class="cd-tp__fields">' +
+            md3TextField({ id: 'sim-tp-comp', label: 'Competitors', value: s.vals.comp, support: s.vals.comp ? '' : 'Required — add at least two' }) +
+            md3TextField({ id: 'sim-tp-crit', label: 'Evaluation criteria', value: s.vals.crit, support: s.kept ? 'Confirmed by you' : '<span class="cd-ai">' + aiIcon('generated') + 'Suggested by Aria from your last analysis</span>' }) +
+            md3TextField({ id: 'sim-tp-fmt', label: 'Output format', value: s.vals.fmt }) +
+          '</div>' +
+          '<div class="cd-acts">' + md3Button({ variant: 'filled', label: 'Run', attrs: { 'data-act': 'run', 'aria-disabled': (s.web || s.filesOnly) && s.vals.comp ? null : 'true' } }) +
+            (s.kept ? '' : md3Button({ variant: 'text', label: 'Keep suggested criteria', attrs: { 'data-act': 'keep' } })) +
+            '<span class="md-body-small cd-d">Nothing runs until you press Run.</span></div>';
+        } else if (s.step === 'working') {
+          out += working('Reading pricing and docs pages for ' + esc(s.vals.comp) + '…');
+        } else {
+          out += md3Card('outlined', '<p class="md-title-small cd-h">Competitive analysis · ' + esc(s.vals.comp) + '</p>' +
+            '<p class="md-body-medium cd-d">A comparison table across ' + esc(s.vals.crit.toLowerCase()) + ', and a one-page summary. Based on public pages read today.</p>', 'cd-tp__card');
         }
-        var claims = [
-          ['Rail, Leeds → London', '£48.20', 'M. Diaz', 'receipt attached'],
-          ['Client lunch', '£34.00', 'P. Nair', 'receipt attached'],
-          ['Taxi, airport', '£41.50', 'J. Okafor', 'receipt attached'],
-          ['Rail, return', '£46.80', 'M. Diaz', 'receipt attached'],
-          ['Coworking day pass', '£29.00', 'A. Bell', 'receipt attached'],
-          ['Parking', '£12.00', 'P. Nair', 'receipt attached']
-        ];
-        var c = claims[s.done];
-        return '<div class="sim-claim">' +
-            '<div><p class="sim-claim__t">' + c[0] + '</p>' +
-            '<p class="sim-claim__m">' + c[2] + ' &middot; ' + c[3] + '</p></div>' +
-            '<p class="sim-claim__v">' + c[1] + '</p>' +
-          '</div>';
+        return out + '</div>';
       },
 
-      /* The offer is anchored to the control it is about — the one
-         the reader has now pressed three times. */
-      foot: function (s) {
-        var n = (s.nudge && !s.dismissed && s.done < 6)
-          ? '<div class="md-nudge md-nudge--above sc-rise" role="status">' +
-              '<div class="md-nudge__head">' +
-                MI('spark', 'md-nudge__ico') +
-                '<div><p class="md-nudge__t md-body-medium">Aria can check these against the ' +
-                'receipt first</p>' +
-                '<p class="md-nudge__d md-body-small">You have approved ' + s.done + ' in a row ' +
-                'without a change.</p></div>' +
-                '<button class="md-nudge__x" type="button" aria-label="Dismiss this hint" ' +
-                  'data-act="dismiss">&times;</button></div>' +
-              '<div class="md-nudge__foot">' + button('Let it check them', 'accept') +
-                button('No thanks', 'dismiss', 'text') + '</div></div>'
-          : '';
-        return n + (s.done < 6
-          ? button('Approve', 'approve') + button('Query it', 'noop', 'outlined')
-          : button('Start over', 'reset', 'text'));
+      controls: function (s) {
+        return [button('Type competitors', 'fill', 'outlined')].concat(s.step !== 'list' ? [button('Start over', 'reset', 'text')] : []);
       },
-
-      controls: function (s) { return s.done || s.dismissed ? [button('Start over', 'reset', 'text')] : []; },
 
       hint: function (s) {
-        if (s.dismissed) return 'Dismissed for good. Not on the next claim, not next week &mdash; ' +
-                                'once is a hint, the same one three times is a nag.';
-        if (s.auto)      return 'Taken, and it did the work in place. A nudge that leads to a ' +
-                                'settings page has wasted the moment it earned.';
-        if (s.nudge)     return 'Earned by three identical approvals, anchored to the button ' +
-                                'that earned it, and answerable in one press either way.';
-        return 'Silence. There is no evidence yet that help would land, and a nudge on a timer ' +
-               'is an advertisement inside a tool you pay for.';
+        if (s.step === 'preview') return '<b>Preview.</b> What it asks for, what it produces and what it uses — before anything is applied.';
+        if (s.step === 'applied' && !s.web && !s.filesOnly) return '<b>Missing requirement.</b> What is missing, why it is needed and two ways on. Type your competitors first — they will still be there after.';
+        if (s.step === 'applied') return '<b>Applied and editable.</b> Your values survived the detour. The suggested criteria are marked until you keep or change them. Run when ready.';
+        if (s.step === 'working') return 'Only now does anything run — because you pressed Run.';
+        if (s.step === 'done') return '<b>Done.</b> The template was the setup; the result is the work.';
+        return 'Open Templates and choose Competitive analysis.';
+      },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, r = ctx.root;
+        if (r && s.step === 'applied') {
+          ['comp', 'crit', 'fmt'].forEach(function (k) { var f = r.querySelector('#sim-tp-' + k); if (f) s.vals[k] = f.value; });
+        }
+        if (a === 'noop') return;
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS.templates.initial))); ctx.paint(); return; }
+        if (a === 'list') { if (s.step === 'applied') return; s.step = 'list'; ctx.paint(); return; }
+        if (a === 'preview') { s.step = 'preview'; ctx.paint(); return; }
+        if (a === 'apply') { s.step = 'applied'; ctx.paint(); ctx.announce && ctx.announce('Template applied. It needs web access.'); return; }
+        if (a === 'remove') { s.step = 'list'; ctx.paint(); ctx.announce && ctx.announce('Template removed.'); return; }
+        if (a === 'web') { s.web = true; ctx.paint(); ctx.announce && ctx.announce('Web access on. Your values are kept.'); return; }
+        if (a === 'files') { s.filesOnly = true; ctx.paint(); return; }
+        if (a === 'keep') { s.kept = true; ctx.paint(); return; }
+        if (a === 'fill') { if (s.step === 'list' || s.step === 'preview') { s.step = 'applied'; } s.vals.comp = 'Linear, Asana, Monday'; ctx.paint(); return; }
+        if (a === 'run') {
+          if (!((s.web || s.filesOnly) && s.vals.comp)) { ctx.announce && ctx.announce('Add competitors and resolve web access first.'); return; }
+          s.step = 'working'; ctx.paint(); await wait(1600); s.step = 'done'; ctx.paint();
+        }
+      }
+    },
+
+
+    /* ──────────────────────────────────────────────────────
+       NUDGES · workspace
+
+       purpose      point out a capability at the moment it helps
+       user goal    pull quotes out of a long transcript by hand
+       agent goal   offer once, then get out of the way
+       trigger      a second manual selection in the transcript
+       context      a meeting transcript, being reviewed
+       decision     try it, not now, dismiss — or ignore it
+       after        accepted: the selection is context; dismissed: gone
+       ────────────────────────────────────────────────────── */
+    nudges: {
+      shell: 'workspace',
+      product: 'Huddle',
+      agent: 'Aria',
+      note: 'Reviewing a transcript by hand. Select a second passage and a quiet tip appears — not a dialog. Try it and the ' +
+            'selection goes into the composer as context; dismiss it and it stays gone.',
+
+      initial: { sel: [], seen: 0, nudge: 'dormant', axChips: [], opts: { back: false } },
+      halo: false,
+
+      title: function () { return 'Launch sync · transcript'; },
+      pill: function (s) { return s.sel.length ? s.sel.length + ' selected' : 'Transcript'; },
+
+      tools: function (s) {
+        return '<span class="sim-idv-live">' + MI('wave') + '52 min &middot; 4 speakers</span><span class="sim-tdx-gap" aria-hidden="true"></span>' +
+          (s.sel.length ? md3Button({ variant: 'text', label: 'Clear selection', attrs: { 'data-act': 'clear' } }) : '');
+      },
+
+      canvas: function (s) {
+        var lines = SIM_TRANSCRIPT;
+        var nudge = '';
+        if (s.nudge === 'shown') {
+          nudge = '<div class="cd-nd cd-nd--inline" role="note" aria-label="Tip">' +
+            '<div class="cd-nd__row"><span class="cd-nd__i">' + MI('lightbulb') + '</span>' +
+              '<p class="md-body-medium cd-nd__t"><span class="tdx-sr">Tip: </span>You can ask Aria about text you select in a transcript.</p>' +
+              md3IconButton({ icon: MI('close'), label: 'Dismiss tip', attrs: { 'data-act': 'dismiss' } }) + '</div>' +
+            (s.why ? '<p class="md-body-small cd-nd__why" id="sim-nd-why">You selected transcript text twice in this meeting.</p>' : '') +
+            '<div class="cd-acts cd-nd__acts">' + md3Button({ variant: 'text', label: 'Try it', attrs: { 'data-act': 'try' } }) +
+              md3Button({ variant: 'text', label: 'Not now', attrs: { 'data-act': 'snooze' } }) +
+              md3Button({ variant: 'text', label: 'Why this tip?', icon: MI(s.why ? 'chevDown' : 'chevRight'), attrs: { 'data-act': 'why', 'aria-expanded': String(!!s.why), 'aria-controls': 'sim-nd-why' } }) +
+            '</div></div>';
+        }
+        if (s.toast) nudge = md3Snackbar({ message: s.toast, action: s.toastUndo ? 'Undo' : '', act: 'undo' });
+        return '<div class="sim-cd sim-nd">' + nudge +
+          '<ol class="sim-nd__tx" aria-label="Transcript">' + lines.map(function (l, i) {
+            var on = s.sel.indexOf(i) !== -1;
+            return '<li><button type="button" class="sim-nd__line' + (on ? ' is-on' : '') + '" data-act="sel:' + i + '" aria-pressed="' + on + '">' +
+              '<span class="sim-nd__who">' + l[0] + ' <span class="cd-d">' + l[1] + '</span></span><span class="sim-nd__say">' + l[2] + '</span></button></li>';
+          }).join('') + '</ol></div>';
+      },
+
+      controls: function (s) {
+        return [toggle('Nudge comes straight back', 'opt:back', s.opts.back), button('Start over', 'reset', 'text')];
+      },
+
+      hint: function (s) {
+        if (s.opts.back && s.nudge === 'shown' && s.seen > 1) return '<b>Anti-pattern.</b> It was dismissed and it is back. A tip that won’t stay dismissed teaches people to ignore every tip.';
+        if (s.nudge === 'shown') return '<b>Nudge shown.</b> In the flow, secondary, and it says why it appeared. It offers — it hasn’t done anything.';
+        if (s.nudge === 'accepted') return '<b>Accepted.</b> The selection is in the composer as context, and the tip is gone for good.';
+        if (s.nudge === 'dismissed') return '<b>Dismissed.</b> Select more lines — it won’t come back' + (s.opts.back ? ' (unless the anti-pattern is on)' : '') + '.';
+        if (s.nudge === 'snoozed') return '<b>Snoozed.</b> Gone for a week. Your selections are untouched.';
+        if (s.nudge === 'irrelevant') return '<b>No longer relevant.</b> The selection was cleared, so the tip withdrew on its own.';
+        return 'Review the transcript: select a line, then another. Nothing interrupts the first one.';
       },
 
       act: function (a, ctx) {
         var s = ctx.s;
-        if (a === 'approve') {
-          s.done += 1;
-          if (s.done >= 3 && !s.dismissed && !s.auto) s.nudge = true;
+        if (a === 'opt:back') { flip(ctx, 'back'); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS.nudges.initial))); s.opts = o; s.toast = null; ctx.paint(); return; }
+        if (a.indexOf('sel:') === 0) {
+          var i = +a.slice(4), k = s.sel.indexOf(i);
+          if (k === -1) s.sel.push(i); else s.sel.splice(k, 1);
+          s.toast = null;
+          var allowed = s.nudge === 'dormant' || s.nudge === 'irrelevant' || (s.opts.back && s.nudge === 'dismissed');
+          if (s.sel.length >= 2 && allowed) { s.nudge = 'shown'; s.seen++; ctx.announce && ctx.announce('Tip: you can ask Aria about text you select.'); }
+          if (!s.sel.length && s.nudge === 'shown') s.nudge = 'irrelevant';
           ctx.paint(); return;
         }
-        if (a === 'dismiss') { s.dismissed = true; s.nudge = false; ctx.paint(); return; }
-        if (a === 'accept')  { s.nudge = false; s.auto = true; s.done = 6; ctx.paint(); return; }
-        if (a === 'reset')   { Object.assign(s, JSON.parse(JSON.stringify(SIMS.nudges.initial)));
-                               ctx.paint(); }
+        if (a === 'clear') { s.sel = []; if (s.nudge === 'shown') s.nudge = 'irrelevant'; ctx.paint(); return; }
+        if (a === 'why') { s.why = !s.why; ctx.paint(); return; }
+        if (a === 'try') {
+          s.nudge = 'accepted';
+          s.axChips = ['Transcript · ' + s.sel.length + ' passages'];
+          s.axText = 'What did they agree about these?'; ctx.paint();
+          ctx.announce && ctx.announce('Selection added to the composer as context.'); return;
+        }
+        if (a === 'dismiss') { s.nudge = 'dismissed'; s.toast = 'Tip dismissed. It won’t show again.'; s.toastUndo = true; ctx.paint(); return; }
+        if (a === 'snooze') { s.nudge = 'snoozed'; s.toast = 'OK — you won’t see this tip for a week.'; s.toastUndo = true; ctx.paint(); return; }
+        if (a === 'undo') { s.nudge = 'shown'; s.toast = null; ctx.paint(); }
       }
     },
+
 
     /* ──────────────────────────────────────────────────────
        PROACTIVE SUGGESTIONS · workspace
@@ -5932,11 +6049,15 @@
     /* The first-run statement exists to gate the product's own
        composer. A second one beside it, ungated, is the failure
        the page is about. */
-    disclaimer: 'pattern',
     /* "Three places the agent can act on one record, and no
        composer anywhere." A docked composer is not a small
        inconsistency here — it is the counter-example. */
     'ai-icons': 'absent',
+    /* The AI action lives in the editor; a chat beside it would be a second way in. */
+    disclosure: 'absent',
+    /* Identity: the editor, the board and the settings conversation
+       draw their own controls; a docked chat would be a second way in. */
+    iconography: 'absent', color: 'absent', personality: 'absent', templates: 'absent',
     /* The suggestion appears in the work, not in a chat. */
     proactive: 'absent',
     /* The inverse override. The `composer` layout normally means
@@ -5968,18 +6089,18 @@
      furniture, because navigation that could belong to any
      product tells a reader nothing about this one. */
   var NAVS = {
-    consent: { group: 'Northwind', items: ['Renewal call · 14:00', 'Account history', 'Connected sources', 'Past briefings'], on: 0 },
-    disclaimer: { group: 'Getting started', items: ['First run', 'What Atlas can do', 'Limits', 'Connected data'], on: 0 },
-    color: { group: 'Notebook', items: ['Launch retro', 'Drafts', 'Shared with me', 'Version history'], on: 0 },
-    disclosure: { group: 'Inbox', items: ['Ticket 2291', 'Assigned to me', 'Team threads', 'Sent'], on: 0 },
-    caveat: { group: 'Board pack', items: ['Q3 figures', 'Sources', 'Approvals', 'Export history'], on: 0 },
-    avatar: { group: 'Threads', items: ['Renewal escalation', 'Direct messages', 'Mentions', 'Participants'], on: 0 },
-    name: { group: 'Workspace', items: ['Conversation', 'Audit log', 'Outbound email', 'Settings'], on: 0 },
-    personality: { group: 'Support', items: ['Order 88-4120', 'Open conversations', 'Macros', 'Tone guide'], on: 0 },
-    iconography: { group: 'Editor', items: ['Chapter 4', 'Manuscript', 'Comments', 'Icon audit'], on: 0 },
-    'example-gallery': { group: 'Research', items: ['New enquiry', 'Worked examples', 'Saved prompts', 'Past answers'], on: 0 },
-    templates: { group: 'Reporting', items: ['Friday report', 'Templates', 'Data sources', 'Sent reports'], on: 0 },
-    nudges: { group: 'Expenses', items: ['To review', 'Approved', 'Policy', 'Automations'], on: 0 },
+    consent: { group: 'Pricing', items: ['Pricing sync · Oct 14', 'Product brief', 'Decisions', 'Past meetings'], on: 0 },
+    disclaimer: { group: 'Meetings', items: ['Launch sync · action items', 'Upcoming', 'Recordings', 'Connected apps'], on: 0 },
+    color: { group: 'Release 2.4', items: ['Launch board', 'Checklist', 'Risks', 'Timeline'], on: 0 },
+    disclosure: { group: 'Releases', items: ['2.4 release notes', 'Changelog', 'Drafts', 'Published'], on: 0 },
+    caveat: { group: 'Research', items: ['October interviews', 'Themes', 'Participants', 'Past summaries'], on: 0 },
+    avatar: { group: 'Meetings', items: ['Launch sync · 2.4', 'Upcoming', 'Recordings', 'Action items'], on: 0 },
+    name: { group: 'Support', items: ['Order 88-4120', 'Open conversations', 'Agents', 'Settings'], on: 0 },
+    personality: { group: 'Meetings', items: ['Launch sync · recap', 'Upcoming', 'Recordings', 'Aria settings'], on: 0 },
+    iconography: { group: 'Queue', items: ['Case 4417 · Dana', 'Open', 'Macros', 'Tone guide'], on: 0 },
+    'example-gallery': { group: 'Meetings', items: ['New conversation', 'Launch sync · 2.4', 'Recordings', 'Action items'], on: 0 },
+    templates: { group: 'Research', items: ['New research', 'Templates', 'Sources', 'Past reports'], on: 0 },
+    nudges: { group: 'Meetings', items: ['Launch sync · transcript', 'Upcoming', 'Recordings', 'Action items'], on: 0 },
     proactive: { group: 'Planboard', items: ['Release readiness', 'Blockers', 'Board', 'Activity'], on: 0 },
     'ai-icons': { group: 'Records', items: ['Case 4417', 'Queue', 'Attachments', 'Activity'], on: 0 },
     'initial-cta': { group: 'September release', items: ['New conversation', 'Release plan', 'Risk log', 'Past conversations'], on: 0 },
@@ -6007,15 +6128,14 @@
      here works: choosing an attachment puts a real chip on the
      composer, and choosing a mode changes the mode. */
   var COMPOSERS = {
-    consent: { ask: 'Ask me anything', plus: ['Attach a file', 'Add a source', 'Add context'], modes: ['Balanced', 'Thorough'] },
-    color: { ask: 'Ask me anything', plus: ['Attach a file', 'Cite a source'], modes: ['Edit', 'Rewrite'] },
+    'example-gallery': { ask: 'Or describe your own task…', plus: ['Attach a file', 'Add a meeting'] },
+    disclaimer: { ask: 'Ask about this meeting…', plus: ['Attach a file'] },
+    consent: { ask: 'Ask about this meeting…', plus: ['Attach a file', 'Add a source'] },
     disclosure: { ask: 'Draft a reply…', plus: ['Attach a file', 'Insert a macro'], modes: ['Balanced', 'Formal'] },
-    caveat: { ask: 'Ask me anything', plus: ['Attach a workbook', 'Add a source'], modes: ['Balanced', 'Thorough'] },
-    avatar: { ask: 'Message the thread…', plus: ['Attach a file'], modes: ['Balanced', 'Brief'] },
-    name: { ask: 'Ask me anything', plus: ['Attach a file', 'Add context'], modes: ['Balanced', 'Thorough'] },
-    personality: { ask: 'Reply to the customer…', plus: ['Attach a file', 'Insert order details'], modes: ['Balanced', 'Formal'] },
-    iconography: { ask: 'Ask me anything', plus: ['Attach a file', 'Add a reference'], modes: ['Edit', 'Rewrite'] },
-    nudges: { ask: 'Ask me anything', plus: ['Attach a receipt', 'Add policy'], modes: ['Balanced', 'Thorough'] },
+    caveat: { ask: 'Ask about the interviews…', plus: ['Attach a file', 'Add a source'] },
+    avatar: { ask: 'Ask Aria about this meeting…', plus: ['Attach a file'] },
+    name: { ask: 'Ask about your order…', plus: ['Attach a photo', 'Add order details'] },
+    nudges: { ask: 'Ask about this meeting…', plus: ['Attach a file'] },
     proactive: { ask: 'Ask me anything', plus: ['Attach a document', 'Add a carrier'], modes: ['Balanced', 'Thorough'] },
     'visual-input': { ask: 'Ask Aria about the dashboard…', plus: ['Upload image', 'Take photo', 'Share screen'] },
     /* `mic: true` is the only difference between this composer and
@@ -6244,7 +6364,7 @@
   }
   function md3Card(variant, inner, cls, attrs) {
     return '<div class="md3-card' + (cls ? ' ' + cls : '') + ' ' + MD3_CARD + ' ' +
-      (variant === 'filled' ? MD3_CARD_FILLED : MD3_CARD_OUTLINED) + '"' + md3Attrs(attrs) + '>' + inner + '</div>';
+      (variant === 'filled' ? MD3_CARD_FILLED : variant === 'elevated' ? MD3_CARD_ELEVATED : MD3_CARD_OUTLINED) + '"' + md3Attrs(attrs) + '>' + inner + '</div>';
   }
 
   /* ── More Nucleux Md3 static markup: Search, Menu, List, input Chip,
@@ -6318,6 +6438,333 @@
     return '<div role="progressbar" aria-label="' + esc(label || 'Loading') + '" class="md3-linear ' + MD3_LINEAR + '">' +
       '<div class="md3-linear__bar ' + MD3_LINEAR_BAR + '" style="width:40%"></div></div>';
   }
+
+  /* ── Trust & Disclosure: more Nucleux static markup ─────────────
+     The class strings below are copied verbatim from the packages'
+     dist builds (15 Oct): @nucleux/md3-action-confirmation (variant
+     "default"), @nucleux/md3-checkbox, @nucleux/md3-divider,
+     @nucleux/md3-card ("elevated"), @nucleux/md3-progress
+     (determinate), and the two non-Md3 agentic markers in
+     @nucleux/ai-disclosure — AiDisclosure (pill) and AiCaveat — which
+     render in the Material 3 look inside `.nx-theme-mui`
+     (@nucleux/md3-theme). Icons are Material Symbols, never Lucide. */
+  var MD3_ACONF = "flex flex-col gap-3 rounded-md-xl bg-md-surface-container-high p-5 text-md-on-surface shadow-md-1";
+  var MD3_ACONF_ROW = "flex items-start gap-3";
+  var MD3_ACONF_ICON = "mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full [&_svg]:size-4 bg-md-tertiary-container text-md-on-tertiary-container";
+  var MD3_ACONF_TEXT = "flex min-w-0 flex-1 flex-col gap-1";
+  var MD3_ACONF_BADGE = "inline-flex w-fit items-center rounded-full bg-md-secondary-container px-2 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-md-on-secondary-container";
+  var MD3_ACONF_TITLE = "text-base font-semibold text-md-on-surface";
+  var MD3_ACONF_DESC = "text-sm text-md-on-surface-variant";
+  var MD3_ACONF_ACTIONS = "flex items-center justify-end gap-2";
+  var MD3_ACONF_LAYER = "before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[''] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12]";
+  var MD3_ACONF_CANCEL = "relative inline-flex h-10 items-center overflow-hidden rounded-full border border-md-outline px-5 text-sm font-medium text-md-primary outline-none focus-visible:ring-2 focus-visible:ring-md-primary";
+  var MD3_ACONF_CONFIRM = "relative inline-flex h-10 items-center overflow-hidden rounded-full px-5 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-md-surface bg-md-primary text-md-on-primary focus-visible:ring-md-primary";
+  var MD3_CHECKBOX = "relative inline-flex h-10 w-10 items-center justify-center rounded-full outline-none " +
+    "before:absolute before:inset-0 before:rounded-full before:bg-md-on-surface before:opacity-0 before:transition-opacity before:content-[''] " +
+    "hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12] focus-visible:ring-2 focus-visible:ring-md-primary disabled:pointer-events-none disabled:opacity-[0.38]";
+  var MD3_CHECKBOX_BOX = "relative flex h-[18px] w-[18px] items-center justify-center rounded-[2px] border-2 transition-colors [&_svg]:size-[14px]";
+  var MD3_CHECKBOX_ON = "border-md-primary bg-md-primary text-md-on-primary";
+  var MD3_CHECKBOX_OFF = "border-md-on-surface-variant text-transparent";
+  var MD3_DIVIDER = "shrink-0 bg-md-outline-variant h-px w-full";
+  var MD3_CARD_ELEVATED = "bg-md-surface-container-low text-md-on-surface shadow-md-1";
+  var MD3_LINEAR_DET = "h-full rounded-full bg-md-primary transition-[width]";
+  var MD3_AIDISC_PILL = "inline-flex w-fit items-center gap-1 rounded-full font-medium text-brand [&_svg]:size-3.5 bg-brand-muted/60 px-2.5 py-1 text-xs";
+  var MD3_AICAVEAT = "inline-flex items-center gap-1.5 text-xs text-muted-foreground [&_svg]:size-3.5";
+
+  /* Md3ActionConfirmation (variant "default"). o: { title, description,
+     badge, icon (markup), body (children), cancel, confirm, cancelAct,
+     confirmAct, id, cls, attrs }. The package renders its own
+     Cancel/Confirm pair; `actions: false` lets a host draw a third
+     choice in the body instead (Consent's ongoing request). */
+  function md3ActionConfirmation(o) {
+    var id = o.id || 'aconf';
+    return '<div role="alertdialog" aria-labelledby="' + esc(id) + '-t"' +
+        (o.description ? ' aria-describedby="' + esc(id) + '-d"' : '') +
+        ' class="md3-aconf' + (o.cls ? ' ' + o.cls : '') + ' ' + MD3_ACONF + '"' + md3Attrs(o.attrs) + '>' +
+      '<div class="' + MD3_ACONF_ROW + '">' +
+        '<span class="md3-aconf__icon ' + MD3_ACONF_ICON + '">' + (o.icon || MI('shield')) + '</span>' +
+        '<div class="' + MD3_ACONF_TEXT + '">' +
+          (o.badge ? '<span class="' + MD3_ACONF_BADGE + '">' + o.badge + '</span>' : '') +
+          '<h3 id="' + esc(id) + '-t" class="md3-aconf__t ' + MD3_ACONF_TITLE + '">' + o.title + '</h3>' +
+          (o.description ? '<p id="' + esc(id) + '-d" class="' + MD3_ACONF_DESC + '">' + o.description + '</p>' : '') +
+          (o.body || '') +
+        '</div>' +
+      '</div>' +
+      (o.actions === false ? '' :
+      '<div class="md3-aconf__acts ' + MD3_ACONF_ACTIONS + '">' +
+        '<button type="button" class="md3-btn md3-aconf__no ' + MD3_ACONF_CANCEL + ' ' + MD3_ACONF_LAYER + '"' +
+          md3Attrs(Object.assign({ 'data-act': o.cancelAct }, o.cancelAttrs)) + '><span class="relative">' + (o.cancel || 'Cancel') + '</span></button>' +
+        '<button type="button" class="md3-btn md3-aconf__yes ' + MD3_ACONF_CONFIRM + ' ' + MD3_ACONF_LAYER + '"' +
+          md3Attrs(Object.assign({ 'data-act': o.confirmAct }, o.confirmAttrs)) + '><span class="relative">' + (o.confirm || 'Confirm') + '</span></button>' +
+      '</div>') +
+    '</div>';
+  }
+  /* Md3Checkbox. o: { checked, label (accessible name, also drawn
+     beside it as a <label>-like span), act, id }. Never preselected
+     by a host that is asking for consent. */
+  function md3Checkbox(o) {
+    return '<span class="md3-check-row">' +
+      '<button type="button" role="checkbox" aria-checked="' + !!o.checked + '" class="md3-checkbox ' + MD3_CHECKBOX + '"' +
+        md3Attrs(Object.assign({ 'data-act': o.act, id: o.id, 'aria-labelledby': o.id ? o.id + '-l' : null,
+                                 'aria-label': o.id ? null : o.label }, o.attrs)) + '>' +
+        '<span class="' + MD3_CHECKBOX_BOX + ' ' + (o.checked ? MD3_CHECKBOX_ON : MD3_CHECKBOX_OFF) + '">' + MI('check') + '</span>' +
+      '</button>' +
+      (o.id ? '<span class="md3-check-row__l" id="' + esc(o.id) + '-l">' + o.label + '</span>' : '') +
+    '</span>';
+  }
+  function md3Divider() {
+    return '<div role="separator" aria-orientation="horizontal" class="md3-divider ' + MD3_DIVIDER + '"></div>';
+  }
+  /* Md3LinearProgress. Omitting `value` is the package's indeterminate
+     form (the pulse); a number is the determinate bar. */
+  function md3Progress(value, label) {
+    var det = typeof value === 'number';
+    return '<div role="progressbar" aria-label="' + esc(label || 'Loading') + '"' +
+        (det ? ' aria-valuenow="' + value + '" aria-valuemin="0" aria-valuemax="100"' : '') +
+        ' class="md3-linear ' + MD3_LINEAR + '">' +
+      '<div class="md3-linear__bar ' + (det ? MD3_LINEAR_DET : MD3_LINEAR_BAR) + '" style="width:' + (det ? value : 40) + '%"></div></div>';
+  }
+  /* AiDisclosure (variant "pill") and AiCaveat, @nucleux/ai-disclosure.
+     Both are static (a div and a p) — neither opens anything — and
+     both are wrapped in `.nx-theme-mui` so the base roles they use
+     (brand, muted-foreground) resolve to Material 3 roles. */
+  function aiDisclosurePill(label, icon, attrs) {
+    return '<span class="nx-theme-mui md3-aidisc-wrap"><span class="md3-aidisc ' + MD3_AIDISC_PILL + '"' + md3Attrs(attrs) + '>' +
+      (icon || '') + '<span>' + label + '</span></span></span>';
+  }
+  function aiCaveat(text, icon, attrs) {
+    return '<span class="nx-theme-mui md3-aicaveat-wrap"><span class="md3-aicaveat ' + MD3_AICAVEAT + '"' + md3Attrs(attrs) + '>' +
+      (icon === null ? '' : (icon || MI('info'))) + '<span>' + text + '</span></span></span>';
+  }
+
+  /* ── Identity: Avatar, Message, Snackbar, Radio, Text field,
+     Segmented button — the packages' class strings, verbatim from
+     their dist builds (16 Oct): @nucleux/avatar (role, initials, src,
+     shape "circle" | "rounded"; its className is merged, so an agent
+     can take the Material 3 container roles), @nucleux/md3-message,
+     @nucleux/md3-snackbar, @nucleux/md3-radio, @nucleux/md3-text-field
+     (filled), @nucleux/md3-segmented-button. Avatar is a base Nucleux
+     component — there is no Md3Avatar — so it renders inside
+     `.nx-theme-mui` (@nucleux/md3-theme). ──────────────────────── */
+  var NX_AVATAR = "flex shrink-0 items-center justify-center overflow-hidden text-xs font-semibold";
+  var NX_AVATAR_SIZES = "size-6 size-8 size-10";
+  var NX_AVATAR_SIZE = { 24: "size-6", 32: "size-8", 40: "size-10" };
+  var NX_AVATAR_CIRCLE = "rounded-full";
+  var NX_AVATAR_ROUNDED = "rounded-lg";
+  var NX_AVATAR_USER = "bg-primary text-primary-foreground";
+  var NX_AVATAR_BRAND = "bg-brand text-brand-foreground";
+  var NX_AVATAR_MUTED = "bg-muted text-muted-foreground";
+  var NX_AVATAR_AGENT = "bg-md-primary-container text-md-on-primary-container";
+  var NX_AVATAR_AGENT_QUIET = "bg-md-surface-container-high text-md-on-surface";
+  var NX_AVATAR_IMG = "size-full object-cover";
+  var MD3_MSG = "flex w-full animate-nx-fade-in gap-3";
+  var MD3_MSG_COL = "flex min-w-0 max-w-[80%] flex-col gap-2 items-start";
+  var MD3_MSG_COL_USER = "flex min-w-0 max-w-[80%] flex-col gap-2 items-end";
+  var MD3_MSG_ROW = "flex-row";
+  var MD3_MSG_ROW_USER = "flex-row-reverse";
+  var MD3_MSG_BUBBLE = "rounded-md-xl px-4 py-2.5 text-sm leading-relaxed rounded-bl-md-xs bg-md-surface-container-high text-md-on-surface";
+  var MD3_MSG_BUBBLE_USER = "rounded-md-xl px-4 py-2.5 text-sm leading-relaxed rounded-br-md-xs bg-md-primary text-md-on-primary";
+  var MD3_SNACK = "flex min-h-12 items-center gap-2 rounded-md-xs bg-md-inverse-surface px-4 py-3 text-sm text-md-inverse-on-surface shadow-md-3";
+  var MD3_SNACK_ACTION = "relative -mr-2 shrink-0 overflow-hidden rounded-md-xs px-3 py-1.5 text-sm font-medium text-md-inverse-primary outline-none " +
+    "before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[''] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12]";
+  var MD3_RADIO_GROUP = "flex flex-col gap-1";
+  var MD3_RADIO = "relative inline-flex h-10 w-10 items-center justify-center rounded-full outline-none " +
+    "before:absolute before:inset-0 before:rounded-full before:bg-md-on-surface before:opacity-0 before:transition-opacity before:content-[''] " +
+    "hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12] focus-visible:ring-2 focus-visible:ring-md-primary disabled:pointer-events-none disabled:opacity-[0.38]";
+  var MD3_RADIO_RING = "relative flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors";
+  var MD3_RADIO_ON = "border-md-primary";
+  var MD3_RADIO_OFF = "border-md-on-surface-variant";
+  var MD3_RADIO_DOT = "h-2.5 w-2.5 rounded-full bg-md-primary";
+  var MD3_TF = "peer h-14 w-full text-base text-md-on-surface outline-none transition-colors placeholder:text-transparent disabled:cursor-not-allowed pl-4 pr-4 " +
+    "rounded-t-md-xs border-0 border-b-2 bg-md-surface-container-high pb-2 pt-6 border-md-on-surface-variant focus:border-md-primary";
+  var MD3_TF_ERR = "peer h-14 w-full text-base text-md-on-surface outline-none transition-colors placeholder:text-transparent disabled:cursor-not-allowed pl-4 pr-4 " +
+    "rounded-t-md-xs border-0 border-b-2 bg-md-surface-container-high pb-2 pt-6 border-md-error";
+  var MD3_TF_LABEL = "pointer-events-none absolute transition-all left-4 top-2 text-xs peer-placeholder-shown:text-base peer-placeholder-shown:text-md-on-surface-variant " +
+    "peer-placeholder-shown:top-4 peer-focus:top-2 peer-focus:text-xs text-md-on-surface-variant peer-focus:text-md-primary";
+  var MD3_TF_SUPPORT = "px-4 pt-1 text-xs text-md-on-surface-variant";
+  var MD3_TF_SUPPORT_ERR = "px-4 pt-1 text-xs text-md-error";
+  var MD3_SEG = "inline-flex h-10 divide-x divide-md-outline overflow-hidden rounded-full border border-md-outline";
+  var MD3_SEG_ITEM = "relative inline-flex items-center justify-center gap-2 overflow-hidden px-4 text-sm font-medium transition-colors [&_svg]:size-[18px] " +
+    "before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[''] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] " +
+    "outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-md-primary";
+  var MD3_SEG_ON = "bg-md-secondary-container text-md-on-secondary-container";
+  var MD3_SEG_OFF = "text-md-on-surface";
+  /* Color: the semantic surfaces the Color pattern draws with. Every
+     one is a preset utility over a real token — the Material 3 roles
+     (--nx-md-*) and the status roles (--nx-success, --nx-warning). */
+  var NX_ROLE_AGENT = "bg-md-primary-container text-md-on-primary-container";
+  var NX_ROLE_AGENT_INK = "text-md-primary";
+  var NX_ROLE_ATTENTION = "bg-md-tertiary-container text-md-on-tertiary-container";
+  var NX_ROLE_ATTENTION_INK = "text-md-tertiary";
+  var NX_ROLE_EVIDENCE = "bg-md-secondary-container text-md-on-secondary-container";
+  var NX_ROLE_ERROR = "bg-md-error-container text-md-on-error-container";
+  var NX_ROLE_ERROR_INK = "text-md-error";
+  var NX_ROLE_SUCCESS = "bg-success text-success-foreground";
+  var NX_ROLE_SUCCESS_INK = "text-success";
+  var NX_ROLE_WARNING = "bg-warning text-warning-foreground";
+  var NX_ROLE_NEUTRAL = "bg-md-surface text-md-on-surface";
+  var NX_ROLE_NEUTRAL_HIGH = "bg-md-surface-container-high text-md-on-surface";
+  var NX_ROLE_NEUTRAL_LOW = "bg-md-surface-container-low text-md-on-surface";
+  var NX_ROLE_MUTED_INK = "text-md-on-surface-variant";
+  var NX_ROLE_OUTLINE = "border border-md-outline-variant";
+
+  /* Avatar. o: { kind: 'agent' | 'human', name, initials, size (24|32|40),
+     label (accessible name), src, glyph (markup), fallback ('initials' |
+     'icon'), quiet (agent on a neutral surface), shape override }. */
+  function nxAvatar(o) {
+    var size = NX_AVATAR_SIZE[o.size] || NX_AVATAR_SIZE[32];
+    var agent = o.kind !== 'human';
+    var shape = o.shape === 'circle' ? NX_AVATAR_CIRCLE : o.shape === 'rounded' ? NX_AVATAR_ROUNDED
+              : (agent ? NX_AVATAR_ROUNDED : NX_AVATAR_CIRCLE);
+    var tone, inner;
+    if (!agent) { tone = NX_AVATAR_USER; inner = o.src ? '<img src="' + esc(o.src) + '" alt="" class="' + NX_AVATAR_IMG + '">' : '<span>' + esc(o.initials || '') + '</span>'; }
+    else if (o.src) { tone = o.quiet ? NX_AVATAR_AGENT_QUIET : NX_AVATAR_AGENT; inner = '<img src="' + o.src + '" alt="" class="' + NX_AVATAR_IMG + '">'; }
+    else if (o.fallback === 'initials') { tone = NX_AVATAR_BRAND; inner = '<span>' + esc(o.initials || '') + '</span>'; }
+    else if (o.fallback === 'icon') { tone = NX_AVATAR_MUTED; inner = o.glyph || MI('agent'); }
+    else { tone = o.quiet ? NX_AVATAR_AGENT_QUIET : NX_AVATAR_AGENT; inner = o.glyph || MI('agent'); }
+    var named = o.label === false ? 'aria-hidden="true" '
+      : 'role="img" aria-label="' + esc(o.label || o.name || (agent ? 'Agent' : 'Person')) + '" ';
+    return '<span class="nx-theme-mui nx-avatar-wrap"><span ' + named +
+      'data-kind="' + (agent ? 'agent' : 'human') + '" data-size="' + (o.size || 32) + '" ' +
+      'class="nx-avatar ' + NX_AVATAR + ' ' + size + ' ' + shape + ' ' + tone + (o.cls ? ' ' + o.cls : '') + '">' + inner + '</span></span>';
+  }
+  /* Md3Message (assistant / user) with a custom avatar node. */
+  function md3Message(o) {
+    var user = o.role === 'user';
+    return '<div data-role="' + (o.role || 'assistant') + '" class="md3-msg ' + MD3_MSG + ' ' + (user ? MD3_MSG_ROW_USER : MD3_MSG_ROW) + (o.cls ? ' ' + o.cls : '') + '">' +
+      (o.hideAvatar ? '' : (o.avatar || '')) +
+      '<div class="' + (user ? MD3_MSG_COL_USER : MD3_MSG_COL) + '">' + (o.head || '') +
+        '<div class="md3-msg__bubble ' + (user ? MD3_MSG_BUBBLE_USER : MD3_MSG_BUBBLE) + '">' + o.body + '</div></div></div>';
+  }
+  function md3Snackbar(o) {
+    return '<div role="status" aria-live="polite" class="md3-snack ' + MD3_SNACK + (o.cls ? ' ' + o.cls : '') + '">' +
+      '<span class="flex-1">' + o.message + '</span>' +
+      (o.action ? '<button type="button" class="md3-snack__act ' + MD3_SNACK_ACTION + '" data-act="' + esc(o.act || '') + '"><span class="relative">' + o.action + '</span></button>' : '') +
+    '</div>';
+  }
+  /* Md3RadioGroup of rows: each row a label (and a supporting line) the
+     radio is named by. o: { label, value, rows: [{ value, label, support }], act } */
+  function md3RadioRows(o) {
+    return '<div role="radiogroup" aria-label="' + esc(o.label) + '" class="md3-radios ' + MD3_RADIO_GROUP + '">' + o.rows.map(function (r, i) {
+      var on = r.value === o.value, id = (o.id || 'rg') + '-' + i;
+      return '<div class="md3-radio-row' + (on ? ' is-on' : '') + '">' +
+        '<button type="button" role="radio" aria-checked="' + on + '" aria-labelledby="' + id + '"' + (r.desc ? ' aria-describedby="' + id + '-d"' : '') +
+          ' class="md3-radio ' + MD3_RADIO + '" data-act="' + esc(o.act + r.value) + '">' +
+          '<span class="' + MD3_RADIO_RING + ' ' + (on ? MD3_RADIO_ON : MD3_RADIO_OFF) + '">' + (on ? '<span class="' + MD3_RADIO_DOT + '"></span>' : '') + '</span></button>' +
+        '<span class="md3-radio-row__t"><span id="' + id + '" class="md3-radio-row__l">' + r.label + '</span>' +
+          (r.desc ? '<span id="' + id + '-d" class="md3-radio-row__d">' + r.desc + '</span>' : '') + '</span></div>';
+    }).join('') + '</div>';
+  }
+  function md3TextField(o) {
+    var err = !!o.error, sid = o.id + '-s';
+    return '<div class="md3-tf w-full"><div class="relative">' +
+      '<input id="' + esc(o.id) + '" placeholder=" " value="' + esc(o.value || '') + '" class="' + (err ? MD3_TF_ERR : MD3_TF) + '"' +
+        (err ? ' aria-invalid="true"' : '') + (o.support ? ' aria-describedby="' + sid + '"' : '') + md3Attrs(o.attrs) + ' />' +
+      '<label for="' + esc(o.id) + '" class="' + MD3_TF_LABEL + '">' + esc(o.label) + '</label></div>' +
+      (o.support ? '<p id="' + sid + '" class="' + (err ? MD3_TF_SUPPORT_ERR : MD3_TF_SUPPORT) + '">' + o.support + '</p>' : '') +
+    '</div>';
+  }
+  function md3Segmented(o) {
+    return '<div role="group" aria-label="' + esc(o.label) + '" class="md3-seg ' + MD3_SEG + '">' + o.items.map(function (it) {
+      var on = it.value === o.value;
+      return '<button type="button" aria-pressed="' + on + '" data-act="' + esc(o.act + it.value) + '" class="md3-seg__i ' + MD3_SEG_ITEM + ' ' + (on ? MD3_SEG_ON : MD3_SEG_OFF) + '">' +
+        (on ? '<span class="relative shrink-0">' + MI('check') + '</span>' : (it.icon ? '<span class="relative shrink-0">' + it.icon + '</span>' : '')) +
+        '<span class="relative">' + it.label + '</span></button>';
+    }).join('') + '</div>';
+  }
+  /* The approved image asset for Aria: an abstract mark, not a face. */
+  var NX_AGENT_ASSET = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
+    '<rect width="40" height="40" fill="#EADDFF"/>' +
+    '<path d="M29.5 14.5A11 11 0 1 0 31 20" fill="none" stroke="#6750A4" stroke-width="3" stroke-linecap="round"/>' +
+    '<circle cx="20" cy="20" r="5.5" fill="#6750A4"/>' +
+    '<circle cx="30.5" cy="11.5" r="2.5" fill="#6750A4"/></svg>');
+  /* ── Capability Discovery: Md3AgentComposer and Md3Banner, the
+     packages' class strings verbatim (@nucleux/md3-agent-composer,
+     @nucleux/md3-banner). The composer's send glyph is Material
+     Symbols (MI), never the package's Lucide arrow. ──────────── */
+  var MD3_COMPOSER = "flex flex-col gap-3 rounded-md-xl bg-md-surface-container-high p-3 focus-within:ring-2 focus-within:ring-md-primary";
+  var MD3_COMPOSER_FIELD = "max-h-[inherit] w-full resize-none bg-transparent px-1 text-sm text-md-on-surface outline-none placeholder:text-md-on-surface-variant disabled:opacity-50";
+  var MD3_COMPOSER_BAR = "flex items-center justify-between gap-2";
+  var MD3_COMPOSER_LEFT = "flex items-center gap-1";
+  var MD3_COMPOSER_RIGHT = "flex items-center gap-2";
+  var MD3_COMPOSER_SEND = "relative inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-md-primary text-md-on-primary outline-none " +
+    "focus-visible:ring-2 focus-visible:ring-md-primary focus-visible:ring-offset-2 focus-visible:ring-offset-md-surface before:absolute before:inset-0 before:bg-current " +
+    "before:opacity-0 before:transition-opacity before:content-[''] hover:before:opacity-[0.08] active:before:opacity-[0.12] disabled:opacity-[0.38] disabled:before:opacity-0";
+  var MD3_BANNER = "flex flex-col gap-3 border-b border-md-outline-variant bg-md-surface px-4 py-3 text-md-on-surface sm:flex-row sm:items-center";
+  var MD3_BANNER_BODY = "flex flex-1 items-start gap-4";
+  var MD3_BANNER_ICON = "mt-0.5 shrink-0 text-md-primary [&_svg]:size-6";
+  var MD3_BANNER_TEXT = "text-sm text-md-on-surface-variant";
+  var MD3_BANNER_ACTIONS = "flex shrink-0 justify-end gap-2";
+  /* o: { id, value, placeholder, label, left, loading, act, stopAct, rows } */
+  function md3Composer(o) {
+    var v = o.value || '';
+    return '<div class="md3-composer ' + MD3_COMPOSER + (o.cls ? ' ' + o.cls : '') + '" aria-label="' + esc(o.label || 'Task') + '" role="group">' +
+      '<textarea id="' + esc(o.id || 'md3-cmp') + '" rows="' + (o.rows || 2) + '" placeholder="' + esc(o.placeholder || '') + '" aria-label="' +
+        esc(o.label || o.placeholder || 'Message') + '" class="md3-composer__f ' + MD3_COMPOSER_FIELD + '"' + (o.loading ? ' disabled' : '') + '>' + esc(v) + '</textarea>' +
+      '<div class="' + MD3_COMPOSER_BAR + '"><div class="' + MD3_COMPOSER_LEFT + '">' + (o.left || '') + '</div>' +
+        '<div class="' + MD3_COMPOSER_RIGHT + '">' +
+          (o.loading
+            ? '<button type="button" aria-label="Stop" class="md3-composer__send ' + MD3_COMPOSER_SEND + '" data-act="' + esc(o.stopAct || 'stop') + '">' +
+                '<span class="relative">' + MI('stop') + '</span></button>'
+            : '<button type="button" aria-label="Send" class="md3-composer__send ' + MD3_COMPOSER_SEND + '" data-act="' + esc(o.act || 'send') + '"' +
+                (v.trim() ? '' : ' disabled') + '><span class="relative">' + MI('send') + '</span></button>') +
+        '</div></div></div>';
+  }
+  /* o: { icon, text (inline markup), actions, cls, attrs } */
+  function md3Banner(o) {
+    return '<div role="region" class="md3-banner ' + MD3_BANNER + (o.cls ? ' ' + o.cls : '') + '"' + md3Attrs(o.attrs) + '>' +
+      '<div class="' + MD3_BANNER_BODY + '">' + (o.icon ? '<span class="' + MD3_BANNER_ICON + '">' + o.icon + '</span>' : '') +
+        '<p class="' + MD3_BANNER_TEXT + '">' + o.text + '</p></div>' +
+      (o.actions ? '<div class="' + MD3_BANNER_ACTIONS + '">' + o.actions + '</div>' : '') + '</div>';
+  }
+
+  /* Capability Discovery sims: their content. */
+  var SIM_EG = [
+    { icon: 'doc', t: 'Summarize today’s meeting', d: 'Decisions, open questions and next steps · needs a transcript',
+      p: 'Summarize today’s meeting.', edit: 'Summarize today’s launch sync for the design team.' },
+    { icon: 'search', t: 'Find unresolved decisions', d: 'Raised but not decided · uses meetings in this workspace',
+      p: 'Find unresolved decisions.', edit: 'Find unresolved decisions from this week’s product meetings.' },
+    { icon: 'schedule', t: 'Show overdue follow-ups', d: 'Action items past their date · uses meetings in this workspace',
+      p: 'Show overdue follow-ups.', edit: 'Show overdue follow-ups assigned to my team.' }
+  ];
+  var SIM_TPL = { t: 'Competitive analysis', d: 'Compare competitors on the criteria you choose, from their public pages.',
+    secs: [['Sources', ['Competitors’ public pages', 'Your workspace files']], ['Competitors', ['You list them']],
+           ['Evaluation criteria', ['Suggested from your last analysis']], ['Output format', ['Comparison table', 'One-page summary']]] };
+  var SIM_TRANSCRIPT = [
+    ['Maya', '10:41', 'We can’t ship exports over 50,000 rows until the queue fix lands.'],
+    ['Jordan', '10:42', 'The fix is in review. I’d say Tuesday, if QA signs off Monday.'],
+    ['Maya', '10:43', 'Then 2.4 moves to Tuesday. I’ll tell support today.'],
+    ['Dana', '10:44', 'Customers keep asking about Teams pricing — do we have an answer?'],
+    ['Jordan', '10:45', 'Not yet. Let’s park pricing until Thursday.']
+  ];
+  var SIM_DRAFTS = ['Fix export queue for files over 50,000 rows — Jordan', 'Tell support 2.4 moves to Tuesday — Maya',
+                    'QA sign-off on the export fix — unassigned', 'Bring a Teams pricing answer to Thursday — unassigned'];
+  /* Identity sims: the personality copy and the icon helper. */
+  var SIM_PERSONAS = {
+    calm: { label: 'Calm &amp; precise',
+      recap: 'Recap: ship 2.4 on Tuesday; keep the 50,000-row export limit. Maya owns the release notes; Jordan owns the support macro.',
+      unsure: 'The pricing review was mentioned but not decided. I’ve left it out of the decisions.' },
+    warm: { label: 'Warm',
+      recap: 'Here’s the recap — nice progress today! 2.4 ships on Tuesday and the export limit stays at 50,000 rows. Maya is on the release notes and Jordan has the support macro.',
+      unsure: 'One thing I wasn’t sure about: the pricing review came up, but I didn’t hear a decision, so I left it out for now.' },
+    direct: { label: 'Direct',
+      recap: '2.4: Tuesday. Export limit: 50,000. Notes: Maya. Macro: Jordan.',
+      unsure: 'Pricing review: undecided, not included.' }
+  };
+  function simIco(s) {
+    return function (role, still) {
+      var st = still || s.opts.still ? ' is-still' : '';
+      if (s.opts.one) return MI('spark', 'md-aii md-aii--one is-still');
+      return aiIcon(role, { cls: st.trim() });
+    };
+  }
+  var NX_ROLES = {
+    agent: NX_ROLE_AGENT, agentInk: NX_ROLE_AGENT_INK, attention: NX_ROLE_ATTENTION, attentionInk: NX_ROLE_ATTENTION_INK,
+    evidence: NX_ROLE_EVIDENCE, error: NX_ROLE_ERROR, errorInk: NX_ROLE_ERROR_INK, success: NX_ROLE_SUCCESS,
+    successInk: NX_ROLE_SUCCESS_INK, warning: NX_ROLE_WARNING, neutral: NX_ROLE_NEUTRAL, neutralHigh: NX_ROLE_NEUTRAL_HIGH,
+    neutralLow: NX_ROLE_NEUTRAL_LOW, mutedInk: NX_ROLE_MUTED_INK, outline: NX_ROLE_OUTLINE
+  };
 
   /* ══════════════════════════════════════════════════════════
      AUTOCOMPLETE (the Autocomplete pattern)
@@ -9097,7 +9544,6 @@
   /* Consent opens with the agent already blocked: the ask is a
      consequence of work, and starting from "press to begin" would
      put the reader outside the moment the pattern lives in. */
-  SIMS.consent.autostart = 'start';
 
   /* The config maps are keyed by id, so each scenario carries its
      own. Assigned here rather than written into all 25 literals:
@@ -9125,7 +9571,14 @@
     md3: { button: md3Button, iconButton: md3IconButton, tooltip: md3Tooltip,
            circular: md3Circular, card: md3Card, chipClass: md3ChipClass,
            textArea: md3TextArea, search: md3Search, menu: md3Menu, list: md3List,
-           inputChip: md3InputChip, linear: md3Linear },
+           inputChip: md3InputChip, linear: md3Linear,
+           actionConfirmation: md3ActionConfirmation, checkbox: md3Checkbox,
+           divider: md3Divider, progress: md3Progress,
+           aiDisclosure: aiDisclosurePill, aiCaveat: aiCaveat,
+           CARD_ELEVATED: MD3_CARD_ELEVATED,
+           avatar: nxAvatar, message: md3Message, snackbar: md3Snackbar, radioRows: md3RadioRows,
+           textField: md3TextField, segmented: md3Segmented, ROLES: NX_ROLES, AGENT_ASSET: NX_AGENT_ASSET,
+           composer: md3Composer, banner: md3Banner },
     AI_ROLES: AI_ROLES, aiGlyph: aiGlyph, aiIcon: aiIcon,
     /* Autocomplete: attach to any field after paint. */
     ac: { attach: acAttach, complete: acComplete, DEMO: AC_DEMO },

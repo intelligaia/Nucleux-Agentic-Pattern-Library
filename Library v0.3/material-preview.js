@@ -1435,7 +1435,7 @@
     }).join('');
     var pre = root.querySelector('.pv-code code');
     if (window.MaterialSim && window.MaterialSim.axd) window.MaterialSim.axd.use(s.__axd || (s.__axd = {}));
-    if (pre) pre.innerHTML = highlight(prettyPrintHtml(def.view(s)));
+    if (pre) pre.innerHTML = highlight(codeOf(def, s));
   }
   function icSubmit(root, s, initial) {
     var d = s.demo;
@@ -1608,6 +1608,14 @@
     return out.join('\n');
   }
 
+  /* The Code tab. A pattern may declare `react(state)`: the same
+     state written as the React composition of the Nucleux npm
+     exports that build it (Trust & Disclosure, 15 Oct). Without it,
+     the tab shows the stage markup, as it always has. */
+  function codeOf(def, st, html) {
+    return def.react ? def.react(st) : prettyPrintHtml(html === undefined ? def.view(st) : html);
+  }
+
   var SPARK = '<path d="M12 3.2 13.9 8.6 19.3 10.5 13.9 12.4 12 17.8 10.1 12.4 4.7 10.5 10.1 8.6Z"/>';
 
   var MIC =
@@ -1651,6 +1659,436 @@
     return s.connModel;
   }
 
+  /* ══════════════════════════════════════════════════════════
+     TRUST & DISCLOSURE — Disclosure, Consent, Caveat (15 Oct)
+
+     Rebuilt from the Nucleux npm package only. Every surface below
+     is a Nucleux export rendered as its package markup through
+     MaterialSim.md3 (the class strings are the packages' own, built
+     into nucleux-md3.css): Md3Button, Md3IconButton, Md3Chip,
+     Md3Tooltip, Md3Card, Md3List, Md3Divider, Md3LinearProgress,
+     Md3Checkbox, Md3ActionConfirmation, and AiDisclosure / AiCaveat
+     from @nucleux/ai-disclosure. The AI marks are the Icons
+     vocabulary (MaterialSim.aiIcon): action · working · generated.
+
+     Each pattern also declares `react(state)` — the Code tab shows
+     the same state as the React composition of those exports, with
+     their real import paths and props.
+     ══════════════════════════════════════════════════════════ */
+  function tdS() { return window.MaterialSim || null; }
+  function tdM() { var S = tdS(); return S && S.md3; }
+  function tdAI(role, style, cls) {
+    var S = tdS();
+    return S ? S.aiIcon(role, { style: style || 'outlined', cls: cls }) : '';
+  }
+  /* The assist chip (Md3Chip variant "assist") as a real button: the
+     package's class string, with the outline-variant stroke the
+     library uses for every chip. */
+  function tdChip(o) {
+    var M = tdM();
+    var cls = M ? M.chipClass(false, false).replace('md-sp__chip', 'tdx-chip') : 'md3-chip tdx-chip';
+    return '<button type="button" class="' + cls + (o.cls ? ' ' + o.cls : '') + '"' +
+      Object.keys(o.attrs || {}).map(function (k) {
+        var v = o.attrs[k];
+        return v === null || v === undefined || v === false ? '' : ' ' + k + '="' + esc(String(v)) + '"';
+      }).join('') + '>' +
+      (o.icon ? '<span class="relative shrink-0">' + o.icon + '</span>' : '') +
+      '<span class="relative">' + o.label + '</span>' +
+      (o.trailing ? '<span class="relative shrink-0 tdx-chip__t">' + o.trailing + '</span>' : '') +
+    '</button>';
+  }
+  /* A plain-text line for the Code tab: one escaping rule for every
+     string a reader configured, so a quote in a label cannot break
+     the JSX it is shown in. */
+  function jsxText(t) {
+    return String(t).replace(/&mdash;/g, '—').replace(/&middot;/g, '·').replace(/&rsquo;/g, '’')
+      .replace(/&hellip;/g, '…').replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”').replace(/&amp;/g, '&');
+  }
+  function jsxAttr(t) { return '"' + jsxText(t).replace(/"/g, '&quot;') + '"'; }
+  function imports(list) {
+    return list.map(function (x) {
+      return 'import { ' + x[0] + ' } from "' + x[1] + '";';
+    }).join('\n');
+  }
+  function sym(name) {
+    return '<span className="material-symbols-outlined" aria-hidden="true">' + name + '</span>';
+  }
+  /* A string a reader typed, as plain text. Empty stays empty. */
+  function tdTrim(v) { return String(v === undefined || v === null ? '' : v).trim(); }
+
+  /* ── Consent: the three request types ─────────────────────── */
+  function tdLogo(id) {
+    var C = window.MaterialConnect;
+    var svc = C && C.SERVICES && C.SERVICES[id];
+    return svc ? '<span class="tdx-logo" aria-hidden="true">' + svc.logo + '</span>' : mi('lock');
+  }
+  var CONSENT_TYPES = {
+    data: {
+      task: 'Compare this meeting with the product brief.',
+      badge: 'Access request',
+      logo: function () { return tdLogo('googledrive'); }, logoFile: 'google-drive.svg',
+      title: 'Allow Aria to use Google Drive?',
+      why: 'The product brief is in Google Drive. Aria needs to read it to compare it with this meeting.',
+      what: 'Google Drive asks you to confirm your account, then Aria reads only the files this request needs.',
+      scope: [['visibility', 'Read files and folders your account can open', '', 'visibility'],
+              ['block', 'Can’t edit, share or delete anything', '', 'block'],
+              ['schedule', 'For this conversation only', '', 'schedule']],
+      review: [['person', 'Account', 'j.rivera@northwind.example'],
+               ['history', 'Activity', 'Every file Aria opens is listed in the conversation.'],
+               ['tune', 'Turn it off', 'Settings › Connected apps, at any time.']],
+      allow: 'Continue', deny: 'Not now', again: 'Allow again', off: 'Turn off',
+      approved: { title: 'Google Drive allowed for this conversation',
+                  body: 'Aria can read files your account can open, and lists each one it uses.' },
+      denied: { title: 'Google Drive not allowed',
+                body: 'Nothing was connected and nothing was read. Aria can still compare the meeting with a brief you add.' },
+      kept: 'Your request and this conversation are kept.',
+      alts: [['Continue without Drive', 'alt-without'], ['Add the brief as a file', 'alt-file'], ['Allow Google Drive', 'again']],
+      altSaid: { 'alt-without': 'Continuing without Google Drive. Aria will compare the meeting with what is in this conversation.',
+                 'alt-file': 'Add the brief from your device; Aria will use only that file.' },
+      expired: { title: 'Google Drive access has expired',
+                 body: 'You allowed Google Drive 30 days ago. Access ends after 30 days so it doesn’t stay on indefinitely — allow it again to read the brief.' },
+      revoked: { title: 'Google Drive access turned off',
+                 body: 'Aria can no longer read your Drive files. What it already read stays in this conversation; nothing new will be opened.' }
+    },
+    action: {
+      task: 'Turn this meeting’s action items into issues.',
+      badge: 'AI action',
+      logo: function () { return tdLogo('github'); }, logoFile: 'github.svg',
+      title: 'Create 3 issues in northwind/app?',
+      why: 'You asked Aria to turn the action items from this meeting into GitHub issues.',
+      what: 'Aria creates these 3 issues and assigns them. GitHub notifies each assignee.',
+      scope: [['editNote', 'Exports retry when an upload times out', 'Assignee: Dana Khoury', 'task'],
+              ['editNote', 'Shared links expire after 24 hours', 'Assignee: Lee Park', 'task'],
+              ['editNote', 'Slow first load for teams over 500 seats', 'Assignee: Priya Shah', 'task']],
+      review: [['folder', 'Repository', 'northwind/app — visible to 34 people'],
+               ['person', 'Created as', 'You, via Aria'],
+               ['undo', 'Undoing it', 'Issues can be closed, but notifications cannot be recalled.']],
+      allow: 'Create 3 issues', deny: 'Don’t create', again: 'Review and create', off: 'Withdraw approval',
+      approved: { title: '3 issues created in northwind/app', body: '#482, #483 and #484 — each assignee was notified.' },
+      denied: { title: 'No issues were created', body: 'Nothing was sent to GitHub. The 3 drafts are kept here for you to edit, copy, or create later.' },
+      kept: 'The drafts and this conversation are kept.',
+      alts: [['Edit the drafts', 'alt-edit'], ['Copy as a list', 'alt-copy'], ['Create issues', 'again']],
+      altSaid: { 'alt-edit': 'The drafts are open for editing. Nothing is created until you approve.',
+                 'alt-copy': 'Copied the 3 drafts as a list.' },
+      expired: { title: 'This approval is out of date',
+                 body: 'The list changed after you approved it — one issue was edited. Review the 3 issues again before Aria creates them.' },
+      revoked: { title: 'Approval withdrawn',
+                 body: 'Aria stopped before creating anything else. #482 was created; the other 2 were not. You can close #482 in GitHub.' }
+    },
+    ongoing: {
+      task: 'Use the pricing brief again.',
+      badge: 'Ongoing permission',
+      logo: function () { return mi('folder'); }, logoFile: 'project.svg',
+      title: 'Let Aria use project files in future conversations?',
+      why: 'So you don’t have to attach the pricing brief and research notes every time you start a conversation here.',
+      what: 'New conversations in the Pricing project can read its 12 files without asking first.',
+      scope: [['folder', 'Files in the Pricing project (12)', '', 'folder'],
+              ['forum', 'New conversations in this project only', '', 'forum'],
+              ['schedule', 'Until you turn it off', '', 'schedule']],
+      review: [['group', 'Who it applies to', 'Only you — teammates are asked separately.'],
+               ['history', 'Activity', 'Each conversation lists the files it used.'],
+               ['tune', 'Turn it off', 'Project settings › Agent access.']],
+      allow: 'Allow in this project', deny: 'Just this conversation', again: 'Allow again', off: 'Turn off',
+      approved: { title: 'Remembered for the Pricing project', body: 'New conversations here can use the project’s files. Turn it off in Project settings.' },
+      denied: { title: 'Not remembered', body: 'Aria uses the files in this conversation only, and will ask again next time.' },
+      kept: 'This conversation still has the files you added.',
+      alts: [['Continue in this conversation', 'alt-once'], ['Allow in this project', 'again']],
+      altSaid: { 'alt-once': 'Continuing with the files in this conversation only.' },
+      expired: { title: 'Project access paused',
+                 body: 'Ongoing access ends after 90 days without use. Allow it again to keep using project files without attaching them.' },
+      revoked: { title: 'Project access turned off',
+                 body: 'Future conversations won’t use project files unless you add them. This conversation is unchanged.' }
+    }
+  };
+  function csType(c) { return CONSENT_TYPES[c.type] || CONSENT_TYPES.data; }
+  /* Data access is the editable example; the other two read their own copy. */
+  function csWord(c, key, T) {
+    return c.type === 'data' || !c.type ? tdTrim(c[key]) : tdTrim(T[key]);
+  }
+
+  /* ── Caveat: the five limitation types ─────────────────────── */
+  var CAVEAT_BASE = {
+    title: 'Customer feedback &middot; October',
+    by: 'Summary by Aria from this month’s interviews',
+    points: ['Onboarding takes too long for teams that import from spreadsheets (5 of 6 interviews).',
+             'Shared links expiring early is the most frequent complaint.',
+             'Two teams asked for a weekly digest instead of real-time alerts.']
+  };
+  function cvT(o) { var r = {}; Object.keys(CAVEAT_BASE).forEach(function (k) { r[k] = CAVEAT_BASE[k]; });
+    Object.keys(o).forEach(function (k) { r[k] = o[k]; }); return r; }
+  var CAVEAT_TYPES = {
+    incomplete: cvT({
+      icon: 'info', sym: 'info', fixIcon: 'sync', fixSym: 'sync',
+      message: '2 of 8 interviews could not be opened, so this summary reflects 6.',
+      detail: 'Themes raised only in those two calls are missing, not just under-counted.',
+      fix: 'Reconnect', review: 'Review sources', listLabel: 'Interviews used',
+      reminder: 'Based on 6 of 8 interviews',
+      sources: [['check', '6 interviews read', 'Oct 2 – Oct 24 · Research › October'],
+                ['warning', 'Hana Kim · Oct 3', 'Not opened — the file was moved'],
+                ['warning', 'Marcus Lee · Oct 9', 'Not opened — sharing was removed']],
+      busy: 'Reconnecting and reading 2 interviews…',
+      resolved: 'All 8 interviews read — summary updated',
+      resolvedWhy: 'One theme was added from the two calls that were missing.',
+      added: 'Invoice exports confuse finance teams (2 of 8 interviews).'
+    }),
+    uncertain: cvT({
+      icon: 'help', sym: 'help', fixIcon: 'add', fixSym: 'add',
+      message: 'The weekly-digest finding rests on 2 interviews.',
+      detail: 'That is too few to tell a pattern from two teams’ preference.',
+      fix: 'Add more interviews', review: 'Review evidence', listLabel: 'Evidence',
+      reminder: 'One finding based on 2 interviews',
+      sources: [['doc', 'Northwind · Oct 12', 'Asked for a weekly digest'],
+                ['doc', 'Bluebird · Oct 20', 'Asked for a weekly digest'],
+                ['info', '6 other interviews', 'Did not mention alerts']],
+      busy: 'Reading 4 more interviews from September…',
+      resolved: 'Finding checked against 6 more interviews',
+      resolvedWhy: 'Two more teams asked for a digest, so it now rests on 4 of 12.',
+      added: 'A weekly digest was requested by 4 of 12 teams across September and October.'
+    }),
+    stale: cvT({
+      icon: 'schedule', sym: 'schedule', fixIcon: 'refresh', fixSym: 'refresh',
+      message: 'Seat counts come from the account list last updated 3 months ago.',
+      detail: 'Teams that grew since July may be grouped wrongly in the 500-seat finding.',
+      fix: 'Use the current list', review: 'Review source', listLabel: 'Sources and dates',
+      reminder: 'Seat counts from July',
+      sources: [['history', 'Account list', 'Last updated Jul 14'],
+                ['check', '8 interviews', 'Oct 2 – Oct 24']],
+      busy: 'Reading the current account list…',
+      resolved: 'Seat counts updated to this week',
+      resolvedWhy: 'One team moved above 500 seats; the finding is unchanged.',
+      added: 'Teams above 500 seats report slow first loads (now 3 teams).'
+    }),
+    omission: cvT({
+      icon: 'visibility', sym: 'visibility_off', fixIcon: 'add', fixSym: 'add',
+      message: 'This summary does not include private Slack channels.',
+      detail: 'Aria cannot read them, so feedback shared only there is not reflected.',
+      fix: 'Add a channel export', review: 'Review sources', listLabel: 'What was included',
+      reminder: 'Private channels not included',
+      sources: [['check', '8 interviews', 'Read'], ['check', '#customer-feedback', 'Read'],
+                ['block', 'Private channels', 'Not available to Aria']],
+      busy: 'Reading the channel export…',
+      resolved: 'Channel export added — summary updated',
+      resolvedWhy: 'One more complaint about shared links was counted.',
+      added: 'The #beta-partners export repeats the shared-links complaint (3 messages).'
+    }),
+    capability: cvT({
+      icon: 'info', sym: 'info', fixIcon: 'link', fixSym: 'link',
+      message: 'Aria drafted 3 follow-up emails but cannot send them until email is connected.',
+      detail: 'They are drafts only; nobody has been contacted.',
+      fix: 'Connect email', review: 'Review drafts', listLabel: 'Drafts',
+      reminder: '3 drafts not sent',
+      sources: [['edit', 'To Hana Kim', 'Draft · thanks and next steps'],
+                ['edit', 'To Marcus Lee', 'Draft · thanks and next steps'],
+                ['edit', 'To Ana Ruiz', 'Draft · thanks and next steps']],
+      busy: 'Connecting email…',
+      resolved: 'Email connected — drafts ready to review',
+      resolvedWhy: 'Nothing was sent. Each draft waits for you to send it.',
+      added: null
+    })
+  };
+  function cvType(c) { return CAVEAT_TYPES[c.type] || CAVEAT_TYPES.incomplete; }
+  function cvWord(c, key, T) {
+    var map = { message: 'message', detail: 'detail', actionLabel: 'fix' };
+    return c.type === 'incomplete' || !c.type ? tdTrim(c[key]) : tdTrim(T[map[key]]);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     IDENTITY — Avatar, Name, Personality, Iconography, Color (16 Oct)
+
+     Rebuilt from the Nucleux npm package only, through the same
+     MaterialSim.md3 static renderers the Trust patterns use:
+     Avatar (@nucleux/avatar, under .nx-theme-mui), Md3Message,
+     Md3List, Md3Chip, Md3Button, Md3IconButton, Md3Tooltip,
+     Md3CircularProgress, Md3Card, Md3RadioGroup, Md3TextField,
+     Md3SegmentedButton, Md3Snackbar, Md3ActionConfirmation,
+     AiDisclosure / AiCaveat. Colour comes only from the tokens
+     package: the Material 3 roles (--nx-md-*) and the status roles
+     (--nx-success, --nx-warning). There is no Md3Avatar and no
+     "agent" colour token in the package; both are said so in the
+     docs rather than invented here.
+     ══════════════════════════════════════════════════════════ */
+  /* The approved image asset for Aria lives with the renderers
+     (MaterialSim.md3.AGENT_ASSET): an abstract mark, not a face. */
+  function idAv(c, o) {
+    var M = tdM(); if (!M) return '';
+    o = o || {};
+    var nm = o.name || 'Aria';
+    var fallback = o.failed ? (c.fallback === 'initials' ? 'initials' : 'icon') : null;
+    return M.avatar({
+      kind: 'agent', name: nm, initials: nm.slice(0, 2).toUpperCase(),
+      size: o.size || +c.size || 32,
+      label: o.label === false ? false : (o.label || tdTrim(c.a11y) || nm + ', AI agent'),
+      src: !fallback && c.image !== false && o.glyph === undefined ? M.AGENT_ASSET : null,
+      glyph: o.glyph, fallback: fallback, quiet: c.emphasis === 'quiet',
+      shape: c.shape === 'circle' ? 'circle' : 'rounded'
+    });
+  }
+  /* The working treatment: the avatar unchanged, an Md3CircularProgress
+     ring around it, and words — so it reads without the motion. */
+  function idRing(avatar, size, working, active) {
+    var M = tdM();
+    return '<span class="idv-av' + (active ? ' is-active' : '') + (working ? ' is-working' : '') + '" data-size="' + size + '">' + avatar +
+      (working && M ? M.circular(size + 8, 'Agent working') : '') + '</span>';
+  }
+  function idLabel(c, text) {
+    var M = tdM();
+    return c && c.label === false || !M ? '' : M.aiDisclosure(text || 'AI agent', null, { 'data-tone': 'outlined' });
+  }
+  /* A Code-tab avatar line for the agent, from the configuration. */
+  function idAvJSX(c, o) {
+    o = o || {};
+    var size = { 24: 'size-6', 32: 'size-8', 40: 'size-10' }[o.size || +c.size || 32];
+    var tone = c.emphasis === 'quiet' ? 'bg-md-surface-container-high text-md-on-surface' : 'bg-md-primary-container text-md-on-primary-container';
+    var src = o.failed ? '' : (c.image !== false && !o.glyph ? ' src="/agents/aria.svg"' : '');
+    var label = tdTrim(c.a11y) || (o.name || 'Aria') + ', AI agent';
+    /* No `name`: the package derives initials from it, which is how a
+       person is drawn. `alt` is the accessible name. */
+    return '<Avatar role="assistant"' + src +
+      (o.failed && c.fallback === 'initials' ? ' initials="' + (o.name || 'Aria').slice(0, 2).toUpperCase() + '"' : '') +
+      ' shape="' + (c.shape === 'circle' ? 'circle' : 'rounded') + '" alt=' + jsxAttr(label) +
+      ' className="' + size + (o.failed ? '' : ' ' + tone) + '"' +
+      (o.glyph && !o.failed ? '>\n' + (o.indent || '') + '  ' + sym(o.glyph) + '\n' + (o.indent || '') + '</Avatar>' : ' />');
+  }
+
+  /* Personality: the same four messages in each style. Only `normal`
+     and `unsure` are written per style; `trust` is one fixed set of
+     strings that no personality touches (unless the reader turns the
+     guardrail off, which is the anti-pattern the Quality checks fail). */
+  function PERSONAS(c) {
+    return {
+      calm: { label: 'Calm &amp; precise', short: 'Calm', desc: 'Measured and exact. Says what it knows and how sure it is.',
+              normal: 'The launch moved to Tuesday. Three tasks are still open; Maya owns two of them.',
+              unsure: 'I couldn’t find a decision on the export limit in this meeting. It may have been made elsewhere.' },
+      warm: { label: 'Warm', short: 'Warm', desc: esc(tdTrim(c.warmDesc) || 'Friendly and encouraging.'),
+              normal: 'Good news — the launch is now on Tuesday. There are three tasks left, and Maya has two of them covered.',
+              unsure: 'I looked, but I couldn’t find a decision on the export limit in this meeting. It might have happened in another one.' },
+      direct: { label: 'Direct', short: 'Direct', desc: esc(tdTrim(c.directDesc) || 'Short answers.'),
+              normal: 'Launch: Tuesday. Open tasks: 3 (Maya: 2).',
+              unsure: 'No export-limit decision in this meeting.' },
+      trust: { permission: 'Aria will post the recap in #launch, where 24 people can see it.',
+               caveat: 'Based on 40 of 52 minutes — the recording stopped early.' },
+      loose: { permission: 'Mind if I pop this over to #launch for everyone? Totally up to you!',
+               caveat: 'Pretty sure I caught the important bits!' }
+    };
+  }
+  /* Iconography: a role's glyph from the AI_ROLES vocabulary, at the
+     configured style — or the one-sparkle anti-pattern. */
+  function idIco(c, role, still) {
+    var S = tdS(); if (!S) return '';
+    var cls = 'idv-ico' + (still || c.animate === false ? ' is-still' : '');
+    if (c.oneSparkle) return S.aiIcon('action', { pick: 'spark', style: c.style, cls: cls });
+    return S.aiIcon(role, { pick: role === 'action' ? (c.glyph || 'spark') : undefined, style: c.style, cls: cls });
+  }
+  function idSym(c, role) {
+    return { action: c.glyph === 'wand' ? 'wand_shine' : 'star_shine', generated: 'chat_info', working: 'progress_activity', tool: 'build' }[role];
+  }
+
+  /* Color: each state names its semantic role, glyph and words. */
+  var COLOR_STATES = {
+    default:   { role: 'neutralHigh', chip: 'neutralHigh', icon: 'agent', label: 'Available',
+                 body: 'Aria can check the launch checklist when you’re ready.' },
+    active:    { role: 'agent', chip: 'agent', icon: 'agent', label: 'Assigned to Aria',
+                 body: 'Aria owns this task. 12 items to check against the launch plan.' },
+    working:   { role: 'agent', chip: 'agent', icon: 'working', label: 'Working…',
+                 body: 'Comparing each item with the release tracker and the launch plan.' },
+    attention: { role: 'attention', chip: 'attention', icon: 'help', label: 'Needs your approval',
+                 body: 'Two items look done in the tracker. Mark them complete?' },
+    success:   { role: 'success', chip: 'neutral', ink: 'successInk', icon: 'checkCircle', label: 'Complete',
+                 body: 'All 12 items pass. Two were marked done with your approval.' },
+    warning:   { role: 'warning', chip: 'warning', icon: 'warning', label: 'Due tomorrow',
+                 body: 'Release notes and the support macro are not done yet.' },
+    error:     { role: 'error', chip: 'error', icon: 'error', label: 'Couldn’t complete',
+                 body: 'The release tracker returned an error, so nothing was checked. Your list is unchanged.' }
+  };
+
+  /* ══════════════════════════════════════════════════════════
+     CAPABILITY DISCOVERY — Example Gallery, Templates, Nudges,
+     Disclaimer / Agent Limits (16 Oct)
+
+     Live Preview shows only the reusable component. Built from the
+     Nucleux npm package through MaterialSim.md3: Md3List, Md3Card,
+     Md3Chip, Md3Button, Md3IconButton, Md3TextField, Md3Snackbar,
+     Md3Banner, Md3AgentComposer, AiDisclosure. Icons are Material
+     Symbols. Content is one meeting-intelligence product (Aria), so
+     every example and template is a real capability of that product.
+     ══════════════════════════════════════════════════════════ */
+  /* A role="button" surface the package renders as a div (Md3List
+     interactive rows, Md3Card interactive) answers Enter and Space. */
+  function cdKeys(root) {
+    root.querySelectorAll('.pv-stage [role="button"][data-act]').forEach(function (el) {
+      if (el.dataset.cdk) return;
+      el.dataset.cdk = '1';
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+      });
+    });
+  }
+  function cdComposer(o) { var M = tdM(); return M ? M.composer(o) : ''; }
+  function cdSnack(msg, action, act) { var M = tdM(); return M.snackbar({ message: msg, action: action, act: act }); }
+
+  /* ── Example Gallery ──────────────────────────────────────── */
+  var CD_EXAMPLES = [
+    { g: 'Find', icon: 'search', t: 'Find unresolved decisions', d: 'Decisions raised this week that still have no outcome.',
+      need: 'Uses meetings in this workspace', p: 'Find unresolved decisions from this week’s meetings.' },
+    { g: 'Find', icon: 'personSearch', t: 'Show action items without owners', d: 'Follow-ups nobody has claimed yet.',
+      need: 'Uses meetings in this workspace', p: 'Show this week’s action items that have no owner.' },
+    { g: 'Summarize', icon: 'doc', t: 'Summarize today’s meeting', d: 'Decisions, open questions and next steps.',
+      need: 'Needs a meeting with a transcript', p: 'Summarize today’s meeting: decisions, open questions and next steps.' },
+    { g: 'Summarize', icon: 'forum', t: 'Compare feedback across customer calls', d: 'Themes that repeat across calls tagged Customer.',
+      need: 'Uses calls tagged Customer', p: 'Compare customer feedback across this month’s customer calls.' },
+    { g: 'Follow up', icon: 'editNote', t: 'Draft a follow-up email', d: 'A draft for you to review — Aria doesn’t send it.',
+      need: 'Draft only — you send it', p: 'Draft a follow-up email for today’s meeting with the action items.' }
+  ];
+  var CD_EG_EDIT = 'Find unresolved decisions from this week’s product meetings.';
+  function cdExamples(c) {
+    var n = Math.max(3, Math.min(5, +c.count || 4));
+    return CD_EXAMPLES.slice(0, n).map(function (e, i) {
+      if (i !== 0) return e;
+      return Object.assign({}, e, { t: esc(tdTrim(c.exTitle)) || e.t, d: esc(tdTrim(c.exDetail)), g: esc(tdTrim(c.group)) || e.g });
+    });
+  }
+  var CD_GENERIC = /^(write something|brainstorm( ideas)?|ask (ai|me) anything|help me|do anything|try ai|chat)\b/i;
+
+  /* ── Templates ────────────────────────────────────────────── */
+  var CD_TPLS = [
+    { icon: 'doc', t: 'Weekly product update', d: 'A Friday update from this week’s meetings: what happened, what was decided and what’s next.',
+      fields: [['Team', '', 'user'], ['Time period', 'Last 7 days', 'ai'], ['Key risks', '', 'req']],
+      out: ['Summary', 'Decisions', 'Action items'], tools: ['Meeting knowledge', 'Google Drive'],
+      req: 'Google Drive', reqWhy: 'It compares this week with last week’s update, which is saved in Google Drive.',
+      without: 'Use without Drive', withoutNote: 'The update won’t compare this week with last week.' },
+    { icon: 'forum', t: 'Customer feedback digest', d: 'Themes from this month’s customer calls, with quotes and how often each came up.',
+      fields: [['Customer segment', '', 'user'], ['Time period', 'This month', 'ai']],
+      out: ['Themes', 'Quotes', 'Counts'], tools: ['Meeting knowledge'] },
+    { icon: 'flag', t: 'Launch readiness check', d: 'Open risks, owners and dates from the meetings about a release.',
+      fields: [['Release', '', 'req'], ['Launch date', '', 'user']],
+      out: ['Open risks', 'Owners', 'Dates'], tools: ['Meeting knowledge'] }
+  ];
+  function cdTpl(c, i) {
+    var T = CD_TPLS[i || 0];
+    if (i) return T;
+    var labels = [tdTrim(c.f1) || 'Team', tdTrim(c.f2) || 'Time period', tdTrim(c.f3) || 'Key risks'];
+    return Object.assign({}, T, {
+      t: esc(tdTrim(c.tTitle)) || T.t, d: esc(tdTrim(c.tDesc)) || T.d,
+      reqWhy: esc(tdTrim(c.reqWhy)),
+      fields: T.fields.map(function (f, k) { return [esc(labels[k]), f[1], f[2]]; })
+    });
+  }
+
+  /* ── Nudges ───────────────────────────────────────────────── */
+  var CD_PRETEND = /\b(done|added|created|saved|sent|i'?ve|we'?ve|has been|have been|already)\b/i;
+
+  /* ── Disclaimer / Agent Limits ────────────────────────────── */
+  var CD_LIMITS = [
+    ['check', 'Can do', [['Summarize meetings and find decisions', 'From meetings in this workspace'],
+                         ['Draft tasks and follow-up emails', 'As drafts for you to review']]],
+    ['block', 'Can’t do', [['Join calls on its own', 'Someone has to start the recording'],
+                          ['Create Jira tasks', 'Until Jira is connected']]],
+    ['lock', 'Needs your approval', [['Sending email or posting to a channel', 'You review and send']]],
+    ['warning', 'May get wrong', [['Decisions when speakers disagree', 'Review these before you share them'],
+                                 ['Names in poor-quality audio', 'Check owners on action items']]]
+  ];
+  var CD_LEGAL = /(for informational purposes|not responsible|no liability|liable|use at your own risk|hereby|warrant|ai (can|may) (make mistakes|be wrong)|may (produce|contain) (inaccurate|errors))/i;
+
   var PATTERNS = {
 
 
@@ -1658,2553 +2096,2729 @@
        Browse → filter → open one → it lands in the composer.
        The last step is the pattern's whole point: an example
        that ends in a copy button ends outside the product. */
+    /* ── Example Gallery ─────────────────────────────────────── */
     'example-gallery': {
-      initial: 'browsing',
+      initial: 'available',
 
-      /* A gallery's decisions are about the EXAMPLES: what the ask
-         says, what came back, and whether the result is shown at all
-         — the result is the half that teaches range, so hiding it is
-         a real (and usually wrong) choice a team can inspect here. */
       customize: {
-        /* A gallery teaches two things at once — what to ask, and
-           what kind of answer comes back. A wall of prompts teaches
-           only the first, which is why the result preview is a
-           capability here rather than a decoration. */
         api: {
           name: 'ExampleGallery',
           props: function (c) {
-            return {
-              layout: c.layout,
-              showResult: c.showResult,
-              showUseAction: c.showUse,
-              useLabel: c.useLabel,
-              density: c.density
-            };
+            return { count: +c.count || 4, onSelect: c.previewFirst === false ? 'fill-composer' : 'preview-first',
+                     afterStart: c.hideAfter !== false ? 'collapse' : 'keep', treatment: c.treatment || 'list' };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'example', label: 'The example', section: 'content',
-            states: ['browsing', 'filtered'],
+          { id: 'words', label: 'First example', section: 'content',
             controls: [
-              { id: 'ask', label: 'Ask', type: 'text',
-                value: 'Which renewals are at risk this quarter?' },
-              { id: 'result', label: 'Result', type: 'text',
-                value: 'A ranked list of seven accounts with the signal behind each one.',
-                visibleWhen: function (c) { return !!c.showResult; } },
-              { id: 'category', label: 'Category', type: 'text', value: 'Analysis' }
-            ] },
-
-          { id: 'opened', label: 'Opened', section: 'content', states: ['opened'],
-            note: 'The whole exchange, and one control that matters.',
-            controls: [
-              { id: 'useLabel', label: 'Primary action', type: 'text',
-                value: 'Use this prompt' }
-            ] },
-
-          { id: 'applied', label: 'In the composer', section: 'content', states: ['applied'],
-            note: 'It has to come back as editable text, or the example ends outside the product.',
-            controls: [
-              { id: 'appliedNote', label: 'Note', type: 'text',
-                value: 'From an example — edit freely' },
-              { id: 'sendLabel', label: 'Send', type: 'text', value: 'Send' }
+              { id: 'exTitle', label: 'Example title', type: 'text', value: 'Find unresolved decisions',
+                hint: 'A real task this product does — not “Ask me anything”.' },
+              { id: 'exDetail', label: 'Supporting detail', type: 'text', value: 'Decisions raised this week that still have no outcome.' },
+              { id: 'group', label: 'Grouping label', type: 'text', value: 'Find' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'teaches', label: 'What it shows', section: 'behavior',
-            states: ['browsing', 'filtered'],
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              { id: 'showResult', label: 'Show what came back', type: 'toggle', value: true,
-                capability: true,
-                hint: 'An example that shows only the prompt teaches the syntax, not the range.' },
-              { id: 'showUse', label: 'Offer “use this”', type: 'toggle', value: true }
+              { id: 'count', label: 'Visible examples', type: 'segment', value: '4',
+                options: [['3', '3'], ['4', '4'], ['5', '5']], hint: 'A small, scannable set. More belongs in a library, not here.' },
+              { id: 'previewFirst', label: 'Show the example before placing it', type: 'toggle', value: true, capability: true,
+                hint: 'Off: choosing an example fills the composer at once, and the Example selected state goes. Nothing is ever sent for them.' },
+              { id: 'hideAfter', label: 'Collapse once work starts', type: 'toggle', value: true,
+                hint: 'On: the gallery shrinks to “Show examples”. Off: it stays as a row of chips.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Arrangement', section: 'appearance',
-            states: ['browsing', 'filtered'],
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'layout', label: 'Layout', type: 'segment', value: 'grid',
-                options: [['grid', 'Grid'], ['list', 'List']] }
-            ] },
-
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            controls: [
+              { id: 'treatment', label: 'Treatment', type: 'segment', value: 'list',
+                options: [['list', 'List'], ['cards', 'Compact cards'], ['chips', 'Chips']],
+                hint: 'Md3List, Md3Card (outlined) or Md3Chip (assist). Chips show titles only.' },
               { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
                 options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-real', type: 'check', label: 'Real capabilities only',
+                test: function (c) { return tdTrim(c.exTitle).length > 8 && !CD_GENERIC.test(tdTrim(c.exTitle)); },
+                fail: 'This example is generic filler. Name a task this product actually does.' },
+              { id: 'q-detail', type: 'check', label: 'Says what it does',
+                test: function (c) { return tdTrim(c.exDetail).length > 0 || c.treatment === 'chips'; },
+                fail: 'Without a detail line, people have to guess what the example will do.' },
+              { id: 'q-scan', type: 'check', label: 'Scannable',
+                test: function (c) { return (+c.count || 4) <= 5 && tdTrim(c.exTitle).length <= 48; },
+                fail: 'Keep titles short enough to read at a glance.' },
+              { id: 'q-open', type: 'check', label: 'Open input stays available',
+                test: function () { return true; } },
+              { id: 'q-edit', type: 'check', label: 'Selected examples stay editable, never auto-sent',
+                test: function () { return true; } },
+              { id: 'q-quiet', type: 'check', label: 'Less prominent once work starts',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        browsing: { label: 'Browsing',
-                    trigger: 'The user reaches an empty surface with nothing to react to.',
-                    behaviour: 'Worked examples, each showing the ask and a line of what came ' +
-                               'back. The result is the half that teaches range.',
-                    action: 'Filter, or open an example' },
-        filtered: { label: 'Filtered',
-                    trigger: 'The user narrows to the job they are actually doing.',
-                    behaviour: 'M3 filter chips: the selected one carries a leading tick as well ' +
-                               'as the tonal ground, so the state is never colour alone.',
-                    action: 'Open an example' },
-        opened:   { label: 'Opened',
-                    trigger: 'An example is selected.',
-                    behaviour: 'The whole exchange — the full ask, the full result — and one ' +
-                               'control that matters.',
-                    action: 'Use the prompt' },
-        applied:  { label: 'Applied',
-                    trigger: 'The user takes the example.',
-                    behaviour: 'It lands in their own composer, editable, so they start from a ' +
-                               'working request rather than a blank field.',
-                    action: 'Back to browsing' }
+        available: {
+          label: 'Examples available',
+          trigger: 'The person has not started yet.',
+          behaviour: 'A few real tasks, grouped by kind, each with one line on what it does and what it needs. The composer is right below for their own words.',
+          meaning: 'This is the kind of thing the agent is good at.',
+          action: 'Choose an example, or type.',
+          next: 'Example selected'
+        },
+        selected: {
+          label: 'Example selected',
+          requires: 'previewFirst',
+          trigger: 'They chose an example.',
+          behaviour: 'The example opens to show the exact request it will place, and what it uses. Nothing is filled yet.',
+          meaning: 'What choosing this would do.',
+          action: 'Use it, or go back.',
+          next: 'Placed into workflow'
+        },
+        placed: {
+          label: 'Placed into workflow',
+          trigger: 'They pressed Use example.',
+          behaviour: 'The request is in the composer, editable and unsent. The example is marked “In composer”.',
+          meaning: 'It is their request now.',
+          action: 'Edit it, send it, or clear it.',
+          next: 'Edited, or Active'
+        },
+        edited: {
+          label: 'Example edited',
+          trigger: 'They changed the words.',
+          behaviour: 'Their version is what will be sent. The example no longer claims it.',
+          meaning: 'The example was a starting point.',
+          action: 'Send, or clear.',
+          next: 'Active interaction'
+        },
+        active: {
+          label: 'Active interaction',
+          trigger: 'They sent a request.',
+          behaviour: 'The agent is working. The gallery steps back to a “Show examples” button (or a row of chips), so the work is the focus.',
+          meaning: 'Normal work has started.',
+          action: 'Wait, stop, or show examples again.',
+          next: 'Examples available'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var tight = c.density === 'compact' ? ' is-compact' : '';
-        if (s.state === 'applied') {
-          return '' +
-'<div class="pv-composer' + tight + '">\n' +
-'  <p class="pv-composer__label md-body-small">Your prompt</p>\n' +
-'  <p class="pv-composer__value md-body-large">\n' +
-'    Which renewals are at risk this quarter, and why?<span class="pv-caretbar"></span>\n' +
-'  </p>\n' +
-'  <div class="pv-composer__foot">\n' +
-'    <span class="md-hint md-body-small">\n' +
-'      <span class="md-hint__dot" aria-hidden="true"></span>' + esc(c.appliedNote) + '\n' +
-'    </span>\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'            data-act="browse">' + esc(c.sendLabel) + '</button>\n' +
-'  </div>\n' +
-'</div>';
-        }
-        if (s.state === 'opened') {
-          return '' +
-'<div class="md-ex-open' + tight + '" role="dialog" aria-labelledby="ex-t">\n' +
-'  <span class="md-ex__k md-label-small">' + esc(c.category) + '</span>\n' +
-'  <h3 class="md-tpl__name md-title-medium" id="ex-t">Renewal risk, ranked</h3>\n' +
-'  <p class="md-ex-open__ask md-body-medium">\n' +
-'    ' + esc(c.ask) + '\n' +
-'  </p>\n' +
-'  <p class="md-ex-open__out md-body-medium">\n' +
-'    Seven accounts, ranked by weighted value. Each carries the signal behind it —\n' +
-'    support escalations, usage drop, or a champion who has left.\n' +
-'  </p>\n' +
-'  <div class="md-ex-open__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button" data-act="apply">\n' +
-'      ' + esc(c.useLabel) + '\n' +
-'    </button>\n' +
-'    <button class="md-button md-button--text md-button--sm" type="button" data-act="browse">\n' +
-'      Back\n' +
-'    </button>\n' +
-'  </div>\n' +
-'</div>';
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var E = cdExamples(c), pick = Math.min(s.egPick || 0, E.length - 1), ex = E[pick];
+        var tr = c.treatment || 'list';
+        var placedIdx = st === 'placed' ? pick : -1;
+        var text = st === 'placed' ? ex.p : st === 'edited' ? (s.egText && s.egText !== ex.p ? s.egText : CD_EG_EDIT) : '';
+        var active = st === 'active';
+
+        function item(e, i) {
+          var on = (st === 'selected' && i === pick), inC = i === placedIdx;
+          var act = { 'data-act': 'eg:pick:' + i, 'aria-pressed': String(on || inC) };
+          if (tr === 'chips' || (active && c.hideAfter === false)) {
+            return tdChip({ label: e.t, icon: mi(e.icon), cls: on || inC ? 'is-chosen' : '', attrs: act });
+          }
+          var sub = (e.d ? e.d + '<br>' : '') + '<span class="cd-need">' + mi('info') + e.need + '</span>';
+          if (tr === 'cards') {
+            return M.card('outlined', '<span class="cd-card__i">' + mi(e.icon) + '</span>' +
+              '<span class="cd-card__t"><span class="md-title-small">' + e.t + '</span>' +
+              '<span class="md-body-small cd-card__d">' + sub + '</span></span>' +
+              (inC ? '<span class="cd-in md-label-small">In composer</span>' : ''),
+              'cd-card' + (on || inC ? ' is-chosen' : ''), Object.assign({ role: 'button', tabindex: '0' }, act));
+          }
+          return { leading: mi(e.icon), headline: e.t, supporting: sub, interactive: true,
+                   trailing: inC ? '<span class="cd-in md-label-small">In composer</span>' : '', attrs: act };
         }
 
-        var on = s.state === 'filtered' ? c.category : 'All';
-        function filter(label) {
-          var sel = label === on;
-          return '  <button class="md-filter' + (sel ? ' is-on' : '') + '" type="button" ' +
-                 'aria-pressed="' + sel + '" data-act="filter:' + label + '">\n' +
-                 '    <svg class="md-filter__tick mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z"/></svg>\n' +
-                 '    ' + label + '\n' +
-                 '  </button>\n';
-        }
-        /* Filtering narrows the set; it does not empty it. A filtered
-           state holding a single card reads as a broken filter, and
-           it left Layout with nothing to arrange. */
-        function second() {
-          var k = s.state === 'filtered' ? c.category : 'Drafting';
-          var ask = s.state === 'filtered'
-            ? 'Which accounts slipped a tier since last quarter?'
-            : 'Draft the renewal note to Dana';
-          var out = s.state === 'filtered'
-            ? 'Four accounts, with the month each one moved.'
-            : 'A three-line message with the Q2 figures attached, ready to edit.';
-          return '    <button class="md-ex" type="button" data-act="open">\n' +
-                 '      <span class="md-ex__k md-label-small">' + esc(k) + '</span>\n' +
-                 '      <p class="md-ex__ask md-body-medium">' + esc(ask) + '</p>\n' +
-                 (c.showResult
-                 ? '      <p class="md-ex__out md-body-small">' + esc(out) + '</p>\n' : '') +
-                 '    </button>\n';
-        }
-        var drafting = second();
+        var groups = [];
+        E.forEach(function (e, i) {
+          var g = groups.filter(function (x) { return x.name === e.g; })[0];
+          if (!g) groups.push(g = { name: e.g, items: [] });
+          g.items.push(item(e, i));
+        });
 
-        return '' +
-'<div class="md-gallery' + tight + '" data-layout="' + c.layout + '">\n' +
-'  <div class="md-gallery__filters" role="group" aria-label="Filter examples">\n' +
-   filter('All') + filter(c.category) +
-'  </div>\n' +
-'\n' +
-'  <div class="md-grid">\n' +
-'    <button class="md-ex" type="button" data-act="open">\n' +
-'      <span class="md-ex__k md-label-small">' + esc(c.category) + '</span>\n' +
-'      <p class="md-ex__ask md-body-medium">' + esc(c.ask) + '</p>\n' +
-   (c.showResult
-? '      <p class="md-ex__out md-body-small">' + esc(c.result) + '</p>\n' : '') +
-   (c.showUse
-? '      <span class="md-ex__use">Use this\n' +
-  '        <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M686-450H160v-60h526L438-758l42-42 320 320-320 320-42-42 248-248Z"/></svg>\n' +
-  '      </span>\n' : '') +
-'    </button>\n' +
-   drafting +
-'  </div>\n' +
-'</div>';
+        var gallery;
+        if (active && c.hideAfter !== false && !s.egShow) {
+          gallery = '<div class="cd-eg__more">' + M.button({ variant: 'text', label: 'Show examples', icon: mi('lightbulb'),
+            attrs: { 'data-act': 'eg:more', 'aria-expanded': 'false' } }) + '</div>';
+        } else if (active) {
+          gallery = '<div class="cd-eg__row" role="group" aria-label="Examples">' + E.map(function (e, i) {
+            return tdChip({ label: e.t, icon: mi(e.icon), attrs: { 'data-act': 'eg:pick:' + i } }); }).join('') + '</div>';
+        } else {
+          gallery = '<section class="cd-eg__gal" aria-labelledby="cd-eg-h">' +
+            '<h3 class="md-title-small cd-h" id="cd-eg-h">Try an example</h3>' +
+            groups.map(function (g, gi) {
+              var id = 'cd-eg-g' + gi;
+              var body = tr === 'list' ? M.list(g.items, { 'aria-labelledby': id })
+                : '<div class="cd-eg__' + (tr === 'chips' ? 'chips' : 'cards') + '" role="group" aria-labelledby="' + id + '">' + g.items.join('') + '</div>';
+              return '<div class="cd-eg__grp"><p class="md-label-medium cd-g" id="' + id + '">' + g.name + '</p>' + body + '</div>';
+            }).join('') +
+          '</section>';
+        }
+
+        var detail = st === 'selected'
+          ? M.card('filled',
+              '<p class="md-label-medium cd-g">Places this in the composer</p>' +
+              '<p class="md-body-large cd-q">“' + ex.p + '”</p>' +
+              '<p class="md-body-small cd-need">' + mi('info') + ex.need + '. You can edit it before sending.</p>' +
+              '<div class="cd-acts">' + M.button({ variant: 'tonal', label: 'Use example', attrs: { 'data-act': 'eg:use' } }) +
+                M.button({ variant: 'text', label: 'Back', attrs: { 'data-act': 'eg:back' } }) + '</div>',
+              'cd-detail', { role: 'region', 'aria-label': ex.t.replace(/<[^>]+>/g, '') })
+          : '';
+
+        /* The shared prompt composer every pattern uses (MaterialSim.composer),
+           without the halo behind it (data-no-halo). */
+        var S = tdS();
+        var cmp = S.composer({ agent: 'Aria', ask: 'Or describe your own task…', label: 'Message Aria',
+          plus: ['Attach a file', 'Add a meeting'], mic: true, text: text, entry: text.trim() ? 'ready' : 'empty',
+          maxLines: 6, grow: true, running: active, stopAct: 'eg:stop' });
+
+        return '<div class="cd cd--only cd-eg" data-no-halo data-state="' + st + '" data-density="' + (c.density === 'compact' ? 'compact' : 'comfortable') + '">\n' +
+          '  ' + gallery + '\n' + (detail ? '  ' + detail + '\n' : '') +
+          (active ? '  <p class="tdx-sr" role="status">Aria is working on your request.</p>\n' : '') +
+          '  <div class="cd-eg__cmp">' + cmp + '</div>\n' +
+          '  <button type="button" hidden tabindex="-1" data-act="eg:send"></button>\n</div>';
       },
-      act: function (a, ctx) {
-        if (a.indexOf('filter:') === 0) {
-          ctx.s.state = a.split(':')[1] === 'All' ? 'browsing' : 'filtered';
-          ctx.paint(); return;
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, E = cdExamples(c), tr = c.treatment || 'list';
+        var ex = E[Math.min(s.egPick || 0, E.length - 1)];
+        var text = st === 'placed' ? ex.p : st === 'edited' ? (s.egText && s.egText !== ex.p ? s.egText : CD_EG_EDIT) : '';
+        var imp = [];
+        if (tr === 'list') imp.push(['Md3List, Md3ListItem', '@nucleux/md3-list']);
+        if (tr === 'cards') imp.push(['Md3Card', '@nucleux/md3-card']);
+        if (tr === 'chips' || st === 'active') imp.push(['Md3Chip', '@nucleux/md3-chip']);
+        imp.push(['Md3Button', '@nucleux/md3-button'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']);
+        var data = 'const examples = [\n' + E.map(function (e) {
+          return '  { group: ' + jsxAttr(e.g) + ', title: ' + jsxAttr(e.t) + ', detail: ' + jsxAttr(e.d || '') +
+                 ', needs: ' + jsxAttr(e.need) + ', prompt: ' + jsxAttr(e.p) + ' },\n';
+        }).join('') + '];\n';
+        var pick = tr === 'list'
+          ? '<Md3List aria-label="Examples">\n  {examples.map((e, i) => (\n    <Md3ListItem key={e.title} interactive headline={e.title}\n' +
+            '      supportingText={`${e.detail} · ${e.needs}`} onClick={() => ' + (c.previewFirst === false ? 'setDraft(e.prompt)' : 'setSelected(i)') + '} />\n  ))}\n</Md3List>'
+          : tr === 'cards'
+            ? '{examples.map((e, i) => (\n  <Md3Card key={e.title} variant="outlined" interactive onClick={() => ' + (c.previewFirst === false ? 'setDraft(e.prompt)' : 'setSelected(i)') + '}>\n    <h4>{e.title}</h4><p>{e.detail}</p><p>{e.needs}</p>\n  </Md3Card>\n))}'
+            : '{examples.map((e, i) => (\n  <Md3Chip key={e.title} variant="assist" onClick={() => ' + (c.previewFirst === false ? 'setDraft(e.prompt)' : 'setSelected(i)') + '}>{e.title}</Md3Chip>\n))}';
+        if (st === 'active') pick = c.hideAfter !== false
+          ? '<Md3Button variant="text" aria-expanded={false} onClick={showExamples}>Show examples</Md3Button>'
+          : '{examples.map((e) => <Md3Chip key={e.title} variant="assist" onClick={() => setDraft(e.prompt)}>{e.title}</Md3Chip>)}';
+        return imports(imp) + '\n\n' + data + '\n// State: ' + this.states[st].label + '\n' + pick + '\n\n' +
+          (st === 'selected' ? '<Md3Card variant="filled" role="region">\n  <p>Places this in the composer</p>\n  <p>“' + jsxText(ex.p) + '”</p>\n' +
+            '  <Md3Button variant="tonal" onClick={() => setDraft(selected.prompt)}>Use example</Md3Button>\n  <Md3Button variant="text" onClick={back}>Back</Md3Button>\n</Md3Card>\n\n' : '') +
+          '// The example fills the composer. It never sends.\n' +
+          '<Md3AgentComposer\n  value={draft}' + (text ? ' /* ' + jsxAttr(text) + ' */' : '') + '\n  onValueChange={setDraft}\n  onSubmit={send}\n' +
+          '  placeholder="Or describe your own task…"\n' + (st === 'active' ? '  loading\n  onStop={stop}\n' : '') + '/>';
+      },
+
+      mounted: function (root, s) {
+        cdKeys(root);
+        var box = root.querySelector('.pv-stage .cd-eg');
+        var f = box && box.querySelector('[data-ax-field]'), form = box && box.querySelector('.ax__composer');
+        if (!f || f.dataset.cdb) return;
+        f.dataset.cdb = '1';
+        if (typeof icFit === 'function') icFit(f);
+        if (s.egFocus) { s.egFocus = false; f.focus({ preventScroll: true }); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} }
+        f.addEventListener('input', function () {
+          if (typeof icFit === 'function') icFit(f);
+          var send = form && form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+          if (send) send.disabled = !f.value.trim();
+          if (form) form.setAttribute('data-entry', f.value.trim() ? 'ready' : 'empty');
+          var E = cdExamples(s.cfg), ex = E[Math.min(s.egPick || 0, E.length - 1)];
+          s.egText = f.value;
+          if (s.state === 'placed' && f.value !== ex.p) pvLive(root, s, 'example-gallery', 'edited');
+        });
+        function submit(e) {
+          if (e) e.preventDefault();
+          if (!f.value.trim()) return;
+          s.egText = f.value;
+          var b = root.querySelector('.pv-stage [data-act="eg:send"]'); if (b) b.click();
         }
-        if (a === 'open')   { ctx.s.state = 'opened';  ctx.paint(); return; }
-        if (a === 'apply')  { ctx.s.state = 'applied'; ctx.paint();
-                              ctx.announce('Prompt placed in your composer'); return; }
-        if (a === 'browse') { ctx.s.state = 'browsing'; ctx.paint(); }
+        if (form) form.addEventListener('submit', submit);
+        f.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) submit(e); });
+      },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        if (a.indexOf('eg:pick:') === 0) {
+          s.egPick = +a.slice(8); s.egText = null; s.egShow = false;
+          s.state = c.previewFirst === false ? 'placed' : 'selected'; ctx.paint();
+          if (s.state === 'placed') { s.egFocus = true; ctx.paint(); ctx.announce('Example placed in the composer. Edit it, then send.'); }
+          return;
+        }
+        if (a === 'eg:use') {
+          s.egText = null; s.state = 'placed'; s.egFocus = true; ctx.paint();
+          ctx.announce('Example placed in the composer. Edit it, then send.'); return;
+        }
+        if (a === 'eg:back' || a === 'eg:reset') { s.egText = null; s.state = 'available'; ctx.paint(); return; }
+        if (a === 'eg:more') { s.egShow = true; ctx.paint(); return; }
+        if (a === 'eg:stop') { s.egRun = (s.egRun || 0) + 1; s.state = 'available'; ctx.paint(); ctx.announce('Stopped.'); return; }
+        if (a === 'eg:send') {
+          var h = document.querySelector('.pv-stage .cd-eg [data-ax-field]');
+          if (h && !h.value.trim()) return;
+          var run = (s.egRun || 0) + 1; s.egRun = run; s.egShow = false;
+          s.state = 'active'; ctx.paint(); ctx.announce('Sent. Aria is working.');
+        }
       }
     },
 
-    /* ── Templates ──────────────────────────────────────────
-       Empty → filling → complete → assembled. The last state
-       is the one most implementations skip: the prompt has to
-       come back out as editable text, or the scaffold is a
-       form the user cannot leave. */
+    /* ── Templates ───────────────────────────────────────────── */
     templates: {
-      initial: 'empty',
+      initial: 'available',
 
-      /* A template is a sentence with holes in it, so what there is to
-         decide is the sentence: its name, what it is for, and what
-         each slot is called before anything is chosen. The slot LABELS
-         are the teaching surface — "a source" tells you what kind of
-         answer belongs there, "click here" does not. */
       customize: {
-        /* A template is scaffolding, not a form. The decisions are
-           what the slots are called, whether the reader can see how
-           far through they are, and — the one that matters — whether
-           the assembled prompt is still theirs to edit. */
         api: {
-          name: 'PromptTemplate',
+          name: 'WorkflowTemplate',
           props: function (c) {
-            return {
-              name: c.name,
-              description: c.desc,
-              slots: [c.slot1, c.slot2, c.slot3, c.slot4],
-              showProgress: c.count,
-              editableAfterAssembly: c.editable,
-              escapeHatch: c.escape,
-              runLabel: c.runLabel,
-              density: c.density,
-              shape: c.shape
-            };
+            return { previewFirst: c.previewFirst !== false, confirmReplace: c.confirmReplace !== false,
+                     allowReset: c.allowReset !== false, markSuggested: true };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'tpl', label: 'The template', section: 'content',
-            states: ['empty', 'partial', 'complete'],
+          { id: 'words', label: 'Template', section: 'content',
             controls: [
-              { id: 'name', label: 'Name', type: 'text', value: 'Weekly pipeline summary' },
-              { id: 'desc', label: 'Description', type: 'text',
-                value: 'Four choices, then it writes the prompt for you.' }
-            ] },
-
-          /* A filled slot shows its value, not its label, so the label
-             of an already-filled slot has nowhere to appear. Each one
-             is offered only while its own slot is still empty —
-             Partly filled shows the third and fourth, Complete shows
-             none, which is why the group is not offered there. */
-          { id: 'slots', label: 'Slots', section: 'content',
-            states: ['empty', 'partial'],
-            note: 'The label is the only hint before a reader opens one.',
-            controls: [
-              { id: 'slot1', label: 'First', type: 'text', value: 'what',
-                visibleWhen: function (c, st) { return st === 'empty'; } },
-              { id: 'slot2', label: 'Second', type: 'text', value: 'for whom',
-                visibleWhen: function (c, st) { return st === 'empty'; } },
-              { id: 'slot3', label: 'Third', type: 'text', value: 'in what tone' },
-              { id: 'slot4', label: 'Fourth', type: 'text', value: 'how long' }
-            ] },
-
-          { id: 'done', label: 'Assembled', section: 'content', states: ['assembled'],
-            controls: [
-              { id: 'assembledNote', label: 'Note', type: 'text',
-                value: 'Built from a template — edit freely' },
-              { id: 'backLabel', label: 'Back', type: 'text', value: 'Change the template' }
+              { id: 'tTitle', label: 'Title', type: 'text', value: 'Weekly product update' },
+              { id: 'tDesc', label: 'Description', type: 'text',
+                value: 'A Friday update from this week’s meetings: what happened, what was decided and what’s next.',
+                hint: 'What it helps them accomplish, in one sentence.' },
+              { id: 'f1', label: 'Field 1 label', type: 'text', value: 'Team' },
+              { id: 'f2', label: 'Field 2 label (suggested by AI)', type: 'text', value: 'Time period' },
+              { id: 'f3', label: 'Field 3 label (required)', type: 'text', value: 'Key risks' },
+              { id: 'reqWhy', label: 'Requirement explanation', type: 'text',
+                value: 'It compares this week with last week’s update, which is saved in Google Drive.',
+                hint: 'Why the missing connection is needed — shown in Missing requirement.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          /* Only the assembled surface renders the difference, so
-             that is the only state where the choice is legible. */
-          { id: 'after', label: 'After assembly', section: 'behavior',
-            states: ['assembled'],
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              { id: 'editable', label: 'Editable after assembly', type: 'toggle', value: true,
-                hint: 'The difference between scaffolding and a form.' }
-            ] },
-
-          { id: 'filling', label: 'While filling', section: 'behavior',
-            states: ['empty', 'partial', 'complete'],
-            controls: [
-              { id: 'count', label: 'Show progress', type: 'toggle', value: true },
-              { id: 'escape', label: 'Offer plain text instead', type: 'toggle', value: true,
-                capability: true,
-                hint: 'A template nobody can step out of is a cage.' },
-              { id: 'escapeLabel', label: 'Escape label', type: 'text',
-                value: 'Write it myself', visibleWhen: function (c) { return !!c.escape; } },
-              { id: 'runLabel', label: 'Run label', type: 'text', value: 'Use this' }
+              { id: 'previewFirst', label: 'Preview before applying', type: 'toggle', value: true, capability: true,
+                hint: 'Show inputs, output and tools before anything is applied. Off removes the Preview state.' },
+              { id: 'confirmReplace', label: 'Confirm before replacing edits', type: 'toggle', value: true,
+                hint: 'Choosing another template over edited fields asks first.' },
+              { id: 'allowReset', label: 'Allow remove / reset', type: 'toggle', value: true, capability: true,
+                hint: 'Remove the template and return to what was there before. Off removes the Removed state.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'surface', label: 'Surface', section: 'appearance',
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
+              { id: 'layout', label: 'Template list', type: 'segment', value: 'list',
+                options: [['list', 'List'], ['cards', 'Cards']], hint: 'Md3List or Md3Card (outlined).' },
               { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
-                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
-              { id: 'shape', label: 'Shape', type: 'segment', value: 'large', options: [['extra-large', 'X-large'], ['large', 'Large'], ['medium', 'Medium']] }
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-real', type: 'check', label: 'A real, repeatable workflow',
+                test: function (c) { return tdTrim(c.tTitle).length > 6 && !CD_GENERIC.test(tdTrim(c.tTitle)) && tdTrim(c.tDesc).length > 20; },
+                fail: 'Name the workflow and say what it produces.' },
+              { id: 'q-req', type: 'check', label: 'Missing requirements are explained',
+                test: function (c) { return tdTrim(c.reqWhy).length > 10; },
+                fail: 'Say why the connection is needed, not only that it is missing.' },
+              { id: 'q-protect', type: 'check', label: 'Existing work is protected',
+                test: function (c) { return c.confirmReplace !== false || c.allowReset !== false; },
+                fail: 'With no confirmation and no reset, applying a template can silently lose their edits.' },
+              { id: 'q-preview', type: 'check', label: 'People can see it before applying',
+                test: function (c) { return c.previewFirst !== false; },
+                fail: 'Without a preview, people apply a structure they have not seen.' },
+              { id: 'q-run', type: 'check', label: 'Never runs on apply',
+                test: function () { return true; } },
+              { id: 'q-ai', type: 'check', label: 'AI-suggested values are marked',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        empty:     { label: 'Empty',
-                     trigger: 'A template is chosen but nothing is filled.',
-                     behaviour: 'The sentence still reads as a sentence. That is what makes a ' +
-                                'scaffold teach: the shape of a good request is legible before ' +
-                                'anything is decided.',
-                     action: 'Fill a slot' },
-        partial:   { label: 'Partly filled',
-                     trigger: 'Some slots are chosen.',
-                     behaviour: 'Filled slots become solid chips, empty ones stay dashed — the ' +
-                                'difference is shape before it is colour. The count says what ' +
-                                'is still missing.',
-                     action: 'Fill the rest' },
-        complete:  { label: 'Complete',
-                     trigger: 'Every slot has a value.',
-                     behaviour: 'Nothing is missing, so the run control takes full weight. The ' +
-                                'template never guessed on the user’s behalf.',
-                     action: 'Run it, or edit as text' },
-        assembled: { label: 'As text',
-                     trigger: 'The user breaks out of the scaffold.',
-                     behaviour: 'The assembled prompt, editable. A scaffold you cannot leave is ' +
-                                'a form, and the user is the one who knows the exception.',
-                     action: 'Back to the template' }
+        available: {
+          label: 'Template available',
+          trigger: 'The person is starting a recurring piece of work.',
+          behaviour: 'A short list of workflow templates, each saying what it produces and what it uses.',
+          meaning: 'There is a ready-made setup for this.',
+          action: 'Open a template.',
+          next: 'Preview'
+        },
+        preview: {
+          label: 'Preview',
+          requires: 'previewFirst',
+          trigger: 'They opened a template.',
+          behaviour: 'What it asks for, what it produces, the tools it uses and anything it needs — before anything is applied.',
+          meaning: 'Exactly what this template will set up.',
+          action: 'Use template, or go back.',
+          next: 'Applied, or Missing requirement'
+        },
+        applied: {
+          label: 'Applied',
+          trigger: 'They chose Use template.',
+          behaviour: 'The fields are in place and editable. A value Aria suggested is marked until they keep or change it. Nothing has run.',
+          meaning: 'The setup is ready; they decide what goes in it.',
+          action: 'Fill the fields, then Run.',
+          next: 'Edited'
+        },
+        edited: {
+          label: 'Edited',
+          trigger: 'They changed a field.',
+          behaviour: 'Their values are confirmed; Run becomes available once required fields are filled. Replacing the template asks first.',
+          meaning: 'It is their request now.',
+          action: 'Run, replace, or remove.',
+          next: '—'
+        },
+        missing: {
+          label: 'Missing requirement',
+          trigger: 'The template needs Google Drive, and it isn’t connected.',
+          behaviour: 'What is missing, why it is needed and what they can do — Connect Drive or Use without Drive. Their values stay.',
+          meaning: 'One thing is needed before it can do all of this.',
+          action: 'Connect, or continue without it.',
+          next: 'Applied'
+        },
+        removed: {
+          label: 'Removed / reset',
+          requires: 'allowReset',
+          trigger: 'They removed the template.',
+          behaviour: 'The template is gone and what was there before is back, with Undo.',
+          meaning: 'Nothing was lost.',
+          action: 'Undo, or choose another.',
+          next: 'Template available'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var tight = c.density === 'compact' ? ' is-compact' : '';
-        var set = s.state === 'complete' || s.state === 'assembled' ? 4
-                : s.state === 'partial' ? 2 : 0;
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var i = s.tpPick || 0, T = cdTpl(c, i);
+        var dens = c.density === 'compact' ? 'compact' : 'comfortable';
 
-        if (s.state === 'assembled') {
-          return '' +
-'<div class="pv-composer' + tight + '" data-shape="' + c.shape + '">\n' +
-'  <p class="pv-composer__label md-body-small">Your prompt</p>\n' +
-'  <p class="pv-composer__value md-body-large' +
-   (c.editable ? '' : ' is-locked') + '">\n' +
-'    Summarise this week&rsquo;s pipeline for the leadership team in a plain,\n' +
-'    unhedged tone, no longer than five bullets.' +
-   (c.editable ? '<span class="pv-caretbar"></span>' : '') + '\n' +
-'  </p>\n' +
-'  <div class="pv-composer__foot">\n' +
-'    <span class="md-hint md-body-small">\n' +
-'      <span class="md-hint__dot" aria-hidden="true"></span>' + esc(c.assembledNote) + '\n' +
-'    </span>\n' +
-'    <button class="md-button md-button--text md-button--sm" type="button" data-act="back">\n' +
-'      ' + esc(c.backLabel) + '\n' +
-'    </button>\n' +
-'  </div>\n' +
-'</div>';
+        function list() {
+          var rows = CD_TPLS.map(function (x, k) {
+            var t = cdTpl(c, k);
+            var meta = t.fields.length + ' inputs &middot; ' + t.tools.join(', ');
+            if (c.layout === 'cards') {
+              return M.card('outlined', '<span class="cd-card__i">' + mi(t.icon) + '</span><span class="cd-card__t">' +
+                '<span class="md-title-small">' + t.t + '</span><span class="md-body-small cd-card__d">' + t.d + '<br>' + meta + '</span></span>',
+                'cd-card', { role: 'button', tabindex: '0', 'data-act': 'tp:open:' + k });
+            }
+            return { leading: mi(t.icon), headline: t.t, supporting: t.d + '<br>' + meta, interactive: true, attrs: { 'data-act': 'tp:open:' + k } };
+          });
+          return '<section class="cd-tp__list" aria-labelledby="cd-tp-h"><h3 class="md-title-small cd-h" id="cd-tp-h">Templates</h3>' +
+            (c.layout === 'cards' ? '<div class="cd-eg__cards">' + rows.join('') + '</div>' : M.list(rows, { 'aria-labelledby': 'cd-tp-h' })) + '</section>';
         }
 
-        function slot(i, filled, label, act) {
-          var on = i <= set;
-          return '    <button class="md-slot' + (on ? ' is-set' : '') + '" type="button" ' +
-                 'data-act="' + act + '">' + (on ? filled : label) + '\n' +
-                 '      <svg class="md-slot__caret mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M480-344 240-584l43-43 197 197 197-197 43 43-240 240Z"/></svg>\n' +
-                 '    </button>';
+        if (st === 'available' || st === 'removed') {
+          return '<div class="cd cd--only cd-tp" data-state="' + st + '" data-density="' + dens + '">\n  ' + list() + '\n' +
+            (st === 'removed' ? '  ' + cdSnack('Template removed. Your previous draft is back.', 'Undo', 'tp:undo') + '\n' : '') + '</div>';
         }
 
-        return '' +
-'<section class="md-tpl' + tight + '" data-shape="' + c.shape + '">\n' +
-'  <h3 class="md-tpl__name md-title-medium">' + esc(c.name) + '</h3>\n' +
-'  <p class="md-tpl__desc md-body-medium">' + esc(c.desc) + '</p>\n' +
-'\n' +
-'  <p class="md-tpl__line md-body-large">\n' +
-'    Summarise\n' +
-   slot(1, 'this week&rsquo;s pipeline', esc(c.slot1), 'fill') + '\n' +
-'    for\n' +
-   slot(2, 'the leadership team', esc(c.slot2), 'fill') + '\n' +
-'    in\n' +
-   slot(3, 'a plain, unhedged tone', esc(c.slot3), 'fill') + ',\n' +
-'    no longer than\n' +
-   slot(4, 'five bullets', esc(c.slot4), 'fill') + '.\n' +
-'  </p>\n' +
-'\n' +
-'  <div class="md-tpl__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button"' +
-     (set === 4 ? '' : ' disabled') + '>' + esc(c.runLabel) + '</button>\n' +
-   (c.escape
-? '    <button class="md-button md-button--text md-button--sm" type="button" data-act="text">\n' +
-  '      ' + esc(c.escapeLabel) + '\n' +
-  '    </button>\n' : '') +
-   (c.count
-? '    <span class="md-tpl__count md-body-small">' + set + ' of 4 chosen</span>\n' : '') +
-'  </div>\n' +
-'</section>';
+        if (st === 'preview') {
+          var sec = function (h, items) {
+            return '<div class="cd-tp__sec"><p class="md-label-medium cd-g">' + h + '</p><ul class="cd-tp__ul md-body-medium">' +
+              items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+          };
+          return '<div class="cd cd--only cd-tp" data-state="preview" data-density="' + dens + '">\n  ' +
+            M.card('outlined',
+              '<div class="cd-tp__head"><span class="cd-card__i">' + mi(T.icon) + '</span><div><h3 class="md-title-medium cd-h">' + T.t + '</h3>' +
+                '<p class="md-body-medium cd-d">' + T.d + '</p></div></div>' +
+              '<div class="cd-tp__grid">' +
+                sec('It asks for', T.fields.map(function (f) { return f[0] + (f[2] === 'req' ? ' <span class="cd-tag">Required</span>' : f[2] === 'ai' ? ' <span class="cd-tag">Aria suggests a value</span>' : ''); })) +
+                sec('It produces', T.out) +
+                sec('It uses', T.tools) +
+              '</div>' +
+              (T.req ? '<p class="md-body-small cd-need">' + mi('link') + 'Needs ' + T.req + ' — not connected yet.</p>' : '') +
+              '<p class="md-body-small cd-need">' + mi('info') + 'Applying fills in the setup. Nothing runs until you press Run.</p>' +
+              '<div class="cd-acts">' + M.button({ variant: 'filled', label: 'Use template', attrs: { 'data-act': 'tp:apply' } }) +
+                M.button({ variant: 'text', label: 'Back', attrs: { 'data-act': 'tp:back' } }) + '</div>',
+              'cd-tp__card', { role: 'region', 'aria-label': 'Template preview' }) + '\n</div>';
+        }
+
+        /* applied · edited · missing: the template in the working flow. */
+        var edited = st === 'edited';
+        var vals = s.tpVals || {};
+        var fields = T.fields.map(function (f, k) {
+          var v = vals[k] !== undefined ? vals[k] : edited ? ['Payments', 'Last 7 days', 'Checkout latency on Android'][k] || '' : f[1];
+          var support = f[2] === 'ai'
+            ? (edited || s.tpKept ? 'Confirmed by you' : '<span class="cd-ai">' + tdAI('generated') + 'Suggested by Aria — keep or change it</span>')
+            : f[2] === 'req' ? (v ? 'Required' : 'Required — add this before running') : '';
+          return '<div class="cd-tp__f">' + M.textField({ id: 'cd-tp-f' + k, label: f[0].replace(/<[^>]+>/g, ''), value: v, support: support }) +
+            (f[2] === 'ai' && !edited && !s.tpKept ? M.button({ variant: 'text', label: 'Keep', attrs: { 'data-act': 'tp:keep', 'aria-label': 'Keep the suggested ' + f[0] } }) : '') + '</div>';
+        }).join('');
+        var ready = T.fields.every(function (f, k) {
+          var v = vals[k] !== undefined ? vals[k] : edited ? 'x' : f[1];
+          return f[2] !== 'req' || (v || '').trim();
+        });
+        var chip = M.inputChip({ label: T.t, name: T.t.replace(/<[^>]+>/g, '') + ' template', icon: mi(T.icon),
+          removeAttrs: { 'data-act': c.allowReset !== false ? 'tp:remove' : 'noop' } });
+        var banner = st === 'missing'
+          ? M.banner({ icon: mi('link'), cls: 'cd-tp__banner',
+              text: '<b>This template needs ' + T.req + '.</b> ' + (T.reqWhy || '') + ' Your values are kept.',
+              actions: M.button({ variant: 'text', label: 'Connect Drive', attrs: { 'data-act': 'tp:connect' } }) +
+                       M.button({ variant: 'text', label: T.without, attrs: { 'data-act': 'tp:without' } }) })
+          : '';
+        var confirm = s.tpConfirm
+          ? M.actionConfirmation({ id: 'cd-tp-rep', badge: 'Replace template', title: 'Replace ' + T.t + '?',
+              description: 'Your edits to these fields will be removed. You can undo this.', confirm: 'Replace', cancel: 'Keep editing',
+              confirmAct: 'tp:doreplace', cancelAct: 'tp:keepedit', icon: mi('history') })
+          : '';
+        return '<div class="cd cd--only cd-tp" data-state="' + st + '" data-density="' + dens + '">\n' +
+          '  <div class="cd-tp__bar">' + chip + '<span class="md-body-small cd-d">Produces: ' + T.out.join(', ') + '</span></div>\n' +
+          (banner ? '  ' + banner + '\n' : '') +
+          '  <div class="cd-tp__fields">' + fields + '</div>\n' +
+          (s.tpWithout && st !== 'missing' ? '  <p class="md-body-small cd-need">' + mi('info') + T.withoutNote + '</p>\n' : '') +
+          (confirm ? '  ' + confirm + '\n' : '') +
+          '  <div class="cd-acts">' + M.button({ variant: 'filled', label: 'Run', attrs: { 'data-act': 'tp:run', 'aria-disabled': ready && st !== 'missing' ? null : 'true' } }) +
+            (edited ? M.button({ variant: 'text', label: 'Use another template', attrs: { 'data-act': 'tp:replace' } }) : '') +
+            '<span class="md-body-small cd-d">Nothing runs until you press Run.</span></div>\n' +
+          '</div>';
       },
-      act: function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'fill') {
-          s.state = s.state === 'empty' ? 'partial'
-                  : s.state === 'partial' ? 'complete' : 'empty';
-          ctx.paint(); return;
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, T = cdTpl(c, s.tpPick || 0);
+        var plain = function (x) { return jsxText(String(x).replace(/<[^>]+>/g, '')); };
+        var imp = [];
+        if (st === 'available' || st === 'removed') {
+          imp.push(c.layout === 'cards' ? ['Md3Card', '@nucleux/md3-card'] : ['Md3List, Md3ListItem', '@nucleux/md3-list']);
+          if (st === 'removed') imp.push(['Md3Snackbar', '@nucleux/md3-snackbar']);
+          return imports(imp) + '\n\n// State: ' + this.states[st].label + '\n' +
+            (c.layout === 'cards'
+              ? '{templates.map((t) => (\n  <Md3Card key={t.id} variant="outlined" interactive onClick={() => openPreview(t)}>\n    <h4>{t.title}</h4><p>{t.description}</p>\n  </Md3Card>\n))}'
+              : '<Md3List aria-label="Templates">\n  {templates.map((t) => (\n    <Md3ListItem key={t.id} interactive headline={t.title} supportingText={t.description} onClick={() => openPreview(t)} />\n  ))}\n</Md3List>') +
+            (st === 'removed' ? '\n<Md3Snackbar open message="Template removed. Your previous draft is back." action="Undo" onAction={undoRemove} />' : '');
         }
-        if (a === 'text') { s.state = 'assembled'; ctx.paint(); return; }
-        if (a === 'back') { s.state = 'complete'; ctx.paint(); }
+        if (st === 'preview') {
+          return imports([['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button']]) + '\n\n// State: Preview — nothing is applied yet.\n' +
+            '<Md3Card variant="outlined" role="region" aria-label="Template preview">\n  <h3>' + plain(T.t) + '</h3>\n  <p>' + plain(T.d) + '</p>\n' +
+            '  <h4>It asks for</h4><ul>' + T.fields.map(function (f) { return '<li>' + plain(f[0]) + '</li>'; }).join('') + '</ul>\n' +
+            '  <h4>It produces</h4><ul>' + T.out.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>\n' +
+            '  <h4>It uses</h4><ul>' + T.tools.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>\n' +
+            '  <Md3Button variant="filled" onClick={apply}>Use template</Md3Button>\n  <Md3Button variant="text" onClick={back}>Back</Md3Button>\n</Md3Card>';
+        }
+        imp.push(['Md3Chip', '@nucleux/md3-chip'], ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Button', '@nucleux/md3-button']);
+        if (st === 'missing') imp.push(['Md3Banner', '@nucleux/md3-banner']);
+        var out = imports(imp) + '\n\n// State: ' + this.states[st].label + '. Applying never runs it.\n' +
+          '<Md3Chip variant="input" onRemove={removeTemplate}>' + plain(T.t) + '</Md3Chip>\n';
+        if (st === 'missing') out += '<Md3Banner icon={' + sym('link') + '}\n  actions={<>\n    <Md3Button variant="text" onClick={connectDrive}>Connect Drive</Md3Button>\n' +
+          '    <Md3Button variant="text" onClick={useWithoutDrive}>' + plain(T.without) + '</Md3Button>\n  </>}>\n  This template needs ' + plain(T.req) + '. ' + plain(T.reqWhy || '') + ' Your values are kept.\n</Md3Banner>\n';
+        out += T.fields.map(function (f, k) {
+          return '<Md3TextField label=' + jsxAttr(plain(f[0])) + ' value={values.' + ['team', 'period', 'risks'][k] + '} onChange={update}' +
+            (f[2] === 'ai' ? (st === 'edited' ? '\n  supportingText="Confirmed by you"' : '\n  supportingText="Suggested by Aria — keep or change it"') : '') +
+            (f[2] === 'req' ? ' required' : '') + ' />';
+        }).join('\n') + '\n';
+        return out + '<Md3Button variant="filled" disabled={!ready} onClick={run}>Run</Md3Button>';
+      },
+
+      mounted: function (root, s) {
+        cdKeys(root);
+        root.querySelectorAll('.pv-stage .cd-tp__fields input').forEach(function (f, k) {
+          if (f.dataset.cdb) return;
+          f.dataset.cdb = '1';
+          f.addEventListener('input', function () {
+            s.tpVals = s.tpVals || {}; s.tpVals[k] = f.value;
+            if (s.state === 'applied') pvLive(root, s, 'templates', 'edited');
+          });
+        });
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        if (a === 'noop') return;
+        if (a.indexOf('tp:open:') === 0) {
+          s.tpPick = +a.slice(8); s.tpVals = null; s.tpKept = false;
+          s.state = c.previewFirst !== false ? 'preview' : (s.tpPick === 0 ? 'missing' : 'applied'); ctx.paint(); return;
+        }
+        if (a === 'tp:back') { s.state = 'available'; ctx.paint(); return; }
+        if (a === 'tp:apply') {
+          s.tpVals = null; s.tpKept = false; s.tpWithout = false;
+          s.state = (s.tpPick || 0) === 0 ? 'missing' : 'applied'; ctx.paint();
+          ctx.announce(s.state === 'missing' ? 'Template applied. It needs Google Drive.' : 'Template applied. Nothing has run.'); return;
+        }
+        if (a === 'tp:connect') { s.state = 'applied'; s.tpWithout = false; ctx.paint(); ctx.announce('Google Drive connected. Your values are kept.'); return; }
+        if (a === 'tp:without') { s.state = 'applied'; s.tpWithout = true; ctx.paint(); ctx.announce('Continuing without Google Drive.'); return; }
+        if (a === 'tp:keep') { s.tpKept = true; ctx.paint(); ctx.announce('Suggestion kept.'); return; }
+        if (a === 'tp:remove' && c.allowReset !== false) { s.tpConfirm = false; s.state = 'removed'; ctx.paint(); ctx.announce('Template removed. Your previous draft is back.'); return; }
+        if (a === 'tp:undo') { s.state = 'applied'; ctx.paint(); return; }
+        if (a === 'tp:replace') {
+          if (c.confirmReplace !== false) { s.tpConfirm = true; ctx.paint(); return; }
+          s.state = 'available'; ctx.paint(); return;
+        }
+        if (a === 'tp:keepedit') { s.tpConfirm = false; ctx.paint(); return; }
+        if (a === 'tp:doreplace') { s.tpConfirm = false; s.state = 'available'; ctx.paint(); ctx.announce('Choose another template. Undo is available.'); return; }
+        if (a === 'tp:run') {
+          var b = document.querySelector('.pv-stage [data-act="tp:run"]');
+          if (b && b.getAttribute('aria-disabled') === 'true') { ctx.announce('Fill the required fields first.'); return; }
+          ctx.announce('Running the workflow with your values.');
+        }
       }
     },
 
-    /* ── Nudges ─────────────────────────────────────────────
-       Dormant → offered → accepted or dismissed. Dismissed is
-       a real, sticky outcome here, because the difference
-       between a hint and a nag is whether no is remembered. */
+    /* ── Nudges ──────────────────────────────────────────────── */
     nudges: {
-      initial: 'dormant',
+      initial: 'shown',
 
-      /* The decisions a nudge actually has: what it offers, why it is
-         being said NOW, what the two answers are called, and whether
-         no is available at all. Dismissibility is a capability here —
-         turn it off and the dismiss controls stop existing, which is
-         exactly the design a team should have to look at deliberately. */
       customize: {
-        /* A nudge earns its place by being easy to refuse. Every
-           decision here is really the same decision seen from a
-           different angle: how much of the reader's attention this
-           is allowed to take, and how cheaply they can end it. */
         api: {
           name: 'Nudge',
           props: function (c) {
-            return {
-              title: c.title,
-              reason: c.why,
-              actionLabel: c.acceptLabel,
-              dismissible: c.dismissible,
-              dismissLabel: c.dismissible ? c.dismissLabel : null,
-              showOnce: c.showOnce,
-              emphasis: c.emphasis,
-              density: c.density,
-              shape: c.shape
-            };
+            return { message: tdTrim(c.msg), actionLabel: tdTrim(c.actLabel), reason: c.showReason !== false ? tdTrim(c.reason) : undefined,
+                     dismissible: c.dismiss !== false, snooze: !!c.snooze, recurrence: c.recur || 'once' };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'offer', label: 'The suggestion', section: 'content', states: ['offered'],
+          { id: 'words', label: 'Nudge', section: 'content',
             controls: [
-              { id: 'title', label: 'Nudge text', type: 'text',
-                value: 'Draft a reply from the thread?' },
-              { id: 'why', label: 'Why it appeared', type: 'text',
-                value: 'Because this thread has been waiting two days' },
-              { id: 'acceptLabel', label: 'Action label', type: 'text', value: 'Draft it' },
-              { id: 'dismissLabel', label: 'Dismiss label', type: 'text', value: 'Not now',
-                visibleWhen: function (c) { return !!c.dismissible; } }
-            ] },
-
-          { id: 'after', label: 'After', section: 'content',
-            states: ['accepted', 'dismissed', 'quiet', 'dormant'],
-            controls: [
-              { id: 'draftText', label: 'Draft', type: 'text',
-                value: 'Thanks for the nudge — sending the revised terms this afternoon.',
-                visibleWhen: function (c, st) { return st === 'accepted'; } },
-              { id: 'dismissedText', label: 'Line', type: 'text',
-                value: 'Suggestion dismissed. It will not offer this again.',
-                visibleWhen: function (c, st) { return st === 'dismissed'; } },
-              { id: 'quietText', label: 'Line', type: 'text',
-                value: 'Aria can draft replies here',
-                visibleWhen: function (c, st) { return st === 'quiet'; } },
-              { id: 'dormantText', label: 'Line', type: 'text',
-                value: 'Waiting two days for a reply',
-                visibleWhen: function (c, st) { return st === 'dormant'; } },
-              { id: 'draftChip', label: 'Chip', type: 'text', value: 'Drafted by Aria',
-                visibleWhen: function (c, st) { return st === 'accepted'; } },
-              { id: 'quietAction', label: 'Action', type: 'text', value: 'Try it',
-                visibleWhen: function (c, st) { return st === 'quiet'; } }
+              { id: 'msg', label: 'Message', type: 'text', value: 'You can ask Aria about text you select in a transcript.',
+                hint: 'What they can do — never that something already happened.' },
+              { id: 'actLabel', label: 'Action label', type: 'text', value: 'Try it' },
+              { id: 'reason', label: 'Reason', type: 'text', value: 'You selected transcript text twice today.',
+                hint: 'Why this appeared now. Shown under “Why this tip?”.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          /* Both are decisions the offered card renders; the dismissed
-             surface reports the outcome in prose, so offering them
-             again there would be a control with nothing to move. */
-          { id: 'manners', label: 'How it behaves', section: 'behavior',
-            states: ['offered'],
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              { id: 'dismissible', label: 'Dismissible', type: 'toggle', value: true,
-                capability: true,
-                visibleWhen: function (c, st) { return st === 'offered'; } },
-              { id: 'showOnce', label: 'Show once', type: 'toggle', value: true,
-                hint: 'Off means the same suggestion returns whenever the condition matches.' },
-              { id: 'closeX', label: 'Offer a close', type: 'toggle', value: false,
-                visibleWhen: function (c, st) { return st === 'offered'; } }
+              { id: 'dismiss', label: 'Dismissible', type: 'toggle', value: true },
+              { id: 'snooze', label: 'Offer “Not now” (snooze)', type: 'toggle', value: true, capability: true,
+                hint: 'Hide it for a week. Off removes the Snoozed state.' },
+              { id: 'showReason', label: 'Explain why it appeared', type: 'toggle', value: true },
+              { id: 'recur', label: 'After dismiss', type: 'segment', value: 'once',
+                options: [['once', 'Never again'], ['weekly', 'Not this week'], ['every', 'Next time']],
+                hint: '“Next time” brings it straight back — the anti-pattern.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Presence', section: 'appearance', states: ['offered'],
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
-                options: [['tonal', 'Tonal'], ['plain', 'Plain']] }
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'inline',
+                options: [['inline', 'Inline'], ['card', 'Filled card']],
+                hint: 'Inline sits in the flow with no surface. Filled is Md3Card (filled). Neither is a dialog.' },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
             ] },
 
-          /* The quiet form is one line of text on an existing control:
-             it has no surface of its own to round or tighten, so
-             neither choice is offered there. */
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            states: ['dormant', 'offered', 'accepted', 'dismissed'],
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
             controls: [
-              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
-                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
-              { id: 'shape', label: 'Shape', type: 'segment', value: 'large', options: [['extra-large', 'X-large'], ['large', 'Large'], ['medium', 'Medium']] }
+              { id: 'q-relevant', type: 'check', label: 'Has a contextual reason',
+                test: function (c) { return tdTrim(c.reason).length > 8; },
+                fail: 'A nudge with no reason to appear now is an advert.' },
+              { id: 'q-dismiss', type: 'check', label: 'Dismissible',
+                test: function (c) { return c.dismiss !== false; },
+                fail: 'A tip they cannot remove is in the way.' },
+              { id: 'q-return', type: 'check', label: 'Does not come straight back',
+                test: function (c) { return c.recur !== 'every'; },
+                fail: 'Re-showing a dismissed tip teaches people to ignore every tip.' },
+              { id: 'q-pretend', type: 'check', label: 'Doesn’t pretend something happened',
+                test: function (c) { return !CD_PRETEND.test(tdTrim(c.msg)); },
+                fail: 'The message describes an action as done. A nudge only offers.' },
+              { id: 'q-block', type: 'check', label: 'Non-blocking and secondary',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        dormant:   { label: 'Dormant',
-                     trigger: 'Nothing in the user’s behaviour has earned an offer.',
-                     behaviour: 'Silence. A nudge on a timer rather than on evidence is an ' +
-                                'advertisement, and users learn to close those unread.',
-                     action: 'Earn the nudge' },
-        offered:   { label: 'Offered',
-                     trigger: 'The user has done the same thing by hand three times.',
-                     behaviour: 'A small anchored card with a tail pointing at the control it ' +
-                                'is about, saying what it does and why it is being said now.',
-                     action: 'Accept, or dismiss' },
-        accepted:  { label: 'Accepted',
-                     trigger: 'The user takes the offer.',
-                     behaviour: 'The capability opens immediately, in place. A nudge that leads ' +
-                                'to a settings page has wasted the moment it earned.',
-                     action: 'Reset' },
-        dismissed: { label: 'Dismissed',
-                     trigger: 'The user says no.',
-                     behaviour: 'Gone, and gone for good for this hint. Once is a hint; the ' +
-                                'same one three times is a nag.',
-                     action: 'Reset' },
-        quiet:     { label: 'Quiet form',
-                     trigger: 'The surface is too dense for a floating card.',
-                     behaviour: 'The same offer riding on the control itself — one line, no ' +
-                                'overlay, no dismissal needed.',
-                     action: 'Reset' }
+        dormant: {
+          label: 'Dormant',
+          trigger: 'Nothing about what they are doing makes a capability useful right now.',
+          behaviour: 'Nothing is shown.',
+          meaning: '—',
+          action: '—',
+          next: 'Nudge shown'
+        },
+        shown: {
+          label: 'Nudge shown',
+          trigger: 'They selected transcript text again — something Aria can work with.',
+          behaviour: 'One line in the flow: what they can do, why it appeared (on request), Try it, Not now and Dismiss. It never blocks the work.',
+          meaning: 'There is a capability that would help with what they are doing.',
+          action: 'Try it, not now, dismiss — or ignore it.',
+          next: 'Accepted, Dismissed, Snoozed or No longer relevant'
+        },
+        accepted: {
+          label: 'Accepted',
+          trigger: 'They chose Try it.',
+          behaviour: 'The nudge leaves and the capability opens where they are working. It will not promote this again.',
+          meaning: 'They know about it now.',
+          action: '—',
+          next: '—'
+        },
+        dismissed: {
+          label: 'Dismissed',
+          trigger: 'They chose Dismiss.',
+          behaviour: 'The nudge leaves, with an Undo. It does not come back for this capability.',
+          meaning: 'Their choice is remembered.',
+          action: 'Undo, or carry on.',
+          next: '—'
+        },
+        snoozed: {
+          label: 'Snoozed',
+          requires: 'snooze',
+          trigger: 'They chose Not now.',
+          behaviour: 'The nudge leaves for a week, with an Undo.',
+          meaning: 'It may come back later — not today.',
+          action: 'Undo, or carry on.',
+          next: '—'
+        },
+        irrelevant: {
+          label: 'No longer relevant',
+          trigger: 'They cleared the selection.',
+          behaviour: 'The nudge withdraws on its own, quietly — the reason for it is gone.',
+          meaning: '—',
+          action: '—',
+          next: 'Dormant'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var tight = c.density === 'compact' ? ' is-compact' : '';
-        if (s.state === 'dormant') {
-          return '' +
-'<div class="pv-card pv-card--quiet' + tight + '" data-shape="' + c.shape + '">\n' +
-'  <p class="md-body-medium">Reply to Dana Khoury</p>\n' +
-'  <p class="pv-card__meta md-body-small">' + esc(c.dormantText) + '</p>\n' +
-'</div>';
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var msg = esc(tdTrim(c.msg)), lab = esc(tdTrim(c.actLabel)) || 'Try it', reason = esc(tdTrim(c.reason));
+        var again = c.recur === 'weekly' ? 'It won’t show again this week.' : c.recur === 'every' ? 'It will show again next time.' : 'It won’t show again.';
+        var body;
+        if (st === 'shown') {
+          var open = !!s.ndWhy && c.showReason !== false && reason;
+          var inner =
+            '<div class="cd-nd__row"><span class="cd-nd__i">' + mi('lightbulb') + '</span>' +
+              '<p class="md-body-medium cd-nd__t"><span class="tdx-sr">Tip: </span>' + msg + '</p>' +
+              (c.dismiss !== false ? M.iconButton({ icon: mi('close'), label: 'Dismiss tip', attrs: { 'data-act': 'nd:dismiss' } }) : '') +
+            '</div>' +
+            (open ? '<p class="md-body-small cd-nd__why" id="cd-nd-why">' + reason + '</p>' : '') +
+            '<div class="cd-acts cd-nd__acts">' +
+              M.button({ variant: 'text', label: lab, attrs: { 'data-act': 'nd:try' } }) +
+              (c.snooze ? M.button({ variant: 'text', label: 'Not now', attrs: { 'data-act': 'nd:snooze' } }) : '') +
+              (c.showReason !== false && reason ? M.button({ variant: 'text', label: 'Why this tip?', icon: mi(open ? 'chevDown' : 'chevRight'),
+                attrs: { 'data-act': 'nd:why', 'aria-expanded': String(!!open), 'aria-controls': 'cd-nd-why' } }) : '') +
+            '</div>';
+          body = c.emphasis === 'card'
+            ? M.card('filled', inner, 'cd-nd', { role: 'note', 'aria-label': 'Tip' })
+            : '<div class="cd-nd cd-nd--inline" role="note" aria-label="Tip">' + inner + '</div>';
+        } else if (st === 'dismissed') {
+          body = cdSnack('Tip dismissed. ' + again, 'Undo', 'nd:undo');
+        } else if (st === 'snoozed') {
+          body = cdSnack('OK — you won’t see this tip for a week.', 'Undo', 'nd:undo');
+        } else if (st === 'accepted') {
+          body = '<p class="md-body-small cd-quiet" role="status">The tip is gone. ' + again.replace('It ', 'This one ') + '</p>';
+        } else if (st === 'irrelevant') {
+          body = '<p class="md-body-small cd-quiet" role="status">Withdrawn — the reason for the tip is gone.</p>';
+        } else {
+          body = '<p class="md-body-small cd-quiet">No nudge is shown.</p>' +
+            M.button({ variant: 'outlined', label: 'Preview: show the nudge', attrs: { 'data-act': 'nd:show' } });
         }
-        if (s.state === 'quiet') {
-          return '' +
-'<span class="md-hint md-body-small">\n' +
-'  <span class="md-hint__dot" aria-hidden="true"></span>\n' +
-'  ' + esc(c.quietText) + '\n' +
-'  <button class="md-button md-button--text md-button--sm" type="button">' +
-   esc(c.quietAction) + '</button>\n' +
-'</span>';
-        }
-        if (s.state === 'accepted') {
-          return '' +
-'<div class="pv-card' + tight + '" data-shape="' + c.shape + '">\n' +
-'  <p class="pv-card__meta md-body-small">Reply to Dana</p>\n' +
-'  <p class="pv-card__body md-body-medium">' + esc(c.draftText) + '</p>\n' +
-'  <span class="md-assist-chip md-assist-chip--tonal">\n' +
-'    <svg class="md-assist-chip__icon mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    ' + esc(c.draftChip) + '\n' +
-'  </span>\n' +
-'</div>';
-        }
-        if (s.state === 'dismissed') {
-          return '' +
-'<div class="pv-card pv-card--quiet' + tight + '" role="status" data-shape="' +
-   c.shape + '">\n' +
-'  <p class="md-body-medium">Reply to Dana Khoury</p>\n' +
-'  <p class="pv-card__meta md-body-small">' + esc(c.dismissedText) + '</p>\n' +
-'</div>';
-        }
-        return '' +
-'<div class="md-nudge md-nudge--' + c.emphasis + tight +
-   '" role="status" data-shape="' + c.shape + '">\n' +
-'  <div class="md-nudge__head">\n' +
-'    <svg class="md-nudge__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    <div>\n' +
-'      <p class="md-nudge__t md-body-medium">' + esc(c.title) + '</p>\n' +
-'      <p class="md-nudge__d md-body-small">' + esc(c.why) + '</p>\n' +
-'    </div>\n' +
-   (c.dismissible && c.closeX
-? '    <button class="md-nudge__x" type="button" aria-label="Dismiss this hint"\n' +
-  '            data-act="dismiss">&times;</button>\n' : '') +
-'  </div>\n' +
-'  <div class="md-nudge__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'            data-act="accept">' + esc(c.acceptLabel) + '</button>\n' +
-   (c.dismissible
-? '    <button class="md-button md-button--text md-button--sm" type="button"\n' +
-  '            data-act="dismiss">' + esc(c.dismissLabel) + '</button>\n' : '') +
-'  </div>\n' +
-'</div>';
+        return '<div class="cd cd--only cd-ndw" data-state="' + st + '" data-density="' + (c.density === 'compact' ? 'compact' : 'comfortable') + '">\n  ' + body + '\n</div>';
       },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state;
+        var msg = tdTrim(c.msg), lab = tdTrim(c.actLabel) || 'Try it', reason = tdTrim(c.reason);
+        if (st === 'dormant' || st === 'irrelevant' || st === 'accepted') {
+          return '// State: ' + this.states[st].label + '\n' +
+            '{/* Nothing renders. ' + (st === 'accepted' ? 'Remember it was used, so it is not promoted again.' : st === 'irrelevant' ? 'Withdraw when the reason is gone.' : 'Show it only when the context gives a reason.') + ' */}\n' +
+            '{shouldNudge && <Nudge />}';
+        }
+        if (st === 'dismissed' || st === 'snoozed') {
+          return imports([['Md3Snackbar', '@nucleux/md3-snackbar']]) + '\n\n// State: ' + this.states[st].label + '\n' +
+            '<Md3Snackbar open message=' + jsxAttr(st === 'snoozed' ? 'OK — you won’t see this tip for a week.' : 'Tip dismissed. It won’t show again.') + ' action="Undo" onAction={undo} />';
+        }
+        var imp = [['Md3Button', '@nucleux/md3-button']];
+        if (c.dismiss !== false) imp.push(['Md3IconButton', '@nucleux/md3-icon-button']);
+        if (c.emphasis === 'card') imp.push(['Md3Card', '@nucleux/md3-card']);
+        var wrap = c.emphasis === 'card' ? ['<Md3Card variant="filled" role="note" aria-label="Tip">', '</Md3Card>'] : ['<div role="note" aria-label="Tip">', '</div>'];
+        return imports(imp) + '\n\n// State: Nudge shown — in the flow, never a dialog.\n' + wrap[0] + '\n' +
+          '  ' + sym('lightbulb') + '\n  <p><span className="sr-only">Tip: </span>' + jsxText(msg) + '</p>\n' +
+          (c.dismiss !== false ? '  <Md3IconButton aria-label="Dismiss tip" onClick={dismiss}>' + sym('close') + '</Md3IconButton>\n' : '') +
+          '  <Md3Button variant="text" onClick={tryIt}>' + jsxText(lab) + '</Md3Button>\n' +
+          (c.snooze ? '  <Md3Button variant="text" onClick={snooze}>Not now</Md3Button>\n' : '') +
+          (c.showReason !== false && reason ? '  <Md3Button variant="text" aria-expanded={why} aria-controls="nudge-why" onClick={toggleWhy}>Why this tip?</Md3Button>\n' +
+            '  {why && <p id="nudge-why">' + jsxText(reason) + '</p>}\n' : '') + wrap[1];
+      },
+
       act: function (a, ctx) {
-        if (a === 'accept')  { ctx.s.state = 'accepted';  ctx.paint();
-                               ctx.announce('Draft written'); return; }
-        if (a === 'dismiss') { ctx.s.state = 'dismissed'; ctx.paint();
-                               ctx.announce('Hint dismissed for good'); }
+        var s = ctx.s, c = ctx.cfg();
+        if (a === 'nd:show') { s.state = 'shown'; ctx.paint(); ctx.announce('Tip: ' + tdTrim(c.msg)); return; }
+        if (a === 'nd:why') { s.ndWhy = !s.ndWhy; ctx.paint(); return; }
+        if (a === 'nd:try') { s.state = 'accepted'; ctx.paint(); ctx.announce('Opening it where you are working.'); return; }
+        if (a === 'nd:dismiss') { s.state = 'dismissed'; ctx.paint(); return; }
+        if (a === 'nd:snooze') { s.state = 'snoozed'; ctx.paint(); return; }
+        if (a === 'nd:undo') { s.state = 'shown'; ctx.paint(); }
       }
     },
 
-    /* ── Disclaimer ─────────────────────────────────────────
-       Stated in full once, then compact forever — and the
-       compact form has to reopen the full one, or the limits
-       were said and then hidden. */
+    /* ── Disclaimer / Agent Limits ───────────────────────────── */
     disclaimer: {
-      initial: 'unseen',
+      initial: 'general',
 
-      /* Three labelled rows and one standing line. Everything here is
-         the WORDS, because that is what a disclaimer is — and the
-         named gaps in "cannot see" are the only part anyone acts on,
-         so they are editable rather than fixed prose. */
       customize: {
-        /* Agent Limits. The pattern's whole value is the half people
-           drop: what it CANNOT do. Both of the ways that half gets
-           lost are reachable from this panel — removing the row, and
-           making the standing line unclickable — so both are checked
-           rather than trusted. */
         api: {
           name: 'AgentLimits',
           props: function (c) {
-            return {
-              title: c.title,
-              can: c.can,
-              willNot: c.wontDo,
-              cannot: c.showCannot ? c.cannot : null,
-              showCannot: c.showCannot,
-              reopenable: c.reopenable,
-              compactLabel: c.lineText,
-              policyLink: c.moreLink,
-              density: c.density
-            };
+            return { summary: tdTrim(c.summary), expandable: c.expand !== false, reminder: !!c.reminder, recovery: c.recover !== false };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'limits', label: 'What it can and cannot do', section: 'content',
-            states: ['full'],
+          { id: 'words', label: 'Limits', section: 'content',
             controls: [
-              { id: 'can', label: 'Can', type: 'text',
-                value: 'Read your Salesforce pipeline and the Q2 board pack' },
-              { id: 'cannot', label: 'Cannot see', type: 'text',
-                value: 'Anything in email, or deals closed before March',
-                visibleWhen: function (c) { return !!c.showCannot; } },
-              { id: 'wontDo', label: 'Will not', type: 'text',
-                value: 'Send anything or change a record without you' },
-              { id: 'title', label: 'Headline', type: 'text',
-                value: 'What Aria can and cannot do' },
-              { id: 'intro', label: 'Intro', type: 'text', value: 'Worth thirty seconds before you start.' },
-              { id: 'ackLabel', label: 'Acknowledge', type: 'text',
-                value: 'Got it' }
-            ] },
-
-          { id: 'compact', label: 'Standing line', section: 'content', states: ['standing'],
-            note: 'What stays on the surface once the limits have been read.',
-            controls: [
-              /* The documented default, and what the docs page's own
-                 snippet shows. The heading says what the limits ARE;
-                 this line says why you would open them. */
-              { id: 'lineText', label: 'Compact label', type: 'text',
-                value: 'Aria can be wrong. Check anything before you send it.' }
-            ] },
-
-          { id: 'first', label: 'Before it is shown', section: 'content', states: ['unseen'],
-            controls: [
-              { id: 'startLabel', label: 'Opening action', type: 'text',
-                value: 'Show what Aria can do' }
+              { id: 'summary', label: 'Limit summary', type: 'text',
+                value: 'Aria drafts tasks and summaries from your meetings. It can’t create Jira tasks until Jira is connected.',
+                hint: 'The one or two limits that matter most here, in plain words.' },
+              { id: 'detail', label: 'Contextual limit', type: 'text',
+                value: 'Aria can draft these tasks, but Jira isn’t connected, so it can’t create them.',
+                hint: 'Shown where the limit applies — at the point of action.' },
+              { id: 'recovery', label: 'Recovery copy', type: 'text',
+                value: 'Your 4 task drafts are kept. Connect Jira to create them, or review them now.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'keeps', label: 'What survives the first run', section: 'behavior',
-            states: ['full', 'standing'],
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              /* Only the standing line renders the difference between a
-                 control and a caption, so that is where the choice is
-                 offered — the full statement is already open. */
-              { id: 'reopenable', label: 'Limits stay reopenable', type: 'toggle', value: true,
-                hint: 'The standing line is a control, not a caption.',
-                visibleWhen: function (c, st) { return st === 'standing'; } },
-              { id: 'showCannot', label: 'List what it cannot do', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'full'; } },
-              { id: 'moreLink', label: 'Show a policy link', type: 'toggle', value: false,
-                capability: true,
-                visibleWhen: function (c, st) { return st === 'full'; } },
-              { id: 'moreLabel', label: 'Policy label', type: 'text', value: 'Read the policy',
-                visibleWhen: function (c, st) { return st === 'full' && !!c.moreLink; } }
+              { id: 'expand', label: 'Expandable details', type: 'toggle', value: true, capability: true,
+                hint: 'Can / Can’t / Needs approval / May get wrong. Off removes Details expanded.' },
+              { id: 'reminder', label: 'Persistent reminder', type: 'toggle', value: false,
+                hint: 'A one-line reminder that stays — only where a limit applies to every task.' },
+              { id: 'recover', label: 'Recovery actions', type: 'toggle', value: true,
+                hint: 'Connect, continue without, review drafts.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Standing line', section: 'appearance', states: ['standing'],
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'lineIcon', label: 'Show the icon', type: 'toggle', value: true }
-            ] },
-
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            controls: [
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
+                options: [['tonal', 'Tonal'], ['outlined', 'Outlined']],
+                hint: 'Md3Card filled or outlined. Neither uses the error colour — a limit is not a failure.' },
               { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
                 options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-specific', type: 'check', label: 'Specific limitation',
+                test: function (c) { return tdTrim(c.summary).length > 20 && !CD_LEGAL.test(tdTrim(c.summary) + ' ' + tdTrim(c.detail)); },
+                fail: 'Generic or legal copy. Name what the agent can’t do, here.' },
+              { id: 'q-human', type: 'check', label: 'Human language',
+                test: function (c) { return !/(hereby|pursuant|liab|indemn|warrant)/i.test(tdTrim(c.summary) + ' ' + tdTrim(c.detail) + ' ' + tdTrim(c.recovery)); },
+                fail: 'This reads as a contract, not an explanation.' },
+              { id: 'q-next', type: 'check', label: 'There is a next step',
+                test: function (c) { return c.recover !== false; },
+                fail: 'A limit with nowhere to go leaves them stuck.' },
+              { id: 'q-kept', type: 'check', label: 'Their work is preserved',
+                test: function (c) { return /kept|saved|preserved/i.test(tdTrim(c.recovery)); },
+                fail: 'Say that their work is kept when the limit is reached.' },
+              { id: 'q-quiet', type: 'check', label: 'Does not overwhelm',
+                test: function (c) { return !c.reminder || tdTrim(c.summary).length <= 140; },
+                fail: 'A persistent reminder has to be one short line.' }
             ] }
         ]
       },
 
       states: {
-        unseen:   { label: 'Not yet stated',
-                    trigger: 'Before first run.',
-                    behaviour: 'The composer is open and nothing has said what this thing is ' +
-                               'for or where it stops.',
-                    action: 'Show the statement' },
-        full:     { label: 'Full statement',
-                    trigger: 'First run, before the first request.',
-                    behaviour: 'Three labelled rows — can, will not, cannot see — with the ' +
-                               'actual gaps named rather than a general warning.',
-                    action: 'Acknowledge it' },
-        standing: { label: 'Standing line',
-                    trigger: 'The statement is acknowledged.',
-                    behaviour: 'One compact line beside the composer. The line itself reopens ' +
-                               'the full statement — a limit stated once and then made ' +
-                               'unreachable is a limit nobody has.',
-                    action: 'Reopen it' }
+        general: {
+          label: 'General limits available',
+          trigger: 'Where the agent is introduced, or from its menu.',
+          behaviour: 'One or two sentences on the limits that matter most, with “See what Aria can and can’t do”.',
+          meaning: 'The boundaries worth knowing before relying on it.',
+          action: 'Read more, or carry on.',
+          next: 'Details expanded'
+        },
+        expanded: {
+          label: 'Details expanded',
+          requires: 'expand',
+          trigger: 'They chose to see more.',
+          behaviour: 'Four short groups: what it can do, can’t do, needs approval for, and may get wrong — and where to review.',
+          meaning: 'When to rely on it, and when to check or take over.',
+          action: 'Close.',
+          next: 'General limits available'
+        },
+        contextual: {
+          label: 'Contextual limit shown',
+          trigger: 'They are about to ask for something that needs Jira.',
+          behaviour: 'The relevant limit, at the point it matters, with what they can do instead.',
+          meaning: 'Before asking: this part needs Jira.',
+          action: 'Connect Jira, or continue without creating tasks.',
+          next: 'Recovery'
+        },
+        encountered: {
+          label: 'Limit encountered',
+          trigger: 'Aria reached the boundary during the task.',
+          behaviour: 'An Md3Banner says what happened, that their work is kept, and the next steps. Not the error colour.',
+          meaning: 'It stopped at a limit — nothing was lost.',
+          action: 'Connect Jira, or review the drafts.',
+          next: 'Recovery / next step'
+        },
+        recovery: {
+          label: 'Recovery / next step',
+          trigger: 'They chose Review drafts.',
+          behaviour: 'They continue with the drafts. The limit stays one line away, with Connect Jira when they are ready.',
+          meaning: 'The work carries on without the missing part.',
+          action: 'Review the drafts.',
+          next: '—'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var tight = c.density === 'compact' ? ' is-compact' : '';
-        if (s.state === 'unseen') {
-          return '' +
-'<div class="pv-composer' + tight + '">\n' +
-'  <p class="pv-composer__label md-body-small">Ask Aria</p>\n' +
-'  <p class="pv-composer__value md-body-large pv-muted">\n' +
-'    Nothing has said what this can and cannot do.\n' +
-'  </p>\n' +
-'  <div class="pv-composer__foot">\n' +
-'    <button class="md-button md-button--filled md-button--sm" type="button" data-act="show">\n' +
-'      ' + esc(c.startLabel) + '\n' +
-'    </button>\n' +
-'  </div>\n' +
-'</div>';
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var sum = esc(tdTrim(c.summary)), det = esc(tdTrim(c.detail)), rec = esc(tdTrim(c.recovery));
+        var variant = c.emphasis === 'outlined' ? 'outlined' : 'filled';
+        var body;
+        if (st === 'general' || st === 'expanded') {
+          var open = st === 'expanded' && c.expand !== false;
+          var more = open ? '<div class="cd-lm__more" id="cd-lm-more">' + CD_LIMITS.map(function (g, i) {
+              return '<div class="cd-lm__grp"><p class="md-label-medium cd-g" id="cd-lm-g' + i + '">' + mi(g[0]) + g[1] + '</p>' +
+                M.list(g[2].map(function (r) { return { headline: r[0], supporting: r[1] }; }), { 'aria-labelledby': 'cd-lm-g' + i }) + '</div>';
+            }).join('') + '</div>' : '';
+          body = M.card(variant,
+            '<div class="cd-lm__head">' + mi('info') + '<p class="md-body-medium">' + sum + '</p></div>' +
+            (c.expand !== false ? '<div class="cd-acts">' + M.button({ variant: 'text', label: open ? 'Hide details' : 'See what Aria can and can’t do',
+              icon: mi(open ? 'chevDown' : 'chevRight'), attrs: { 'data-act': 'lm:more', 'aria-expanded': String(open), 'aria-controls': 'cd-lm-more' } }) + '</div>' : '') +
+            more, 'cd-lm', { role: 'region', 'aria-label': 'What Aria can and can’t do' });
+        } else if (st === 'contextual') {
+          body = M.card(variant,
+            '<div class="cd-lm__head">' + mi('info') + '<p class="md-body-medium">' + det + '</p></div>' +
+            (c.recover !== false ? '<div class="cd-acts">' + M.button({ variant: 'tonal', label: 'Connect Jira', attrs: { 'data-act': 'lm:connect' } }) +
+              M.button({ variant: 'text', label: 'Continue without creating tasks', attrs: { 'data-act': 'lm:review' } }) + '</div>' : ''),
+            'cd-lm', { role: 'note', 'aria-label': 'Limit' });
+        } else if (st === 'encountered') {
+          body = M.banner({ icon: mi('info'), cls: 'cd-lm__banner',
+            text: '<b>Aria prepared 4 tasks but couldn’t create them — Jira isn’t connected.</b> ' + rec,
+            actions: c.recover !== false ? M.button({ variant: 'text', label: 'Connect Jira', attrs: { 'data-act': 'lm:connect' } }) +
+              M.button({ variant: 'text', label: 'Review drafts', attrs: { 'data-act': 'lm:review' } }) : '' });
+        } else {
+          body = M.card(variant,
+            '<div class="cd-lm__head" role="status">' + mi('checkCircle') + '<p class="md-body-medium"><b>Reviewing 4 task drafts.</b> They stay here until Jira is connected — nothing is created without it.</p></div>' +
+            '<div class="cd-acts">' + M.button({ variant: 'text', label: 'Connect Jira', attrs: { 'data-act': 'lm:connect' } }) + '</div>',
+            'cd-lm', { role: 'region', 'aria-label': 'Next step' });
         }
-        if (s.state === 'standing') {
-          return '' +
-'<div class="pv-composer' + tight + '">\n' +
-'  <p class="pv-composer__label md-body-small">Ask Aria</p>\n' +
-'  <p class="pv-composer__value md-body-large">How did renewals land in Q2?</p>\n' +
-'</div>\n' +
-'\n' +
-'<!-- beneath the composer, outside it: a footnote to what you are\n' +
-'     about to send, not a label on the field -->\n' +
-   (c.reopenable
-? '<button class="md-disclaim-line md-body-small" type="button" data-act="show"\n' +
-  '        aria-label="What Aria can and cannot do">\n'
-: '<span class="md-disclaim-line md-disclaim-line--static md-body-small">\n') +
-   (c.lineIcon
-? '  <svg class="md-disclaim-line__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M453-280h60v-240h-60v240Zm50.5-323.2q9.5-9.2 9.5-22.8 0-14.45-9.48-24.22-9.48-9.78-23.5-9.78t-23.52 9.78Q447-640.45 447-626q0 13.6 9.48 22.8 9.48 9.2 23.5 9.2t23.52-9.2ZM480.27-80q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>\n' : '') +
-'  ' + esc(c.lineText) + '\n' +
-   (c.reopenable ? '</button>' : '</span>');
-        }
-        return '' +
-'<section class="md-disclaim' + tight + '" role="dialog" aria-labelledby="dc-t" aria-modal="true">\n' +
-'  <svg class="md-disclaim__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'  <h2 class="md-disclaim__t md-headline-small" id="dc-t">' + esc(c.title) + '</h2>\n' +
-'  <p class="md-disclaim__b md-body-medium">' + esc(c.intro) + '</p>\n' +
-'  <ul class="md-disclaim__list md-body-medium">\n' +
-'    <li>\n' +
-'      <span class="md-disclaim__k">Can</span>\n' +
-'      <span>' + esc(c.can) + '</span>\n' +
-'    </li>\n' +
-'    <li>\n' +
-'      <span class="md-disclaim__k">Will not</span>\n' +
-'      <span>' + esc(c.wontDo) + '</span>\n' +
-'    </li>\n' +
-   (c.showCannot
-? '    <li>\n' +
-  '      <span class="md-disclaim__k">Cannot see</span>\n' +
-  '      <span>' + esc(c.cannot) + '</span>\n' +
-  '    </li>\n' : '') +
-'  </ul>\n' +
-'  <div class="md-disclaim__foot">\n' +
-   (c.moreLink
-? '    <button class="md-button md-button--text" type="button">' + esc(c.moreLabel) + '</button>\n' : '') +
-'    <button class="md-button md-button--filled" type="button" data-act="ack">' +
-   esc(c.ackLabel) + '</button>\n' +
-'  </div>\n' +
-'</section>';
+        var reminder = c.reminder && st !== 'general' && st !== 'expanded'
+          ? '<p class="md-body-small cd-quiet cd-lm__rem">' + mi('info') + sum + '</p>' : '';
+        return '<div class="cd cd--only cd-lmw" data-state="' + st + '" data-density="' + (c.density === 'compact' ? 'compact' : 'comfortable') + '">\n' +
+          (reminder ? '  ' + reminder + '\n' : '') + '  ' + body + '\n</div>';
       },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state;
+        var sum = tdTrim(c.summary), det = tdTrim(c.detail), rec = tdTrim(c.recovery);
+        var v = c.emphasis === 'outlined' ? 'outlined' : 'filled';
+        if (st === 'encountered') {
+          return imports([['Md3Banner', '@nucleux/md3-banner'], ['Md3Button', '@nucleux/md3-button']]) + '\n\n// State: Limit encountered — the work is kept.\n' +
+            '<Md3Banner icon={' + sym('info') + '}\n  actions={<>\n    <Md3Button variant="text" onClick={connectJira}>Connect Jira</Md3Button>\n' +
+            '    <Md3Button variant="text" onClick={reviewDrafts}>Review drafts</Md3Button>\n  </>}>\n' +
+            '  Aria prepared 4 tasks but couldn’t create them — Jira isn’t connected. ' + jsxText(rec) + '\n</Md3Banner>';
+        }
+        var imp = [['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button']];
+        if (st === 'expanded') imp.push(['Md3List, Md3ListItem', '@nucleux/md3-list']);
+        var out = imports(imp) + '\n\n// State: ' + this.states[st].label + '\n<Md3Card variant="' + v + '" role="' + (st === 'contextual' ? 'note' : 'region') + '">\n';
+        if (st === 'general' || st === 'expanded') {
+          out += '  <p>' + jsxText(sum) + '</p>\n' +
+            (c.expand !== false ? '  <Md3Button variant="text" aria-expanded={' + (st === 'expanded') + '} aria-controls="limits" onClick={toggle}>' + (st === 'expanded' ? 'Hide details' : 'See what Aria can and can’t do') + '</Md3Button>\n' : '');
+          if (st === 'expanded') out += '  <div id="limits">\n' + CD_LIMITS.map(function (g) {
+            return '    <h4>' + jsxText(g[1]) + '</h4>\n    <Md3List>\n' + g[2].map(function (r) {
+              return '      <Md3ListItem headline=' + jsxAttr(r[0]) + ' supportingText=' + jsxAttr(r[1]) + ' />\n'; }).join('') + '    </Md3List>\n';
+          }).join('') + '  </div>\n';
+        } else if (st === 'contextual') {
+          out += '  <p>' + jsxText(det) + '</p>\n' + (c.recover !== false ? '  <Md3Button variant="tonal" onClick={connectJira}>Connect Jira</Md3Button>\n' +
+            '  <Md3Button variant="text" onClick={continueWithout}>Continue without creating tasks</Md3Button>\n' : '');
+        } else {
+          out += '  <p role="status">Reviewing 4 task drafts. They stay here until Jira is connected.</p>\n  <Md3Button variant="text" onClick={connectJira}>Connect Jira</Md3Button>\n';
+        }
+        return out + '</Md3Card>';
+      },
+
       act: function (a, ctx) {
-        if (a === 'show') { ctx.s.state = 'full'; ctx.paint(); return; }
-        if (a === 'ack')  { ctx.s.state = 'standing'; ctx.paint();
-                            ctx.announce('Limits acknowledged, statement still reachable'); }
+        var s = ctx.s, c = ctx.cfg();
+        if (a === 'lm:more' && c.expand !== false) { s.state = s.state === 'expanded' ? 'general' : 'expanded'; ctx.paint(); return; }
+        if (a === 'lm:review') { s.state = 'recovery'; ctx.paint(); ctx.announce('Continuing with the drafts. Nothing was lost.'); return; }
+        if (a === 'lm:connect') ctx.announce('Opening the Jira connection. Your drafts are kept.');
       }
     },
     /* ── Disclosure ─────────────────────────────────────────
        The full loop: nothing → the agent works → the marker
        arrives with the content → the reader opens it → it
        closes back into the chip it came from. */
+    /* ══════════════════════════════════════════════════════════
+       DISCLOSURE — "Where is AI involved here?"
+
+       A release note editor. Three meanings, three treatments, never
+       borrowed from one another:
+         AI action      Rewrite carries the action mark, and the
+                        moment it applies to something the product
+                        says what it will do — before it does it.
+         AI working     the action's mark becomes the working mark,
+                        with a status that names the work and a Stop.
+         AI-generated   the result carries "Generated with AI",
+                        attached to the paragraph it describes, and
+                        opens for what Aria did, what it used and
+                        what it did not check.
+       Not a legal footer, not a warning, not a sparkle on everything:
+       the rest of the editor stays ordinary.
+       ══════════════════════════════════════════════════════════ */
     disclosure: {
-      initial: 'idle',
+      initial: 'resting',
 
-      /* ── Customize ────────────────────────────────────────
-         A STATE-AWARE schema. The panel is not a list of every
-         property this component has; it is the list of decisions
-         that have an effect on WHAT YOU ARE LOOKING AT.
-
-         Three scopes, declared rather than hard-coded:
-
-           global    always relevant — the surface itself, and the
-                     shape language the whole thing inherits.
-           states    a group names the states it bites in. In any
-                     other state it is not disabled, not greyed,
-                     not annotated: it is ABSENT. A control you
-                     cannot see is a control you cannot mis-set,
-                     and the panel stops being a quiz about which
-                     half of it is live.
-           capability
-                     a group can require a capability toggle. Turn
-                     "Opens for detail" off and the detail panel's
-                     controls stop existing, because the surface
-                     they configure stops existing.
-
-         `visibleWhen(cfg, state)` handles the last case: controls
-         whose relevance depends on another control's value.
-
-         Any other pattern gets a customizer by declaring this
-         object. No customizer UI is written per pattern. */
       customize: {
-        /* ── The panel this pattern asks for ────────────────
-           Three sections — Content, Behavior, Appearance — and
-           nothing folded away. A control that is worth offering is
-           worth showing where it belongs; hiding half of them
-           behind a second click only moved the work.
-
-           Generated is the state this is built around, and what it
-           shows is the shape of the whole thing: the words, then
-           what the marker does in the product, then how loudly it
-           says it. Only ever in system tokens. */
         api: {
-          name: 'Disclosure',
-          /* The panel is not a demo rig. These ARE the component's
-             props, which is why Copy config can be pasted. */
+          /* A real export. With "Opens for details" off the label is
+             AiDisclosure; with it on it is an Md3Chip (assist) that
+             opens an Md3Card — the Code tab shows both compositions. */
+          name: 'AiDisclosure',
           props: function (c) {
-            return {
-              label: c.label,
-              emphasis: c.emphasis,
-              placement: c.placement,
-              icon: c.icon,
-              expandable: c.expandable,
-              showSources: c.showSources,
-              showVerification: c.check,
-              density: c.density,
-              shape: c.shape,
-              explanation: c.explain,
-              verificationText: c.checkText
-            };
+            return { variant: 'pill', label: c.label };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'text', label: 'Marker', section: 'content',
-            states: ['generated', 'expanded', 'sources'],
-            note: 'What the marker says beside the content.',
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              /* Basic in Generated, advanced elsewhere: the label is
-                 one decision for the whole pattern, and re-offering
-                 it in every state that shows a marker reads as three
-                 separate settings that must be kept in step. */
-              { id: 'label', label: 'Disclosure label', type: 'text',
-                value: 'Generated with AI',
-                hint: 'Say what happened, not that a model exists.' }
-            ] },
-
-          { id: 'detailText', label: 'Detail', section: 'content',
-            states: ['expanded'], requires: 'expandable',
-            note: 'The explanation the marker grows into.',
-            controls: [
-              { id: 'explain', label: 'Explanation', type: 'text',
-                value: 'Written by the Meeting Summary agent from this call’s transcript.' },
-              { id: 'checkText', label: 'Verification message', type: 'text',
-                value: 'Check names and dates before you forward it.',
-                visibleWhen: function (c) { return !!c.check; } }
-            ] },
-
-          { id: 'idleText', label: 'Trigger', section: 'content', states: ['idle'],
-            note: 'The control that produces the generated content. Part of the demo, ' +
-                  'not of the Disclosure component.',
-            controls: [
-              { id: 'trigger', label: 'Label', type: 'text', value: 'Generate summary' }
-            ] },
-
-          { id: 'procText', label: 'Progress', section: 'content', states: ['processing'],
-            note: 'What the surface says while the result is being written.',
-            controls: [
-              { id: 'status', label: 'Status text', type: 'text',
-                value: 'Reading the transcript' }
-            ] },
-
-          { id: 'errorText', label: 'Failure', section: 'content', states: ['error'],
-            note: 'What the surface says when nothing was produced.',
-            controls: [
-              { id: 'errorText', label: 'Error message', type: 'text',
-                value: 'The transcript could not be read' },
-              { id: 'errorRetry', label: 'Retry label', type: 'text', value: 'Try again' }
+              { id: 'label', label: 'Label', type: 'text', value: 'Generated with AI',
+                hint: 'Say what AI did to this content, in plain words. Not “Smart”, not “Magic”.' },
+              { id: 'explain', label: 'Supporting explanation', type: 'text',
+                value: 'Aria rewrote your paragraph to be shorter and clearer. It did not add features that are not in the changelog.',
+                hint: 'What the agent did, in terms a reader without technical knowledge can check.' },
+              { id: 'actionLabel', label: 'AI action label', type: 'text', value: 'Rewrite' },
+              { id: 'actionNote', label: 'AI action explanation', type: 'text',
+                value: 'Aria rewrites the selected paragraph. You review the result before it replaces your text.',
+                hint: 'Shown at the point of action, before anything runs.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'disclose', label: 'Disclosure', section: 'behavior',
-            states: ['generated', 'expanded', 'sources'],
-            note: 'What this marker does in your product.',
+          { id: 'opens', label: 'Details', section: 'behavior',
             controls: [
-              { id: 'expandable', label: 'Opens for detail', type: 'toggle', value: true,
-                capability: true,
-                hint: 'Off makes it a static note; the detail panel and its states go with it.' },
-              { id: 'showSources', label: 'Show sources', type: 'toggle', value: true,
-                capability: true,
-                visibleWhen: function (c) { return !!c.expandable; },
-                hint: 'What it read — and what it could not.' },
-              { id: 'check', label: 'Show verification guidance', type: 'toggle', value: true,
-                capability: true,
-                visibleWhen: function (c) { return !!c.expandable; },
-                hint: 'One line on what to check before forwarding.' },
-              { id: 'placement', label: 'Marker placement', type: 'segment', value: 'below',
-                options: [['above', 'Above'], ['below', 'Below']],
-                hint: 'Either way it travels with the content — never in a footer.' }
-            ] },
-
-          { id: 'sourceOpts', label: 'Sources', section: 'behavior', states: ['sources'],
-            requires: 'expandable',
-            note: 'What the agent read, and what it could not.',
-            controls: [
-              { id: 'missed', label: 'Show the unavailable source', type: 'toggle', value: true,
-                visibleWhen: function (c) { return !!c.showSources; },
-                hint: 'The gap is what a reader most needs before trusting the result.' }
-            ] },
-
-          { id: 'errorBehaviour', label: 'Recovery', section: 'behavior', states: ['error'],
-            controls: [
-              { id: 'errorReason', label: 'Show the reason', type: 'toggle', value: true,
-                hint: 'A failure with no cause leaves the reader with nothing to act on.' }
-            ] },
-
-          { id: 'idleBehaviour', label: 'Demo', section: 'behavior', states: ['idle'],
-            controls: [
-              { id: 'outcome', label: 'Simulated outcome', type: 'segment', value: 'ok',
-                options: [['ok', 'Succeeds'], ['fail', 'Fails']],
-                hint: 'What pressing it leads to, so the failure path is inspectable too.' }
+              { id: 'details', label: 'Opens for details', type: 'toggle', value: true, capability: true,
+                hint: 'Off makes the label static (AiDisclosure) and removes the Additional details state.' },
+              { id: 'sources', label: 'Show sources', type: 'toggle', value: true, capability: true,
+                visibleWhen: function (c) { return c.details !== false; },
+                hint: 'What Aria used. Only where it helps judge the result.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'marker', label: 'Marker', section: 'appearance',
-            states: ['generated', 'expanded', 'sources'],
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
-                options: [['tonal', 'Tonal'], ['outlined', 'Outlined'], ['plain', 'Plain']] },
-              { id: 'icon', label: 'Reserved AI icon', type: 'toggle', value: true,
-                }
-            ] },
-
-          { id: 'idleLook', label: 'Trigger', section: 'appearance', states: ['idle'],
-            controls: [
-              { id: 'triggerEmphasis', label: 'Emphasis', type: 'segment', value: 'filled',
-                options: [['filled', 'Filled'], ['tonal', 'Tonal'], ['text', 'Text']] }
-            ] },
-
-          { id: 'procLook', label: 'Activity', section: 'appearance', states: ['processing'],
-            controls: [
-              { id: 'activity', label: 'Activity indicator', type: 'segment', value: 'full',
-                options: [['full', 'Ring + lines'], ['ring', 'Ring only'], ['text', 'Text only']] },
-              { id: 'lines', label: 'Placeholder lines', type: 'range', value: 3,
-                min: 1, max: 4, step: 1,
-                visibleWhen: function (c) { return c.activity === 'full'; } }
-            ] },
-
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            note: 'Applies wherever the pattern appears.',
-            controls: [
-              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
-                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
-              /* Tokens, not pixels. The values ARE the design system's
-                 token names, so what the panel writes, what the markup
-                 carries and what the stylesheet resolves are one
-                 vocabulary — nothing to translate, nothing to drift. */
-              { id: 'shape', label: 'Shape', type: 'segment', value: 'full',
-                options: [['full', 'Full'], ['extra-large', 'X-large'],
-                          ['large', 'Large'], ['small', 'Small']],
-                hint: 'Material shape tokens, not free pixels — a panel cannot be a pill.' }
-            ] }
-        ]
-      },
-
-      states: {
-        idle: {
-          label: 'Idle',
-          trigger: 'No agent action has happened yet.',
-          behaviour: 'The surface is ordinary. No marker, because there is nothing to mark.',
-          action: 'Generate the summary'
-        },
-        processing: {
-          label: 'Processing',
-          trigger: 'The agent starts generating.',
-          behaviour: 'Activity is visible on the surface that will hold the result. The marker ' +
-                     'is not shown yet — there is no generated content to attach it to.',
-          action: 'Wait for the result'
-        },
-        generated: {
-          label: 'Generated',
-          trigger: 'Generation completes.',
-          behaviour: 'The marker settles in beside the content, at its head, so it survives ' +
-                     'the content being quoted, forwarded or cut.',
-          action: 'Open the marker'
-        },
-        expanded: {
-          label: 'Expanded',
-          /* A capability can delete a state. With "Opens for detail"
-             off there is no panel to be in, so Expanded leaves the
-             state list rather than offering a screen that cannot
-             exist in the configured component. */
-          requires: 'expandable',
-          trigger: 'The reader activates the marker.',
-          behaviour: 'The chip grows into a panel in place — same surface, more of it — ' +
-                     'carrying what was used, what to check, and where the limits are.',
-          action: 'Close it, or read the sources'
-        },
-        sources: {
-          label: 'Sources',
-          requires: ['expandable', 'showSources'],
-          trigger: 'The reader asks how it was generated.',
-          behaviour: 'The inputs are named individually, with what the agent did to them and ' +
-                     'what it could not see.',
-          action: 'Close it'
-        },
-        error: {
-          label: 'Error',
-          trigger: 'Generation fails, or is refused.',
-          behaviour: 'Nothing is marked, because nothing was produced. The surface says what ' +
-                     'went wrong and leaves the way back in.',
-          action: 'Try again'
-        }
-      },
-
-      view: function (s) {
-        var c = s.cfg;
-
-        /* ONE surface for every state. Idle, Processing, Generated,
-           Expanded, Sources and Error all open with this string, so a
-           global setting — density, shape — is global by construction
-           rather than by six copies agreeing with each other.
-
-           The shape travels as a TOKEN NAME, not a pixel value. Each
-           role then resolves it in the stylesheet: the card takes the
-           container interpretation (capped at extra-large, because a
-           card is not a pill), the marker takes the chip one. */
-        var card = '<article class="pv-card' +
-                   (c.density === 'compact' ? ' pv-card--compact' : '') + '"' +
-                   ' data-shape="' + c.shape + '"';
-        var head =
-'  <h3 class="pv-card__title md-title-medium">Weekly team sync</h3>\n' +
-'  <p class="pv-card__meta md-body-small">42 minutes &middot; 5 participants</p>\n';
-
-        if (s.state === 'idle') {
-          var emph = c.triggerEmphasis === 'text' ? 'text'
-                   : c.triggerEmphasis === 'tonal' ? 'tonal' : 'filled';
-          return '' +
-card + '>\n' + head +
-'  <p class="pv-card__empty md-body-medium">No summary yet.</p>\n' +
-'  <button class="md-button md-button--' + emph + ' md-button--sm" type="button" data-act="gen">\n' +
-'    ' + esc(c.trigger) + '\n' +
-'  </button>\n' +
-'</article>';
-        }
-
-        if (s.state === 'processing') {
-          var lines = '';
-          for (var i = 0; i < c.lines; i++) lines += '<span></span>';
-          return '' +
-card + ' aria-busy="true">\n' + head +
-'  <div class="pv-status" role="status">\n' +
-   (c.activity === 'text' ? '' :
-'    <span class="pv-status__ring" aria-hidden="true"></span>\n') +
-'    <span class="md-body-medium">' + esc(c.status) + '&hellip;</span>\n' +
-'  </div>\n' +
-   (c.activity === 'full'
-? '  <div class="pv-skeleton" aria-hidden="true">\n' +
-  '    ' + lines + '\n' +
-  '  </div>\n' : '') +
-'</article>';
-        }
-
-        if (s.state === 'error') {
-          return '' +
-card + '>\n' + head +
-'  <div class="pv-error" role="alert">\n' +
-'    <svg class="pv-error__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M503.5-289.48q9.5-9.48 9.5-23.5t-9.48-23.52q-9.48-9.5-23.5-9.5t-23.52 9.48q-9.5 9.48-9.5 23.5t9.48 23.52q9.48 9.5 23.5 9.5t23.52-9.48ZM453-433h60v-253h-60v253Zm27.27 353q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>\n' +
-'    <div>\n' +
-'      <p class="md-body-medium">' + esc(c.errorText) + '</p>\n' +
-   (c.errorReason
-? '      <p class="pv-error__why md-body-small">The last four minutes of audio were missing, so\n' +
-  '         no summary was written rather than a partial one.</p>\n' : '') +
-'    </div>\n' +
-'  </div>\n' +
-'  <button class="md-button md-button--outlined md-button--sm" type="button" data-act="retry">\n' +
-'    ' + esc(c.errorRetry) + '\n' +
-'  </button>\n' +
-'</article>';
-        }
-
-        var open = s.state === 'expanded' || s.state === 'sources';
-
-        var glyph = c.icon
-          ? '      <svg class="pv-disclose__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M453-280h60v-240h-60v240Zm50.5-323.2q9.5-9.2 9.5-22.8 0-14.45-9.48-24.22-9.48-9.78-23.5-9.78t-23.52 9.78Q447-640.45 447-626q0 13.6 9.48 22.8 9.48 9.2 23.5 9.2t23.52-9.2ZM480.27-80q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>\n'
-          : '';
-
-        var chev = c.expandable
-          ? '      <svg class="pv-disclose__chev mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M480-344 240-584l43-43 197 197 197-197 43 43-240 240Z"/></svg>\n'
-          : '';
-
-        /* Not expandable means not a button: a control that opens
-           nothing should not be focusable or announce itself as
-           pressable. The markup changes shape, not just its classes. */
-        var chip = c.expandable
-          ? '    <button class="pv-disclose__chip pv-disclose__chip--' + c.emphasis + '" type="button"\n' +
-            '            data-act="' + (open ? 'dismiss' : 'expand') + '"\n' +
-            '            aria-expanded="' + open + '" aria-controls="pv-disclose-detail">\n' +
-            glyph +
-            '      <span class="md-label-medium">' + esc(c.label) + '</span>\n' +
-            chev +
-            '    </button>\n'
-          : '    <span class="pv-disclose__chip pv-disclose__chip--' + c.emphasis + '" role="note">\n' +
-            glyph +
-            '      <span class="md-label-medium">' + esc(c.label) + '</span>\n' +
-            '    </span>\n';
-
-        var detail = c.expandable
-          ? '\n' +
-            '    <div class="pv-disclose__detail" id="pv-disclose-detail" role="region">\n' +
-            '      <div class="pv-disclose__inner">\n' +
-            '        <p class="md-body-medium">\n' +
-            '          ' + esc(c.explain) + '\n' +
-                 (c.check && String(c.checkText || '').trim()
-? '          ' + esc(c.checkText) + '\n' : '') +
-            '        </p>\n' +
-                 (!c.showSources ? ''
-: s.state === 'sources'
-? '        <ul class="pv-sources md-body-small">\n' +
-  '          <li><span class="pv-sources__k">Read</span>Transcript &middot; 42 min, auto-captioned</li>\n' +
-  '          <li><span class="pv-sources__k">Read</span>Agenda in the calendar invite</li>\n' +
-   (c.missed
-? '          <li><span class="pv-sources__k">Missed</span>The last four minutes &mdash; audio dropped</li>\n' : '') +
-  '        </ul>\n'
-: '        <button class="md-button md-button--text md-button--sm" type="button" data-act="sources">\n' +
-  '          How this was generated\n' +
-  '        </button>\n') +
-            '      </div>\n' +
-            '    </div>\n'
-          : '';
-
-        var marker =
-'  <!-- The disclosure surface. Compact and expanded are the SAME\n' +
-'       element in two states, so the panel grows out of the chip\n' +
-'       rather than appearing beside it. It carries the same shape\n' +
-'       token as the card it sits in. -->\n' +
-'  <div class="pv-disclose" data-open="' + open + '" data-shape="' + c.shape + '">\n' +
-   chip + detail +
-'  </div>\n';
-
-        var body =
-'  <p class="pv-card__body md-body-medium">\n' +
-'    Renewals are the blocker for Q2. Dana owns the enterprise tier and will\n' +
-'    bring numbers on Thursday; nothing else is waiting on a decision.\n' +
-'  </p>\n';
-
-        return '' +
-card + '>\n' + head +
-   (c.placement === 'above' ? marker + body : body + marker) +
-'</article>';
-      },
-
-      act: async function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'gen' || a === 'retry') {
-          s.state = 'processing'; ctx.paint();
-          await wait(1400);
-          if (a === 'gen' && ctx.cfg().outcome === 'fail') {
-            s.state = 'error'; ctx.paint();
-            ctx.announce('Generation failed');
-            return;
-          }
-          s.state = 'generated'; ctx.paint();
-          ctx.announce('Summary generated, marked as AI generated');
-          return;
-        }
-        /* Expand and dismiss are the same container changing size, so
-           they are mutated in place and repainted after the motion. */
-        if (a === 'expand')   { return ctx.morph('expanded', function (root) {
-          var d = root.querySelector('.pv-disclose'); if (d) d.dataset.open = 'true';
-        }); }
-        if (a === 'dismiss')  { return ctx.morph('generated', function (root) {
-          var d = root.querySelector('.pv-disclose'); if (d) d.dataset.open = 'false';
-        }); }
-        if (a === 'sources')  { s.state = 'sources'; ctx.paint(); }
-      }
-    },
-
-    /* ── Consent ────────────────────────────────────────────── */
-    consent: {
-      initial: 'idle',
-
-      /* Consent's own decisions. Nothing here is borrowed from
-         Disclosure: there is no activity indicator, because nothing
-         is generated; there is no marker, because nothing is marked.
-         What a permission request actually has to decide is what it
-         asks for, how it says why, what the two answers are called,
-         and whether a no can be undone. */
-      customize: {
-        /* Consent's own decisions. Nothing is borrowed from
-           Disclosure: there is no activity indicator, because
-           nothing is generated, and no marker, because nothing is
-           marked. What a permission request has to decide is what
-           it asks for, how it says why, what the two answers are
-           called, and whether a no can be undone. */
-        api: {
-          name: 'Consent',
-          props: function (c) {
-            return {
-              title: c.title,
-              reason: c.reason,
-              showScopes: c.showScopes,
-              showReason: c.showReason,
-              selectableScopes: c.scopeSelect,
-              markWriteAccess: c.markWrite,
-              duration: c.duration,
-              allowLabel: c.allowLabel,
-              declineLabel: c.showDecline ? c.denyLabel : null,
-              emphasis: c.allowEmphasis,
-              density: c.density,
-              shape: c.shape,
-              revocable: c.revocable
-            };
-          }
-        },
-
-        groups: [
-          /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'request', label: 'The request', section: 'content', states: ['requested'],
-            note: 'Say what is needed and why, in the words of the task at hand.',
-            controls: [
-              { id: 'title', label: 'Title', type: 'text',
-                value: 'Aria needs access to answer this' },
-              { id: 'reason', label: 'Reason', type: 'text',
-                value: 'To find the deals behind the number you asked about',
-                visibleWhen: function (c) { return !!c.showScopes && !!c.showReason; },
-                hint: 'The row that turns a permission list into a request.' },
-              { id: 'subtitle', label: 'Subtitle', type: 'text', value: 'Grant what you are comfortable with. You can change this later.' },
-              { id: 'unneededName', label: 'The scope it is not asking for',
-                type: 'text', value: 'Send email on your behalf', visibleWhen: function (c) { return !!c.showScopes && !!c.showUnneeded; } }
-            ] },
-
-          { id: 'actionText', label: 'Actions', section: 'content', states: ['requested'],
-            controls: [
-              { id: 'allowLabel', label: 'Allow label', type: 'text', value: 'Allow selected' },
-              { id: 'denyLabel', label: 'Decline label', type: 'text', value: 'Not now',
-                visibleWhen: function (c) { return !!c.showDecline; } }
-            ] },
-
-          { id: 'lead', label: 'Before the ask', section: 'content', states: ['idle'],
-            note: 'What the surface says while nothing has been requested.',
-            controls: [
-              { id: 'idleLead', label: 'Line', type: 'text',
-                value: 'Ask Aria for something outside what it already holds.' },
-              { id: 'idleNote', label: 'Note', type: 'text', value: 'Nothing is requested until a task needs it.' }
-            ] },
-
-          { id: 'grantText', label: 'Standing grant', section: 'content', states: ['granted'],
-            controls: [
-              { id: 'grantedTitle', label: 'Heading', type: 'text',
-                value: 'Aria can currently see' }
-            ] },
-
-          { id: 'refusedText', label: 'After a no', section: 'content',
-            states: ['declined', 'revoked'],
-            note: 'What the agent says it lost. Declining is never a dead end.',
-            controls: [
-              { id: 'declinedText', label: 'Declined line', type: 'text',
-                value: 'Understood — I will leave Salesforce alone.',
-                visibleWhen: function (c, state) { return state === 'declined'; } },
-              { id: 'revokedText', label: 'Revoked line', type: 'text',
-                value: 'Salesforce access ended.',
-                visibleWhen: function (c, state) { return state === 'revoked'; } },
-              { id: 'askAgainLabel', label: 'Way back in', type: 'text',
-                value: 'Ask me again' }
-            ] },
-
-          /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'ask', label: 'The ask', section: 'behavior', states: ['requested'],
-            controls: [
-              { id: 'showScopes', label: 'Show scopes', type: 'toggle', value: true,
-                capability: true,
-                hint: 'What is being asked for, one row per source.' },
-              { id: 'showDecline', label: 'Offer a decline', type: 'toggle', value: true,
-                capability: true },
-              { id: 'duration', label: 'Grant lasts', type: 'segment', value: 'persistent',
-                options: [['once', 'This answer'], ['persistent', 'Until revoked']] },
-              { id: 'showReason', label: 'Reason per scope', type: 'toggle', value: true,
-                visibleWhen: function (c) { return !!c.showScopes; } },
-              { id: 'scopeSelect', label: 'Scopes are selectable', type: 'toggle', value: true,
-                visibleWhen: function (c) { return !!c.showScopes; },
-                hint: 'Off asks for the set as one decision rather than row by row.' },
-              { id: 'showUnneeded', label: 'Name a scope it is NOT asking for',
-                type: 'toggle', value: true, visibleWhen: function (c) { return !!c.showScopes; },
-                hint: 'Naming what it does not need is what makes the rest credible.' },
-              { id: 'markWrite', label: 'Mark write access', type: 'toggle', value: true,
-                visibleWhen: function (c) { return !!c.showScopes && !!c.showUnneeded; } }
-            ] },
-
-          { id: 'grantBehaviour', label: 'Standing grant', section: 'behavior',
-            states: ['granted'],
-            controls: [
-              { id: 'showGranted', label: 'List what was granted', type: 'toggle', value: true,
-                capability: true },
-              { id: 'revocable', label: 'Each grant can be taken back',
-                type: 'toggle', value: true,
-                visibleWhen: function (c) { return !!c.showGranted; },
-                hint: 'Off makes the list a receipt rather than a control.' }
-            ] },
-
-          { id: 'refusedBehaviour', label: 'After a no', section: 'behavior',
-            states: ['declined', 'revoked'],
-            controls: [
-              { id: 'consequence', label: 'Name the consequence', type: 'toggle', value: true,
-                hint: 'What it can still do, and how much worse that answer is.' }
-            ] },
-
-          /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Request', section: 'appearance', states: ['requested'],
-            controls: [
-              { id: 'allowEmphasis', label: 'Allow emphasis', type: 'segment', value: 'filled',
-                options: [['filled', 'Filled'], ['tonal', 'Tonal'], ['outlined', 'Outlined']] },
-              { id: 'denyEmphasis', label: 'Decline emphasis', type: 'segment', value: 'text',
-                visibleWhen: function (c) { return !!c.showDecline; },
-                options: [['text', 'Text'], ['outlined', 'Outlined']] }
-            ] },
-
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            note: 'Applies wherever the pattern appears.',
-            controls: [
-              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
-                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
-              { id: 'shape', label: 'Shape', type: 'segment', value: 'extra-large',
-                options: [['extra-large', 'X-large'], ['large', 'Large'],
-                          ['medium', 'Medium']],
-                hint: 'Material shape tokens, not free pixels.' }
-            ] }
-        ]
-      },
-
-      states: {
-        idle:      { label: 'Idle',
-                     trigger: 'The agent has not needed anything it does not already hold.',
-                     behaviour: 'Nothing is asked. A permission request with no task behind it ' +
-                                'is a dialog people learn to dismiss.',
-                     action: 'Ask for something it cannot see' },
-        requested: { label: 'Requested',
-                     trigger: 'A task needs a source that was never granted.',
-                     behaviour: 'A scoped request rises into place, one row per source, each ' +
-                                'with the reason it is being asked for.',
-                     action: 'Allow, or decline' },
-        granted:   { label: 'Granted',
-                     trigger: 'The reader allows what they selected.',
-                     behaviour: 'The grant becomes a standing, visible list — and each item ' +
-                                'carries its own way back out.',
-                     action: 'Revoke a source' },
-        declined:  { label: 'Declined',
-                     trigger: 'The reader declines.',
-                     behaviour: 'The agent continues in a smaller form and says exactly what ' +
-                                'it lost. Declining is never a dead end.',
-                     action: 'Ask again' },
-        revoked:   { label: 'Revoked',
-                     trigger: 'A granted source is taken back.',
-                     behaviour: 'Access ends immediately and the agent states the consequence ' +
-                                'rather than quietly getting worse.',
-                     action: 'Ask again' }
-      },
-      view: function (s) {
-        var c = s.cfg;
-        var shape = ' data-shape="' + c.shape + '"';
-        var tight = c.density === 'compact' ? ' is-compact' : '';
-
-        if (s.state === 'idle') {
-          return '' +
-'<div class="pv-card pv-card--quiet' + tight + '"' + shape + '>\n' +
-'  <p class="md-body-medium">' + esc(c.idleLead) + '</p>\n' +
-'  <p class="pv-card__meta md-body-small">' + esc(c.idleNote) + '</p>\n' +
-'</div>';
-        }
-        if (s.state === 'requested') {
-          /* One scope row. The reason is what turns a permission list
-             into a request, so it is the thing a product is most
-             likely to want in its own words — and the thing it must
-             not be able to drop silently. */
-          function scope(name, why, on, write) {
-            return '' +
-'    <li class="m3-scope">\n' +
-'      <div>\n' +
-'        <div class="m3-scope__n">' + name +
-     (write && c.markWrite
-? ' <span class="m3-scope__w">Can change things</span>' : '') + '</div>\n' +
-     (c.showReason
-? '        <div class="m3-scope__d">' + why + '</div>\n' : '') +
-'      </div>\n' +
-     (c.scopeSelect
-? '      <button class="m3-toggle' + (on ? ' is-on' : '') + '" type="button" role="switch"\n' +
-  '              aria-checked="' + !!on + '" aria-label="' + name + '">\n' +
-  '        <span class="m3-toggle__knob"></span>\n' +
-  '      </button>\n' : '') +
-'    </li>\n';
-          }
-          return '' +
-'<section class="pv-consent' + tight + '" role="dialog" aria-labelledby="pv-consent-t"' + shape + '>\n' +
-'  <span class="pv-consent__k md-label-small">Permission</span>\n' +
-'  <h3 class="pv-consent__t md-title-medium" id="pv-consent-t">\n' +
-'    ' + esc(c.title) + '\n' +
-'  </h3>\n' +
-'  <p class="pv-consent__s md-body-small">' + esc(c.subtitle) + '</p>\n' +
-   (c.showScopes
-? '  <ul class="m3-scopes">\n' +
-     scope('Salesforce &mdash; pipeline, read only', esc(c.reason), true, false) +
-     (c.showUnneeded
-       ? scope(esc(c.unneededName), 'Not needed for this answer', false, true) : '') +
-  '  </ul>\n' : '') +
-   (c.duration === 'once'
-? '  <p class="pv-consent__dur md-body-small">Just for this answer.</p>\n'
-: '  <p class="pv-consent__dur md-body-small">Until you take it back.</p>\n') +
-'  <div class="pv-consent__foot">\n' +
-'    <button class="md-button md-button--' + c.allowEmphasis + ' md-button--sm" type="button" data-act="allow">\n' +
-'      ' + esc(c.allowLabel) + '\n' +
-'    </button>\n' +
-   (c.showDecline
-? '    <button class="md-button md-button--' + c.denyEmphasis + ' md-button--sm" type="button" data-act="deny">\n' +
-  '      ' + esc(c.denyLabel) + '\n' +
-  '    </button>\n' : '') +
-'  </div>\n' +
-'</section>';
-        }
-        if (s.state === 'declined' || s.state === 'revoked') {
-          return '' +
-'<div class="pv-card pv-card--quiet' + tight + '" role="status"' + shape + '>\n' +
-'  <p class="md-body-medium">' +
-    esc(s.state === 'declined' ? c.declinedText : c.revokedText) + '</p>\n' +
-   (c.consequence
-? '  <p class="pv-card__meta md-body-small">\n' +
-  '    I can still answer from the board pack, which is three weeks old, and I will\n' +
-  '    say so every time I use it.\n' +
-  '  </p>\n' : '') +
-'  <button class="md-button md-button--outlined md-button--sm" type="button" data-act="ask">\n' +
-'    ' + esc(c.askAgainLabel) + '\n' +
-'  </button>\n' +
-'</div>';
-        }
-        return '' +
-'<div class="m3-granted' + tight + '" role="status"' + shape + '>\n' +
-'  <div class="m3-granted__head">\n' +
-'    <span class="m3-granted__t">' + esc(c.grantedTitle) + '</span>\n' +
-'  </div>\n' +
-   (c.showGranted
-? '  <div class="m3-chips">\n' +
-  '    <span class="m3-chip">Salesforce pipeline\n' +
-     (c.revocable
-? '      <button class="m3-chip__x" type="button" data-act="revoke"\n' +
-  '              aria-label="Revoke Salesforce access">&times;</button>\n' : '') +
-  '    </span>\n' +
-  '    <span class="m3-chip m3-chip--off">Email sending &mdash; off</span>\n' +
-  '  </div>\n' : '') +
-'</div>';
-      },
-      act: async function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'ask')    { s.state = 'requested'; ctx.paint(); ctx.announce('Permission requested'); return; }
-        if (a === 'allow')  { s.state = 'granted';   ctx.paint(); ctx.announce('Access granted'); return; }
-        if (a === 'deny')   { s.state = 'declined';  ctx.paint(); ctx.announce('Access declined'); return; }
-        if (a === 'revoke') { s.state = 'revoked';   ctx.paint(); ctx.announce('Access revoked'); }
-      }
-    },
-
-    /* ── Caveat ─────────────────────────────────────────────
-       Off → under the input → repeated under output that is
-       about to leave the product → riding the action itself.
-       The pattern is one line of muted text; what changes
-       between states is WHERE it sits, which is the whole
-       design decision. */
-    caveat: {
-      initial: 'off',
-
-      /* Caveat is one line of muted text. What there is to decide is
-         what it SAYS and where it sits — so the schema is content and
-         placement, and there is nothing here about surfaces, actions
-         or activity, because the pattern has none of those.
-
-         'Absent' deliberately declares nothing: it is the state where
-         no reminder exists, so there is nothing to configure, and the
-         panel says so rather than offering controls that write into
-         markup that is not on screen. */
-      customize: {
-        /* Caveat is one line of muted text. What there is to decide
-           is what it SAYS, how quietly, and whether it names the gap
-           it is reporting. There is nothing here about actions or
-           activity, because the pattern has neither.
-
-           Placement is NOT a control: the states ARE the placements,
-           so a Placement segment would be a second, disagreeing copy
-           of the state selector.
-
-           'Absent' declares nothing — no reminder exists there, so
-           the panel says so rather than writing into markup that is
-           not on screen. */
-        api: {
-          name: 'Caveat',
-          props: function (c) {
-            return {
-              text: c.gapText,
-              tone: c.tone,
-              icon: c.showIcon,
-              showSource: c.showSource,
-              showVerification: c.verify,
-              verificationText: c.verifyText,
-              dismissible: c.dismissible,
-              density: c.density
-            };
-          }
-        },
-
-        groups: [
-          /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'composer', label: 'Under the input', section: 'content', states: ['input'],
-            note: 'Present every session, read before anything is sent.',
-            controls: [
-              { id: 'inputText', label: 'Caption', type: 'text',
-                value: 'Aria can make mistakes. Check anything important before you use it.' }
-            ] },
-
-          { id: 'output', label: 'Under the output', section: 'content', states: ['output'],
-            note: 'The same reminder, where the output is about to leave.',
-            controls: [
-              { id: 'outputText', label: 'Caption', type: 'text',
-                value: 'Generated summary — verify before sharing.' }
-            ] },
-
-          { id: 'gap', label: 'The named gap', section: 'content', states: ['specific'],
-            note: 'A gap you can act on beats “may contain errors”, which readers skip.',
-            controls: [
-              { id: 'gapText', label: 'What was missed', type: 'text',
-                value: 'Two accounts renewed outside Salesforce and are not counted here — ' +
-                       'including them would move this by about a point.' }
-            ] },
-
-          { id: 'verifyText', label: 'Verification', section: 'content',
-            states: ['output', 'specific'],
-            controls: [
-              { id: 'verifyText', label: 'What to check', type: 'text',
-                value: 'Check the two named accounts before you quote this.',
-                visibleWhen: function (c) { return !!c.verify; } }
-            ] },
-
-          { id: 'onActionText', label: 'On the action', section: 'content', states: ['action'],
-            note: 'The reminder rides the control, on hover and on focus.',
-            controls: [
-              { id: 'tipText', label: 'Tooltip', type: 'text',
-                value: 'Output may be inaccurate — check it before you send.' },
-              { id: 'actionLabel', label: 'Button', type: 'text', value: 'Generate' }
-            ] },
-
-          /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'says', label: 'What it adds', section: 'behavior',
-            states: ['output', 'specific'],
-            controls: [
-              { id: 'verify', label: 'Show verification guidance', type: 'toggle', value: true,
-                capability: true },
-              { id: 'showSource', label: 'Show where it looked', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'specific'; },
-                hint: 'What it counted from is half of what the gap means.' },
-              { id: 'dismissible', label: 'Dismissible', type: 'toggle', value: false,
-                hint: 'Only where the caveat is about one result.' }
-            ] },
-
-          { id: 'standing', label: 'Standing reminder', section: 'behavior', states: ['input'],
-            controls: [
-              { id: 'dismissible', label: 'Dismissible', type: 'toggle', value: false,
-                hint: 'A reminder under the composer is meant to still be there tomorrow.' }
-            ] },
-
-          /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'presentation', label: 'Presentation', section: 'appearance',
-            states: ['input', 'output', 'specific'],
-            note: 'A reminder, not a warning. Muted by default; caution only where the risk is real.',
-            controls: [
-              { id: 'tone', label: 'Tone', type: 'segment', value: 'informational',
-                options: [['informational', 'Informational'], ['caution', 'Caution']],
-                hint: 'Caution earns colour. Every caption in the product carrying it does not.' },
-              { id: 'showIcon', label: 'Show the icon', type: 'toggle', value: true }
-            ] },
-
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            states: ['input', 'output', 'specific', 'action'],
-            controls: [
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['tonal', 'Tonal']],
+                hint: 'Outlined sits quietly in a document; tonal for a surface with more around it.' },
               { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
                 options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ ADVANCED ══════════════════════════════════════ */
+          { id: 'glyphs', label: 'Icon treatment', section: 'advanced',
+            controls: [
+              { id: 'iconStyle', label: 'AI icon style', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['filled', 'Filled']],
+                hint: 'The Icons vocabulary passed through the components’ icon prop. The working mark has no filled form.' }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-understood', type: 'check', label: 'AI involvement is understandable',
+                test: function (c) { return /\b(ai|aria|agent|generated|assistant)\b/i.test(tdTrim(c.label)); },
+                fail: 'The label has to say AI was involved — name it, or say it was generated.' },
+              { id: 'q-text', type: 'check', label: 'Not colour- or icon-only',
+                test: function (c) { return tdTrim(c.label).length > 0 && tdTrim(c.actionLabel).length > 0; },
+                fail: 'A label or action with no words leaves only a mark and a colour to carry the meaning.' },
+              { id: 'q-hover', type: 'check', label: 'Not hover-only',
+                test: function () { return true; } },
+              { id: 'q-attached', type: 'check', label: 'Stays attached to the content',
+                test: function () { return true; } },
+              { id: 'q-verified', type: 'check', label: 'Does not imply verification',
+                test: function (c) {
+                  return !/\b(verified|accurate|checked|approved|correct|trusted|fact[- ]?checked|guaranteed)\b/i
+                    .test(tdTrim(c.label) + ' ' + tdTrim(c.explain));
+                },
+                fail: 'Words like “verified” or “accurate” claim something nobody checked.' },
+              { id: 'q-explained', type: 'check', label: 'An explanation is available',
+                test: function (c) { return c.details !== false ? tdTrim(c.explain).length > 0 : true; },
+                fail: 'The details have nothing to say. Write what Aria did, or turn details off.' }
             ] }
         ]
       },
 
       states: {
-        off:      { label: 'Absent',
-                    trigger: 'Nothing has been said about the reliability of the output.',
-                    behaviour: 'A composer with no reminder. Every session starts with the ' +
-                               'user assuming whatever they assumed last time.',
-                    action: 'Put it under the input' },
-        input:    { label: 'Below the input',
-                    trigger: 'The default placement.',
-                    behaviour: 'A caption under the composer, present every session, read ' +
-                               'before anything is sent. Muted, never alarming.',
-                    action: 'Repeat it under output' },
-        output:   { label: 'Under the output',
-                    trigger: 'Output is about to be sent, published or deployed.',
-                    behaviour: 'The reminder repeats where the risk actually is, on a ground ' +
-                               'so it separates from the content it qualifies.',
-                    action: 'Try it on the action instead' },
-        action:   { label: 'On the action',
-                    trigger: 'The surface is too dense for a standing caption.',
-                    behaviour: 'The reminder rides the generate control, on hover and on ' +
-                               'focus, so it is never in the way and never unreachable.',
-                    action: 'See the specific form' },
-        specific: { label: 'Naming the gap',
-                    trigger: 'The agent knows what it could not see.',
-                    behaviour: 'The strongest version of the same reminder: a named gap is ' +
-                               'actionable, where “may contain errors” is something readers ' +
-                               'learn to skip.',
-                    action: 'Back to the default' }
+        resting: {
+          label: 'Resting',
+          trigger: 'Nothing has been chosen for AI to act on yet.',
+          behaviour: 'The AI action control: the AI action mark and its verb. Nothing is labelled — AI has not done anything yet.',
+          meaning: 'Nothing here came from AI. The one control that would use it is recognisable.',
+          action: 'Press Rewrite to choose what it applies to.',
+          next: 'AI action available'
+        },
+        action: {
+          label: 'AI action available',
+          trigger: 'Something is selected, so Rewrite now applies to it.',
+          behaviour: 'Rewrite becomes available and says, in words, what it will do and that nothing is replaced until they review it.',
+          meaning: 'Pressing Rewrite asks AI to change the selection — before anything has happened.',
+          action: 'Press Rewrite, or keep editing by hand.',
+          next: 'AI working'
+        },
+        working: {
+          label: 'AI working',
+          trigger: 'Rewrite was pressed.',
+          behaviour: 'The action mark becomes the working mark and the button reads “Rewriting…”. Progress and Stop sit with it, and a screen reader hears “Agent working”. Nothing changes until the result arrives.',
+          meaning: 'The agent is doing it now. This is not the result yet.',
+          action: 'Wait, or Stop.',
+          next: 'AI-generated content'
+        },
+        generated: {
+          label: 'AI-generated content',
+          trigger: 'The rewrite came back.',
+          behaviour: 'The “Generated with AI” label, attached to the content it describes, with Undo.',
+          meaning: 'This content was written by AI — and it has not been checked.',
+          action: 'Open the label for details, keep editing, or Undo.',
+          next: 'Additional details'
+        },
+        details: {
+          label: 'Additional details',
+          requires: 'details',
+          trigger: 'The label was pressed.',
+          behaviour: 'The label opens a panel in place: what Aria did, what it used, what it did not check, and that the original is kept. No model names or pipeline detail.',
+          meaning: 'What the agent did, in terms they can judge without technical knowledge.',
+          action: 'Show the original, close the details, or Undo.',
+          next: 'AI-generated content'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var ICO = c.showIcon
-          ? '    <svg class="md-caveat__ico mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M453-280h60v-240h-60v240Zm50.5-323.2q9.5-9.2 9.5-22.8 0-14.45-9.48-24.22-9.48-9.78-23.5-9.78t-23.52 9.78Q447-640.45 447-626q0 13.6 9.48 22.8 9.48 9.2 23.5 9.2t23.52-9.2ZM480.27-80q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>\n'
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var style = c.iconStyle === 'filled' ? 'filled' : 'outlined';
+        var details = c.details !== false;
+        var open = st === 'details' && details;
+        var busy = st === 'working';
+        var gen = st === 'generated' || st === 'details';
+        var picked = st === 'action' || busy;
+        var orig = 'This release has lots of fixes. Exports are faster now and the problems with sharing ' +
+                   'should be sorted, also the dashboard loads quicker for big teams.';
+        var rewritten = 'Exports run up to twice as fast, shared links no longer expire early, and ' +
+                        'dashboards load faster for large teams.';
+        var actLabel = esc(tdTrim(c.actionLabel)) || '';
+        var label = esc(tdTrim(c.label));
+
+        /* The AI action. Its mark is its identity in every state; the
+           explanation arrives when it applies to something. */
+        var rewrite = busy
+          ? M.button({ variant: 'tonal', label: actLabel ? actLabel.replace(/e?$/, 'ing') + '…' : '', icon: tdAI('working'),
+              cls: 'tdx-act is-busy', attrs: { 'aria-disabled': 'true', 'aria-label': 'Agent working: ' + (tdTrim(c.actionLabel) || 'rewrite') + 'ing with AI' } })
+          : st === 'resting'
+            /* Nothing is selected yet: pressing it picks the paragraph
+               the cursor is in and explains itself, before it runs. */
+            ? M.button({ variant: 'tonal', label: actLabel, icon: tdAI('action', style), cls: 'tdx-act',
+                attrs: { 'data-act': 'select', 'aria-label': (tdTrim(c.actionLabel) || 'Rewrite') + ' with AI' } })
+            : M.button({ variant: 'tonal', label: actLabel, icon: tdAI('action', style), cls: 'tdx-act',
+                attrs: { 'data-act': 'rewrite', 'aria-describedby': st === 'action' ? 'tdx-act-why' : null,
+                         'aria-label': (tdTrim(c.actionLabel) || 'Rewrite') + ' with AI' } });
+
+        /* Point of action: the AI action explained in words, before it runs. */
+        var why = st === 'action' && tdTrim(c.actionNote)
+          ? '  <p class="tdx-why md-body-small" id="tdx-act-why">' + tdAI('action', style) +
+              '<span><b>' + actLabel + ' with AI.</b> ' + esc(tdTrim(c.actionNote)) + '</span></p>\n'
           : '';
-        var tone = c.tone === 'caution' ? ' md-caveat--caution' : '';
-        var tight = c.density === 'compact' ? ' is-compact' : '';
-
-        /* The dismiss affordance. Only ever offered where the caveat
-           is about ONE result — a standing reminder that can be
-           dismissed is a reminder that stops existing. */
-        var X = c.dismissible
-          ? '    <button class="md-caveat__x" type="button" aria-label="Dismiss">&times;</button>\n'
+        /* Working: the button says what is happening; progress and Stop sit with it. */
+        var status = busy
+          ? '  <div class="tdx-status">\n' +
+            '    <span class="tdx-sr" role="status">Agent working: ' + (actLabel ? actLabel.replace(/e?$/, 'ing').toLowerCase() : 'working') + ' with AI</span>\n' +
+            '    ' + M.progress(undefined, (actLabel ? actLabel.replace(/e?$/, 'ing') : 'Working') + ' with AI') + '\n' +
+            '    ' + M.button({ variant: 'text', label: 'Stop', attrs: { 'data-act': 'stop' } }) + '\n' +
+            '  </div>\n'
           : '';
-
-        if (s.state === 'off' || s.state === 'input') {
-          return '' +
-'<div class="md-composer' + tight + '">\n' +
-'  <p class="md-composer__field md-body-medium">Ask Aria anything&hellip;</p>\n' +
-   (s.state === 'input'
-? '  <p class="md-caveat' + tone + ' md-body-small" role="note">\n' + ICO +
-'    ' + esc(c.inputText) + '\n' + X +
-'  </p>\n' : '') +
-'</div>';
+        /* The label: a button that opens details, or the static marker. */
+        var marker = '';
+        if (gen) {
+          marker = details
+            ? tdChip({ label: label || '', icon: tdAI('generated', style),
+                cls: 'tdx-mark tdx-mark--' + (c.emphasis === 'tonal' ? 'tonal' : 'outlined'),
+                trailing: mi(open ? 'chevDown' : 'chevRight'),
+                attrs: { 'data-act': open ? 'close' : 'open', 'aria-expanded': String(open), 'aria-controls': 'tdx-details' } })
+            : M.aiDisclosure(label || '', tdAI('generated', style), { 'data-tone': c.emphasis === 'tonal' ? 'tonal' : 'outlined' });
         }
-
-        if (s.state === 'action') {
-          return '' +
-'<div class="md-caveat-action' + tight + '">\n' +
-'  <button class="md-button md-button--filled md-button--sm" type="button"\n' +
-'          aria-describedby="cav-tip">\n' +
-'    <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    ' + esc(c.actionLabel) + '\n' +
-'  </button>\n' +
-'  <span class="md-caveat-tip md-body-small" id="cav-tip" role="tooltip">\n' +
-'    ' + esc(c.tipText) + '\n' +
-'  </span>\n' +
-'</div>';
-        }
-
-        var body = esc(s.state === 'specific' ? c.gapText : c.outputText);
-        return '' +
-'<div class="m3-answer' + tight + '">\n' +
-'  <p class="m3-answer__text">\n' +
-'    Renewals are tracking at <b>94%</b> for the quarter, up four points on Q1.\n' +
-'    Enterprise accounts drive almost all of the improvement.\n' +
-'  </p>\n' +
-'  <div class="md-caveat md-caveat--boxed' + tone + ' md-body-small" role="note">\n' + ICO +
-'    <div>\n' +
-'      <p class="md-caveat__line">' + body + '</p>\n' +
-   (c.showSource && s.state === 'specific'
-? '      <p class="md-caveat__src">Counted from Salesforce only.</p>\n' : '') +
-   (c.verify
-? '      <p class="md-caveat__verify">' + esc(c.verifyText) + '</p>\n' : '') +
-'    </div>\n' + X +
-'  </div>\n' +
-'</div>';
+        var panel = open
+          ? '  <div class="tdx-details" id="tdx-details" role="region" aria-label="About this content">\n' +
+            M.card('outlined',
+              '<dl class="tdx-facts">' +
+                '<div><dt>What Aria did</dt><dd>' + (esc(tdTrim(c.explain)) || '&mdash;') + '</dd></div>' +
+                (c.sources !== false ? '<div><dt>What it used</dt><dd>Your draft, and the 2.4 changelog (14 entries).</dd></div>' : '') +
+                '<div><dt>Not checked</dt><dd>Facts, figures and dates. Review before you publish.</dd></div>' +
+                '<div><dt>Your original</dt><dd>' + (s.showOriginal ? '<q class="tdx-orig">' + orig + '</q>' : 'Kept. You can bring it back with Undo.') + '</dd></div>' +
+              '</dl>' +
+              '<div class="tdx-details__acts">' +
+                M.button({ variant: 'text', label: s.showOriginal ? 'Hide original' : 'Show original',
+                  attrs: { 'data-act': 'original', 'aria-pressed': String(!!s.showOriginal) } }) +
+              '</div>', 'tdx-details__card') + '\n' +
+            '  </div>\n'
+          : '';
+        var body = gen
+          ? '  <div class="tdx-foot">' + marker + M.button({ variant: 'text', label: 'Undo', attrs: { 'data-act': 'undo' } }) + '</div>\n' + panel
+          : '  <div class="tdx-foot">' + rewrite + '</div>\n' + why + status;
+        return '<div class="tdx-only" data-state="' + st + '">\n' + body + '</div>';
       },
-      act: function () {}
-    },
-    /* ── Avatar ─────────────────────────────────────────────── */
-    avatar: {
-      initial: 'ready',
 
-      /* An agent mark has no content and no actions, so there is
-         nothing here about labels, emphasis or activity indicators.
-         What it decides is size, whether the disclosure chip rides
-         alongside, and what the line under it says in each state —
-         which is different in each state, and so lives there. */
+      react: function (s) {
+        var c = s.cfg, st = s.state, details = c.details !== false;
+        var open = st === 'details' && details, busy = st === 'working', gen = st === 'generated' || st === 'details';
+        var style = c.iconStyle === 'filled' ? 'filled' : 'outlined';
+        var g = { action: 'star_shine', working: 'progress_activity', generated: 'chat_info' };
+        var sy = function (r) {
+          return '<span className="material-symbols-' + (r === 'working' ? 'outlined' : style) + '" aria-hidden="true">' + g[r] + '</span>';
+        };
+        var imp = [['Md3Button', '@nucleux/md3-button']];
+        if (busy) imp.push(['Md3LinearProgress', '@nucleux/md3-progress']);
+        if (gen && details) imp.push(['Md3Chip', '@nucleux/md3-chip']);
+        if (gen && !details) imp.push(['AiDisclosure', '@nucleux/ai-disclosure']);
+        if (open) imp.push(['Md3Card', '@nucleux/md3-card']);
+        var a = jsxText(tdTrim(c.actionLabel) || 'Rewrite');
+        var out = imports(imp) + '\n\n' +
+          '// State: ' + this.states[st].label + '\n';
+        if (gen) {
+          /* The result carries its label instead of the action. */
+        } else if (st === 'resting') {
+          out += '<Md3Button variant="tonal" icon={' + sy('action') + '} aria-label="' + a + ' with AI" onClick={selectParagraph}>' + a + '</Md3Button>\n';
+        } else if (busy) {
+          out += '<Md3Button variant="tonal" icon={' + sy('working') + '} aria-disabled="true">' + a.replace(/e?$/, 'ing') + '…</Md3Button>\n';
+        } else {
+          out += '<Md3Button variant="tonal" icon={' + sy('action') + '} aria-describedby="ai-action-why" onClick={rewrite}>' + a + '</Md3Button>\n';
+        }
+        if (st === 'action') out += '<p id="ai-action-why">' + a + ' with AI. ' + jsxText(tdTrim(c.actionNote)) + '</p>\n';
+        if (busy) out += '<span role="status" className="sr-only">Agent working: ' + a.replace(/e?$/, 'ing').toLowerCase() + ' with AI</span>\n' +
+                         '<Md3LinearProgress aria-label="' + a.replace(/e?$/, 'ing') + ' with AI" />\n' +
+                         '<Md3Button variant="text" onClick={stop}>Stop</Md3Button>\n';
+        if (gen && details) {
+          out += '  <Md3Chip variant="assist" icon={' + sy('generated') + '} aria-expanded={' + open + '}\n' +
+                 '    aria-controls="ai-details" onClick={toggleDetails}>\n' +
+                 '    ' + jsxText(tdTrim(c.label)) + '\n  </Md3Chip>\n' +
+                 '  <Md3Button variant="text" onClick={undo}>Undo</Md3Button>\n';
+        }
+        if (gen && !details) {
+          out += '  <AiDisclosure variant="pill" icon={' + sy('generated') + '} label=' + jsxAttr(tdTrim(c.label)) + ' />\n' +
+                 '  <Md3Button variant="text" onClick={undo}>Undo</Md3Button>\n';
+        }
+        if (open) {
+          out += '  <Md3Card id="ai-details" variant="outlined" role="region" aria-label="About this content">\n' +
+                 '    <dl>\n' +
+                 '      <dt>What Aria did</dt><dd>' + jsxText(tdTrim(c.explain)) + '</dd>\n' +
+                 (c.sources !== false ? '      <dt>What it used</dt><dd>Your draft, and the 2.4 changelog (14 entries).</dd>\n' : '') +
+                 '      <dt>Not checked</dt><dd>Facts, figures and dates. Review before you publish.</dd>\n' +
+                 '      <dt>Your original</dt><dd>Kept. You can bring it back with Undo.</dd>\n' +
+                 '    </dl>\n' +
+                 '    <Md3Button variant="text" onClick={showOriginal}>Show original</Md3Button>\n' +
+                 '  </Md3Card>\n';
+        }
+        return out.replace(/\n$/, '');
+      },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        if (a === 'noop') return;
+        if (a === 'select') {
+          s.state = 'action'; ctx.paint();
+          var b = document.querySelector('[data-preview-root] .tdx-act[data-act="rewrite"]');
+          if (b) b.focus({ preventScroll: true });
+          ctx.announce('Paragraph selected. ' + (tdTrim(c.actionLabel) || 'Rewrite') + ' with AI is available.');
+          return;
+        }
+        if (a === 'rewrite') {
+          var run = (s.tdRun || 0) + 1; s.tdRun = run;
+          s.state = 'working'; s.showOriginal = false; ctx.paint();
+          ctx.announce('Agent working: rewriting the paragraph with AI.');
+          await wait(1700);
+          if (s.tdRun !== run || s.state !== 'working') return;
+          s.state = 'generated'; ctx.paint();
+          ctx.announce('Paragraph rewritten. ' + (tdTrim(c.label) || 'Generated with AI') + '. Undo is available.');
+          return;
+        }
+        if (a === 'stop') {
+          s.tdRun = (s.tdRun || 0) + 1; s.state = 'action'; ctx.paint();
+          ctx.announce('Stopped. Your paragraph is unchanged.');
+          return;
+        }
+        if (a === 'open' && c.details !== false) { s.state = 'details'; ctx.paint(); ctx.announce('Details open.'); return; }
+        if (a === 'close') { s.state = 'generated'; s.showOriginal = false; ctx.paint(); return; }
+        if (a === 'original') { s.showOriginal = !s.showOriginal; ctx.paint(); return; }
+        if (a === 'undo') {
+          s.state = 'action'; s.showOriginal = false; ctx.paint();
+          ctx.announce('Your original paragraph is back.');
+        }
+      }
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       CONSENT — "Do I want to allow the agent to do this?"
+
+       Asked at the moment access or an action is needed, never in
+       the terms. Built on Md3ActionConfirmation (variant "default"):
+       what is asked (title), why (description), the scope as an
+       Md3List, what happens if they agree, and two real choices of
+       equal size from the component itself. Nothing is preselected;
+       nothing runs before the answer; no answer loses their work.
+
+       Three request types share the frame and differ where their
+       consequence differs:
+         data      read access to a source (Google Drive)
+         action    something that changes the world (3 GitHub issues)
+         ongoing   permission that outlives this conversation
+       ══════════════════════════════════════════════════════════ */
+    consent: {
+      initial: 'required',
+
       customize: {
         api: {
-          name: 'AgentAvatar',
+          name: 'Md3ActionConfirmation',
           props: function (c) {
-            return {
-              name: c.name,
-              size: c.size,
-              shape: c.shape,
-              surface: c.surface,
-              showDisclosure: c.chip,
-              showStatus: c.statusDot,
-              showWorking: c.showWorking,
-              workingIndicator: c.workStyle
-            };
+            var T = csType(c);
+            return { variant: 'default', badge: c.badge !== false ? T.badge : undefined,
+                     title: csWord(c, 'title', T), description: csWord(c, 'why', T),
+                     confirmLabel: csWord(c, 'allow', T), cancelLabel: csWord(c, 'deny', T) };
           }
         },
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'who', label: 'The agent', section: 'content',
-            states: ['ready', 'working', 'answered', 'handed'],
+          { id: 'kind', label: 'Request', section: 'content',
             controls: [
-              { id: 'name', label: 'Name', type: 'text', value: 'Aria' },
-              { id: 'readyLine', label: 'Line', type: 'text', value: 'Ready',
-                visibleWhen: function (c, st) { return st === 'ready'; } },
-              { id: 'workingLine', label: 'Line', type: 'text', value: 'Reading your files…',
-                visibleWhen: function (c, st) { return st === 'working'; } },
-              { id: 'answeredLine', label: 'Line', type: 'text', value: 'Answered just now',
-                visibleWhen: function (c, st) { return st === 'answered'; } }
+              { id: 'type', label: 'Request type', type: 'segment', value: 'data',
+                options: [['data', 'Data access'], ['action', 'Consequential action'], ['ongoing', 'Ongoing permission']],
+                hint: 'Same frame, different consequence. The wording fields below edit the Data access request.' }
             ] },
-
-          /* Labelled for a panel with no group headings: "Name" and
-             "Name" one above the other told a reader nothing about
-             which was the agent and which the colleague. */
-          { id: 'human', label: 'The person', section: 'content', states: ['handed'],
-            note: 'Drawn deliberately unlike the agent — that contrast is the pattern.',
+          { id: 'words', label: 'Words', section: 'content',
             controls: [
-              { id: 'humanName', label: 'Handed to', type: 'text', value: 'Priya Raman' },
-              { id: 'humanInitials', label: 'Their initials', type: 'text', value: 'PR' },
-              { id: 'humanRole', label: 'Their role', type: 'text',
-                value: 'Support, second line' }
-            ] },
-
-          { id: 'quiet', label: 'Stood down', section: 'content', states: ['off'],
-            controls: [
-              { id: 'offLine', label: 'Line', type: 'text', value: 'Not active here' }
+              { id: 'title', label: 'Title', type: 'text', value: CONSENT_TYPES.data.title,
+                visibleWhen: function (c) { return c.type === 'data'; },
+                hint: 'What is being asked, as a question with the agent and the source named.' },
+              { id: 'why', label: 'Explanation', type: 'text', value: CONSENT_TYPES.data.why,
+                visibleWhen: function (c) { return c.type === 'data'; },
+                hint: 'Why THIS task needs it — not why the product would like it.' },
+              { id: 'scope', label: 'Scope summary', type: 'text', value: CONSENT_TYPES.data.scope[0][1],
+                visibleWhen: function (c) { return c.type === 'data'; } },
+              { id: 'allow', label: 'Approve label', type: 'text', value: CONSENT_TYPES.data.allow,
+                visibleWhen: function (c) { return c.type === 'data'; } },
+              { id: 'deny', label: 'Deny label', type: 'text', value: CONSENT_TYPES.data.deny,
+                visibleWhen: function (c) { return c.type === 'data'; },
+                hint: 'A real choice, worded as one. Never “No thanks, I’ll do it the hard way”.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'says', label: 'What it reports', section: 'behavior',
+          { id: 'flow', label: 'Choices', section: 'behavior',
             controls: [
-              { id: 'chip', label: 'Show AI disclosure', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st !== 'off'; } },
-              /* The handover mark shows WHO it went to, not whether the
-                 agent is working — the view suppresses the dot there,
-                 so the choice is not offered there either. */
-              { id: 'statusDot', label: 'Show status indicator', type: 'toggle', value: false,
-                visibleWhen: function (c, st) { return st !== 'handed'; } },
-              { id: 'showWorking', label: 'Show the working state', type: 'toggle', value: true,
-                capability: true,
-                visibleWhen: function (c, st) { return st === 'working'; } }
+              { id: 'review', label: 'Review details', type: 'toggle', value: true, capability: true,
+                hint: 'Lets the person inspect account, activity and how to turn it off before agreeing.' },
+              { id: 'remember', label: 'Offer to remember', type: 'toggle', value: false,
+                visibleWhen: function (c) { return c.type === 'data'; },
+                hint: 'Only where the host supports it. Always unchecked: remembering is a second decision.' },
+              { id: 'revoke', label: 'Can be revoked', type: 'toggle', value: true, capability: true,
+                hint: 'Where the host supports it: a way to take the permission back, and the Revoked state.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'draw', label: 'Mark', section: 'appearance',
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'size', label: 'Size', type: 'segment', value: 'md',
-                options: [['sm', 'Small'], ['md', 'Medium'], ['lg', 'Large']] },
-              { id: 'surface', label: 'Surface', type: 'segment', value: 'tonal',
-                options: [['neutral', 'Neutral'], ['tonal', 'Tonal']] },
-              { id: 'shape', label: 'Shape', type: 'segment', value: 'circle',
-                options: [['circle', 'Circle'], ['rounded', 'Rounded']] }
+              { id: 'badge', label: 'Request badge', type: 'toggle', value: true,
+                hint: 'The component’s badge — “Access request”, “AI action”, “Ongoing permission”.' },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
             ] },
 
-          { id: 'work', label: 'Working', section: 'appearance', states: ['working'],
-            requires: 'showWorking',
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
             controls: [
-              { id: 'workStyle', label: 'Working indicator', type: 'segment', value: 'ring',
-                options: [['ring', 'Ring'], ['pulse', 'Pulse'], ['minimal', 'Minimal']],
-                hint: 'A treatment, not a duration — the motion tokens stay fixed.' }
+              { id: 'q-consequence', type: 'check', label: 'The consequence is clear',
+                test: function (c) { var T = csType(c); return csWord(c, 'title', T).length > 0 && csWord(c, 'why', T).length > 0; },
+                fail: 'Without a title and an explanation, the person cannot know what they are agreeing to.' },
+              { id: 'q-choices', type: 'check', label: 'Approve and Deny are understandable',
+                test: function (c) {
+                  var T = csType(c), y = csWord(c, 'allow', T), n = csWord(c, 'deny', T), vague = /^(ok|okay|yes|no|cancel|accept|confirm|submit|i agree)$/i;
+                  return y.length > 0 && n.length > 0 && !vague.test(y) && !vague.test(n);
+                },
+                fail: '“OK” and “Cancel” do not say what happens. Name the action: “Continue”, “Create 3 issues”, “Not now”.' },
+              { id: 'q-dark', type: 'check', label: 'No dark-pattern hierarchy',
+                test: function (c) {
+                  var n = csWord(c, 'deny', csType(c));
+                  return n.length > 0 && !/(no thanks|i don.?t want|risk|miss out|i.?ll pass|do it the hard way|less secure)/i.test(n);
+                },
+                fail: 'The way out is missing or shames the choice. Deny has to be a legitimate option.' },
+              { id: 'q-scope', type: 'check', label: 'The access scope is understandable',
+                test: function (c) { return c.type !== 'data' || tdTrim(c.scope).length > 0; },
+                fail: 'Say what the agent will be able to see or do.' },
+              { id: 'q-preserve', type: 'check', label: 'Denying keeps their work',
+                test: function () { return true; } },
+              { id: 'q-continue', type: 'check', label: 'They know how to continue',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        ready:    { label: 'Ready',
-                    trigger: 'The agent is available and idle.',
-                    behaviour: 'The mark sits at rest: a container role with the reserved glyph, ' +
-                               'never a face and never initials.',
-                    action: 'Set it working' },
-        working:  { label: 'Working',
-                    trigger: 'The agent starts a task.',
-                    behaviour: 'A ring runs on the mark itself. State belongs on the thing whose ' +
-                               'state it is, not on a spinner somewhere else.',
-                    action: 'Finish, or hand over' },
-        answered: { label: 'Answered',
-                    trigger: 'The task completes.',
-                    behaviour: 'The ring stops immediately. Motion that outlives the work it ' +
-                               'described is decoration.',
-                    action: 'Hand to a person' },
-        handed:   { label: 'Handed over',
-                    trigger: 'A person takes the thread.',
-                    behaviour: 'Both marks are on screen at once — the only test that matters ' +
-                               'is whether you can tell them apart at a glance.',
-                    action: 'Stand the agent down' },
-        off:      { label: 'Stood down',
-                    trigger: 'The agent is switched off for this surface.',
-                    behaviour: 'The mark stays, muted, so its absence is legible rather than ' +
-                               'looking like a loading failure.',
-                    action: 'Bring it back' }
+        required: {
+          label: 'Consent required',
+          trigger: 'The agent reached something it may not do without permission.',
+          behaviour: 'Work pauses at that step. The request names what is asked, why this task needs it, the scope, and what happens next — with two choices of equal size. Nothing is preselected.',
+          meaning: 'Nothing has been accessed or done. It is waiting for them.',
+          action: 'Continue, Not now, or review the details first.',
+          next: 'Approved, Denied, or Reviewing access'
+        },
+        reviewing: {
+          label: 'Reviewing access',
+          requires: 'review',
+          trigger: 'Review details was pressed.',
+          behaviour: 'The request opens in place: the account, where activity is shown, and how to turn it off later. The choices stay where they were.',
+          meaning: 'Exactly what they are agreeing to, before they agree.',
+          action: 'Decide.',
+          next: 'Approved or Denied'
+        },
+        approved: {
+          label: 'Approved',
+          trigger: 'They chose to allow it.',
+          behaviour: 'A short confirmation replaces the request: what was allowed, for how long, and where to take it back. The task continues.',
+          meaning: 'Permission was given — only what was shown.',
+          action: 'Carry on, review it, or turn it off.',
+          next: 'The task continues · Revoked · Expired'
+        },
+        denied: {
+          label: 'Denied',
+          trigger: 'They chose Not now.',
+          behaviour: 'Nothing is accessed or done. Their request and the conversation are kept, and the product offers another way to continue.',
+          meaning: 'No was a real answer, and the rest of the product still works.',
+          action: 'Continue without it, use another source, or allow it after all.',
+          next: 'The task continues without it'
+        },
+        expired: {
+          label: 'Expired',
+          trigger: 'Permission given earlier no longer applies.',
+          behaviour: 'The request comes back with the reason it is being asked again — time, or what changed — rather than as if it were the first time.',
+          meaning: 'Why they are being asked again, so the repeat is not noise.',
+          action: 'Allow again, or not.',
+          next: 'Approved or Denied'
+        },
+        revoked: {
+          label: 'Revoked',
+          requires: 'revoke',
+          trigger: 'They turned the permission off.',
+          behaviour: 'Access stops at once. What was already read or done is stated plainly; nothing new happens until they allow it again.',
+          meaning: 'They are back in control, and they can see where things stand.',
+          action: 'Allow again later, if they want to.',
+          next: 'Consent required, the next time it is needed'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var size = c.size === 'sm' ? ' md-agentav--sm' : c.size === 'lg' ? ' md-agentav--lg' : '';
-        var cls = size +
-                  (c.surface === 'tonal' ? ' md-agentav--tonal' : ' md-agentav--neutral') +
-                  (c.shape === 'rounded' ? ' md-agentav--rounded' : '') +
-                  (s.state === 'working' && c.showWorking
-                     ? ' md-agentav--thinking md-agentav--work-' + c.workStyle : '') +
-                  (s.state === 'off' ? ' md-agentav--muted' : '');
-        var line = s.state === 'working'  ? esc(c.workingLine)
-                 : s.state === 'off'      ? esc(c.offLine)
-                 : s.state === 'handed'   ? 'Answered, then handed over'
-                 : s.state === 'answered' ? esc(c.answeredLine)
-                 : esc(c.readyLine);
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var T = csType(c), dens = c.density === 'compact' ? 'compact' : 'comfortable';
+        var asked = st === 'required' || st === 'reviewing' || st === 'expired';
+        var ctxLine =
+'  <p class="tdx-cs__ctx md-body-small">' + mi('forum') +
+     '<span>Asked while working on: <q>' + T.task + '</q></span></p>\n';
 
-        /* The status dot never travels alone: it repeats what the
-           line beside it already says, so the state does not live
-           in a colour. */
-        var dot = c.statusDot && s.state !== 'handed'
-          ? '      <span class="md-agentav__dot md-agentav__dot--' +
-            (s.state === 'working' ? 'work' : s.state === 'off' ? 'off' : 'ready') +
-            '" aria-hidden="true"></span>\n'
-          : '';
+        if (asked) {
+          var expired = st === 'expired';
+          var rows = T.scope.map(function (r, i) {
+            return { leading: mi(r[0]), headline: i === 0 && c.type === 'data' ? esc(tdTrim(c.scope)) || '&mdash;' : r[1],
+                     supporting: r[2] || '' };
+          });
+          var body =
+            '<div class="tdx-cs__scope">' +
+              '<p class="tdx-cs__k">' + (c.type === 'action' ? 'What will be created' : 'What Aria will be able to do') + '</p>' +
+              M.list(rows, { 'aria-label': c.type === 'action' ? 'Issues to create' : 'Access requested' }) +
+            '</div>' +
+            '<p class="tdx-cs__then md-body-small"><b>If you ' + (c.type === 'ongoing' ? 'allow it' : 'continue') + ':</b> ' + T.what + '</p>' +
+            (c.type === 'data' && c.remember
+              ? M.checkbox({ checked: !!s.csRemember, act: 'remember', id: 'tdx-cs-rem',
+                  label: 'Remember for the Pricing project' })
+              : '') +
+            (c.review !== false
+              ? '<div class="tdx-cs__review">' +
+                  M.button({ variant: 'text', label: st === 'reviewing' ? 'Hide details' : 'Review details',
+                    icon: mi(st === 'reviewing' ? 'chevDown' : 'chevRight'),
+                    attrs: { 'data-act': 'review', 'aria-expanded': String(st === 'reviewing'), 'aria-controls': 'tdx-cs-more' } }) +
+                  (st === 'reviewing'
+                    ? '<dl class="tdx-cs__more" id="tdx-cs-more">' + T.review.map(function (r) {
+                        return '<div><dt>' + mi(r[0]) + r[1] + '</dt><dd>' + r[2] + '</dd></div>';
+                      }).join('') + '</dl>'
+                    : '') +
+                '</div>'
+              : '');
+          return '' +
+'<div class="tdx-cs tdx--only" data-density="' + dens + '" data-type="' + c.type + '">\n' +
+'  ' + M.actionConfirmation({ id: 'tdx-cs', cls: 'tdx-cs__ask' + (expired ? ' is-again' : ''),
+        badge: c.badge !== false ? (expired ? 'Needs approval again' : T.badge) : '',
+        icon: T.logo(),
+        title: expired ? T.expired.title : esc(csWord(c, 'title', T)),
+        description: expired ? T.expired.body : esc(csWord(c, 'why', T)),
+        body: body,
+        cancel: esc(csWord(c, 'deny', T)), confirm: esc(expired ? T.again : csWord(c, 'allow', T)),
+        cancelAct: 'deny', confirmAct: 'allow' }) + '\n' +
+'</div>';
+        }
 
+        /* The outcomes: a compact status that replaces the request. */
+        var out = st === 'approved' ? T.approved : st === 'denied' ? T.denied : T.revoked;
+        var acts = '';
+        if (st === 'approved') {
+          acts = (c.revoke !== false ? M.button({ variant: 'text', label: T.off, attrs: { 'data-act': 'revoke' } }) : '') +
+                 M.button({ variant: 'text', label: 'Review', attrs: { 'data-act': 'noop' } });
+        } else if (st === 'denied') {
+          acts = T.alts.map(function (x, i) {
+            return M.button({ variant: i === 0 ? 'tonal' : 'text', label: x[0], attrs: { 'data-act': x[1] } });
+          }).join('');
+        } else {
+          acts = M.button({ variant: 'text', label: T.again, attrs: { 'data-act': 'again' } });
+        }
         return '' +
-'<div class="md-idstack">\n' +
-'  <div class="md-idrow">\n' +
-'    <span class="md-agentav' + cls + '"' +
-       (s.state === 'working' && c.showWorking
-         ? ' role="status" aria-label="' + esc(c.name) + ' is working"'
-         : ' aria-hidden="true"') + '>\n' +
-'      <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-   dot +
-'    </span>\n' +
-'    <div>\n' +
-'      <p class="md-idrow__name md-body-large">' + esc(c.name) + '\n' +
-       (s.state === 'off' || !c.chip ? '' :
-'        <span class="md-assist-chip md-assist-chip--tonal">AI generated</span>\n') +
-'      </p>\n' +
-'      <p class="md-idrow__sub md-body-medium">' + line + '</p>\n' +
-'    </div>\n' +
-'  </div>\n' +
-   (s.state === 'handed'
-? '\n' +
-'  <div class="md-idrow">\n' +
-'    <span class="md-agentav' + size + ' md-agentav--human" aria-hidden="true">' +
-     esc(c.humanInitials) + '</span>\n' +
-'    <div>\n' +
-'      <p class="md-idrow__name md-body-large">' + esc(c.humanName) + '</p>\n' +
-'      <p class="md-idrow__sub md-body-medium">' + esc(c.humanRole) + '</p>\n' +
-'    </div>\n' +
-'  </div>\n' : '') +
+'<div class="tdx-cs tdx--only" data-density="' + dens + '" data-type="' + c.type + '">\n' +
+'  ' + M.card('outlined',
+        '<div class="tdx-cs__done" role="status">' +
+          '<span class="tdx-cs__logo">' + T.logo() + '</span>' +
+          '<div class="tdx-cs__dt">' +
+            '<p class="md-title-small tdx-cs__dh">' + mi(st === 'approved' ? 'checkCircle' : st === 'denied' ? 'block' : 'syncOff') + out.title + '</p>' +
+            '<p class="md-body-medium tdx-cs__db">' + out.body + '</p>' +
+            (st === 'denied' ? '<p class="md-body-small tdx-cs__kept">' + mi('history') + T.kept + '</p>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="tdx-cs__acts">' + acts + '</div>', 'tdx-cs__card') + '\n' +
 '</div>';
       },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, T = csType(c);
+        var asked = st === 'required' || st === 'reviewing' || st === 'expired', expired = st === 'expired';
+        var imp = asked
+          ? [['Md3ActionConfirmation', '@nucleux/md3-action-confirmation'], ['Md3List, Md3ListItem', '@nucleux/md3-list'], ['Md3Button', '@nucleux/md3-button']]
+          : [['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button']];
+        if (asked && c.type === 'data' && c.remember) imp.push(['Md3Checkbox', '@nucleux/md3-checkbox']);
+        var out = imports(imp) + '\n\n// State: ' + this.states[st].label + '\n';
+        if (asked) {
+          out += '<Md3ActionConfirmation\n' +
+            '  variant="default"\n' +
+            (c.badge !== false ? '  badge=' + jsxAttr(expired ? 'Needs approval again' : T.badge) + '\n' : '  badge={null}\n') +
+            '  icon={<img src="' + T.logoFile + '" alt="" />}\n' +
+            '  title=' + jsxAttr(expired ? T.expired.title : csWord(c, 'title', T)) + '\n' +
+            '  description=' + jsxAttr(expired ? T.expired.body : csWord(c, 'why', T)) + '\n' +
+            '  cancelLabel=' + jsxAttr(csWord(c, 'deny', T)) + '\n' +
+            '  confirmLabel=' + jsxAttr(expired ? T.again : csWord(c, 'allow', T)) + '\n' +
+            '  onCancel={deny}\n  onConfirm={allow}\n>\n' +
+            '  <Md3List aria-label="Access requested">\n' +
+            T.scope.map(function (r, i) {
+              return '    <Md3ListItem leading={' + sym(r[3] || 'check') + '} headline=' +
+                jsxAttr(i === 0 && c.type === 'data' ? tdTrim(c.scope) : r[1]) + (r[2] ? ' supportingText=' + jsxAttr(r[2]) : '') + ' />\n';
+            }).join('') +
+            '  </Md3List>\n' +
+            '  <p>' + jsxText((c.type === 'ongoing' ? 'If you allow it: ' : 'If you continue: ') + T.what) + '</p>\n' +
+            (c.type === 'data' && c.remember ? '  <Md3Checkbox checked={false} aria-label="Remember for the Pricing project" />\n' : '') +
+            (c.review !== false ? '  <Md3Button variant="text" aria-expanded={' + (st === 'reviewing') + '} onClick={toggleDetails}>Review details</Md3Button>\n' : '') +
+            '</Md3ActionConfirmation>';
+          return out;
+        }
+        var o = st === 'approved' ? T.approved : st === 'denied' ? T.denied : T.revoked;
+        out += '<Md3Card variant="outlined" role="status">\n' +
+          '  <p>' + jsxText(o.title) + '</p>\n  <p>' + jsxText(o.body) + '</p>\n';
+        if (st === 'approved') out += (c.revoke !== false ? '  <Md3Button variant="text" onClick={revoke}>' + jsxText(T.off) + '</Md3Button>\n' : '') +
+          '  <Md3Button variant="text">Review</Md3Button>\n';
+        else if (st === 'denied') out += T.alts.map(function (x, i) {
+          return '  <Md3Button variant="' + (i === 0 ? 'tonal' : 'text') + '">' + jsxText(x[0]) + '</Md3Button>\n';
+        }).join('');
+        else out += '  <Md3Button variant="text" onClick={askAgain}>' + jsxText(T.again) + '</Md3Button>\n';
+        return out + '</Md3Card>';
+      },
+
       act: async function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'off')  { s.state = s.state === 'off' ? 'ready' : 'off'; ctx.paint(); return; }
-        if (a === 'hand') { s.state = s.state === 'handed' ? 'ready' : 'handed'; ctx.paint(); return; }
-        if (a === 'work') {
-          s.state = 'working'; ctx.paint(); ctx.announce('Working');
-          await wait(1600);
-          if (s.state === 'working') { s.state = 'answered'; ctx.paint(); ctx.announce('Answered'); }
+        var s = ctx.s, c = ctx.cfg(), T = csType(c);
+        if (a === 'noop') return;
+        if (a === 'review') { s.state = s.state === 'reviewing' ? 'required' : 'reviewing'; ctx.paint(); return; }
+        if (a === 'remember') { s.csRemember = !s.csRemember; ctx.paint(); return; }
+        if (a === 'allow') { s.state = 'approved'; ctx.paint(); ctx.announce(T.approved.title + '.'); return; }
+        if (a === 'deny') { s.state = 'denied'; s.csRemember = false; ctx.paint(); ctx.announce(T.denied.title + '. ' + T.kept); return; }
+        if (a === 'revoke' && c.revoke !== false) { s.state = 'revoked'; ctx.paint(); ctx.announce(T.revoked.title + '.'); return; }
+        if (a === 'again') { s.state = 'required'; ctx.paint(); return; }
+        if (a === 'alt-without' || a === 'alt-file' || a === 'alt-copy' || a === 'alt-edit' || a === 'alt-once') {
+          ctx.announce(T.altSaid[a] || 'Continuing.'); return;
         }
       }
+    },
+
+    /* ══════════════════════════════════════════════════════════
+       CAVEAT — "What should I be careful about with this result?"
+
+       Specific to THIS result, attached to it, and only there when
+       there is something to say. Not "AI can make mistakes" on every
+       answer, not an error, not a permanent banner: a calm note that
+       says what is missing or uncertain, why it matters, and what to
+       do — and that leaves when the reason for it is gone.
+
+       Md3Card (filled) holds it at the foot of the result it
+       qualifies; the compact form is AiCaveat from
+       @nucleux/ai-disclosure with the specific sentence as its child.
+       ══════════════════════════════════════════════════════════ */
+    caveat: {
+      initial: 'visible',
+
+      customize: {
+        api: {
+          name: 'AiCaveat',
+          props: function (c) { return { children: cvWord(c, 'message', cvType(c)) }; }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'kind', label: 'Limitation', section: 'content',
+            controls: [
+              { id: 'type', label: 'Caveat type', type: 'segment', value: 'incomplete',
+                options: [['incomplete', 'Incomplete context'], ['uncertain', 'Uncertainty'], ['stale', 'Stale information'],
+                          ['omission', 'Omission'], ['capability', 'Capability limit']],
+                hint: 'Use only when it is true of this result. The wording fields edit Incomplete context.' }
+            ] },
+          { id: 'words', label: 'Words', section: 'content',
+            controls: [
+              { id: 'message', label: 'Caveat message', type: 'text', value: CAVEAT_TYPES.incomplete.message,
+                visibleWhen: function (c) { return c.type === 'incomplete'; },
+                hint: 'What is missing or uncertain, with the number. Not “AI can make mistakes”.' },
+              { id: 'detail', label: 'Supporting detail', type: 'text', value: CAVEAT_TYPES.incomplete.detail,
+                visibleWhen: function (c) { return c.type === 'incomplete'; },
+                hint: 'Why it matters for this result.' },
+              { id: 'actionLabel', label: 'Recovery action label', type: 'text', value: CAVEAT_TYPES.incomplete.fix,
+                visibleWhen: function (c) { return c.type === 'incomplete'; } }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'expand', label: 'Expandable details', type: 'toggle', value: true, capability: true,
+                hint: 'Review sources opens the specifics in place. Off removes the Details expanded state.' },
+              { id: 'recover', label: 'Recovery action', type: 'toggle', value: true, capability: true,
+                hint: 'Offer the step that removes the reason for the caveat, where one exists.' },
+              { id: 'persist', label: 'Persistent reminder', type: 'toggle', value: false,
+                hint: 'Where justified: a short line in the result’s header that stays while the result is visible.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
+                options: [['tonal', 'Tonal card'], ['inline', 'Inline note']],
+                hint: 'Tonal is an Md3Card (filled); inline is AiCaveat. Neither uses the error colour.' },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-specific', type: 'check', label: 'The limitation is specific',
+                test: function (c) {
+                  var m = cvWord(c, 'message', cvType(c));
+                  return m.length > 12 && !/(ai can make mistakes|may (be|contain) (inaccurate|errors|mistakes)|check important info|could be wrong|might not be accurate|verify important information)/i.test(m);
+                },
+                fail: 'A generic line on every answer teaches people to ignore it. Say what is missing, here.' },
+              { id: 'q-why', type: 'check', label: 'It explains why it matters',
+                test: function (c) { return cvWord(c, 'detail', cvType(c)).length > 0; },
+                fail: 'Add the consequence for this result.' },
+              { id: 'q-recover', type: 'check', label: 'A clear next step exists',
+                test: function (c) { return c.expand !== false || (c.recover !== false && cvWord(c, 'actionLabel', cvType(c)).length > 0); },
+                fail: 'With no details and no recovery, the person is told about a problem and left with it.' },
+              { id: 'q-attached', type: 'check', label: 'Connected to the affected content',
+                test: function () { return true; } },
+              { id: 'q-hover', type: 'check', label: 'Not hidden on hover',
+                test: function () { return true; } },
+              { id: 'q-error', type: 'check', label: 'Not styled as an error',
+                test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        none: {
+          label: 'No caveat needed',
+          trigger: 'Every source was read and nothing about the result is in doubt.',
+          behaviour: 'The result on its own. No empty notice, no standing “AI can make mistakes” line.',
+          meaning: 'There is nothing specific to be careful about.',
+          action: 'Use the result.',
+          next: '—'
+        },
+        visible: {
+          label: 'Caveat visible',
+          trigger: 'Two of the eight interviews could not be opened.',
+          behaviour: 'One note at the foot of the summary it qualifies: what is missing, why it matters, and what to do. Calm tokens, not the error colour. The summary stays — nothing was removed because it is incomplete.',
+          meaning: 'This summary reflects 6 of 8 interviews and may miss something.',
+          action: 'Review sources, or reconnect the missing ones.',
+          next: 'Details expanded, or Resolved'
+        },
+        expanded: {
+          label: 'Details expanded',
+          requires: 'expand',
+          trigger: 'Review sources was pressed.',
+          behaviour: 'The note opens in place to list what was read and what was not, each with its reason.',
+          meaning: 'Exactly which inputs are behind the result, and which are not.',
+          action: 'Reconnect, or close.',
+          next: 'Resolved'
+        },
+        resolved: {
+          label: 'User resolves the issue',
+          requires: 'recover',
+          trigger: 'They reconnected the folder and Aria re-read the missing interviews.',
+          behaviour: 'The note becomes a short confirmation of what changed — all 8 read, one theme added — and the new line is marked in the summary.',
+          meaning: 'The gap is closed, and they can see what it changed.',
+          action: 'Read the update, then dismiss it.',
+          next: 'No longer relevant'
+        },
+        gone: {
+          label: 'Caveat no longer relevant',
+          trigger: 'The reason for the caveat is gone.',
+          behaviour: 'The caveat leaves with its reason. The summary stands on its own, now from all eight.',
+          meaning: 'Nothing about this result needs special care any more.',
+          action: 'Use the result.',
+          next: '—'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var T = cvType(c), dens = c.density === 'compact' ? 'compact' : 'comfortable';
+        var full = st === 'none' || st === 'resolved' || st === 'gone';
+        var pts = T.points.slice();
+        if (full && T.added && st !== 'none') pts.push(T.added);
+        if (full && T.added && st === 'none') pts.push(T.added);
+        var list = '<ul class="tdx-cv__pts md-body-medium">' + pts.map(function (p, i) {
+          var isNew = st === 'resolved' && T.added && p === T.added;
+          return '<li' + (isNew ? ' class="is-new"' : '') + '>' + p +
+            (isNew ? ' <span class="tdx-cv__new">' + mi('sync') + 'Updated</span>' : '') + '</li>';
+        }).join('') + '</ul>';
+
+        var showNote = st === 'visible' || st === 'expanded' || (st === 'resolved' && c.recover !== false);
+        var note = '';
+        if (st === 'visible' || st === 'expanded') {
+          var open = st === 'expanded' && c.expand !== false;
+          var acts =
+            (c.expand !== false
+              ? M.button({ variant: 'text', label: open ? 'Hide sources' : T.review,
+                  icon: mi(open ? 'chevDown' : 'chevRight'),
+                  attrs: { 'data-act': 'review', 'aria-expanded': String(open), 'aria-controls': 'tdx-cv-more' } })
+              : '') +
+            (c.recover !== false && cvWord(c, 'actionLabel', T)
+              ? M.button({ variant: 'text', label: esc(cvWord(c, 'actionLabel', T)), icon: mi(T.fixIcon),
+                  attrs: { 'data-act': 'fix', 'aria-disabled': s.cvBusy ? 'true' : null } })
+              : '');
+          var more = open
+            ? '<div class="tdx-cv__more" id="tdx-cv-more">' + M.list(T.sources.map(function (r) {
+                return { leading: mi(r[0]), headline: r[1], supporting: r[2] };
+              }), { 'aria-label': T.listLabel }) + '</div>'
+            : '';
+          var busy = s.cvBusy
+            ? '<div class="tdx-cv__busy" role="status">' + M.progress(undefined, T.busy) +
+                '<span class="md-body-small">' + T.busy + '</span></div>'
+            : '';
+          var msg = esc(cvWord(c, 'message', T)), detail = esc(cvWord(c, 'detail', T));
+          note = c.emphasis === 'inline'
+            ? '<div class="tdx-cv__note tdx-cv__note--inline" id="tdx-cv-note">' +
+                M.aiCaveat('<b>' + msg + '</b>' + (detail ? ' ' + detail : ''), mi(T.icon)) +
+                '<div class="tdx-cv__acts">' + acts + '</div>' + more + busy +
+              '</div>'
+            : M.card('filled',
+                '<div class="tdx-cv__head">' + mi(T.icon) +
+                  '<div><p class="md-title-small tdx-cv__msg">' + msg + '</p>' +
+                  (detail ? '<p class="md-body-medium tdx-cv__why">' + detail + '</p>' : '') + '</div></div>' +
+                '<div class="tdx-cv__acts">' + acts + '</div>' + more + busy,
+                'tdx-cv__note', { id: 'tdx-cv-note', role: 'note', 'aria-label': 'Caveat about this summary' });
+        } else if (st === 'resolved' && c.recover !== false) {
+          note = M.card('outlined',
+            '<div class="tdx-cv__head tdx-cv__head--ok" role="status">' + mi('checkCircle') +
+              '<div><p class="md-title-small tdx-cv__msg">' + T.resolved + '</p>' +
+              '<p class="md-body-medium tdx-cv__why">' + T.resolvedWhy + '</p></div></div>' +
+            '<div class="tdx-cv__acts">' + M.button({ variant: 'text', label: 'Dismiss', attrs: { 'data-act': 'dismiss' } }) + '</div>',
+            'tdx-cv__note tdx-cv__note--ok', { id: 'tdx-cv-note' });
+        }
+
+        var reminder = c.persist && (st === 'visible' || st === 'expanded')
+          ? M.aiCaveat(T.reminder, mi(T.icon), { 'aria-describedby': 'tdx-cv-note' })
+          : '';
+
+        return '<div class="tdx-cv tdx--only" data-density="' + dens + '" data-emphasis="' + (c.emphasis === 'inline' ? 'inline' : 'tonal') + '">\n' +
+          (reminder ? '  ' + reminder + '\n' : '') +
+          (note ? '  ' + note + '\n' : '  <p class="tdx-none md-body-small">No caveat is shown.</p>\n') +
+          '</div>';
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, T = cvType(c);
+        var on = st === 'visible' || st === 'expanded', open = st === 'expanded' && c.expand !== false;
+        var inline = c.emphasis === 'inline';
+        var imp = [];
+        if (on && !inline) imp.push(['Md3Card', '@nucleux/md3-card']);
+        if (on && inline) imp.push(['AiCaveat', '@nucleux/ai-disclosure']);
+        if (on) imp.push(['Md3Button', '@nucleux/md3-button']);
+        if (open) imp.push(['Md3List, Md3ListItem', '@nucleux/md3-list']);
+        if (on && s.cvBusy) imp.push(['Md3LinearProgress', '@nucleux/md3-progress']);
+        if (on && c.persist && !inline) imp.push(['AiCaveat', '@nucleux/ai-disclosure']);
+        if (st === 'resolved' && c.recover !== false) imp.push(['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button']);
+        var out = (imp.length ? imports(imp) + '\n\n' : '') + '// State: ' + this.states[st].label + '\n' +
+          '// Attach it to the result it qualifies (aria-describedby="caveat" on that result).\n' +
+          (on && c.persist ? '<AiCaveat icon={' + sym(T.sym) + '}>' + jsxText(T.reminder) + '</AiCaveat>\n' : '');
+        if (st === 'none' || st === 'gone') return out + '{/* No caveat: nothing specific to be careful about. */}';
+        if (st === 'resolved') {
+          return out + (c.recover !== false
+            ? '  <Md3Card id="caveat" variant="outlined" role="status">\n' +
+              '    <p>' + jsxText(T.resolved) + '</p>\n    <p>' + jsxText(T.resolvedWhy) + '</p>\n' +
+              '    <Md3Button variant="text" onClick={dismiss}>Dismiss</Md3Button>\n  </Md3Card>\n' : '') + '';
+        }
+        var m = cvWord(c, 'message', T), d = cvWord(c, 'detail', T), fix = cvWord(c, 'actionLabel', T);
+        var acts = (c.expand !== false ? '    <Md3Button variant="text" aria-expanded={' + open + '} onClick={toggleSources}>' + jsxText(T.review) + '</Md3Button>\n' : '') +
+                   (c.recover !== false && fix ? '    <Md3Button variant="text" icon={' + sym(T.fixSym) + '} onClick={recover}>' + jsxText(fix) + '</Md3Button>\n' : '');
+        var more = open ? '    <Md3List aria-label=' + jsxAttr(T.listLabel) + '>\n' + T.sources.map(function (r) {
+            return '      <Md3ListItem headline=' + jsxAttr(r[1]) + ' supportingText=' + jsxAttr(r[2]) + ' />\n';
+          }).join('') + '    </Md3List>\n' : '';
+        if (s.cvBusy) more += '    <Md3LinearProgress aria-label=' + jsxAttr(T.busy) + ' />\n';
+        if (inline) {
+          return out + '  <div id="caveat">\n    <AiCaveat icon={' + sym(T.sym) + '}>' + jsxText(m + (d ? ' ' + d : '')) + '</AiCaveat>\n' +
+            acts + more + '  </div>';
+        }
+        return out + '  <Md3Card id="caveat" variant="filled" role="note" aria-label="Caveat about this summary">\n' +
+          '    <p>' + jsxText(m) + '</p>\n' + (d ? '    <p>' + jsxText(d) + '</p>\n' : '') + acts + more +
+          '  </Md3Card>';
+      },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg(), T = cvType(c);
+        if (a === 'review' && c.expand !== false) {
+          s.state = s.state === 'expanded' ? 'visible' : 'expanded'; ctx.paint(); return;
+        }
+        if (a === 'fix' && c.recover !== false && !s.cvBusy) {
+          s.cvBusy = true; ctx.paint(); ctx.announce(T.busy);
+          await wait(1800);
+          s.cvBusy = false; s.state = 'resolved'; ctx.paint();
+          ctx.announce(T.resolved + ' ' + T.resolvedWhy);
+          return;
+        }
+        if (a === 'dismiss') {
+          s.state = 'gone'; ctx.paint(); ctx.announce('Caveat removed. The summary now reflects every source.');
+        }
+      }
+    },
+
+    /* ── Avatar ─────────────────────────────────────────────── */
+    avatar: {
+      initial: 'resting',
+
+      customize: {
+        api: {
+          name: 'Avatar',
+          props: function (c) {
+            return { role: 'assistant', shape: c.shape === 'circle' ? 'circle' : 'rounded',
+                     alt: tdTrim(c.a11y) || 'Aria, AI agent', src: c.image !== false ? '/agents/aria.svg' : undefined };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'mark', label: 'Mark', section: 'content',
+            controls: [
+              { id: 'image', label: 'Approved image asset', type: 'toggle', value: true, capability: true,
+                hint: 'An abstract mark your team approved — never a face. Off draws the agent glyph. Off also removes the Fallback state.' },
+              { id: 'a11y', label: 'Accessible label', type: 'text', value: 'Aria, AI agent',
+                hint: 'What a screen reader says for the avatar. Name the agent and say it is AI.' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'working', label: 'Working treatment', type: 'segment', value: 'ring',
+                options: [['ring', 'Ring + words'], ['ring-only', 'Ring only']],
+                hint: 'The ring is Md3CircularProgress. The words carry the meaning when motion is reduced or missed.' },
+              { id: 'label', label: 'Show “AI agent” label', type: 'toggle', value: true,
+                hint: 'AiDisclosure beside the name, where the agent is introduced.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'size', label: 'Size', type: 'segment', value: '32',
+                options: [['24', '24'], ['32', '32'], ['40', '40']],
+                hint: 'size-6, size-8, size-10. Compact surfaces always use 24.' },
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'tonal',
+                options: [['tonal', 'Tonal'], ['quiet', 'Quiet']],
+                hint: 'Tonal is primary-container. Quiet is surface-container-high, for dense lists.' },
+              { id: 'shape', label: 'Shape', type: 'segment', value: 'rounded',
+                options: [['rounded', 'Rounded square'], ['circle', 'Circle']],
+                hint: 'People are circles. The agent is a rounded square, so the two differ in shape — not only in colour.' }
+            ] },
+
+          /* ══ ADVANCED ══════════════════════════════════════ */
+          { id: 'adv', label: 'Fallback', section: 'advanced',
+            controls: [
+              { id: 'fallback', label: 'When the image fails', type: 'segment', value: 'icon',
+                options: [['icon', 'Agent glyph'], ['initials', 'Initials']],
+                hint: 'The package draws initials on brand, or its glyph on muted. Either keeps the accessible label.' }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-shape', type: 'check', label: 'Not mistakable for a person',
+                test: function (c) { return c.shape !== 'circle' || c.label !== false; },
+                fail: 'A circle with no “AI agent” label is drawn exactly like a colleague. Use the rounded square or keep the label.' },
+              { id: 'q-name', type: 'check', label: 'Accessible label names an AI agent',
+                test: function (c) { return /\b(ai|agent|assistant|bot)\b/i.test(tdTrim(c.a11y)); },
+                fail: 'A screen reader hears only a name. Say it is an AI agent.' },
+              { id: 'q-motion', type: 'check', label: 'Working state is not motion alone',
+                test: function (c) { return c.working !== 'ring-only'; },
+                fail: 'A spinning ring with no words is missed with reduced motion and by screen readers.' },
+              { id: 'q-colour', type: 'check', label: 'Identity does not rely on colour',
+                test: function (c) { return c.shape !== 'circle' || c.label !== false; },
+                fail: 'With colour removed, a circle reads as a person.' },
+              { id: 'q-face', type: 'check', label: 'No human face or stock photo',
+                test: function () { return true; } },
+              { id: 'q-fallback', type: 'check', label: 'Fallback keeps the label',
+                test: function (c) { return tdTrim(c.a11y).length > 0; },
+                fail: 'Without a label, a failed image leaves nothing to read.' }
+            ] }
+        ]
+      },
+
+      states: {
+        resting: {
+          label: 'Resting',
+          trigger: 'The agent is present and idle.',
+          behaviour: 'The agent avatar (rounded square, agent role), its name and “AI agent”. No ring, no motion.',
+          meaning: 'The agent is here and available.',
+          action: '—',
+          next: 'Active, or Working'
+        },
+        active: {
+          label: 'Active',
+          trigger: 'The agent is engaged — listening, or assigned.',
+          behaviour: 'A still outline ring in md-primary around the same avatar, and the words “Active now”.',
+          meaning: 'The agent is engaged right now.',
+          action: '—',
+          next: 'Working'
+        },
+        working: {
+          label: 'Working',
+          trigger: 'The agent is doing something.',
+          behaviour: 'Md3CircularProgress turns around the same avatar, with “Working…” beside it. The mark itself does not change.',
+          meaning: 'The agent is working now.',
+          action: '—',
+          next: 'Active'
+        },
+        compact: {
+          label: 'Compact',
+          trigger: 'Space is tight: a list row, a chip, a notification.',
+          behaviour: 'The same mark at 24 — same shape, same container — with the name beside it.',
+          meaning: 'The same agent, in less space.',
+          action: '—',
+          next: '—'
+        },
+        fallback: {
+          label: 'Fallback',
+          requires: 'image',
+          trigger: 'The approved image did not load.',
+          behaviour: 'The package fallback: the agent glyph on muted (or initials on brand). Shape and accessible label stay.',
+          meaning: 'Still the agent — only the picture is missing.',
+          action: '—',
+          next: '—'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var compact = st === 'compact', failed = st === 'fallback';
+        var working = st === 'working', active = st === 'active' || working;
+        var size = compact ? 24 : +c.size || 32;
+        var g = c.image === false ? mi('agent') : undefined;
+        var av = idAv(c, { size: size, failed: failed, glyph: g });
+        var words = working ? (c.working !== 'ring-only' ? 'Working…' : '') : st === 'active' ? 'Active now' : '';
+        return '<div class="idv idv--only" data-state="' + st + '">\n' +
+          '  <div class="idv-agent' + (compact ? ' is-compact' : '') + '">' +
+            idRing(av, size, working, active) +
+            '<div class="idv-hero__t">' +
+              '<p class="' + (compact ? 'md-label-large' : 'md-title-medium') + ' idv-name">Aria' + (compact ? '' : ' ' + idLabel(c)) + '</p>' +
+              (words ? '<p class="md-body-small idv-state"' + (working ? ' role="status"' : '') + '>' + words + '</p>' : '') +
+              (working && !words ? '<span class="tdx-sr" role="status">Agent working</span>' : '') +
+            '</div>' +
+          '</div>\n' +
+          '</div>';
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state;
+        var compact = st === 'compact', failed = st === 'fallback', working = st === 'working';
+        var size = compact ? 24 : +c.size || 32;
+        var glyph = c.image === false ? 'smart_toy' : null;
+        var imp = [['Avatar', '@nucleux/avatar']];
+        if (c.label !== false && !compact) imp.push(['AiDisclosure', '@nucleux/ai-disclosure']);
+        if (working) imp.push(['Md3CircularProgress', '@nucleux/md3-progress']);
+        var av = idAvJSX(c, { size: size, failed: failed, glyph: glyph, indent: '    ' });
+        var words = working ? (c.working !== 'ring-only' ? 'Working…' : '') : st === 'active' ? 'Active now' : '';
+        return imports(imp) + '\n\n// Avatar is a base Nucleux component (there is no Md3Avatar).\n' +
+          '// .nx-theme-mui (@nucleux/md3-theme) resolves its roles to Material 3.\n' +
+          '// State: ' + this.states[st].label + '\n' +
+          '<div className="nx-theme-mui flex items-center gap-3">\n' +
+          (working
+            ? '  <span className="relative">\n    ' + av + '\n    <Md3CircularProgress size={' + (size + 8) + '} aria-label="Agent working" className="absolute -inset-1" />\n  </span>\n'
+            : st === 'active'
+              ? '  <span className="relative rounded-xl ring-2 ring-md-primary ring-offset-2 ring-offset-md-surface">\n    ' + av + '\n  </span>\n'
+              : '  ' + av.replace(/\n {4}/g, '\n  ') + '\n') +
+          '  <div>\n    <p>Aria' + (c.label !== false && !compact ? ' <AiDisclosure variant="pill" label="AI agent" />' : '') + '</p>\n' +
+          (words ? '    <p' + (working ? ' role="status"' : '') + '>' + words + '</p>\n' : '') +
+          '  </div>\n</div>';
+      },
+
+      act: function () {}
     },
 
     /* ── Name ───────────────────────────────────────────────── */
     name: {
-      initial: 'unknown',
+      initial: 'introduced',
 
-      /* A name is words. The schema is the words, plus whether the
-         name is allowed to open into what it can reach — because a
-         name that cannot answer "what can it see?" is decoration. */
       customize: {
-        /* Name is small on purpose. What a product decides here is
-           what the agent is called, whether it says what it is for,
-           and whether it says it is an agent at all — and the last
-           two are the ones that stop a name being mistaken for a
-           colleague's. */
         api: {
-          name: 'AgentName',
+          name: 'AgentIdentity',
           props: function (c) {
-            return {
-              name: c.name,
-              role: c.showRole ? c.role : null,
-              showRole: c.showRole,
-              showDisclosure: c.showDisclosure,
-              disclosureLabel: c.chipLabel,
-              expandable: c.openable,
-              layout: c.layout,
-              density: c.density
-            };
+            return { name: tdTrim(c.agentName), role: tdTrim(c.role), description: tdTrim(c.desc), showRole: c.showRole !== false };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'identity', label: 'Identity', section: 'content',
-            states: ['introduced', 'detail', 'attributed'],
+          { id: 'words', label: 'Identity', section: 'content',
             controls: [
-              /* Set once, in the state where the agent introduces
-                 itself. Re-offering them beside the scope list reads
-                 as three separate names that must be kept in step. */
-              { id: 'name', label: 'Name', type: 'text', value: 'Aria',
-              },
-              /* The attribution trace carries the name and a timestamp,
-                 never the role line — so the control stays behind. */
-              { id: 'role', label: 'Role', type: 'text',
-                value: 'Assistant in Helpdesk · not a person',
-                visibleWhen: function (c, state) {
-                  return state !== 'attributed' && !!c.showRole;
-                } },
-              { id: 'chipLabel', label: 'Disclosure label', type: 'text', value: 'AI assistant',
-                visibleWhen: function (c, state) {
-                  return state !== 'attributed' && !!c.showDisclosure;
-                } }
+              { id: 'agentName', label: 'Agent name', type: 'text', value: 'Aria',
+                hint: 'Short, easy to say, and not a real person’s full name.' },
+              { id: 'role', label: 'Role descriptor', type: 'text', value: 'Meeting Intelligence Agent',
+                hint: 'What it does, in the product’s words. Shown beside the name.' },
+              { id: 'desc', label: 'Short description', type: 'text',
+                value: 'summarizes meetings, tracks decisions and drafts follow-ups',
+                hint: 'Completes “I …” in the introduction. Only what it can actually do.' }
             ] },
-
-          { id: 'unnamed', label: 'Before the introduction', section: 'content',
-            states: ['unknown'],
-            note: 'Nothing here can be reported, praised or complained about by name.',
-            controls: [
-              { id: 'unknownLabel', label: 'Generic label', type: 'text',
-                value: 'The assistant' }
-            ] },
-
-          { id: 'scope', label: 'What it can reach', section: 'content', states: ['detail'],
-            requires: 'openable',
-            note: 'Two things it can see and one it cannot. The last line is the one believed.',
-            controls: [
-              { id: 'fact1', label: 'First', type: 'text',
-                value: 'Salesforce pipeline, read only' },
-              { id: 'fact2', label: 'Second', type: 'text', value: 'The Q2 board pack in Drive' },
-              { id: 'limit', label: 'The limit', type: 'text',
-                value: 'Cannot send mail without you' }
-            ] },
-
-          { id: 'trace', label: 'Attribution', section: 'content', states: ['attributed'],
-            note: 'The same name weeks later, in a record it touched.',
-            controls: [
-              { id: 'fieldLabel', label: 'Field', type: 'text', value: 'Account summary' },
-              { id: 'stamp', label: 'Byline', type: 'text', value: '14 March, 10:24' }
-            ] }, 
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'says', label: 'What it says', section: 'behavior',
-            states: ['introduced', 'detail', 'attributed'],
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              { id: 'showRole', label: 'Show role', type: 'toggle', value: true,
-                visibleWhen: function (c, state) { return state !== 'attributed'; } },
-              { id: 'showDisclosure', label: 'Show AI disclosure', type: 'toggle', value: true,
-                hint: 'The line that stops a first name reading as a colleague.' },
-              { id: 'openable', label: 'Opens into its scope', type: 'toggle', value: true,
-                capability: true,
-                visibleWhen: function (c, state) { return state !== 'attributed'; },
-                hint: 'Off leaves the name with nothing behind it.' }
+              { id: 'showRole', label: 'Show role with the name', type: 'toggle', value: true,
+                hint: 'Where there is room: header, message, introduction.' },
+              { id: 'compactMode', label: 'Compact surfaces', type: 'segment', value: 'name',
+                options: [['name', 'Name only'], ['name-role', 'Name · role']],
+                hint: 'Chips, notifications and activity lines. The role stays in the accessible name either way.' },
+              { id: 'rename', label: 'Allow renaming', type: 'toggle', value: true, capability: true,
+                hint: 'Admins can rename the agent. Off removes the Name updated state.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Card', section: 'appearance',
-            states: ['introduced', 'detail'],
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'layout', label: 'Layout', type: 'segment', value: 'inline',
-                options: [['inline', 'Inline'], ['stacked', 'Stacked']] }
+              { id: 'type', label: 'Name typography', type: 'segment', value: 'title',
+                options: [['title', 'Title medium'], ['label', 'Label large']],
+                hint: 'The Material type role for the name in headers.' }
             ] },
 
-          { id: 'surface', label: 'Surface', section: 'appearance',
-            states: ['introduced', 'detail'],
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
             controls: [
-              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
-                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+              { id: 'q-human', type: 'check', label: 'Not a real person’s name',
+                test: function (c) {
+                  var n = tdTrim(c.agentName);
+                  return !/^[A-Z][a-z]+\s+[A-Z][a-z]+$/.test(n) &&
+                    !/^(sarah|john|emma|michael|jessica|david|emily|james|olivia|daniel|sophia|chris|maya|jordan|alex)$/i.test(n);
+                },
+                fail: 'A first-and-last name, or a common first name, reads as a colleague. People will assume a person.' },
+              { id: 'q-short', type: 'check', label: 'Fits compact surfaces',
+                test: function (c) { var n = tdTrim(c.agentName); return n.length > 0 && n.length <= 12; },
+                fail: 'Keep it to 12 characters so chips and notifications never truncate it.' },
+              { id: 'q-role', type: 'check', label: 'Role says what it does',
+                test: function (c) { return tdTrim(c.role).length > 2; },
+                fail: 'Without a role, the name has to explain itself.' },
+              { id: 'q-claims', type: 'check', label: 'No unsupported capability claims',
+                test: function (c) {
+                  return !/(guarantee|always (right|correct|accurate)|never (wrong|mistaken|makes mistakes)|100%|certified|expert|lawyer|doctor|human)/i
+                    .test(tdTrim(c.role) + ' ' + tdTrim(c.desc));
+                },
+                fail: 'The role and description promise something the agent cannot do. Describe what it does, not how good it is.' },
+              { id: 'q-ai', type: 'check', label: 'The introduction says it is AI',
+                test: function () { return true; } },
+              { id: 'q-same', type: 'check', label: 'One name on every surface',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        unknown:    { label: 'Unnamed',
-                      trigger: 'The agent has not been introduced.',
-                      behaviour: 'Generic labelling. Nothing here can be referred to in a bug ' +
-                                 'report, a support ticket or a sentence.',
-                      action: 'Introduce it' },
-        introduced: { label: 'Introduced',
-                      trigger: 'First meeting.',
-                      behaviour: 'The name arrives with a role line underneath. The name is ' +
-                                 'never asked to carry the disclosure on its own.',
-                      action: 'Open what it can see' },
-        detail:     { label: 'Scope shown',
-                      trigger: 'The reader asks what it can see.',
-                      behaviour: 'The card grows in place to list what the named thing actually ' +
-                                 'reaches — the name and the scope stay attached.',
-                      action: 'Close it' },
-        attributed: { label: 'Attributed',
-                      trigger: 'The agent leaves a trace somewhere else in the product.',
-                      behaviour: 'The same name appears in a record it touched weeks ago, which ' +
-                                 'is where a consistent name pays for itself.',
-                      action: 'Back to the introduction' }
+        introduced: {
+          label: 'Introduced',
+          trigger: 'The agent appears for the first time.',
+          behaviour: 'Avatar, name, role and “AI agent”, then one sentence: who runs it, what it does, and that it is not a person.',
+          meaning: 'This is Aria, an AI agent, and this is what it is for.',
+          action: '—',
+          next: 'Standard'
+        },
+        standard: {
+          label: 'Standard',
+          trigger: 'Anywhere the agent is named with room to spare.',
+          behaviour: 'The avatar with the name and the role beside it, in the same words as the introduction.',
+          meaning: 'This is Aria.',
+          action: '—',
+          next: 'Compact, or Name updated'
+        },
+        compact: {
+          label: 'Compact',
+          trigger: 'A chip, a notification, an activity line.',
+          behaviour: 'The name alone (or name · role) at 24 with the mark. The accessible name still includes the role.',
+          meaning: 'The same agent, briefly.',
+          action: '—',
+          next: '—'
+        },
+        multiple: {
+          label: 'Multiple agents',
+          trigger: 'More than one agent in the same product.',
+          behaviour: 'Each has its own name, role and glyph, so they are told apart by more than colour.',
+          meaning: 'Which agent is which.',
+          action: '—',
+          next: '—'
+        },
+        updated: {
+          label: 'Name updated',
+          requires: 'rename',
+          trigger: 'An admin renamed the agent.',
+          behaviour: 'The new name with “formerly Aria” beside it, and an Md3Snackbar saying the role and permissions did not change — with Undo.',
+          meaning: 'Same agent, new name. Nothing else changed.',
+          action: 'Keep it, or undo.',
+          next: 'Standard'
+        }
       },
+
       view: function (s) {
-        if (s.state === 'unknown') {
-          return '' +
-'<div class="pv-card pv-card--quiet">\n' +
-'  <p class="md-body-medium">' + esc(s.cfg.unknownLabel) + '</p>\n' +
-'  <p class="pv-card__meta md-body-small">\n' +
-'    Unnamed. Nothing here can be reported, praised or complained about by name.\n' +
-'  </p>\n' +
-'</div>';
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var nm = esc(tdTrim(c.agentName) || 'Aria'), role = esc(tdTrim(c.role)), desc = esc(tdTrim(c.desc));
+        var tcls = c.type === 'label' ? 'md-label-large' : 'md-title-medium';
+        var showRole = c.showRole !== false && role;
+        function head(n, r, glyph, extra) {
+          return '<div class="idv-agent">' + idAv({}, { size: 40, name: n, glyph: glyph, label: n + ', AI agent' + (r ? ', ' + r : '') }) +
+            '<div class="idv-hero__t"><p class="' + tcls + ' idv-name">' + n + (extra || '') + ' ' + idLabel({}) + '</p>' +
+            (r ? '<p class="md-body-small idv-role">' + r + '</p>' : '') + '</div></div>';
         }
-        if (s.state === 'attributed') {
-          return '' +
-'<div class="md-field">\n' +
-'  <label class="md-field__label md-body-small">' + esc(s.cfg.fieldLabel) + '</label>\n' +
-'  <p class="md-field__value md-body-large">\n' +
-'    Renewal risk moved to <b>medium</b> after two support escalations in March.\n' +
-'  </p>\n' +
-'  <div class="md-field__foot">\n' +
-'    <span class="md-agentav md-agentav--sm" aria-hidden="true">\n' +
-'      <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    </span>\n' +
-'    <span class="md-body-small">' +
-     (s.cfg.showDisclosure ? 'Written by ' : '') + esc(s.cfg.name) + ' &middot; ' +
-       esc(s.cfg.stamp) + '</span>\n' +
-'  </div>\n' +
-'</div>';
+        var body;
+        if (st === 'introduced') {
+          body = M.card('outlined', head(nm, showRole ? role : '') +
+            '<p class="md-body-medium idv-intro">Hi, I’m ' + nm + ', an AI agent run by Northwind. ' +
+            (desc ? 'I ' + desc + '. ' : '') + 'I’m not a person, and I can make mistakes — a teammate can always take over.</p>', 'idv-card');
+        } else if (st === 'standard') {
+          body = head(nm, showRole ? role : '');
+        } else if (st === 'compact') {
+          var line = c.compactMode === 'name-role' && role ? nm + ' &middot; ' + role : nm;
+          body = '<span class="idv-agent is-compact" role="img" aria-label="' + nm + ', AI agent' + (role ? ', ' + role : '') + '">' +
+            idAv({}, { size: 24, name: nm, label: false }) + '<span class="md-label-large idv-name" aria-hidden="true">' + line + '</span></span>';
+        } else if (st === 'multiple') {
+          body = '<div class="idv-stack">' + head(nm, role || 'Meeting agent', mi('forum')) + head('Nova', 'Research Agent', mi('search')) + '</div>';
+        } else {
+          var nn = esc(s.idNew || 'Atlas');
+          body = head(nn, showRole ? role : '', undefined, ' <span class="md-body-small idv-was">(formerly ' + nm + ')</span>') +
+            M.snackbar({ message: 'Renamed to ' + nn + '. Role and permissions are unchanged.', action: 'Undo', act: 'undo' });
         }
-        var open = s.state === 'detail';
-        var c = s.cfg;
-        return '' +
-'<div class="md-idcard pv-namecard' + (c.density === 'compact' ? ' is-compact' : '') +
-   '" data-open="' + open + '" data-layout="' + c.layout + '">\n' +
-'  <div class="md-idcard__head">\n' +
-'    <span class="md-agentav md-agentav--lg" aria-hidden="true">\n' +
-'      <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'    </span>\n' +
-'    <div>\n' +
-'      <p class="md-idcard__name md-title-medium">' + esc(c.name) + '</p>\n' +
-   (c.showRole
-? '      <p class="md-idcard__role md-body-medium">' + esc(c.role) + '</p>\n' : '') +
-'    </div>\n' +
-'  </div>\n' +
-'\n' +
-   (c.openable
-? '  <div class="pv-namecard__detail" role="region">\n' +
-  '    <div class="pv-namecard__inner">\n' +
-  '      <ul class="md-facts md-body-medium">\n' +
-  '        <li><span class="md-facts__bullet"></span>' + esc(c.fact1) + '</li>\n' +
-  '        <li><span class="md-facts__bullet"></span>' + esc(c.fact2) + '</li>\n' +
-  '        <li><span class="md-facts__bullet"></span>' + esc(c.limit) + '</li>\n' +
-  '      </ul>\n' +
-  '    </div>\n' +
-  '  </div>\n' : '') +
-'\n' +
-'  <div class="md-idcard__foot">\n' +
-   (c.showDisclosure
-? '    <span class="md-assist-chip md-assist-chip--tonal">' + esc(c.chipLabel) + '</span>\n' : '') +
-   (c.openable
-? '    <button class="md-button md-button--text md-button--sm md-idcard__spacer" type="button"\n' +
-  '            data-act="' + (open ? 'intro' : 'detail') + '" aria-expanded="' + open + '">\n' +
-  '      ' + (open ? 'Hide what ' + esc(c.name) + ' can see'
-                  : 'What ' + esc(c.name) + ' can see') + '\n' +
-  '    </button>\n' : '') +
-'  </div>\n' +
-'</div>';
+        return '<div class="idv idv--only" data-state="' + st + '">\n  ' + body + '\n</div>';
       },
-      act: function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'attr')  { s.state = 'attributed'; ctx.paint(); return; }
-        if (a === 'detail') {
-          if (s.state !== 'introduced') { s.state = 'detail'; ctx.paint(); return; }
-          return ctx.morph('detail', function (root) {
-            var c = root.querySelector('.pv-namecard'); if (c) c.dataset.open = 'true';
-          });
+
+      react: function (s) {
+        var c = s.cfg, st = s.state;
+        var nm = tdTrim(c.agentName) || 'Aria', role = tdTrim(c.role), desc = tdTrim(c.desc);
+        var showRole = c.showRole !== false && role;
+        var av = function (size, name, glyph) {
+          return '<Avatar role="assistant" shape="rounded" alt=' + jsxAttr((name || nm) + ', AI agent') +
+            ' className="size-' + (size === 24 ? 6 : size === 40 ? 10 : 8) + ' bg-md-primary-container text-md-on-primary-container"' +
+            (glyph ? '>' + sym(glyph) + '</Avatar>' : ' src="/agents/aria.svg" />');
+        };
+        var head = function (n, r, glyph, extra) {
+          return '<div className="flex items-center gap-3">\n  ' + av(40, n, glyph) + '\n  <div>\n' +
+            '    <p>' + jsxText(n) + (extra || '') + ' <AiDisclosure variant="pill" label="AI agent" /></p>\n' +
+            (r ? '    <p>' + jsxText(r) + '</p>\n' : '') + '  </div>\n</div>';
+        };
+        var out = '// State: ' + this.states[st].label + '\n';
+        var base = [['Avatar', '@nucleux/avatar'], ['AiDisclosure', '@nucleux/ai-disclosure']];
+        if (st === 'introduced') {
+          return imports(base.concat([['Md3Card', '@nucleux/md3-card']])) + '\n\n' + out + '<Md3Card variant="outlined">\n  ' +
+            head(nm, showRole ? role : '').replace(/\n/g, '\n  ') + '\n' +
+            '  <p>Hi, I’m ' + jsxText(nm) + ', an AI agent run by Northwind. ' + (desc ? 'I ' + jsxText(desc) + '. ' : '') +
+            'I’m not a person, and I can make mistakes — a teammate can always take over.</p>\n</Md3Card>';
         }
-        if (a === 'intro') {
-          if (s.state === 'detail') {
-            return ctx.morph('introduced', function (root) {
-              var c = root.querySelector('.pv-namecard'); if (c) c.dataset.open = 'false';
-            });
-          }
-          s.state = 'introduced'; ctx.paint();
+        if (st === 'standard') return imports(base) + '\n\n' + out + head(nm, showRole ? role : '');
+        if (st === 'compact') {
+          var line = c.compactMode === 'name-role' && role ? nm + ' · ' + role : nm;
+          return imports([['Avatar', '@nucleux/avatar']]) + '\n\n' + out +
+            '<span className="inline-flex items-center gap-2" role="img" aria-label=' + jsxAttr(nm + ', AI agent' + (role ? ', ' + role : '')) + '>\n' +
+            '  ' + av(24) + '\n  <span aria-hidden="true">' + jsxText(line) + '</span>\n</span>';
+        }
+        if (st === 'multiple') return imports(base) + '\n\n' + out + head(nm, role || 'Meeting agent', 'forum') + '\n' + head('Nova', 'Research Agent', 'search');
+        var nn = s.idNew || 'Atlas';
+        return imports(base.concat([['Md3Snackbar', '@nucleux/md3-snackbar']])) + '\n\n' + out +
+          head(nn, showRole ? role : '', undefined, ' <span>(formerly ' + jsxText(nm) + ')</span>') + '\n' +
+          '<Md3Snackbar open message=' + jsxAttr('Renamed to ' + nn + '. Role and permissions are unchanged.') + '\n' +
+          '  action="Undo" onAction={undoRename} />';
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        if (a === 'undo') {
+          s.idNew = null; s.state = 'standard'; ctx.paint();
+          ctx.announce('Name restored to ' + (tdTrim(c.agentName) || 'Aria') + '.');
         }
       }
     },
 
     /* ── Personality ────────────────────────────────────────── */
     personality: {
-      initial: 'brief',
+      initial: 'default',
 
-      /* Voice is words, so the schema is the words — one answer per
-         register, each editable on its own. Nothing here claims to
-         change what the model is; it changes what this surface says,
-         which is the only thing a pattern library can hold. */
+
       customize: {
-        /* Personality is a BEHAVIOR pattern. Almost nothing here is
-           appearance, and the panel should not pretend otherwise.
-
-           Response length is NOT a control: Brief and Explanatory
-           are states, so a length segment would be a second copy of
-           the state selector that could disagree with it.
-
-           What is never exposed: the system prompt, the temperature,
-           the sampling parameters, the raw instruction text. Those
-           are how a voice is implemented, not what a product decides. */
         api: {
-          name: 'AgentVoice',
+          name: 'PersonalitySetting',
           props: function (c) {
-            return {
-              formality: c.formality,
-              warmth: c.warmth,
-              directness: c.directness,
-              errorTone: c.errorTone,
-              showDisclosure: c.chip
-            };
+            return { recommended: 'calm', options: ['calm', 'warm', 'direct'], previewFirst: c.previewFirst !== false, lockTrustLanguage: c.trustLock !== false };
           }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'words', label: 'What it says', section: 'content',
+          { id: 'words', label: 'Personalities', section: 'content',
             controls: [
-              { id: 'briefText', label: 'Answer', type: 'text',
-                value: 'Renewals are at 94%, up four points.',
-                visibleWhen: function (c, st) { return st === 'brief'; } },
-              { id: 'fullText', label: 'Answer', type: 'text',
-                value: 'Renewals are at 94%, up four points on Q1 — almost all of it ' +
-                       'enterprise accounts.',
-                visibleWhen: function (c, st) { return st === 'full'; } },
-              { id: 'failText', label: 'What to do next', type: 'text',
-                value: 'I can answer from the March export instead, which is three weeks old.',
-                visibleWhen: function (c, st) { return st === 'failure'; } },
-              { id: 'flatterText', label: 'Off-voice line', type: 'text',
-                value: 'Great question! I would be absolutely delighted to help you with ' +
-                       'that today!',
-                visibleWhen: function (c, st) { return st === 'flattery'; } },
-              { id: 'name', label: 'Name', type: 'text', value: 'Aria' }
+              { id: 'warmDesc', label: '“Warm” description', type: 'text',
+                value: 'Friendly and encouraging. Explains a little more.',
+                hint: 'How the option describes itself. A style of writing — never a persona.' },
+              { id: 'directDesc', label: '“Direct” description', type: 'text',
+                value: 'Short answers, the result first.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'voice', label: 'Voice', section: 'behavior',
-            states: ['brief', 'full', 'failure'],
-            note: 'One profile, applied everywhere the agent speaks.',
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              { id: 'formality', label: 'Formality', type: 'segment', value: 'balanced',
-                options: [['casual', 'Casual'], ['balanced', 'Balanced'], ['formal', 'Formal']] },
-              { id: 'warmth', label: 'Warmth', type: 'segment', value: 'neutral',
-                visibleWhen: function (c, st) { return st !== 'failure'; },
-                options: [['neutral', 'Neutral'], ['warm', 'Warm']] },
-              { id: 'directness', label: 'Directness', type: 'segment', value: 'balanced',
-                visibleWhen: function (c, st) { return st !== 'failure'; },
-                options: [['soft', 'Soft'], ['balanced', 'Balanced'], ['direct', 'Direct']] },
-              /* Only the failure reply is written from this; every other
-                 state takes its voice from warmth and directness. */
-              { id: 'errorTone', label: 'Error tone', type: 'segment', value: 'neutral',
-                visibleWhen: function (c, st) { return st === 'failure'; },
-                options: [['neutral', 'Neutral'], ['reassuring', 'Reassuring'],
-                          ['direct', 'Direct']] }
+              { id: 'previewFirst', label: 'Preview before applying', type: 'toggle', value: true, capability: true,
+                hint: 'Show the same four messages in the new style before anything changes. Off removes the Preview state.' },
+              { id: 'undo', label: 'Undo after applying', type: 'toggle', value: true,
+                hint: 'Md3Snackbar with Undo when the change applies.' }
             ] },
 
-          { id: 'disclose', label: 'Disclosure', section: 'behavior', controls: [
-              { id: 'chip', label: 'Show AI disclosure', type: 'toggle', value: true }
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'picker', label: 'Picker', type: 'segment', value: 'radio',
+                options: [['radio', 'Radio list'], ['segmented', 'Segmented button']],
+                hint: 'Md3RadioGroup shows each description; Md3SegmentedButton fits a toolbar.' }
+            ] },
+
+          /* ══ ADVANCED ══════════════════════════════════════ */
+          { id: 'adv', label: 'Guardrails', section: 'advanced',
+            controls: [
+              { id: 'trustLock', label: 'Trust language is fixed', type: 'toggle', value: true,
+                hint: 'Permission requests, caveats and refusals keep the same words in every personality. Off is the anti-pattern.' }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-trust', type: 'check', label: 'Personality does not change trust behaviour',
+                test: function (c) { return c.trustLock !== false; },
+                fail: 'A playful permission request reads as a smaller one. Permission, caveat and safety words stay fixed.' },
+              { id: 'q-person', type: 'check', label: 'No human impersonation',
+                test: function (c) {
+                  return !/(i'?m (a )?(real|human|person)|your friend|real person|like a human|has feelings|best friend)/i
+                    .test(tdTrim(c.warmDesc) + ' ' + tdTrim(c.directDesc));
+                },
+                fail: 'A personality is a writing style. It never claims to be a person or a friend.' },
+              { id: 'q-preview', type: 'check', label: 'People can see it before it applies',
+                test: function (c) { return c.previewFirst !== false || c.undo !== false; },
+                fail: 'With no preview and no undo, a change is a guess they cannot take back.' },
+              { id: 'q-reset', type: 'check', label: 'Reset to recommended is available',
+                test: function () { return true; } },
+              { id: 'q-facts', type: 'check', label: 'Facts and permissions are identical across options',
+                test: function (c) { return c.trustLock !== false; },
+                fail: 'The preview shows the permission request rewritten. It must be identical.' }
             ] }
         ]
       },
 
       states: {
-        brief:    { label: 'Brief',
-                    trigger: 'The reader has chosen the short register.',
-                    behaviour: 'Answer first, nothing after it. Length is a setting the reader ' +
-                               'controls.',
-                    action: 'Switch register, or break the source' },
-        full:     { label: 'Explanatory',
-                    trigger: 'The reader has chosen the longer register.',
-                    behaviour: 'Same voice, more of it — the answer still comes first, the ' +
-                               'reasoning follows.',
-                    action: 'Break the source' },
-        failure:  { label: 'Under failure',
-                    trigger: 'A source the agent depends on goes down.',
-                    behaviour: 'The real test. Same directness, no grovelling, and a next step ' +
-                               'instead of an apology.',
-                    action: 'See the failure mode' },
-        flattery: { label: 'Off-voice',
-                    trigger: 'The voice profile is not enforced.',
-                    behaviour: 'Padding before substance and an apology for nothing. Shown so ' +
-                               'the rule has something to be a rule against.',
-                    action: 'Return to the voice' }
-      },
-      view: function (s) {
-        var c = s.cfg;
-
-        /* Voice is composed, not described. The state's sentence is
-           the product's own words; what the tone settings change is
-           what the agent puts AROUND them — the hedge it opens with,
-           the warmth it leads with, the way it addresses the reader.
-           That is what a voice profile actually controls, and it is
-           the only way these settings can be seen rather than
-           asserted. */
-        var core = s.state === 'brief'   ? c.briefText
-                 : s.state === 'full'    ? c.fullText
-                 : s.state === 'failure' ? c.failText : c.flatterText;
-
-        var text;
-        if (s.state === 'flattery') {
-          /* Off-voice is the counter-example. It ignores the profile
-             on purpose, which is the point of the state. */
-          text = esc(core);
-        } else if (s.state === 'failure') {
-          var FAIL = {
-            neutral:    'Salesforce is not responding. ',
-            reassuring: 'Salesforce is not responding — nothing you did caused this. ',
-            direct:     'Salesforce is down. '
-          };
-          text = esc(FAIL[c.errorTone] + core);
-        } else {
-          var HEDGE = { soft: 'It looks like ', balanced: '', direct: '' };
-          var WARM  = c.warmth === 'warm' ? 'Happy to help. ' : '';
-          var lead  = HEDGE[c.directness] || '';
-          var body  = lead ? lead + core.charAt(0).toLowerCase() + core.slice(1) : core;
-          text = esc(WARM + body);
+        default: {
+          label: 'Default',
+          trigger: 'The personality setting, first visit.',
+          behaviour: 'The recommended option, Calm &amp; precise, selected. Each option says how it writes; one line says permissions, facts and safety stay the same.',
+          meaning: 'This changes how the agent writes — nothing else.',
+          action: 'Choose another option.',
+          next: 'Preview'
+        },
+        preview: {
+          label: 'Preview',
+          requires: 'previewFirst',
+          trigger: 'They chose Warm.',
+          behaviour: 'A sample reply in Warm. Nothing is applied until Apply.',
+          meaning: 'This is what Warm would sound like.',
+          action: 'Apply, or cancel.',
+          next: 'Applied'
+        },
+        applied: {
+          label: 'Applied',
+          trigger: 'They pressed Apply.',
+          behaviour: 'Warm is selected and an Md3Snackbar confirms it, with Undo.',
+          meaning: 'The agent writes warmly from now on.',
+          action: 'Keep it, or undo.',
+          next: 'Changed'
+        },
+        changed: {
+          label: 'Changed',
+          trigger: 'They are back in the conversation.',
+          behaviour: 'One quiet notice — “Personality changed to Warm. Facts, permissions and safety are unchanged.” — with Reset.',
+          meaning: 'The style changed; the rules did not.',
+          action: 'Carry on, or reset.',
+          next: 'Reset'
+        },
+        reset: {
+          label: 'Reset',
+          trigger: 'They chose Reset to recommended.',
+          behaviour: 'Calm &amp; precise is selected again, with a snackbar that says so.',
+          meaning: 'Back to the recommended style.',
+          action: '—',
+          next: '—'
         }
-
-        var address = c.formality === 'formal' ? esc(c.name)
-                    : c.formality === 'casual' ? esc(c.name) + ' · here to help'
-                    : esc(c.name);
-
-        return '' +
-'<div class="md-list-item">\n' +
-'  <span class="md-agentav" aria-hidden="true">\n' +
-'    <svg class="mi" viewBox="0 -960 960 960" aria-hidden="true"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg>\n' +
-'  </span>\n' +
-'  <div class="md-list-item__content">\n' +
-'    <div class="md-list-item__line">\n' +
-'      <p class="md-list-item__headline md-body-large">' + address + '</p>\n' +
-   (c.chip
-? '      <span class="md-assist-chip md-assist-chip--tonal">AI generated</span>\n' : '') +
-'    </div>\n' +
-'    <p class="md-list-item__supporting md-body-medium">\n' +
-'    ' + text + '\n' +
-'    </p>\n' +
-'  </div>\n' +
-'</div>';
       },
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var P = PERSONAS(c);
+        var loose = c.trustLock === false;
+        var note = loose ? 'Changes how Aria writes, including permission requests and caveats.'
+                         : 'Changes how Aria writes. Permissions, facts and safety stay the same.';
+        if (st === 'changed') {
+          return '<div class="idv idv--only" data-state="changed">\n' +
+            '  <div class="idv-notice"><p class="idv-sys md-body-small" role="status">' + mi('tune') + '<span>Personality changed to <b>Warm</b>. ' +
+              (loose ? 'Permissions and caveats now follow the personality.' : 'Facts, permissions and safety are unchanged.') + '</span></p>' +
+            M.button({ variant: 'text', label: 'Reset to recommended', icon: mi('restore'), attrs: { 'data-act': 'reset' } }) + '</div>\n' +
+            '</div>';
+        }
+        var chosen = st === 'preview' || st === 'applied' ? 'warm' : 'calm';
+        var picker = c.picker === 'segmented'
+          ? M.segmented({ label: 'Personality', value: chosen, act: 'pick:', items: ['calm', 'warm', 'direct'].map(function (k) { return { value: k, label: P[k].short }; }) }) +
+            '<p class="md-body-small idv-role">' + P[chosen].desc + '</p>'
+          : M.radioRows({ label: 'Personality', value: chosen, act: 'pick:', id: 'idv-p',
+              rows: ['calm', 'warm', 'direct'].map(function (k) {
+                return { value: k, label: P[k].label + (k === 'calm' ? ' <span class="idv-rec">Recommended</span>' : ''), desc: P[k].desc };
+              }) });
+        var sample = '<div class="idv-sample">' + M.message({ role: 'assistant', avatar: idAv({}, { size: 24, label: false }), body: P[chosen].normal }) + '</div>';
+        var acts = st === 'preview'
+          ? M.button({ variant: 'filled', label: 'Apply', attrs: { 'data-act': 'apply' } }) + M.button({ variant: 'text', label: 'Cancel', attrs: { 'data-act': 'cancel' } })
+          : M.button({ variant: 'text', label: 'Reset to recommended', icon: mi('restore'), attrs: { 'data-act': 'reset', 'aria-disabled': chosen === 'calm' ? 'true' : null } });
+        var snack = st === 'applied' && c.undo !== false
+          ? M.snackbar({ message: 'Aria now writes in the <b>Warm</b> style.', action: 'Undo', act: 'reset' })
+          : st === 'reset' ? M.snackbar({ message: 'Back to <b>Calm &amp; precise</b>, the recommended style.' }) : '';
+        return '<div class="idv idv--only idv--pers" data-state="' + st + '">\n' +
+          '  <section class="idv-setting" aria-labelledby="idv-p-h">' +
+            '<h3 class="md-title-small idv-sec__h" id="idv-p-h">Personality</h3>' +
+            '<p class="idv-fixed md-body-small">' + mi(loose ? 'tune' : 'lock') + note + '</p>' +
+            picker + sample + '<div class="idv-acts">' + acts + '</div></section>\n' +
+          (snack ? '  ' + snack + '\n' : '') +
+          '</div>';
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, P = PERSONAS(c);
+        var loose = c.trustLock === false;
+        if (st === 'changed') {
+          return imports([['Md3Button', '@nucleux/md3-button']]) + '\n\n// State: Changed\n' +
+            '<p role="status">\n  ' + sym('tune') + '\n  Personality changed to Warm. ' +
+            (loose ? 'Permissions and caveats now follow the personality.' : 'Facts, permissions and safety are unchanged.') + '\n</p>\n' +
+            '<Md3Button variant="text" icon={' + sym('settings_backup_restore') + '} onClick={resetToRecommended}>Reset to recommended</Md3Button>';
+        }
+        var chosen = st === 'preview' || st === 'applied' ? 'warm' : 'calm';
+        var imp = c.picker === 'segmented'
+          ? [['Md3SegmentedButton, Md3SegmentedButtonItem', '@nucleux/md3-segmented-button']]
+          : [['Md3RadioGroup, Md3Radio', '@nucleux/md3-radio']];
+        imp.push(['Md3Message', '@nucleux/md3-message'], ['Md3Button', '@nucleux/md3-button']);
+        if (st === 'applied' || st === 'reset') imp.push(['Md3Snackbar', '@nucleux/md3-snackbar']);
+        var picker = c.picker === 'segmented'
+          ? '<Md3SegmentedButton type="single" value="' + chosen + '" onValueChange={preview} aria-label="Personality">\n' +
+            ['calm', 'warm', 'direct'].map(function (k) { return '  <Md3SegmentedButtonItem value="' + k + '">' + jsxText(P[k].short) + '</Md3SegmentedButtonItem>\n'; }).join('') +
+            '</Md3SegmentedButton>'
+          : '<Md3RadioGroup label="Personality" value="' + chosen + '" onValueChange={preview}>\n' +
+            ['calm', 'warm', 'direct'].map(function (k) {
+              return '  <label><Md3Radio value="' + k + '" /> ' + jsxText(P[k].label) + ' <small>' + jsxText(P[k].desc) + '</small></label>\n';
+            }).join('') + '</Md3RadioGroup>';
+        return imports(imp) + '\n\n// State: ' + this.states[st].label + '\n' +
+          '// Personality changes wording only. Permission, caveat and refusal strings are\n// fixed and never passed through it.\n' +
+          '<section aria-labelledby="personality">\n  <h3 id="personality">Personality</h3>\n' +
+          '  <p>' + (loose ? 'Changes how Aria writes, including permission requests and caveats.' : 'Changes how Aria writes. Permissions, facts and safety stay the same.') + '</p>\n  ' +
+          picker.replace(/\n/g, '\n  ') + '\n' +
+          '  <Md3Message role="assistant" content=' + jsxAttr(P[chosen].normal) + ' />\n' +
+          (st === 'preview' ? '  <Md3Button variant="filled" onClick={apply}>Apply</Md3Button>\n  <Md3Button variant="text" onClick={cancel}>Cancel</Md3Button>\n'
+            : '  <Md3Button variant="text" onClick={resetToRecommended}>Reset to recommended</Md3Button>\n') +
+          '</section>' +
+          (st === 'applied' ? '\n<Md3Snackbar open message="Aria now writes in the Warm style." action="Undo" onAction={undo} />' : '') +
+          (st === 'reset' ? '\n<Md3Snackbar open message="Back to Calm & precise, the recommended style." />' : '');
+      },
+
       act: function (a, ctx) {
-        var map = { brief: 'brief', full: 'full', fail: 'failure', flatter: 'flattery' };
-        ctx.s.state = map[a] || 'brief'; ctx.paint();
+        var s = ctx.s, c = ctx.cfg();
+        if (a.indexOf('pick:') === 0) {
+          var k = a.slice(5);
+          if (k === 'calm') { s.state = 'default'; ctx.paint(); return; }
+          if (c.previewFirst !== false) { s.state = 'preview'; ctx.paint(); ctx.announce('Previewing ' + (k === 'warm' ? 'Warm' : 'Direct') + '. Nothing is applied yet.'); }
+          else { s.state = 'applied'; ctx.paint(); ctx.announce('Applied.'); }
+          return;
+        }
+        if (a === 'apply') { s.state = 'applied'; ctx.paint(); ctx.announce('Aria now writes in the Warm style. Undo is available.'); return; }
+        if (a === 'cancel') { s.state = 'default'; ctx.paint(); ctx.announce('Nothing changed.'); return; }
+        if (a === 'reset' && (s.state === 'default' || s.state === 'reset')) return;
+        if (a === 'reset') { s.state = 'reset'; ctx.paint(); ctx.announce('Back to Calm and precise, the recommended style.'); }
       }
     },
 
     /* ── Iconography ────────────────────────────────────────── */
     iconography: {
-      initial: 'quiet',
+      initial: 'resting',
 
-      /* The emphasis ladder IS the state model here, so emphasis is
-         not a setting — selecting a state is how you change it. What
-         is left to decide is the label the glyph leads, and whether
-         the container is drawn at all. */
       customize: {
         api: {
-          name: 'AgentIcon',
+          name: 'Md3Button',
           props: function (c) {
-            return {
-              glyph: c.glyph,
-              label: c.label,
-              size: c.size,
-              container: c.container
-            };
+            return { variant: 'tonal', icon: c.oneSparkle ? 'star_shine' : idSym(c, c.role || 'action'),
+                     'aria-label': c.showLabel === false ? tdTrim(c.tip) : undefined };
           }
         },
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'action', label: 'The action it leads', section: 'content',
-            states: ['quiet', 'tonal', 'filled'],
+          { id: 'what', label: 'Icon', section: 'content',
             controls: [
-              { id: 'label', label: 'Label', type: 'text', value: 'Draft with Aria' }
+              { id: 'role', label: 'Icon role', type: 'segment', value: 'action',
+                options: [['action', 'AI action'], ['generated', 'Generated'], ['tool', 'Tool use']],
+                hint: 'Which meaning the control in the preview carries. Working is its own state.' },
+              { id: 'label', label: 'Label', type: 'text', value: 'Rewrite',
+                visibleWhen: function (c) { return (c.role || 'action') === 'action'; },
+                hint: 'The verb. The icon says “AI”; the word says what happens.' },
+              { id: 'tip', label: 'Tooltip / accessible name', type: 'text', value: 'Rewrite with AI',
+                hint: 'Md3Tooltip text, and the aria-label when the label is hidden.' }
             ] },
 
           /* ══ BEHAVIOR ══════════════════════════════════════ */
-          { id: 'reserve', label: 'Reservation', section: 'behavior',
-            note: 'One reserved glyph, one meaning: generated by an agent.',
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              /* The approved set, not a picker. Every option here is
-                 already in the library's Material Symbols set, so a
-                 product cannot reserve something nothing else draws. */
-              { id: 'glyph', label: 'Reserved mark', type: 'segment', value: 'spark',
-                options: [['spark', 'Spark'], ['agent', 'Agent'],
-                          ['bolt', 'Bolt'], ['lightbulb', 'Idea']],
-                hint: 'Chosen from the library’s own marks — never an external icon.' }
-            ] },
-
-          { id: 'audit', label: 'Audit', section: 'behavior', states: ['audit'],
-            note: 'Every use at once, so a stray mark on “new” is visible in one glance.',
-            controls: [
-              { id: 'auditLabels', label: 'Name each step', type: 'toggle', value: true }
+              { id: 'showLabel', label: 'Show label', type: 'toggle', value: true,
+                hint: 'Off makes it an Md3IconButton — only where space is tight and the tooltip names it.' },
+              { id: 'showTip', label: 'Show tooltip', type: 'toggle', value: true },
+              { id: 'animate', label: 'Animate working', type: 'toggle', value: true,
+                hint: 'The working glyph turns. With reduced motion, or off, it holds still and the words carry it.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'look', label: 'Drawing', section: 'appearance',
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              { id: 'size', label: 'Size', type: 'segment', value: 'small',
-                options: [['small', 'Small'], ['medium', 'Medium']] },
-              { id: 'container', label: 'Draw the container', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st !== 'audit'; },
-                hint: 'The tile carries the emphasis; without it the glyph carries it alone.' }
+              { id: 'size', label: 'Icon size', type: 'segment', value: '20',
+                options: [['16', '16'], ['20', '20'], ['24', '24']] },
+              { id: 'style', label: 'Style', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['filled', 'Filled']],
+                hint: 'Material Symbols. Filled for a selected or active control only.' }
+            ] },
+
+          /* ══ ADVANCED ══════════════════════════════════════ */
+          { id: 'adv', label: 'Vocabulary', section: 'advanced',
+            controls: [
+              { id: 'glyph', label: 'AI action glyph', type: 'segment', value: 'spark',
+                options: [['spark', 'star_shine'], ['wand', 'wand_shine']],
+                hint: 'The two approved action glyphs. Pick one per product.' },
+              { id: 'oneSparkle', label: 'One sparkle for everything', type: 'toggle', value: false,
+                hint: 'The anti-pattern: action, generated, working and tool all drawn with the same mark.' }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-distinct', type: 'check', label: 'Each role has its own glyph',
+                test: function (c) { return !c.oneSparkle; },
+                fail: 'One sparkle for action, result, work and tools means the icon tells people nothing.' },
+              { id: 'q-name', type: 'check', label: 'Icon-only controls are named',
+                test: function (c) { return c.showLabel !== false || tdTrim(c.tip).length > 0; },
+                fail: 'An icon button with no accessible name or tooltip is a guess.' },
+              { id: 'q-legible', type: 'check', label: 'Legible at this size',
+                test: function (c) { return c.size !== '16' || c.showLabel !== false; },
+                fail: 'A 16 icon with no label is too small to carry the meaning alone.' },
+              { id: 'q-word', type: 'check', label: 'Not the only signal',
+                test: function (c) { return c.showLabel !== false || c.showTip !== false; },
+                fail: 'With no label and no tooltip, the icon is the only explanation.' },
+              { id: 'q-approved', type: 'check', label: 'Approved Material Symbols only',
+                test: function () { return true; } },
+              { id: 'q-decor', type: 'check', label: 'Not decoration',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        quiet:  { label: 'Quiet',
-                  trigger: 'The glyph sits in a low-emphasis placement.',
-                  behaviour: 'Surface container with the glyph in primary — a menu row, a list, ' +
-                             'anywhere it should be findable but not loud.',
-                  action: 'Raise the emphasis' },
-        tonal:  { label: 'Tonal',
-                  trigger: 'The glyph rides on a chip or a secondary action.',
-                  behaviour: 'Secondary container. Same drawing, more presence, still not the ' +
-                             'loudest thing on the surface.',
-                  action: 'Raise it again' },
-        filled: { label: 'Filled',
-                  trigger: 'The glyph leads a primary action.',
-                  behaviour: 'Primary with on-primary. This is the ceiling — one placement per ' +
-                             'surface, or the emphasis stops meaning anything.',
-                  action: 'Run the audit' },
-        audit:  { label: 'Audited',
-                  trigger: 'A reviewer checks the reservation holds.',
-                  behaviour: 'Every use of the glyph is outlined at once, so a stray sparkle on ' +
-                             '“new” or “featured” is visible in one glance.',
-                  action: 'Back to quiet' }
-      },
-      view: function (s) {
-        var c = s.cfg;
-        /* The reserved mark, drawn from the library's own set rather
-           than inlined six times. Reserving a glyph means one glyph
-           and one meaning, so which one it is has to be a single
-           decision with a single place to change it. */
-        var G = function (cls) {
-          var M = window.MaterialIcons;
-          var svg = (M && M.has(c.glyph)) ? M.icon(c.glyph) : '';
-          return cls ? svg.replace('class="mi"', 'class="mi ' + cls + '"') : svg;
-        };
-        var box = s.state === 'tonal'  ? ' md-icontile__box--tonal'
-                : s.state === 'filled' ? ' md-icontile__box--filled' : '';
-        var size = c.size === 'medium' ? ' is-medium' : '';
-
-        if (s.state === 'audit') {
-          var tiles = [['', 'Quiet'], [' md-icontile__box--tonal', 'Tonal'],
-                       [' md-icontile__box--filled', 'Filled']];
-          return '' +
-'<div class="md-icons sc-audit' + size + '">\n' +
-   tiles.map(function (t) {
-     return '' +
-'  <div class="md-icontile">\n' +
-'    <span class="md-icontile__box' + t[0] + '">\n' +
-'      ' + G('sc-glyph') + '\n' +
-'    </span>\n' +
-       (c.auditLabels
-? '    <span class="md-icontile__label md-label-small">' + t[1] + '</span>\n' : '') +
-'  </div>\n';
-   }).join('') +
-'</div>';
+        resting: {
+          label: 'Resting',
+          trigger: 'The control is available.',
+          behaviour: 'The role glyph and its verb. Nothing glows or moves.',
+          meaning: 'Pressing this runs AI on something specific.',
+          action: 'Hover, focus or press it.',
+          next: 'Hover'
+        },
+        hover: {
+          label: 'Hover',
+          trigger: 'The pointer is over it.',
+          behaviour: 'The Md3 state layer at 8% and the Md3Tooltip: what will happen, in words.',
+          meaning: 'What the control will do.',
+          action: 'Press it.',
+          next: 'Pressed'
+        },
+        focus: {
+          label: 'Focus',
+          trigger: 'Keyboard focus reached it.',
+          behaviour: 'The focus ring (md-primary) and the same tooltip.',
+          meaning: 'The same, without a pointer.',
+          action: 'Enter or Space.',
+          next: 'Pressed'
+        },
+        pressed: {
+          label: 'Pressed',
+          trigger: 'It is being pressed.',
+          behaviour: 'The 12% state layer. The glyph does not change yet.',
+          meaning: 'Your press was received.',
+          action: 'Release.',
+          next: 'Working'
+        },
+        working: {
+          label: 'Working',
+          trigger: 'The AI action is running.',
+          behaviour: 'The action glyph becomes the working glyph (progress_activity) and the label becomes “Rewriting…”.',
+          meaning: 'The agent is doing it now.',
+          action: '—',
+          next: 'Resting'
+        },
+        disabled: {
+          label: 'Disabled',
+          trigger: 'There is nothing to act on.',
+          behaviour: 'The control at 38% with its reason as supporting text — never an unexplained grey icon.',
+          meaning: 'Why it is unavailable, and what to do.',
+          action: 'Do what the reason says.',
+          next: 'Resting'
         }
-
-        return '' +
-'<div class="pv-iconstate' + size + '">\n' +
-   (c.container
-? '  <span class="md-icontile__box' + box + '">\n' +
-  '    ' + G() + '\n' +
-  '  </span>\n'
-: '  ' + G('pv-iconstate__bare') + '\n') +
-'\n' +
-'  <button class="md-button md-button--' +
-     (s.state === 'filled' ? 'filled' : s.state === 'tonal' ? 'outlined' : 'text') +
-     ' md-button--sm" type="button">\n' +
-'    ' + G() + '\n' +
-'    ' + esc(c.label) + '\n' +
-'  </button>\n' +
-'</div>';
       },
-      act: function (a, ctx) { ctx.s.state = a; ctx.paint(); }
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var role = c.role || 'action';
+        var working = st === 'working', dis = st === 'disabled';
+        var cls = { hover: 'is-hover', focus: 'is-focus', pressed: 'is-pressed' }[st] || '';
+        var label = esc(tdTrim(c.label) || 'Rewrite'), tip = esc(tdTrim(c.tip));
+        var ico = working ? idIco(c, 'working') : idIco(c, role);
+        var why = dis ? { 'aria-disabled': 'true', 'aria-describedby': 'idv-why' } : {};
+        var subject;
+        if (role === 'generated' && !working) {
+          subject = tdChip({ label: 'Generated with AI', icon: ico, cls: cls, attrs: Object.assign({ 'data-act': 'noop' }, why) });
+        } else if (role === 'tool' && !working) {
+          subject = M.button({ variant: 'text', label: 'Checked the style guide', icon: ico, cls: cls, attrs: Object.assign({ 'data-act': 'noop' }, why) });
+        } else if (c.showLabel === false && !working) {
+          subject = M.iconButton({ variant: 'tonal', icon: ico, label: tip || label, cls: cls, attrs: Object.assign({ 'data-act': dis ? null : 'run' }, why) });
+        } else {
+          subject = M.button({ variant: 'tonal', label: working ? 'Rewriting…' : label, icon: ico, cls: cls + (working ? ' is-busy' : ''),
+            attrs: Object.assign({ 'data-act': working || dis ? null : 'run', 'aria-disabled': working ? 'true' : null,
+              'aria-label': working ? 'Agent working: rewriting with AI' : (tip || null) }, why) });
+        }
+        if (c.showTip !== false && !working && !dis && tip) {
+          subject = M.tooltip({ id: 'idv-tip', trigger: subject, content: tip, cls: st === 'hover' || st === 'focus' ? 'is-hover' : '' });
+        }
+        return '<div class="idv idv--only idv--icons" data-state="' + st + '" data-size="' + (c.size || '20') + '">\n' +
+          '  <div class="idv-subject">' + subject +
+          (dis ? '<p class="md-body-small idv-hint" id="idv-why">Select text to rewrite it.</p>' : '') +
+          (working ? '<span class="tdx-sr" role="status">Agent working: rewriting with AI</span>' : '') + '</div>\n' +
+          '</div>';
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, role = c.role || 'action';
+        var working = st === 'working', dis = st === 'disabled';
+        var g = working ? 'progress_activity' : (c.oneSparkle ? 'star_shine' : idSym(c, role));
+        var icon = '<span className="material-symbols-outlined' + (c.style === 'filled' && !working ? ' [font-variation-settings:\'FILL\'_1]' : '') +
+          (working && c.animate !== false ? ' motion-safe:animate-spin' : '') + '" style={{ fontSize: ' + (c.size || 20) + ' }} aria-hidden="true">' + g + '</span>';
+        var tip = tdTrim(c.tip), label = tdTrim(c.label) || 'Rewrite';
+        var dattr = dis ? ' disabled aria-describedby="why"' : '';
+        var imp = [], ctl;
+        if (role === 'generated' && !working) {
+          imp.push(['Md3Chip', '@nucleux/md3-chip']);
+          ctl = '<Md3Chip variant="assist" icon={' + icon + '}' + dattr + '>Generated with AI</Md3Chip>';
+        } else if (role === 'tool' && !working) {
+          imp.push(['Md3Button', '@nucleux/md3-button']);
+          ctl = '<Md3Button variant="text" icon={' + icon + '}' + dattr + '>Checked the style guide</Md3Button>';
+        } else if (c.showLabel === false && !working) {
+          imp.push(['Md3IconButton', '@nucleux/md3-icon-button']);
+          ctl = '<Md3IconButton variant="tonal" aria-label=' + jsxAttr(tip || label) + dattr + ' onClick={run}>\n  ' + icon + '\n</Md3IconButton>';
+        } else {
+          imp.push(['Md3Button', '@nucleux/md3-button']);
+          ctl = '<Md3Button variant="tonal" icon={' + icon + '}' + (working ? ' aria-disabled="true"' : '') + dattr +
+            (working ? '' : ' onClick={run}') + '>' + (working ? 'Rewriting…' : jsxText(label)) + '</Md3Button>';
+        }
+        if (c.showTip !== false && tip && !working && !dis) {
+          imp.push(['Md3Tooltip', '@nucleux/md3-tooltip']);
+          ctl = '<Md3Tooltip content=' + jsxAttr(tip) + ' side="bottom">\n  ' + ctl.replace(/\n/g, '\n  ') + '\n</Md3Tooltip>';
+        }
+        if (dis) ctl += '\n<p id="why">Select text to rewrite it.</p>';
+        return imports(imp) + '\n\n// One Material Symbol per meaning:\n' +
+          '// action ' + (c.oneSparkle ? 'star_shine' : idSym(c, 'action')) + ' · generated ' + (c.oneSparkle ? 'star_shine' : 'chat_info') +
+          ' · working progress_activity · tool ' + (c.oneSparkle ? 'star_shine' : 'build') + '\n// State: ' + this.states[st].label + '\n' + ctl;
+      },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a !== 'run') return;
+        var run = (s.idRun || 0) + 1; s.idRun = run;
+        s.state = 'working'; ctx.paint(); ctx.announce('Agent working: rewriting with AI.');
+        await wait(2000);
+        if (s.idRun !== run || s.state !== 'working') return;
+        s.state = 'resting'; ctx.paint(); ctx.announce('Done.');
+      }
     },
 
     /* ── Color ──────────────────────────────────────────────── */
     color: {
-      initial: 'idle',
+      initial: 'default',
 
-      /* This pattern is an argument about a semantic role, not a
-         colour picker: there is no hex here, and there is no accent
-         setting, because the whole point is that ONE role is reserved
-         for agent presence. What is configurable is what the presence
-         says, and what the record left behind is called. */
       customize: {
-        /* Colour here is a ROLE ASSIGNMENT, not a palette. What a
-           product decides is which Material role carries "an agent
-           is working here" and how generated content is grounded —
-           both made once, for every surface the agent touches.
-
-           There is no hex field, and there will not be one: a
-           reserved accent that any surface can redefine is not
-           reserved. */
         api: {
-          name: 'AgentColor',
-          props: function (c) {
-            return {
-              activeRole: c.activeRole,
-              attentionRole: c.attentionRole,
-              generatedSurface: c.generated,
-              showPresenceDot: c.dot,
-              presenceLabel: c.presenceLabel
-            };
-          }
+          name: 'AgentStatus',
+          props: function (c) { return { theme: c.theme === 'dark' ? 'dark' : 'light', showIcon: c.signals !== false, showLabel: c.signals !== false }; }
         },
-
         groups: [
           /* ══ CONTENT ═══════════════════════════════════════ */
-          { id: 'presence', label: 'Presence', section: 'content',
-            states: ['active', 'waiting'],
+          { id: 'task', label: 'Task', section: 'content',
             controls: [
-              { id: 'presenceLabel', label: 'Label', type: 'text', value: 'Aria is drafting',
-                visibleWhen: function (c, st) { return st === 'active'; },
-                hint: 'The words that carry the state when the colour cannot.' },
-              { id: 'attentionLabel', label: 'Label', type: 'text',
-                value: 'Aria needs a decision',
-                visibleWhen: function (c, st) { return st === 'waiting'; },
-                hint: 'Asking is a different message from working, and says so.' }
+              { id: 'title', label: 'Task title', type: 'text', value: 'Launch checklist · 2.4',
+                hint: 'The work the colour describes. Colour qualifies it; it never replaces it.' }
             ] },
 
-          { id: 'turns', label: 'The exchange', section: 'content',
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
             controls: [
-              { id: 'askText', label: 'Ask', type: 'text', value: 'Summarise what changed in the renewal terms.' },
-              { id: 'answerText', label: 'Answer', type: 'text', value: 'Three clauses changed; the notice period is the one that matters.',
-                visibleWhen: function (c, st) { return st !== 'idle'; } },
-              { id: 'chipLabel', label: 'Generated label', type: 'text',
-                value: 'Generated', visibleWhen: function (c, st) { return st !== 'idle'; } }
+              { id: 'signals', label: 'Icon and label with every colour', type: 'toggle', value: true,
+                hint: 'Off shows a coloured dot only — the anti-pattern. The Quality check fails.' }
             ] },
 
           /* ══ APPEARANCE ════════════════════════════════════ */
-          { id: 'roles', label: 'Semantic roles', section: 'appearance',
-            note: 'Material roles, assigned once. Never a colour value.',
+          { id: 'look', label: 'Look', section: 'appearance',
             controls: [
-              /* Idle has no presence to signal, Accepted has already let
-                 the accent go, and Greyscale removes colour on purpose
-                 — Active is the one state that renders this role. */
-              { id: 'activeRole', label: 'Agent active', type: 'segment', value: 'primary',
-                visibleWhen: function (c, st) { return st === 'active'; },
-                options: [['primary', 'Primary'], ['secondary', 'Secondary'],
-                          ['tertiary', 'Tertiary']] },
-              { id: 'attentionRole', label: 'Needs attention', type: 'segment',
-                value: 'warning',
-                visibleWhen: function (c, st) { return st === 'waiting'; },
-                options: [['warning', 'Warning'], ['tertiary', 'Tertiary']],
-                hint: 'A second reserved role, used only where the agent is asking.' },
-              { id: 'generated', label: 'Generated content', type: 'segment', value: 'tonal',
-                visibleWhen: function (c, st) { return st !== 'idle'; },
-                options: [['tonal', 'Tonal'], ['neutral', 'Neutral']] },
-              { id: 'dot', label: 'Show the presence dot', type: 'toggle', value: true,
-                visibleWhen: function (c, st) { return st === 'active'; } }
+              { id: 'theme', label: 'Theme', type: 'segment', value: 'light',
+                options: [['light', 'Light'], ['dark', 'Dark']],
+                hint: 'The package’s .dark tokens. The roles stay the same; only their values change.' },
+              { id: 'emphasis', label: 'Agent colour', type: 'segment', value: 'restrained',
+                options: [['restrained', 'Restrained'], ['everywhere', 'Everywhere']],
+                hint: 'Restrained: the agent role marks the agent and its work. Everywhere: the whole card is painted — the anti-pattern.' }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-signal', type: 'check', label: 'Colour is never the only signal',
+                test: function (c) { return c.signals !== false; },
+                fail: 'A coloured dot alone is lost in greyscale, to colour blindness, and to a screen reader.' },
+              { id: 'q-restrained', type: 'check', label: 'Agent colour marks only the agent',
+                test: function (c) { return c.emphasis !== 'everywhere'; },
+                fail: 'Painted everywhere, the agent colour stops meaning “the agent” and buries the status.' },
+              { id: 'q-tokens', type: 'check', label: 'Only Nucleux semantic tokens',
+                test: function () { return true; } },
+              { id: 'q-safety', type: 'check', label: 'Error and warning keep their meanings',
+                test: function () { return true; } },
+              { id: 'q-contrast', type: 'check', label: 'Text contrast 4.5:1, light and dark',
+                test: function () { return true; } },
+              { id: 'q-ai', type: 'check', label: 'No “AI gradient” or decorative glow',
+                test: function () { return true; } }
             ] }
         ]
       },
 
       states: {
-        idle:   { label: 'Idle',
-                  trigger: 'No agent is working in the surface.',
-                  behaviour: 'The document is the person&rsquo;s. No accent, because there is ' +
-                             'no presence to signal.',
-                  action: 'Start the agent' },
-        active: { label: 'Active',
-                  trigger: 'The agent begins working inside the surface.',
-                  behaviour: 'The reserved accent appears as an outline and a label. It is the ' +
-                             'only thing on screen using that role.',
-                  action: 'Accept the draft, or go greyscale' },
-        waiting:{ label: 'Needs you',
-                  trigger: 'The agent reaches something it will not decide alone.',
-                  behaviour: 'A second reserved role, used only here. It is the one state ' +
-                             'where the accent is asking for something rather than reporting ' +
-                             'presence — and it still says so in words.',
-                  action: 'Accept the draft' },
-        done:   { label: 'Accepted',
-                  trigger: 'The person accepts the output.',
-                  behaviour: 'The accent leaves with the work. What stays is the chip: colour ' +
-                             'signalled presence, the chip records authorship.',
-                  action: 'Start again' },
-        grey:   { label: 'Greyscale',
-                  trigger: 'Colour is removed entirely.',
-                  behaviour: 'The proof. Ground, corner shape and chip still separate the two ' +
-                             'authors, because no signal here is colour alone.',
-                  action: 'Restore colour' }
+        default: {
+          label: 'Default',
+          trigger: 'The agent is available.',
+          behaviour: 'A neutral surface with an outline, the agent glyph and “Available”.',
+          meaning: 'Nothing needs attention.',
+          action: '—',
+          next: 'Active, or Working'
+        },
+        active: {
+          label: 'Active',
+          trigger: 'The task is assigned to the agent.',
+          behaviour: 'The agent role (md-primary-container), the agent glyph and “Assigned to Aria”.',
+          meaning: 'The agent owns this.',
+          action: '—',
+          next: 'Working'
+        },
+        working: {
+          label: 'Working',
+          trigger: 'The agent is doing it.',
+          behaviour: 'The agent role, the working glyph and what it is doing.',
+          meaning: 'The agent is working now.',
+          action: '—',
+          next: 'Attention, Success, Warning or Error'
+        },
+        attention: {
+          label: 'Attention',
+          trigger: 'The agent needs a decision.',
+          behaviour: 'The attention role (md-tertiary-container), a help glyph and “Needs your approval”.',
+          meaning: 'You need to decide something.',
+          action: '—',
+          next: 'Success'
+        },
+        success: {
+          label: 'Success',
+          trigger: 'It finished and passed.',
+          behaviour: 'A check glyph in the success colour on a neutral surface, so the text keeps its contrast, and “Complete”.',
+          meaning: 'Done.',
+          action: '—',
+          next: '—'
+        },
+        warning: {
+          label: 'Warning',
+          trigger: 'Something may go wrong soon.',
+          behaviour: 'The warning role with its foreground, a warning glyph and the specific reason.',
+          meaning: 'Look at this soon.',
+          action: '—',
+          next: '—'
+        },
+        error: {
+          label: 'Error',
+          trigger: 'It failed.',
+          behaviour: 'The error role (md-error-container), an error glyph and what failed. Never used for anything else.',
+          meaning: 'It failed.',
+          action: '—',
+          next: 'Working'
+        }
       },
+
       view: function (s) {
-        var c = s.cfg;
-        var live = s.state === 'active' || s.state === 'waiting';
-        /* Waiting uses a second reserved role, and only here. Two
-           roles, two meanings — presence, and a decision the agent
-           will not take on its own. */
-        var accent = s.state === 'waiting' ? c.attentionRole : c.activeRole;
-        /* The accent is a ROLE, not a colour. Which Material role
-           carries "an agent is working here" is the one decision
-           this pattern exists to make — and it is made once, for
-           every surface the agent appears on. */
-        return '' +
-'<div class="pv-doc' + (live ? ' is-live' : '') + (s.state === 'grey' ? ' sc-grey' : '') +
-   '" data-accent="' + accent + '">\n' +
-   (live
-? '  <div class="pv-doc__head">\n' +
-   (c.dot
-? '    <span class="md-presence__dot" aria-hidden="true"></span>\n' : '') +
-'    <span class="md-presence__label md-label-large">' +
-     esc(s.state === 'waiting' ? c.attentionLabel : c.presenceLabel) + '</span>\n' +
-'  </div>\n' : '') +
-'  <div class="md-turns">\n' +
-'    <div class="md-bubble md-bubble--human md-body-medium">\n' +
-'      ' + esc(c.askText) + '\n' +
-'    </div>\n' +
-   (s.state === 'idle'
-? '' :
-'    <div class="md-bubble md-bubble--agent md-body-medium">\n' +
-'      ' + esc(c.answerText) + '\n' +
-'      <span class="pv-doc__tag">\n' +
-'        <span class="md-assist-chip md-assist-chip--' +
-        (c.generated === 'neutral' ? 'neutral' : 'tonal') + '">' +
-        esc(c.chipLabel) + '</span>\n' +
-'      </span>\n' +
-'    </div>\n') +
-'  </div>\n' +
-'</div>';
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var R = M.ROLES, S = COLOR_STATES[st];
+        var chipRole = c.emphasis === 'everywhere' ? 'agent' : S.chip;
+        var chip;
+        if (c.signals !== false) {
+          chip = '<span class="idv-status ' + R[chipRole] + (/^neutral/.test(chipRole) ? ' ' + R.outline : '') + '">' +
+            '<span class="idv-status__i' + (S.ink && chipRole !== 'agent' ? ' ' + R[S.ink] : '') + '">' + (S.icon === 'working' ? tdAI('working') : mi(S.icon)) + '</span>' +
+            '<span>' + S.label + '</span></span>';
+        } else {
+          chip = '<span class="idv-status is-dot"><span class="idv-dot ' + R[c.emphasis === 'everywhere' ? 'agent' : (S.role === 'success' ? 'success' : S.chip)] + '" aria-hidden="true"></span>' +
+            '<span class="tdx-sr">' + S.label + '</span></span>';
+        }
+        return '<div class="idv idv--only idv--color' + (c.theme === 'dark' ? ' dark' : '') + '" data-state="' + st + '">\n  ' +
+          '<span' + (st === 'working' ? ' role="status"' : '') + '>' + chip + '</span>\n</div>';
       },
-      act: async function (a, ctx) {
-        var s = ctx.s;
-        if (a === 'grey')   { s.state = s.state === 'grey' ? 'done' : 'grey'; ctx.paint(); return; }
-        if (a === 'accept') { s.state = 'done'; ctx.paint(); ctx.announce('Draft accepted'); return; }
-        if (a === 'start')  { s.state = 'active'; ctx.paint(); ctx.announce('Aria is drafting'); }
-      }
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, S = COLOR_STATES[st], sig = c.signals !== false;
+        var R = { neutralHigh: 'bg-md-surface-container-high text-md-on-surface border border-md-outline-variant',
+                  neutral: 'bg-md-surface text-md-on-surface border border-md-outline-variant',
+                  agent: 'bg-md-primary-container text-md-on-primary-container',
+                  attention: 'bg-md-tertiary-container text-md-on-tertiary-container',
+                  warning: 'bg-warning text-warning-foreground', error: 'bg-md-error-container text-md-on-error-container' };
+        var role = c.emphasis === 'everywhere' ? 'agent' : S.chip;
+        var glyph = { agent: 'smart_toy', working: 'progress_activity', help: 'help', checkCircle: 'check_circle', warning: 'warning', error: 'error' }[S.icon] || S.icon;
+        return '// Nucleux semantic tokens only (@nucleux/tokens preset). The package has no\n' +
+          '// "agent" token: the agent role is md-primary-container.\n// State: ' + this.states[st].label + '\n' +
+          (c.theme === 'dark' ? '<div className="dark">\n' : '') +
+          (sig ? '<span className="inline-flex items-center gap-1.5 rounded-md-sm px-2 py-1 text-sm font-medium ' + R[role] + '"' + (st === 'working' ? ' role="status"' : '') + '>\n' +
+                 '  <span className="material-symbols-outlined' + (S.ink && role !== 'agent' ? ' text-success' : '') + '" aria-hidden="true">' + glyph + '</span>\n  ' + jsxText(S.label) + '\n</span>'
+               : '{/* Anti-pattern: colour only */}\n<span className="size-2.5 rounded-full ' + R[role].split(' ')[0] + '" role="img" aria-label=' + jsxAttr(S.label) + ' />') +
+          (c.theme === 'dark' ? '\n</div>' : '');
+      },
+
+      act: function () {}
     },
 
     /* ══════════════════════════════════════════════════════════
@@ -9547,7 +10161,7 @@ card + '>\n' + head +
   }
   function defaults(def) {
     var o = {};
-    eachControl(def, function (c) { o[c.id] = c.value; });
+    eachControl(def, function (c) { if (c.type !== 'check') o[c.id] = c.value; });
     return o;
   }
   function findControl(def, id) {
@@ -9621,7 +10235,11 @@ card + '>\n' + head +
   var SECTIONS = [
     { id: 'content',    label: 'Content' },
     { id: 'behavior',   label: 'Behavior' },
-    { id: 'appearance', label: 'Appearance' }
+    { id: 'appearance', label: 'Appearance' },
+    /* Opt-in, like the rest: only patterns whose groups name them
+       get these (Trust & Disclosure, 15 Oct). */
+    { id: 'advanced',   label: 'Advanced' },
+    { id: 'quality',    label: 'Quality' }
   ];
   function sectioned(def) {
     return groups(def).some(function (g) { return !!g.section; });
@@ -9705,6 +10323,22 @@ card + '>\n' + head +
   function mi(name) {
     var M = window.MaterialIcons;
     return M && M.has(name) ? M.icon(name) : '';
+  }
+
+  /* A QUALITY CHECK is not a setting. It reads the configuration
+     and says whether the pattern still meets one of its own rules —
+     so a label emptied to nothing, or reworded to "Verified", shows
+     up as a broken promise beside the control that broke it. It has
+     no value, cannot be reset and never counts as a change. */
+  function checkHTML(f, cfg) {
+    var ok = !!f.test(cfg || {});
+    return '<div class="pvc-row pvc-row--check' + (ok ? ' is-ok' : ' is-fail') + '" data-row="' + f.id + '" ' +
+             'data-check="' + f.id + '">' +
+      '<span class="pvc-check__mark" aria-hidden="true">' + mi(ok ? 'check' : 'warning') + '</span>' +
+      '<span class="pvc-check__t"><span class="pvc-check__label">' + esc(f.label) + '</span>' +
+        '<span class="pvc-check__state">' + (ok ? 'Passes' : 'Fails') + '</span>' +
+        (!ok && f.fail ? '<span class="pvc-check__why">' + esc(f.fail) + '</span>' : '') +
+      '</span></div>';
   }
 
   function controlHTML(f, value, isChanged) {
@@ -9797,6 +10431,7 @@ card + '>\n' + head +
 
   function rowsHTML(def, cfg, controls) {
     return controls.map(function (c) {
+      if (c.type === 'check') return checkHTML(c, cfg);
       return controlHTML(c, cfg[c.id], changed(def, cfg, c.id));
     }).join('');
   }
@@ -10165,7 +10800,7 @@ card + '>\n' + head +
               '<button class="pv-copy" type="button" data-copy aria-label="Copy the markup">' +
                 '<svg class="mi" viewBox="0 -960 960 960" aria-hidden="true">' +
                 '<path d="M300-200q-24 0-42-18t-18-42v-560q0-24 18-42t42-18h440q24 0 42 18t18 42v560q0 24-18 42t-42 18H300Zm0-60h440v-560H300v560ZM180-80q-24 0-42-18t-18-42v-620h60v620h500v60H180Zm120-180v-560 560Z"/></svg></button>' +
-              '<code>' + highlight(prettyPrintHtml(code)) + '</code></pre>' +
+              '<code>' + highlight(codeOf(def, viewState(), code)) + '</code></pre>' +
           '</div>' +
           /* On a phone the panel is a bottom sheet; the scrim behind it
              closes it, like the close button. Hidden on larger screens. */
@@ -10279,7 +10914,7 @@ card + '>\n' + head +
       /* The code pane shows the markup, never the ribbon: the ribbon
          is the playground saying which configuration you are looking
          at, and it is not part of the component. */
-      if (pre)   pre.innerHTML = highlight(prettyPrintHtml(code));
+      if (pre)   pre.innerHTML = highlight(codeOf(def, viewState(), code));
       if (def.mounted) def.mounted(root, s);
       /* The model flyout's hover glow, focus return and effort track are
          wired by MaterialModel after every paint, in EVERY preview — not
@@ -10337,6 +10972,7 @@ card + '>\n' + head +
         var gr = g.querySelector('.pvc-group__rows');
         place(gr, x.controls.map(function (c) {
           var r = gr.querySelector('[data-row="' + c.id + '"]');
+          if (c.type === 'check') return nodeFrom(checkHTML(c, s.cfg));
           return r || nodeFrom(controlHTML(c, s.cfg[c.id], changed(def, s.cfg, c.id)));
         }));
         return g;

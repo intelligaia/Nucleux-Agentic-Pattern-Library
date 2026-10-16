@@ -3,5 +3,5 @@
   "private": true,
   "description": "Builds ../../nucleux-md3.css: Tailwind utilities for the Nucleux MCP components used in the pattern library, from the @nucleux/tokens preset.",
   "scripts": { "build": "tailwindcss -c tailwind.config.cjs -i input.css -o ../../nucleux-md3.css --minify" },
-  "devDependencies": { "tailwindcss": "^3.4.17", "@nucleux/tokens": "^0.4.0" }
+  "devDependencies": { "tailwindcss": "^3.4.17", "@nucleux/tokens": "^0.4.0", "@nucleux/md3-theme": "^0.1.0" }
 }
