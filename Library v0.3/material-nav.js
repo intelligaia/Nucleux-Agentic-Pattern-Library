@@ -29,6 +29,8 @@
                'autocomplete', 'proactive', 'randomize',
                /* Initially · Expressive Input */
                'voice-input', 'visual-input', 'handwriting', 'gesture', 'structured-input',
+               /* Initially · Prompt Scaffolds */
+               'suggestions', 'madlibs', 'prompt-enhancer', 'modes', 'voice-tone', 'preset-styles',
                /* Initially · Context Expansion */
                'attachments', 'connectors', 'mcp', 'knowledge-base', 'model-selection'];
 
@@ -120,12 +122,12 @@
         ] },
       { id: "prompt-scaffolds", title: "Prompt Scaffolds", desc: "Structure that turns a rough intent into a workable request.",
         patterns: [
-          { id: "suggestions", name: "Suggestions", oneline: "Quick-action chips that reduce friction at the input." },
-          { id: "madlibs", name: "Madlibs", oneline: "Sentence-with-dropdowns input for guided generation." },
-          { id: "prompt-enhancer", name: "Prompt Enhancer", oneline: "A 'magic wand' that rewrites a short ask into a precise one." },
-          { id: "modes", name: "Modes", oneline: "Toggle the AI's behaviour: creative vs strict, fast vs deep." },
-          { id: "voice-tone", name: "Voice & Tone", oneline: "Per-user preferences for how the AI sounds." },
-          { id: "preset-styles", name: "Preset Styles", oneline: "One-click aesthetic presets for creative output." }
+          { id: "suggestions", name: "Suggestions", oneline: "Aria suggests one detail to add to the request you’re writing — marked as its suggestion, added only if you choose, never sent for you." },
+          { id: "madlibs", name: "Madlibs", oneline: "A request written as a sentence with a few labelled blanks — fill them, read the result, then edit it in the composer before sending." },
+          { id: "prompt-enhancer", name: "Prompt Enhancer", oneline: "Proposes a clearer version of the request you wrote — every addition marked and explained, the original kept until you choose." },
+          { id: "modes", name: "Modes", oneline: "Choose how the agent approaches the task — Brainstorm, Draft, Review, Plan — shown in the composer, separate from the model." },
+          { id: "voice-tone", name: "Voice & Tone", oneline: "Say how the reply should sound — Professional, Friendly, Concise, or your own words — visible in the composer, never changing what it says." },
+          { id: "preset-styles", name: "Preset Styles", oneline: "Named styles for how replies are written — Normal, Concise, Formal, Explanatory, or one made from your own writing — previewed, switchable mid-conversation." }
         ] },
       { id: "context-expansion", title: "Context Expansion", desc: "Letting a user hand over the material the answer depends on.",
         patterns: [

@@ -1200,12 +1200,13 @@
     var st = root && root.querySelector('.pv-stage');
     if (!st) return;
     st.style.paddingTop = '';
-    var m = st.querySelector('.ax__menu--model, .ax__menu--effort');
+    var m = st.querySelector('.ax__menu--model, .ax__menu--effort, .ps .ax__menu--ps');
     if (!m) return;
     var pt = parseFloat(getComputedStyle(st).paddingTop) || 0;
     var gap = m.getBoundingClientRect().top - st.getBoundingClientRect().top;
     var want = Math.max(0, Math.round(pt - (gap - PV_MENU_TOP)));
-    if (want < pt) st.style.paddingTop = want + 'px';
+    /* A scaffold picker is shown whole, so its room can also grow. */
+    if (want < pt || m.classList.contains('ax__menu--ps')) st.style.paddingTop = want + 'px';
   }
 
   function pvAura(root) {
@@ -2089,6 +2090,238 @@
   ];
   var CD_LEGAL = /(for informational purposes|not responsible|no liability|liable|use at your own risk|hereby|warrant|ai (can|may) (make mistakes|be wrong)|may (produce|contain) (inaccurate|errors))/i;
 
+  /* ══════════════════════════════════════════════════════════
+     PROMPT SCAFFOLDS — Suggestions, Madlibs, Prompt Enhancer, Modes,
+     Voice & Tone, Preset Styles (16 Oct)
+
+     All six shape ONE thing: the request in the shared composer
+     (MaterialSim.composer). None of them owns a composer. The
+     composer gained four host slots for them, used by any pattern:
+       tools      scaffold triggers beside the model chip (Mode, Tone…)
+       scaffolds  a row of named, removable request settings
+       assist     a status or suggestion row inside the composer (Suggestions
+                  sits ABOVE the composer by default since rev 2)
+       pop        a picker anchored to the composer
+     Model and effort stay in the model chip: a Mode is how the agent
+     works, not which model answers. Live Preview shows the component
+     without the halo (data-no-halo), like Example Gallery.
+     ══════════════════════════════════════════════════════════ */
+  function psComposer(o) {
+    var S = tdS();
+    return S ? S.composer(Object.assign({ agent: 'Aria', ask: 'Ask Aria…', label: 'Message Aria',
+      plus: ['Attach a file', 'Add context'], mic: true, maxLines: 6, grow: true, layout: 'stack' }, o)) : '';
+  }
+  /* A scaffold trigger in the composer's tool slot. */
+  function psTool(o) {
+    return '<button class="ax__tool' + (o.on ? ' is-on' : '') + '" type="button" data-act="' + o.act + '"' +
+      (o.popup ? ' aria-haspopup="' + o.popup + '" aria-expanded="' + !!o.open + '"' : '') +
+      (o.busy ? ' aria-disabled="true"' : '') + (o.label ? ' aria-label="' + esc(o.label) + '"' : '') + '>' +
+      (o.icon || '') + '<span>' + o.text + '</span></button>';
+  }
+  /* A setting's trigger (Mode / Tone / Style): the shared chip. */
+  function psChip(o) { var S = tdS(); return S && S.scafTool ? S.scafTool(o) : ''; }
+  /* Bind the composer field in a preview: keep the draft on state,
+     keep Send honest, send through a hidden act button, and let the
+     pattern react to typing without a repaint (onInput). */
+  function psBind(root, s, o) {
+    var box = root.querySelector('.pv-stage .ps');
+    var f = box && box.querySelector('[data-ax-field]'), form = box && box.querySelector('.ax__composer');
+    if (!f) return null;
+    if (typeof icFit === 'function') icFit(f);
+    if (s.psFocus) {
+      s.psFocus = false; f.focus({ preventScroll: true });
+      try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {}
+    }
+    if (f.dataset.psb) return f;
+    f.dataset.psb = '1';
+    f.addEventListener('input', function () {
+      if (typeof icFit === 'function') icFit(f);
+      s.psText = f.value; s.psFor = s.state;
+      var send = form && form.querySelector('.ax__cbtn--send:not(.ax__cbtn--stop)');
+      if (send) send.disabled = !f.value.trim();
+      if (o && o.onInput) o.onInput(f.value, f);
+    });
+    function submit(e) {
+      if (e) e.preventDefault();
+      if (!f.value.trim()) return;
+      s.psText = f.value;
+      var b = root.querySelector('.pv-stage [data-act="ps:send"]'); if (b) b.click();
+    }
+    if (form) form.addEventListener('submit', submit);
+    f.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) submit(e); });
+    return f;
+  }
+  /* Click a hidden act button: a repaint from inside an input
+     listener goes through the engine like any other action. */
+  function psKick(root, act) {
+    var b = root.querySelector('.pv-stage [data-act="' + act + '"]'); if (b) b.click();
+  }
+  var PS_HIDDEN = '<button type="button" hidden tabindex="-1" data-act="ps:send"></button>' +
+                  '<button type="button" hidden tabindex="-1" data-act="ps:sync"></button>';
+  /* The draft a person typed belongs to the state they typed it in;
+     choosing another state from the selector shows that state's own
+     content rather than a leftover draft. */
+  function psOwn(s, st) { return s.psFor === st && s.psText !== undefined && s.psText !== null ? s.psText : null; }
+  function psSet(s, st, text) { s.state = st; if (text !== undefined) s.psText = text; s.psFor = st; }
+  function psSent(s) {
+    return s.psSent ? '<p class="ps-sent md-body-small" role="status">' + mi('check') + '<span>Sent: “' + esc(s.psSent) + '”</span></p>' : '';
+  }
+  function psWrap(id, st, inner, attrs) {
+    return '<div class="ps ps--only psw-' + id + '" data-no-halo data-state="' + st + '"' + (attrs || '') + '>' + inner + PS_HIDDEN + '</div>';
+  }
+  function psComposerJSX(text, extra) {
+    return '<Md3AgentComposer\n  value={draft} /* ' + jsxAttr(text || '') + ' */\n  onValueChange={setDraft}\n  onSubmit={send}\n' +
+      (extra || '') + '/>';
+  }
+
+  /* ── Suggestions ─────────────────────────────────────────── */
+  var PS_SUG_BASE = 'Summarize the September release.';
+  /* The configured suggestion leads; two more show the set is a choice. */
+  var PS_SUG_MORE = ['Group the work by owner', 'Compare with the August release'];
+  function psSugs(c) { return [tdTrim(c.sug) || 'Include unresolved blockers'].concat(PS_SUG_MORE); }
+  function psSugAccept(base, sug) {
+    var b = String(base || '').replace(/[.\s]+$/, '');
+    var t = String(sug || '').trim();
+    return b + ' and ' + t.charAt(0).toLowerCase() + t.slice(1).replace(/[.\s]+$/, '') + '.';
+  }
+
+  /* ── Madlibs ─────────────────────────────────────────────── */
+  var PS_ML_OPTS = {
+    Document: ['Q3 Customer Research', 'September release notes', 'Onboarding survey results'],
+    Audience: ['Leadership', 'Engineering', 'Customer success'],
+    Topic: ['Onboarding issues', 'Pricing feedback', 'Top feature requests']
+  };
+  /* "Summarize {Document} for {Audience}[, focusing on {Topic}]." —
+     {Name} is a blank; [ … ] is a clause that leaves with its blank. */
+  function psMlParse(tpl) {
+    var out = [], re = /\[([^\]]*)\]|\{([^}]+)\}|([^\[{]+)/g, m;
+    while ((m = re.exec(tpl))) {
+      if (m[1] !== undefined) {
+        var inner = [], r2 = /\{([^}]+)\}|([^{]+)/g, n;
+        while ((n = r2.exec(m[1]))) inner.push(n[1] ? { blank: n[1].trim() } : { text: n[2] });
+        out.push({ optional: inner });
+      } else if (m[2]) out.push({ blank: m[2].trim() });
+      else out.push({ text: m[3] });
+    }
+    return out;
+  }
+  function psMlBlanks(parts) {
+    var b = [];
+    parts.forEach(function (p) {
+      if (p.blank) b.push({ name: p.blank, required: true });
+      if (p.optional) p.optional.forEach(function (q) { if (q.blank) b.push({ name: q.blank, required: false }); });
+    });
+    return b;
+  }
+  function psMlText(parts, v) {
+    return parts.map(function (p) {
+      if (p.text) return p.text;
+      if (p.blank) return v[p.blank] || '…';
+      var filled = p.optional.every(function (q) { return !q.blank || (v[q.blank] || '').trim(); });
+      return filled ? p.optional.map(function (q) { return q.text || v[q.blank]; }).join('') : '';
+    }).join('').replace(/\s+([.,])/g, '$1');
+  }
+
+ /* A blank is as wide as what is in it, plus room for its chevron. */
+  function psMlW(t) { return 'calc(' + Math.max(6, String(t).length * 1.1).toFixed(1) + 'ch + 50px)'; }
+  var PS_ML_DEF = ['Q3 Customer Research', 'Leadership', 'Onboarding issues'];
+  /* Values: what the person entered in this state, or the state's own example. */
+  function psMlValues(s, st, blanks) {
+    if (s.mlV && s.mlForState === st) return Object.assign({}, s.mlV);
+    var v = {};
+    var fill = { empty: [], partial: [0], suggestion: [0], complete: [0, 1, 2], validation: [1, 2], ready: [0, 1, 2] }[st] || [];
+    fill.forEach(function (i) { if (blanks[i]) v[blanks[i].name] = PS_ML_DEF[i] || 'Value'; });
+    return v;
+  }
+  function psMlDerive(s, blanks) {
+    var v = s.mlV || {};
+    var any = blanks.some(function (b) { return (v[b.name] || '').trim(); });
+    var missing = blanks.some(function (b) { return b.required && !(v[b.name] || '').trim(); });
+    if (!missing) return 'complete';
+    return any ? 'partial' : 'empty';
+  }
+
+  /* ── Prompt Enhancer ─────────────────────────────────────── */
+  var PS_PE_ORIG = 'Summarize customer feedback.';
+  var PS_PE_CHANGES = [
+    { id: 'time', add: ' from the last quarter', why: 'A time range makes the summary comparable with the last one.', assume: 'Assumes you mean the last quarter.' },
+    { id: 'theme', add: ', grouped by recurring theme', why: 'Themes make issues easier to act on than a list of comments.' },
+    { id: 'delta', add: ', and highlight what changed since the previous quarter', why: 'Shows whether issues are getting better or worse.' }
+  ];
+  function psPeText(base, on) {
+    var b = String(base).replace(/[.\s]+$/, '');
+    return b + PS_PE_CHANGES.filter(function (c) { return on[c.id] !== false; }).map(function (c) { return c.add; }).join('') + '.';
+  }
+
+  /* The suggestion as marked text: their words plain, each addition
+     an <ins> with words for assistive tech, a removed one struck. */
+  function psPeMarked(base, on, marks) {
+    if (!marks) return esc(psPeText(base, on));
+    return base + PS_PE_CHANGES.map(function (ch, i) {
+      var kept = on[ch.id] !== false;
+      var lead = (ch.add.match(/^[,\s]+/) || [''])[0], body = ch.add.slice(lead.length);
+      return kept ? esc(lead) + '<ins class="ps-ins"><span class="tdx-sr">added: </span>' + esc(body) + '<sup aria-hidden="true">' + (i + 1) + '</sup></ins>'
+                  : '<del class="ps-del"><span class="tdx-sr">removed: </span>' + esc(ch.add) + '</del>';
+    }).join('') + '.';
+  }
+
+  /* ── Modes ───────────────────────────────────────────────── */
+  var PS_MODES = [
+    { id: 'brainstorm', name: 'Brainstorm', d: 'Explore several possible directions before choosing one.', icon: 'lightbulb' },
+    { id: 'research', name: 'Research', d: 'Gather and compare information from the web, with sources.', icon: 'search', off: 'Not available in this workspace — web access is turned off.' },
+    { id: 'draft', name: 'Draft', d: 'Write a first version you can edit.', icon: 'editNote' },
+    { id: 'review', name: 'Review', d: 'Check existing work and point out gaps and risks.', icon: 'visibility' },
+    { id: 'plan', name: 'Plan', d: 'Break the work into steps with owners and dates.', icon: 'flag' }
+  ];
+
+  function psModeList(c) {
+    return PS_MODES.map(function (m) {
+      if (m.id === 'plan') return Object.assign({}, m, { name: tdTrim(c.planName) || 'Plan', d: tdTrim(c.planDesc) || m.d });
+      if (m.off) return Object.assign({}, m, { off: tdTrim(c.offText) || m.off });
+      return m;
+    });
+  }
+
+  /* ── Voice & Tone ────────────────────────────────────────── */
+  var PS_TONES = [
+    { id: 'professional', name: 'Professional', d: 'Clear and measured.', ex: 'This month we shipped faster onboarding; next, we’re improving imports.' },
+    { id: 'friendly', name: 'Friendly', d: 'Warm and approachable.', ex: 'Here’s what changed this month and what we’re working on next.' },
+    { id: 'conversational', name: 'Conversational', d: 'Like talking to a colleague.', ex: 'So, onboarding got a lot quicker this month — imports are next.' },
+    { id: 'formal', name: 'Formal', d: 'Precise and impersonal.', ex: 'The following summarizes this month’s changes and upcoming priorities.' },
+    { id: 'concise', name: 'Concise', d: 'As few words as possible.', ex: 'Shipped: faster onboarding. Next: imports.' }
+  ];
+
+  function psToneList(c) {
+    return PS_TONES.map(function (t) {
+      return t.id === 'professional' ? Object.assign({}, t, { name: tdTrim(c.proName) || t.name, d: tdTrim(c.proDesc) || t.d, ex: tdTrim(c.proEx) || t.ex }) : t;
+    });
+  }
+
+  /* ── Preset Styles (after Claude's styles) ─────────────────── */
+  var PS_STYLES = [
+    { id: 'normal', name: 'Normal', d: 'Aria’s default replies.',
+      ex: 'October shipped 14 of 17 planned items. Exports are up to twice as fast, shared links no longer expire early, and shared dashboards are live. SSO for Teams, CSV column order and Android checkout latency move to November.' },
+    { id: 'concise', name: 'Concise', d: 'Shorter, more direct replies.',
+      ex: '14 of 17 shipped: faster exports, shared-link fix, shared dashboards. Moved to November: SSO, CSV order, Android latency.' },
+    { id: 'formal', name: 'Formal', d: 'Clear, polished, professional replies.',
+      ex: 'The October release delivered 14 of the 17 planned items, including improved export performance, a correction to shared-link expiry and the introduction of shared dashboards. Three items have been deferred to November.' },
+    { id: 'explanatory', name: 'Explanatory', d: 'Teaches as it answers — context and the reasons why.',
+      ex: 'Fourteen of seventeen items shipped. The biggest change is exports: they are up to twice as fast because they now run in the background. Three items slipped to November, mostly because SSO for Teams depends on identity work that is still in review.' }
+  ];
+  var PS_ST_HOUSE = { id: 'house', mine: true, name: 'Release notes voice', d: 'One line per change, the benefit first, plain verbs, no marketing words.',
+    ex: 'New: shared dashboards — your whole team sees the same numbers. Faster: exports take half the time. Fixed: shared links stay open until you close them. Next month: SSO for Teams.' };
+  var PS_ST_EXAMPLE = 'New: Slack digest — a morning summary without opening Planboard.\nFixed: comments no longer disappear when you switch boards.\nFaster: search shows results as you type.';
+  var PS_ST_INST = 'Write one short line per change. Start each line with New, Faster, Fixed or Next month. Lead with what the reader can now do. Use plain verbs; avoid marketing words and exclamation marks.';
+  function psStyleList(c, withMine) {
+    var out = PS_STYLES.slice();
+    if (withMine) out.push(Object.assign({}, PS_ST_HOUSE, { name: tdTrim(c.csName) || PS_ST_HOUSE.name, d: tdTrim(c.csDesc) || PS_ST_HOUSE.d }));
+    return out;
+  }
+  /* A sample reply to the same request, written in that style. */
+  function psStylePrev(x) {
+    return '<p class="psc__over">Preview · ' + esc(x.name) + '</p><p class="ps-st__q">Summarize the October release.</p><p class="ps-st__a">' + esc(x.ex) + '</p>';
+  }
+
   var PATTERNS = {
 
 
@@ -2096,6 +2329,1340 @@
        Browse → filter → open one → it lands in the composer.
        The last step is the pattern's whole point: an example
        that ends in a copy button ends outside the product. */
+    /* ── Suggestions ─────────────────────────────────────────── */
+    suggestions: {
+      initial: 'available',
+
+      customize: {
+        api: {
+          name: 'PromptSuggestion',
+          props: function (c) {
+            return { suggestions: psSugs(c), reason: c.showWhy !== false ? tdTrim(c.why) : undefined, actionLabel: tdTrim(c.actLabel),
+                     dismissible: c.dismiss !== false, undo: c.undo !== false, placement: c.place || 'above', appearAfter: c.timing || 'pause' };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Suggestion', section: 'content',
+            controls: [
+              { id: 'sug', label: 'Suggestion text', type: 'text', value: 'Include unresolved blockers',
+                hint: 'A detail, constraint or outcome that improves THIS request — never a different request.' },
+              { id: 'why', label: 'Supporting explanation', type: 'text', value: 'Release summaries are usually read to decide what still needs attention.',
+                hint: 'Why it helps, when that isn’t obvious.' },
+              { id: 'actLabel', label: 'Action label', type: 'text', value: 'Add to prompt' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'showWhy', label: 'Show explanation', type: 'toggle', value: true },
+              { id: 'dismiss', label: 'Allow dismissal', type: 'toggle', value: true, capability: true,
+                hint: 'Off removes the Dismissed state — and fails Quality.' },
+              { id: 'undo', label: 'Undo after adding', type: 'toggle', value: true },
+              { id: 'place', label: 'Placement', type: 'segment', value: 'above',
+                options: [['above', 'Above the composer'], ['inside', 'In the composer'], ['below', 'Below the composer']] },
+              { id: 'timing', label: 'Appears', type: 'segment', value: 'pause',
+                options: [['pause', 'After a pause'], ['keystroke', 'On every keystroke']],
+                hint: 'Every keystroke interrupts typing — the anti-pattern.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
+              { id: 'emphasis', label: 'Emphasis', type: 'segment', value: 'outlined',
+                options: [['outlined', 'Outlined'], ['tonal', 'Tonal']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-optional', type: 'check', label: 'The suggestion stays optional',
+                test: function (c) { return c.dismiss !== false; },
+                fail: 'A suggestion that can’t be dismissed is an instruction.' },
+              { id: 'q-quiet', type: 'check', label: 'Doesn’t interrupt typing',
+                test: function (c) { return c.timing !== 'keystroke'; },
+                fail: 'Suggestions that change on every keystroke pull attention from the sentence being written.' },
+              { id: 'q-specific', type: 'check', label: 'Adds to this request',
+                test: function (c) { var t = tdTrim(c.sug); return t.length > 6 && !/^(be more specific|add (more )?details?|improve (it|this)|try again)$/i.test(t); },
+                fail: 'Say what to add. “Be more specific” is not a suggestion.' },
+              { id: 'q-keep', type: 'check', label: 'Their text is never overwritten', test: function () { return true; } },
+              { id: 'q-edit', type: 'check', label: 'Added text stays editable — nothing is sent', test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        none: {
+          label: 'No suggestion',
+          trigger: 'They are typing, or nothing would make the request better.',
+          behaviour: 'The composer on its own. Nothing appears while keys are moving.',
+          meaning: 'Carry on writing.',
+          action: 'Type a request.',
+          next: 'Suggestion available'
+        },
+        available: {
+          label: 'Suggestion available',
+          trigger: 'They paused on “Summarize the September release.”',
+          behaviour: 'A short row of suggestion chips just above the composer, marked as Aria’s: what each would add, why (on request), and Dismiss. Their text is untouched.',
+          meaning: 'Aria thinks this would make the request better.',
+          action: 'Add it, dismiss it, or keep typing.',
+          next: 'Accepted, Dismissed or No longer relevant'
+        },
+        accepted: {
+          label: 'Suggestion accepted',
+          trigger: 'They pressed Add to prompt.',
+          behaviour: 'The words are added after theirs — never replacing them — and a line names what was added, with Undo. Nothing is sent.',
+          meaning: 'The request now includes it, and it is still theirs to edit.',
+          action: 'Edit, undo, or send.',
+          next: '—'
+        },
+        dismissed: {
+          label: 'Suggestion dismissed',
+          requires: 'dismiss',
+          trigger: 'They pressed Dismiss.',
+          behaviour: 'The suggestion goes and does not come back for this request.',
+          meaning: 'Their request stays exactly as written.',
+          action: 'Keep writing.',
+          next: '—'
+        },
+        irrelevant: {
+          label: 'No longer relevant',
+          trigger: 'They rewrote the request so the suggestion no longer fits.',
+          behaviour: 'The suggestion withdraws on its own, quietly.',
+          meaning: 'Nothing to add right now.',
+          action: 'Keep writing.',
+          next: 'Suggestion available'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var sug = esc(tdTrim(c.sug)) || 'Include unresolved blockers', why = esc(tdTrim(c.why));
+        var base = s.psBase || PS_SUG_BASE;
+        var own = psOwn(s, st);
+        var text = own !== null ? own
+          : st === 'none' ? '' : st === 'accepted' ? psSugAccept(base, s.sgPick || tdTrim(c.sug) || 'Include unresolved blockers')
+          : st === 'irrelevant' ? 'Summarize what slipped from September.' : base;
+        var open = !!s.psWhy && c.showWhy !== false && why;
+        var picked = s.sgPick || tdTrim(c.sug) || 'Include unresolved blockers';
+        var row = '';
+        if (st === 'available') {
+          row = '<div class="ps-sugs' + (c.emphasis !== 'tonal' ? ' is-outlined' : '') + '" role="group" aria-label="Suggestions from Aria">' +
+            '<span class="ps-sugs__k">' + tdAI('generated') + '<span>Aria suggests</span></span>' +
+            '<span class="ps-sugs__list">' + psSugs(c).map(function (t, i) {
+              return '<button class="ps-chip" type="button" data-act="sg:add:' + i + '" aria-label="' + esc((tdTrim(c.actLabel) || 'Add to prompt') + ': ' + t) + '">' +
+                mi('add') + '<span>' + esc(t) + '</span></button>';
+            }).join('') + '</span>' +
+            '<span class="ps-sugs__a">' +
+              (c.showWhy !== false && why ? '<button class="ps-ico" type="button" data-act="sg:why" aria-expanded="' + !!open + '" aria-controls="ps-sug-why" aria-label="Why these suggestions">' + mi('info') + '</button>' : '') +
+              (c.dismiss !== false ? '<button class="ps-ico" type="button" data-act="sg:dismiss" aria-label="Dismiss suggestions">' + mi('close') + '</button>' : '') +
+            '</span>' +
+            (open ? '<p class="ps-sugs__why" id="ps-sug-why">' + why + '</p>' : '') + '</div>';
+        } else if (st === 'accepted') {
+          row = '<div class="ps-note" role="status">' + mi('check') + '<span>Added “and ' + esc(picked.charAt(0).toLowerCase() + picked.slice(1)) + '” to your request. You can edit it.</span>' +
+            (c.undo !== false ? '<button class="ps-link" type="button" data-act="sg:undo">Undo</button>' : '') + '</div>';
+        } else if (st === 'dismissed') {
+          row = '<div class="ps-note" role="status">' + mi('close') + '<span>Suggestions dismissed. They won’t come back for this request.</span></div>';
+        } else if (st === 'irrelevant') {
+          row = '<div class="ps-note" role="status">' + mi('info') + '<span>The suggestions no longer fit what you wrote, so they were removed.</span></div>';
+        }
+        var place = c.place || 'above';
+        var cmp = psComposer({ ask: 'Describe what you need…', text: text, assist: place === 'inside' ? row : '' });
+        return psWrap('sug', st, (place === 'above' ? row : '') + cmp + (place === 'below' ? row : '') + psSent(s), ' data-density="' + (c.density || 'comfortable') + '" data-place="' + place + '"');
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, sug = tdTrim(c.sug) || 'Include unresolved blockers';
+        var base = s.psBase || PS_SUG_BASE;
+        var text = st === 'accepted' ? psSugAccept(base, sug) : st === 'none' ? '' : base;
+        var imp = [['Md3AgentComposer', '@nucleux/md3-agent-composer']];
+        if (st === 'available') imp.push(['Md3Chip', '@nucleux/md3-chip'], ['Md3Button', '@nucleux/md3-button'], ['Md3IconButton', '@nucleux/md3-icon-button']);
+        if (st === 'accepted' && c.undo !== false) imp.push(['Md3Button', '@nucleux/md3-button']);
+        var row = st === 'available'
+          ? '<div role="group" aria-label="Suggestion from Aria">\n  <span>Suggested</span> ' + jsxText(sug) + '\n' +
+            '  <Md3Button variant="tonal" onClick={() => setDraft(appendSuggestion(draft, suggestion))}>' + jsxText(tdTrim(c.actLabel) || 'Add to prompt') + '</Md3Button>\n' +
+            (c.dismiss !== false ? '  <Md3IconButton aria-label="Dismiss suggestion" onClick={dismiss}>' + sym('close') + '</Md3IconButton>\n' : '') + '</div>\n'
+          : st === 'accepted' ? '<p role="status">Added: “and ' + jsxText(sug.toLowerCase()) + '”.' + (c.undo !== false ? ' <Md3Button variant="text" onClick={undo}>Undo</Md3Button>' : '') + '</p>\n' : '';
+        return imports(imp) + '\n\n// State: ' + this.states[st].label + '\n' +
+          '// The suggestion appends after a pause in typing; it never replaces text and never sends.\n' +
+          psComposerJSX(text) + '\n' + row.replace(/\n$/, '');
+      },
+
+      mounted: function (root, s) {
+        var c = s.cfg, timer = null;
+        psBind(root, s, {
+          onInput: function (v) {
+            clearTimeout(timer);
+            var fits = /release/i.test(v) && v.trim().length > 18 && !/blocker/i.test(v);
+            if (s.state === 'available' && !/release/i.test(v)) { s.psBase = null; s.psFocus = true; s.psNext = 'irrelevant'; psKick(root, 'ps:sync'); return; }
+            if ((s.state === 'none' || s.state === 'irrelevant') && fits) {
+              var go = function () { if (s.state === 'none' || s.state === 'irrelevant') { s.psBase = v; s.psFocus = true; s.psNext = 'available'; psKick(root, 'ps:sync'); } };
+              if (c.timing === 'keystroke') go(); else timer = setTimeout(go, 900);
+            }
+          }
+        });
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        var sug = tdTrim(c.sug) || 'Include unresolved blockers';
+        if (a === 'ps:sync') { if (s.psNext) { psSet(s, s.psNext); s.psNext = null; ctx.paint(); if (s.state === 'available') ctx.announce('Suggestion from Aria: ' + sug + '.'); } return; }
+        if (a === 'sg:why') { s.psWhy = !s.psWhy; ctx.paint(); return; }
+        if (a === 'sg:add' || a.indexOf('sg:add:') === 0) {
+          var pick = psSugs(c)[+(a.split(':')[2] || 0)] || sug;
+          s.sgPick = pick;
+          s.psBase = psOwn(s, s.state) || s.psBase || PS_SUG_BASE;
+          psSet(s, 'accepted', psSugAccept(s.psBase, pick)); s.psFocus = true; ctx.paint();
+          ctx.announce('Added to your prompt. Nothing was sent.'); return;
+        }
+        if (a === 'sg:undo') { psSet(s, 'dismissed', s.psBase || PS_SUG_BASE); s.psFocus = true; ctx.paint(); ctx.announce('Removed. Your original request is back.'); return; }
+        if (a === 'sg:dismiss') { psSet(s, 'dismissed', s.psText || s.psBase || PS_SUG_BASE); s.psFocus = true; ctx.paint(); ctx.announce('Suggestion dismissed.'); return; }
+        if (a === 'ps:send') { s.psSent = s.psText; s.psBase = null; psSet(s, 'none', ''); ctx.paint(); ctx.announce('Sent.'); }
+      }
+    },
+
+    /* ── Madlibs ─────────────────────────────────────────────── */
+    madlibs: {
+      initial: 'partial',
+
+      customize: {
+        api: {
+          name: 'PromptMadlib',
+          props: function (c) {
+            return { template: tdTrim(c.tpl), suggestValues: c.suggest !== false, showAssembled: c.assembled !== false, editBeforeSend: c.finalEdit !== false };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Scaffold', section: 'content',
+            controls: [
+              { id: 'tpl', label: 'Scaffold sentence', type: 'text', value: 'Summarize {Document} for {Audience}[, focusing on {Topic}].',
+                hint: '{Name} is a blank. Wrap an optional clause in [ ] — it leaves the sentence if its blank is empty.' },
+              { id: 'helper', label: 'Helper text', type: 'text', value: 'Fill in the blanks — you can edit the whole sentence before sending.' },
+              { id: 'ph', label: 'Placeholder for empty blanks', type: 'text', value: 'choose…' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'suggest', label: 'Allow AI-suggested values', type: 'toggle', value: true, capability: true,
+                hint: 'Aria proposes a value it can infer — marked until kept. Off removes the AI suggestion state.' },
+              { id: 'assembled', label: 'Show the assembled request', type: 'toggle', value: true },
+              { id: 'finalEdit', label: 'Edit before sending', type: 'toggle', value: true,
+                hint: 'Off sends straight from the scaffold — people can’t check the sentence. Fails Quality.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'field', label: 'Blank treatment', type: 'segment', value: 'filled',
+                options: [['filled', 'Filled'], ['underline', 'Underline']] },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-light', type: 'check', label: 'A sentence, not a form',
+                test: function (c) { var n = psMlBlanks(psMlParse(tdTrim(c.tpl) || '')).length; return n >= 1 && n <= 4; },
+                fail: 'More than four blanks is a form. Use Structured Input instead.' },
+              { id: 'q-labels', type: 'check', label: 'Blanks are understandable',
+                test: function (c) { return psMlBlanks(psMlParse(tdTrim(c.tpl) || '')).every(function (b) { return b.name.length > 2 && !/^(x|field|value|input)\d*$/i.test(b.name); }); },
+                fail: 'Name each blank in human words: Document, Audience — not field1.' },
+              { id: 'q-edit', type: 'check', label: 'The finished prompt stays editable',
+                test: function (c) { return c.finalEdit !== false; },
+                fail: 'People must be able to read and change the sentence before it is sent.' },
+              { id: 'q-ai', type: 'check', label: 'AI-suggested values are marked', test: function () { return true; } },
+              { id: 'q-valid', type: 'check', label: 'Validation is recoverable — nothing is cleared', test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        empty: {
+          label: 'Empty scaffold',
+          trigger: 'A request that needs a few specific details.',
+          behaviour: 'A sentence with labelled blanks. Required and optional blanks are marked; the assembled request shows what is still missing.',
+          meaning: 'Fill these in and the request is written.',
+          action: 'Fill a blank.',
+          next: 'Partially completed'
+        },
+        partial: {
+          label: 'Partially completed',
+          trigger: 'They filled one blank.',
+          behaviour: 'Filled blanks read as part of the sentence; the rest are still marked.',
+          meaning: 'What is done, and what is left.',
+          action: 'Fill the rest.',
+          next: 'AI suggestion available, or Complete'
+        },
+        suggestion: {
+          label: 'AI suggestion available',
+          requires: 'suggest',
+          trigger: 'Aria can infer a value from what they chose.',
+          behaviour: 'The blank shows Aria’s value, marked “Suggested”, with Keep and Clear. It is not part of the request until kept.',
+          meaning: 'A likely value — theirs to accept.',
+          action: 'Keep, clear, or type another.',
+          next: 'Complete'
+        },
+        complete: {
+          label: 'Complete',
+          trigger: 'Every required blank has a value they chose.',
+          behaviour: 'The assembled sentence reads cleanly; Use prompt is available.',
+          meaning: 'The request is written.',
+          action: 'Use prompt.',
+          next: 'Ready to use'
+        },
+        validation: {
+          label: 'Validation needed',
+          trigger: 'They pressed Use prompt with a required blank empty.',
+          behaviour: 'That blank is flagged with words, focus moves to it, and everything else they entered stays.',
+          meaning: 'One detail is missing.',
+          action: 'Fill it.',
+          next: 'Complete'
+        },
+        ready: {
+          label: 'Ready to use',
+          trigger: 'They pressed Use prompt.',
+          behaviour: 'The sentence is in the composer — editable, unsent.',
+          meaning: 'It is an ordinary request now.',
+          action: 'Edit, then send.',
+          next: '—'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, st = s.state;
+        var parts = psMlParse(tdTrim(c.tpl) || 'Summarize {Document} for {Audience}[, focusing on {Topic}].');
+        var blanks = psMlBlanks(parts);
+        var v = psMlValues(s, st, blanks);
+        var sug = st === 'suggestion' && c.suggest !== false ? (s.mlSug || { name: blanks[1] && blanks[1].name, value: 'Leadership' }) : null;
+        var err = st === 'validation' ? (s.mlErr || blanks.filter(function (b) { return b.required && !(v[b.name] || '').trim(); }).map(function (b) { return b.name; })) : [];
+        var ph = esc(tdTrim(c.ph) || 'choose…');
+        function blank(b) {
+          var id = 'ps-ml-' + b.name.toLowerCase().replace(/\W+/g, '-');
+          var isSug = sug && sug.name === b.name && !(v[b.name] || '').trim();
+          var bad = err.indexOf(b.name) !== -1;
+          var opts = PS_ML_OPTS[b.name] || [];
+          var val = isSug ? sug.value : (v[b.name] || '');
+          return '<span class="ps-ml__b' + (isSug ? ' is-sug' : '') + (bad ? ' is-err' : '') + (val ? ' is-set' : '') + '">' +
+            '<label class="tdx-sr" for="' + id + '">' + esc(b.name) + (b.required ? '' : ' (optional)') + '</label>' +
+            '<input id="' + id + '" class="ps-ml__in" data-blank="' + esc(b.name) + '" list="' + id + '-l" value="' + esc(val) + '" placeholder="' + esc(b.name.toLowerCase()) + '"' +
+              ' style="width:' + psMlW(val || b.name) + '" autocomplete="off"' +
+              (b.required ? ' aria-required="true"' : '') + (bad ? ' aria-invalid="true" aria-describedby="ps-ml-err"' : '') +
+              (isSug ? ' aria-describedby="ps-ml-sug" readonly' : '') + ' />' +
+            '<datalist id="' + id + '-l">' + opts.map(function (o) { return '<option value="' + esc(o) + '"></option>'; }).join('') + '</datalist>' +
+            (isSug ? '<span class="ps-ml__ai" aria-hidden="true">' + tdAI('generated') + '</span>' : opts.length ? '<span class="ps-ml__chev" aria-hidden="true">' + mi('chevDown') + '</span>' : '') +
+            '</span>' + (!b.required && !isSug ? '<span class="ps-ml__tag" aria-hidden="true">optional</span>' : '');
+        }
+        var sentence = parts.map(function (p) {
+          if (p.text) return '<span>' + esc(p.text) + '</span>';
+          if (p.blank) return blank(blanks.filter(function (b) { return b.name === p.blank; })[0]);
+          return p.optional.map(function (q) { return q.text ? '<span class="ps-ml__opt">' + esc(q.text) + '</span>' : blank(blanks.filter(function (b) { return b.name === q.blank; })[0]); }).join('');
+        }).join('');
+        var vals = Object.assign({}, v);
+        var assembled = psMlText(parts, vals);
+        var ready = st === 'ready';
+        var M = tdM();
+        var sugBar = sug ? '<div class="ps-inline" id="ps-ml-sug" role="status">' + tdAI('generated') +
+            '<span><b>' + esc(sug.value) + '</b> suggested by Aria — the document’s owner is the leadership team.</span>' +
+            '<span class="ps-inline__a"><button class="ps-link" type="button" data-act="ml:keep">Keep</button><button class="ps-link" type="button" data-act="ml:clear">Clear</button></span></div>' : '';
+        var errBar = err.length ? '<p class="ps-fielderr" id="ps-ml-err" role="alert">' + mi('error') + '<span>Add ' + err.map(function (n) { return n.toLowerCase(); }).join(' and ') + ' — ' + (err.length > 1 ? 'they’re' : 'it’s') + ' required. Everything else you entered is kept.</span></p>' : '';
+        var card = '<div class="psc ps-ml' + (ready ? ' is-done' : '') + '" data-field="' + (c.field || 'filled') + '" data-density="' + (c.density || 'comfortable') + '" role="group" aria-labelledby="ps-ml-h">' +
+            '<p class="psc__over" id="ps-ml-h">' + (ready ? mi('check') + 'Placed in the composer' : 'Build your request') + '</p>' +
+            (!ready && tdTrim(c.helper) ? '<p class="psc__sub">' + esc(tdTrim(c.helper)) + '</p>' : '') +
+            (ready ? '<p class="md-body-medium ps-d">It is an ordinary request now — edit it below, then send.</p>' : '<p class="ps-ml__s">' + sentence + '</p>') +
+            sugBar + errBar +
+            (c.assembled !== false && !ready ? '<p class="ps-ml__out"><span class="ps-ml__k">Preview</span> <span data-ml-out>' + esc(assembled) + '</span></p>' : '') +
+            '<div class="psc__foot">' + (ready
+              ? '<button class="ps-link" type="button" data-act="ml:back">' + mi('arrowBack') + 'Back to the blanks</button>'
+              : '<span class="md-body-small ps-d">Nothing is sent until you send it.</span>' +
+                M.button({ variant: 'filled', label: c.finalEdit !== false ? 'Use prompt' : 'Send', icon: mi('arrowFwd'), attrs: { 'data-act': 'ml:use' } })) + '</div>' +
+          '</div>';
+        var cmp = psComposer({ ask: 'Or write your own request…', text: ready ? (psOwn(s, 'ready') !== null ? psOwn(s, 'ready') : assembled) : '' });
+        return psWrap('ml', st, card + cmp + psSent(s));
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, tpl = tdTrim(c.tpl) || 'Summarize {Document} for {Audience}[, focusing on {Topic}].';
+        var parts = psMlParse(tpl), blanks = psMlBlanks(parts);
+        return imports([['PromptTemplate, PromptSegment', '@nucleux/prompt-template'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+          '// State: ' + this.states[st].label + '\n' +
+          '// PromptTemplate is the base Nucleux scaffold (no Md3 variant ships); its result\n// goes into the shared composer, never straight to send.\n' +
+          'const segments = [\n' + parts.map(function (p) {
+            if (p.text) return '  { text: ' + jsxAttr(p.text) + ' },\n';
+            if (p.blank) return '  { slot: "' + p.blank.toLowerCase() + '", label: "' + p.blank + '", required: true },\n';
+            return p.optional.map(function (q) { return q.text ? '  { text: ' + jsxAttr(q.text) + ', optionalWith: "' + (p.optional.filter(function (x) { return x.blank; })[0] || {}).blank + '" },\n' : '  { slot: "' + q.blank.toLowerCase() + '", label: "' + q.blank + '", required: false },\n'; }).join('');
+          }).join('') + '];\n\n' +
+          '<PromptTemplate\n  segments={segments}\n  values={values}\n  onValuesChange={setValues}\n' +
+          '  submitLabel="' + (c.finalEdit !== false ? 'Use prompt' : 'Send') + '"\n  onComplete={(prompt) => setDraft(prompt)}\n/>\n' +
+          (c.suggest !== false ? '{suggested.audience && (\n  <p>“{suggested.audience}” suggested by Aria. <button onClick={keep}>Keep</button> <button onClick={clear}>Clear</button></p>\n)}\n' : '') +
+          psComposerJSX(st === 'ready' ? psMlText(parts, psMlValues(s, 'ready', blanks)) : '');
+      },
+
+      mounted: function (root, s) {
+        psBind(root, s);
+        var c = s.cfg;
+        var parts = psMlParse(tdTrim(c.tpl) || 'Summarize {Document} for {Audience}[, focusing on {Topic}].');
+        var blanks = psMlBlanks(parts);
+        root.querySelectorAll('.pv-stage .ps-ml__in').forEach(function (inp) {
+          if (inp.dataset.psb) return;
+          inp.dataset.psb = '1';
+          inp.addEventListener('input', function () {
+            var name = inp.getAttribute('data-blank');
+            s.mlV = psMlValues(s, s.state, blanks); s.mlV[name] = inp.value;
+            inp.style.width = psMlW(inp.value || name);
+            var wrap = inp.parentNode; wrap.classList.toggle('is-set', !!inp.value); wrap.classList.remove('is-err'); inp.removeAttribute('aria-invalid');
+            var out = root.querySelector('.pv-stage [data-ml-out]'); if (out) out.textContent = psMlText(parts, s.mlV);
+            var next = psMlDerive(s, blanks);
+            s.mlForState = next;
+            if (next !== s.state) pvLive(root, s, 'madlibs', next);
+          });
+          inp.addEventListener('change', function () {
+            /* A chosen document is when Aria can infer the audience. */
+            var name = inp.getAttribute('data-blank');
+            if (name === blanks[0].name && inp.value && c.suggest !== false && blanks[1] && !(s.mlV[blanks[1].name] || '').trim() && !s.mlSugDone) {
+              s.mlSug = { name: blanks[1].name, value: 'Leadership' }; s.mlNext = 'suggestion'; psKick(root, 'ps:sync');
+            }
+          });
+        });
+        if (s.mlFocus) { var t = root.querySelector('.pv-stage .ps-ml__in[data-blank="' + s.mlFocus + '"]'); s.mlFocus = null; if (t) t.focus(); }
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        var parts = psMlParse(tdTrim(c.tpl) || 'Summarize {Document} for {Audience}[, focusing on {Topic}].');
+        var blanks = psMlBlanks(parts);
+        s.mlV = psMlValues(s, s.state, blanks);
+        var paint = ctx.paint;
+        ctx = Object.assign({}, ctx, { paint: function () { s.mlForState = s.state; paint(); } });
+        if (a === 'ps:sync') { if (s.mlNext) { s.state = s.mlNext; s.mlNext = null; ctx.paint(); ctx.announce('Aria suggests a value. Keep it or clear it.'); } return; }
+        if (a === 'ml:keep') { var sg = s.mlSug || { name: blanks[1].name, value: 'Leadership' }; s.mlV[sg.name] = sg.value; s.mlSug = null; s.mlSugDone = true; s.state = psMlDerive(s, blanks); ctx.paint(); ctx.announce('Kept: ' + sg.value + '.'); return; }
+        if (a === 'ml:clear') { s.mlSug = null; s.mlSugDone = true; s.state = psMlDerive(s, blanks); s.mlFocus = blanks[1].name; ctx.paint(); return; }
+        if (a === 'ml:back') { s.state = psMlDerive(s, blanks); ctx.paint(); return; }
+        if (a === 'ml:use') {
+          var missing = blanks.filter(function (b) { return b.required && !(s.mlV[b.name] || '').trim(); }).map(function (b) { return b.name; });
+          if (missing.length) { s.mlErr = missing; s.state = 'validation'; s.mlFocus = missing[0]; ctx.paint(); ctx.announce('Add ' + missing.join(' and ') + ' — required.'); return; }
+          s.mlErr = null;
+          if (c.finalEdit === false) { s.psSent = psMlText(parts, s.mlV); s.state = 'ready'; ctx.paint(); return; }
+          psSet(s, 'ready', psMlText(parts, s.mlV)); s.psFocus = true; ctx.paint(); ctx.announce('Placed in the composer. Edit it, then send.'); return;
+        }
+        if (a === 'ps:send') { s.psSent = s.psText; psSet(s, 'ready', ''); s.mlV = {}; s.state = 'empty'; ctx.paint(); ctx.announce('Sent.'); }
+      }
+    },
+
+    /* ── Prompt Enhancer ─────────────────────────────────────── */
+    'prompt-enhancer': {
+      initial: 'enhanced',
+
+      customize: {
+        api: {
+          name: 'PromptEnhancer',
+          props: function (c) {
+            return { actionLabel: tdTrim(c.actLabel), showChanges: c.diff !== false, allowEdit: c.edit !== false,
+                     allowKeepOriginal: c.keep !== false, explain: c.why !== false, undo: c.undo !== false, diffStyle: c.diffStyle || 'split' };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Words', section: 'content',
+            controls: [
+              { id: 'actLabel', label: 'Enhance action label', type: 'text', value: 'Improve' },
+              { id: 'heading', label: 'Review heading', type: 'text', value: 'Suggested improvements' },
+              { id: 'failCopy', label: 'Failure copy', type: 'text', value: 'Couldn’t improve this request. Your original is unchanged.' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'diff', label: 'Show what changed', type: 'toggle', value: true,
+                hint: 'Off shows only the new prompt — people can’t see what Aria added. Fails Quality.' },
+              { id: 'why', label: 'Explain each change', type: 'toggle', value: true },
+              { id: 'edit', label: 'Allow editing the suggestion', type: 'toggle', value: true, capability: true,
+                hint: 'Off removes the Edited state.' },
+              { id: 'keep', label: 'Offer Keep original', type: 'toggle', value: true },
+              { id: 'undo', label: 'Undo after using it', type: 'toggle', value: true, capability: true,
+                hint: 'Off removes the Reverted state.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'diffStyle', label: 'Change presentation', type: 'segment', value: 'split',
+                options: [['split', 'Before / after'], ['inline', 'Inline additions']] },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ ADVANCED ══════════════════════════════════════ */
+          { id: 'adv', label: 'Preview', section: 'advanced',
+            controls: [
+              { id: 'failNext', label: 'Next attempt fails', type: 'toggle', value: false,
+                hint: 'Try the failure path from the component itself.' }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-visible', type: 'check', label: 'Changes are visible',
+                test: function (c) { return c.diff !== false; },
+                fail: 'A longer prompt with no markings asks people to trust a rewrite they can’t inspect.' },
+              { id: 'q-orig', type: 'check', label: 'The original stays available',
+                test: function (c) { return c.keep !== false || c.undo !== false; },
+                fail: 'With no Keep original and no Undo, the original is lost the moment they look at the suggestion.' },
+              { id: 'q-fail', type: 'check', label: 'Failure leaves the original untouched',
+                test: function (c) { return /unchanged|kept|untouched/i.test(tdTrim(c.failCopy)); },
+                fail: 'Say that their prompt is unchanged.' },
+              { id: 'q-assume', type: 'check', label: 'Assumptions are marked', test: function () { return true; } },
+              { id: 'q-intent', type: 'check', label: 'Intent is preserved — each change can be removed', test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        original: {
+          label: 'Original',
+          trigger: 'They have written a short request.',
+          behaviour: 'Their prompt in the composer, with Improve beside the model chip.',
+          meaning: 'They can ask for a clearer version — or just send.',
+          action: 'Improve, or send.',
+          next: 'Enhancing'
+        },
+        enhancing: {
+          label: 'Enhancing',
+          trigger: 'They pressed Improve.',
+          behaviour: 'Improve says “Improving…”; the original stays in the composer, readable and untouched.',
+          meaning: 'Aria is working on a suggestion. Nothing has changed yet.',
+          action: 'Wait, or cancel.',
+          next: 'Enhanced, or Enhancement failed'
+        },
+        enhanced: {
+          label: 'Enhanced',
+          trigger: 'Aria proposed an improvement.',
+          behaviour: 'A review above the composer: their words, plus each addition marked and explained. An assumption is labelled. The composer still holds the original.',
+          meaning: 'What would change, and why.',
+          action: 'Use it, edit it, remove a change, or keep the original.',
+          next: 'Reviewing, Edited, Accepted'
+        },
+        reviewing: {
+          label: 'Reviewing changes',
+          trigger: 'They removed one change.',
+          behaviour: 'The removed addition is struck from the suggestion; the rest stay.',
+          meaning: 'They are choosing which improvements to keep.',
+          action: 'Use the rest, or restore it.',
+          next: 'Accepted'
+        },
+        edited: {
+          label: 'Edited',
+          requires: 'edit',
+          trigger: 'They chose Edit.',
+          behaviour: 'The suggested prompt in a text field they can change freely.',
+          meaning: 'The suggestion is a starting point.',
+          action: 'Use this, or cancel.',
+          next: 'Accepted'
+        },
+        accepted: {
+          label: 'Accepted',
+          trigger: 'They chose Use improved.',
+          behaviour: 'The composer now holds the improved prompt — editable, unsent — with Undo.',
+          meaning: 'Their request was updated; nothing was sent.',
+          action: 'Edit, undo, or send.',
+          next: 'Reverted'
+        },
+        reverted: {
+          label: 'Reverted',
+          requires: 'undo',
+          trigger: 'They pressed Undo.',
+          behaviour: 'The original prompt is back exactly as written.',
+          meaning: 'Nothing was lost.',
+          action: 'Send, or improve again.',
+          next: 'Original'
+        },
+        failed: {
+          label: 'Enhancement failed',
+          trigger: 'Aria couldn’t produce a suggestion.',
+          behaviour: 'One line says so; the original is untouched. Try again, or keep the original.',
+          meaning: 'Nothing changed.',
+          action: 'Try again, or carry on.',
+          next: 'Enhancing, or Original'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        if (!M) return '';
+        var orig = s.peOrig || PS_PE_ORIG;
+        var on = st === 'reviewing' ? (s.peOn || { delta: false }) : (s.peOn || {});
+        var improved = st === 'edited' ? (s.peEdit || psPeText(orig, on)) : psPeText(orig, on);
+        var lab = esc(tdTrim(c.actLabel)) || 'Improve';
+        var busy = st === 'enhancing';
+        var tool = psTool({ act: busy ? 'pe:cancel' : 'pe:go', text: busy ? 'Improving…' : lab, busy: false,
+          icon: busy ? tdAI('working') : tdAI('action'), label: busy ? 'Cancel improving' : lab + ' this prompt with AI' });
+        var text = st === 'accepted' ? (psOwn(s, 'accepted') !== null ? psOwn(s, 'accepted') : (s.peUsed || psPeText(orig, {})))
+          : (psOwn(s, st) !== null ? psOwn(s, st) : orig);
+        var review = '';
+        if (st === 'enhanced' || st === 'reviewing' || st === 'edited') {
+          var base = esc(String(orig).replace(/[.\s]+$/, ''));
+          var diff = c.diffStyle !== 'inline'
+            ? '<div class="ps-pe__split"><div class="ps-pe__col"><p class="psc__over">You wrote</p><p class="ps-pe__txt">' + esc(orig) + '</p></div>' +
+                '<div class="ps-pe__col is-new"><p class="psc__over">' + tdAI('generated') + 'Improved</p><p class="ps-pe__txt">' + psPeMarked(base, on, c.diff !== false) + '</p></div></div>'
+            : '<p class="ps-pe__diff">' + psPeMarked(base, on, c.diff !== false) + '</p>';
+          var list = c.diff !== false ? '<div class="ps-pe__list" role="group" aria-label="Changes — untick to leave one out">' + PS_PE_CHANGES.map(function (ch, i) {
+              var kept = on[ch.id] !== false;
+              return '<div class="ps-pe__row' + (kept ? '' : ' is-off') + '">' +
+                M.checkbox({ checked: kept, act: 'pe:toggle:' + ch.id, id: 'ps-pe-c-' + ch.id,
+                  label: '<span class="ps-pe__a">Add “' + esc(ch.add.replace(/^[,\s]+(and\s)?/, '')) + '”</span>' +
+                    (c.why !== false ? '<span class="ps-pe__why">' + esc(ch.why) + '</span>' : '') +
+                    (ch.assume ? '<span class="ps-tag">' + mi('help') + esc(ch.assume) + '</span>' : '') }) + '</div>';
+            }).join('') + '</div>' : '';
+          review = '<div class="psc ps-pe" role="region" aria-label="Suggested improvements to your prompt">' +
+            '<div class="psc__head"><p class="psc__title">' + (esc(tdTrim(c.heading)) || 'Suggested improvements') + '</p>' +
+              '<span class="md-body-small ps-d">' + PS_PE_CHANGES.filter(function (ch) { return on[ch.id] !== false; }).length + ' of ' + PS_PE_CHANGES.length + ' changes</span></div>' +
+            (st === 'edited'
+              ? M.textArea({ id: 'ps-pe-edit', label: 'Improved prompt', value: improved, rows: 3 })
+              : diff + list) +
+            '<div class="psc__foot">' +
+              (st !== 'edited' && c.edit !== false ? M.button({ variant: 'text', label: 'Edit', icon: mi('edit'), attrs: { 'data-act': 'pe:edit' } }) : '<span></span>') +
+              '<span class="psc__acts">' +
+              (c.keep !== false ? M.button({ variant: 'outlined', label: st === 'edited' ? 'Cancel' : 'Keep original', attrs: { 'data-act': 'pe:keep' } }) : '') +
+              M.button({ variant: 'filled', label: st === 'edited' ? 'Use this' : 'Use improved', attrs: { 'data-act': 'pe:use' } }) +
+            '</span></div></div>';
+        }
+        var note = '';
+        if (busy) note = '<div class="ps-note" role="status">' + tdAI('working') + '<span>Improving your prompt. Your original stays as it is.</span></div>';
+        if (st === 'accepted') note = '<div class="ps-note" role="status">' + mi('check') + '<span>Prompt updated. Nothing was sent.</span>' +
+          (c.undo !== false ? '<button class="ps-link" type="button" data-act="pe:undo">Undo</button>' : '') + '</div>';
+        if (st === 'reverted') note = '<div class="ps-note" role="status">' + mi('undo') + '<span>Your original prompt is back.</span></div>';
+        if (st === 'failed') note = '<div class="ps-err" role="alert">' + mi('error') + '<span>' + (esc(tdTrim(c.failCopy)) || 'Couldn’t improve this request. Your original is unchanged.') + '</span>' +
+          '<button class="ps-link" type="button" data-act="pe:go">Try again</button><button class="ps-link" type="button" data-act="pe:keep">Keep original</button></div>';
+        var cmp = psComposer({ ask: 'Describe what you need…', text: text, tools: tool, assist: note });
+        return psWrap('pe', st, review + cmp + psSent(s), ' data-density="' + (c.density || 'comfortable') + '"');
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state;
+        return imports([['PromptEnhancer', '@nucleux/prompt-enhancer'], ['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button'],
+                        ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+          '// State: ' + this.states[st].label + '\n' +
+          '// PromptEnhancer (base Nucleux) offers the intents; the review below is the\n// pattern: the original stays in the composer until they choose.\n' +
+          psComposerJSX(st === 'accepted' ? psPeText(PS_PE_ORIG, {}) : PS_PE_ORIG,
+            '  leftActions={<Md3Button variant="text" onClick={improve}>' + jsxText(tdTrim(c.actLabel) || 'Improve') + '</Md3Button>}\n') + '\n\n' +
+          (st === 'enhanced' || st === 'reviewing' || st === 'edited'
+            ? '<Md3Card variant="outlined" role="region" aria-label="Suggested improvements to your prompt">\n' +
+              '  <p>{original}<ins>{change.text}</ins>…</p>\n' +
+              '  {changes.map((ch) => (\n    <li key={ch.id}>Added “{ch.text}” — {ch.reason}\n' +
+              '      {ch.assumption && <span>{ch.assumption}</span>}\n      <Md3Button variant="text" onClick={() => toggle(ch.id)}>{ch.kept ? "Remove" : "Restore"}</Md3Button>\n    </li>\n  ))}\n' +
+              '  <Md3Button variant="filled" onClick={() => { setPrevious(draft); setDraft(improved); }}>Use improved</Md3Button>\n' +
+              (c.edit !== false ? '  <Md3Button variant="text" onClick={edit}>Edit</Md3Button>\n' : '') +
+              (c.keep !== false ? '  <Md3Button variant="text" onClick={dismiss}>Keep original</Md3Button>\n' : '') + '</Md3Card>'
+            : st === 'accepted' && c.undo !== false ? '<p role="status">Prompt updated. <Md3Button variant="text" onClick={() => setDraft(previous)}>Undo</Md3Button></p>'
+            : st === 'failed' ? '<p role="alert">' + jsxText(tdTrim(c.failCopy)) + ' <Md3Button variant="text" onClick={improve}>Try again</Md3Button></p>' : '');
+      },
+
+      mounted: function (root, s) {
+        psBind(root, s, { onInput: function (v) { if (s.state === 'original' || s.state === 'reverted' || s.state === 'failed') s.peOrig = v; } });
+        var ta = root.querySelector('.pv-stage #ps-pe-edit');
+        if (ta && !ta.dataset.psb) { ta.dataset.psb = '1'; ta.addEventListener('input', function () { s.peEdit = ta.value; }); if (s.peFocus) { s.peFocus = false; ta.focus(); } }
+      },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg();
+        var orig = s.peOrig || PS_PE_ORIG;
+        if (a === 'pe:go') {
+          var run = (s.peRun || 0) + 1; s.peRun = run; s.peOn = {}; s.peEdit = null;
+          s.state = 'enhancing'; ctx.paint(); ctx.announce('Improving your prompt. Your original is unchanged.');
+          await wait(1400); if (s.peRun !== run || s.state !== 'enhancing') return;
+          if (c.failNext) { s.state = 'failed'; ctx.paint(); ctx.announce(tdTrim(c.failCopy)); return; }
+          s.state = 'enhanced'; ctx.paint(); ctx.announce('Suggested improvements ready: 3 changes. Your original is still in the composer.'); return;
+        }
+        if (a === 'pe:cancel') { s.peRun = (s.peRun || 0) + 1; s.state = 'original'; ctx.paint(); ctx.announce('Cancelled. Nothing changed.'); return; }
+        if (a.indexOf('pe:toggle:') === 0) {
+          var id = a.slice(10); s.peOn = Object.assign({}, s.state === 'reviewing' ? (s.peOn || { delta: false }) : (s.peOn || {}));
+          s.peOn[id] = s.peOn[id] === false; s.state = 'reviewing'; ctx.paint(); return;
+        }
+        if (a === 'pe:edit') { s.peEdit = psPeText(orig, s.peOn || {}); s.peFocus = true; s.state = 'edited'; ctx.paint(); return; }
+        if (a === 'pe:use') {
+          var t = s.state === 'edited' ? (s.peEdit || psPeText(orig, s.peOn || {})) : psPeText(orig, s.state === 'reviewing' ? (s.peOn || { delta: false }) : (s.peOn || {}));
+          s.peUsed = t; psSet(s, 'accepted', t); s.psFocus = true; ctx.paint(); ctx.announce('Prompt updated. Nothing was sent.'); return;
+        }
+        if (a === 'pe:keep') { psSet(s, 'original', orig); ctx.paint(); ctx.announce('Kept your original.'); return; }
+        if (a === 'pe:undo') { psSet(s, 'reverted', orig); s.psFocus = true; ctx.paint(); ctx.announce('Your original prompt is back.'); return; }
+        if (a === 'ps:send') { s.psSent = s.psText || orig; psSet(s, 'original', ''); s.peOrig = ''; ctx.paint(); ctx.announce('Sent.'); }
+      }
+    },
+
+    /* ── Modes ───────────────────────────────────────────────── */
+    modes: {
+      initial: 'selected',
+
+      customize: {
+        api: {
+          name: 'ModePicker',
+          props: function (c) {
+            return { modes: psModeList(c).map(function (m) { return m.id; }), defaultMode: c.def === 'draft' ? 'draft' : undefined,
+                     clearable: c.clear !== false, showDescriptions: c.desc !== false, showUnavailable: c.showOff !== false };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Plan mode', section: 'content',
+            controls: [
+              { id: 'planName', label: 'Mode name', type: 'text', value: 'Plan', hint: 'A verb people already use for the work.' },
+              { id: 'planDesc', label: 'Description', type: 'text', value: 'Break the work into steps with owners and dates.',
+                hint: 'What changes about how Aria works — not a promise of quality.' },
+              { id: 'offText', label: 'Unavailable text', type: 'text', value: 'Not available in this workspace — web access is turned off.' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'def', label: 'Default mode', type: 'segment', value: 'none',
+                options: [['none', 'None'], ['draft', 'Draft']] },
+              { id: 'clear', label: 'Allow clearing the mode', type: 'toggle', value: true },
+              { id: 'desc', label: 'Show descriptions', type: 'toggle', value: true },
+              { id: 'showOff', label: 'Show unavailable modes', type: 'toggle', value: true, capability: true,
+                hint: 'Listed with the reason, or left out entirely. Off removes the Mode unavailable state.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'density', label: 'Picker density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
+              { id: 'indicator', label: 'Active mode in the composer', type: 'segment', value: 'label',
+                options: [['label', 'Mode  Plan'], ['icon', 'Icon + name']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-desc', type: 'check', label: 'Each mode says what it changes',
+                test: function (c) { return c.desc !== false && tdTrim(c.planDesc).length > 12; },
+                fail: 'A mode name alone doesn’t tell people what will be different.' },
+              { id: 'q-model', type: 'check', label: 'Not confused with model selection',
+                test: function (c) { return !/(fast|deep|smart|pro|turbo|model|gpt|reasoning|think)/i.test(tdTrim(c.planName) + ' ' + tdTrim(c.planDesc)); },
+                fail: 'That describes a model or reasoning effort. Modes are how the agent approaches the task.' },
+              { id: 'q-promise', type: 'check', label: 'No promised capability',
+                test: function (c) { return !/(guarantee|always|perfect|best|100%)/i.test(tdTrim(c.planDesc)); },
+                fail: 'Describe how it works, not how good it will be.' },
+              { id: 'q-visible', type: 'check', label: 'The current mode stays visible', test: function () { return true; } },
+              { id: 'q-text', type: 'check', label: 'Changing mode keeps the prompt', test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        none: {
+          label: 'No mode selected',
+          trigger: 'They are writing a request.',
+          behaviour: 'A Mode control beside the model chip. Aria works the general way until a mode is chosen.',
+          meaning: 'They can choose how Aria should approach this.',
+          action: 'Open Mode, or just send.',
+          next: 'Mode picker open'
+        },
+        open: {
+          label: 'Mode picker open',
+          trigger: 'They opened Mode.',
+          behaviour: 'A short list of modes, each with one line on what changes. An unavailable mode says why.',
+          meaning: 'What each mode would do with this request.',
+          action: 'Choose one, or close.',
+          next: 'Mode selected'
+        },
+        selected: {
+          label: 'Mode selected',
+          trigger: 'They chose Plan.',
+          behaviour: 'The Mode chip in the composer now reads “Plan”, with a way to change or remove it. The text and the model are untouched.',
+          meaning: 'Aria will approach this as a planning task.',
+          action: 'Send, change, or clear.',
+          next: 'Mode changed'
+        },
+        changed: {
+          label: 'Mode changed',
+          trigger: 'They switched Plan to Review.',
+          behaviour: 'The chip updates and one line says what changed — and that their text is the same.',
+          meaning: 'The next request will be a review.',
+          action: 'Send.',
+          next: '—'
+        },
+        unavailable: {
+          label: 'Mode unavailable',
+          requires: 'showOff',
+          trigger: 'They chose a mode this workspace can’t support.',
+          behaviour: 'The mode isn’t applied; the picker says why and offers the others.',
+          meaning: 'That approach isn’t possible here.',
+          action: 'Choose another.',
+          next: 'Mode selected'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, st = s.state;
+        var L = psModeList(c);
+        var dflt = { none: c.def === 'draft' ? 'draft' : null, open: null, unavailable: null, selected: 'plan', changed: 'review' }[st];
+        var cur = s.mdFor === st ? s.mdCur : dflt;
+        var open = st === 'open' || st === 'unavailable';
+        var m = cur && L.filter(function (x) { return x.id === cur; })[0];
+        var pop = open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode" data-density="' + (c.density || 'comfortable') + '">' +
+            '<div class="ps-pick__h"><p class="ps-pick__t">Mode</p><p class="ps-pick__s">How Aria approaches this request. Model and effort stay as they are.</p></div>' +
+            '<div role="radiogroup" aria-label="Mode">' + L.filter(function (x) { return !x.off || c.showOff !== false; }).map(function (x) {
+              var on = x.id === cur;
+              return '<button class="ps-opt' + (on ? ' is-on' : '') + (x.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
+                (x.off ? ' aria-disabled="true" aria-describedby="ps-md-off-' + x.id + '"' : '') + ' data-act="md:pick:' + x.id + '">' +
+                '<span class="ps-opt__i">' + mi(x.icon) + '</span><span class="ps-opt__t"><span class="ps-opt__n">' + esc(x.name) + '</span>' +
+                (c.desc !== false ? '<span class="ps-opt__d">' + esc(x.d) + '</span>' : '') +
+                (x.off ? '<span class="ps-opt__off" id="ps-md-off-' + x.id + '">' + esc(x.off) + '</span>' : '') + '</span>' +
+                (on ? '<span class="ps-opt__c">' + mi('check') + '</span>' : '') + '</button>';
+            }).join('') + '</div>' +
+            (st === 'unavailable' ? '<p class="ps-err" role="alert">' + mi('info') + '<span>Research isn’t available here. Choose another mode.</span></p>' : '') +
+            (cur && c.clear !== false ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="md:clear">No mode</button></div>' : '') +
+          '</div>' : '';
+        var chips = [];
+        var note = st === 'changed' ? '<div class="ps-note" role="status">' + mi('sync') + '<span>Mode changed to ' + esc(m.name) + '. Your text is unchanged.</span></div>' : '';
+        var cmp = psComposer({ ask: 'Describe the task…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Help me prepare the next product release.',
+          tools: psChip({ kind: 'mode', label: 'Mode', icon: mi('tune'), value: m ? m.name : null, valueIcon: m ? mi(m.icon) : '', short: c.indicator === 'icon',
+            act: open ? 'md:close' : 'md:open', popup: 'dialog', open: open, removeAct: m && c.clear !== false ? 'md:clear' : null }),
+          scaffolds: chips, assist: note, pop: pop });
+        return psWrap('md', st, cmp + psSent(s));
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, L = psModeList(c);
+        var cur = st === 'changed' ? 'review' : st === 'none' ? (c.def === 'draft' ? 'draft' : null) : 'plan';
+        return imports([['Md3Menu', '@nucleux/md3-menu'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+          '// State: ' + this.states[st].label + '\n// Mode = how Aria works. Model and effort stay in the model chip.\n' +
+          'const modes = [\n' + L.filter(function (x) { return !x.off || c.showOff !== false; }).map(function (x) {
+            return '  { id: "' + x.id + '", name: ' + jsxAttr(x.name) + ', description: ' + jsxAttr(x.d) + (x.off ? ', unavailable: ' + jsxAttr(x.off) : '') + ' },\n';
+          }).join('') + '];\n\n' +
+          (st === 'open' || st === 'unavailable' ? '<Md3Menu role="dialog" aria-label="Choose a mode">\n  {modes.map((m) => (\n    <button key={m.id} role="radio" aria-checked={m.id === mode} aria-disabled={!!m.unavailable} onClick={() => choose(m)}>\n      {m.name} — {m.description}{m.unavailable && <small>{m.unavailable}</small>}\n    </button>\n  ))}\n</Md3Menu>\n\n' : '') +
+          (cur ? '<Md3Chip variant="input" onRemove={' + (c.clear !== false ? 'clearMode' : 'undefined') + '}>Mode · ' + jsxText((L.filter(function (x) { return x.id === cur; })[0] || {}).name || '') + '</Md3Chip>\n' : '') +
+          psComposerJSX('Help me prepare the next product release.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openModes}>Mode</Md3Button>}\n');
+      },
+
+      mounted: function (root, s) { psBind(root, s); },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg(), L = psModeList(c);
+        var txt = (function () { var f = document.querySelector('.pv-stage .psw-md [data-ax-field]'); return f ? f.value : null; })();
+        function go(st, cur) { var keep = txt; s.mdCur = cur; s.mdFor = st; s.state = st; if (keep !== null) { s.psText = keep; s.psFor = st; } ctx.paint(); }
+        var dflt = { none: c.def === 'draft' ? 'draft' : null, open: null, unavailable: null, selected: 'plan', changed: 'review' }[s.state];
+        var cur = s.mdFor === s.state ? s.mdCur : dflt;
+        if (a === 'md:open') { s.mdPrev = s.state === 'none' ? null : cur; go('open', cur); return; }
+        if (a === 'md:close') { go(s.mdPrev ? 'selected' : 'none', s.mdPrev); return; }
+        if (a.indexOf('md:pick:') === 0) {
+          var id = a.slice(8), m = L.filter(function (x) { return x.id === id; })[0];
+          if (m.off) { go('unavailable', s.mdPrev || cur); ctx.announce(m.name + ' isn’t available here. Choose another mode.'); return; }
+          var was = s.mdPrev;
+          go(was && was !== id ? 'changed' : 'selected', id);
+          ctx.announce('Mode: ' + m.name + '. ' + m.d + ' Your text is unchanged.'); return;
+        }
+        if (a === 'md:clear') { s.mdPrev = null; go('none', null); ctx.announce('No mode. Your text is unchanged.'); return; }
+        if (a === 'ps:send') { s.psSent = txt || s.psText; s.mdCur = cur; s.mdFor = s.state; s.psText = ''; s.psFor = s.state; ctx.paint(); ctx.announce('Sent' + (cur ? ' in that mode. It stays until you change it.' : '.')); }
+      }
+    },
+
+    /* ── Voice & Tone ────────────────────────────────────────── */
+    'voice-tone': {
+      initial: 'selected',
+
+      customize: {
+        api: {
+          name: 'TonePicker',
+          props: function (c) {
+            return { tones: PS_TONES.map(function (t) { return t.id; }), allowCustom: c.custom !== false, showPreview: c.preview !== false,
+                     recommended: c.rec !== false ? 'professional' : undefined, removable: c.remove !== false, layout: c.layout || 'list' };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Professional', section: 'content',
+            controls: [
+              { id: 'proName', label: 'Tone label', type: 'text', value: 'Professional' },
+              { id: 'proDesc', label: 'Description', type: 'text', value: 'Clear and measured.' },
+              { id: 'proEx', label: 'Example line', type: 'text', value: 'This month we shipped faster onboarding; next, we’re improving imports.',
+                hint: 'One short sentence. A preview, not a sample document.' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'custom', label: 'Allow a custom tone', type: 'toggle', value: true, capability: true,
+                hint: 'Off removes the Custom tone state.' },
+              { id: 'preview', label: 'Show tone preview', type: 'toggle', value: true },
+              { id: 'rec', label: 'Show a recommended tone', type: 'toggle', value: true,
+                hint: 'Marked as Aria’s recommendation. Never applied without a choice.' },
+              { id: 'remove', label: 'Allow removing the tone', type: 'toggle', value: true, capability: true,
+                hint: 'Off removes the Tone removed state.' }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'layout', label: 'Selection', type: 'segment', value: 'cards',
+                options: [['cards', 'Cards'], ['list', 'List'], ['segmented', 'Segmented']], hint: 'Segmented fits up to four tones and drops the preview line.' },
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-clear', type: 'check', label: 'Tones are understandable',
+                test: function (c) { return tdTrim(c.proName).length > 2 && (c.preview !== false || tdTrim(c.proDesc).length > 4); },
+                fail: 'Give each tone a description or a preview line.' },
+              { id: 'q-meaning', type: 'check', label: 'Tone doesn’t change facts',
+                test: function (c) { return !/(\d+%|guarantee|we promise|always)/i.test(tdTrim(c.proEx)); },
+                fail: 'The example adds a claim. A tone changes wording, not facts.' },
+              { id: 'q-remove', type: 'check', label: 'They can switch or remove it',
+                test: function (c) { return c.remove !== false; },
+                fail: 'Without a way back to the default, a tone is stuck on every request.' },
+              { id: 'q-rec', type: 'check', label: 'Recommendations stay optional', test: function () { return true; } },
+              { id: 'q-visible', type: 'check', label: 'The active tone is visible', test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        default: {
+          label: 'Default',
+          trigger: 'No tone chosen.',
+          behaviour: 'A Tone control beside the model chip. Aria uses its default voice.',
+          meaning: 'They can say how the reply should sound.',
+          action: 'Open Tone, or send.',
+          next: 'Tone picker open'
+        },
+        open: {
+          label: 'Tone picker open',
+          trigger: 'They opened Tone.',
+          behaviour: 'Tones with one line each showing how it sounds; Aria’s recommendation is marked, not selected; a field for their own description.',
+          meaning: 'How the reply would sound in each.',
+          action: 'Choose one, describe one, or close.',
+          next: 'Tone selected, or Custom tone'
+        },
+        selected: {
+          label: 'Tone selected',
+          trigger: 'They chose Professional.',
+          behaviour: 'The Tone chip in the composer now reads “Professional”, with a way to change or remove it. Their text is untouched.',
+          meaning: 'The reply will sound professional — saying the same things.',
+          action: 'Send, change, or remove.',
+          next: 'Tone changed, or Tone removed'
+        },
+        custom: {
+          label: 'Custom tone',
+          requires: 'custom',
+          trigger: 'They described their own tone.',
+          behaviour: 'Their words become the tone chip, with a note that Aria will match it as closely as it can.',
+          meaning: 'Their description guides how it sounds.',
+          action: 'Send, edit, or remove.',
+          next: '—'
+        },
+        changed: {
+          label: 'Tone changed',
+          trigger: 'They switched to Conversational.',
+          behaviour: 'The chip updates; one line says the facts stay the same.',
+          meaning: 'Same content, different voice.',
+          action: 'Send, or ask for a new version.',
+          next: '—'
+        },
+        removed: {
+          label: 'Tone removed',
+          requires: 'remove',
+          trigger: 'They removed the tone.',
+          behaviour: 'The chip goes; Aria uses its default voice. Undo is offered.',
+          meaning: 'Back to the default.',
+          action: 'Undo, or carry on.',
+          next: 'Default'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, st = s.state, T = psToneList(c);
+        var dflt = { default: null, open: null, selected: 'professional', custom: 'custom', changed: 'conversational', removed: null }[st];
+        var cur = s.tnFor === st ? s.tnCur : dflt;
+        var customText = s.tnCustom || 'Calm, plain English for non-experts';
+        var open = st === 'open';
+        var seg = c.layout === 'segmented';
+        var cards = (c.layout || 'cards') === 'cards';
+        var sampleT = T.filter(function (t) { return t.id === (s.tnHover || cur); })[0] || T[0];
+        var pop = open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone" data-density="' + (c.density || 'comfortable') + '">' +
+            '<div class="ps-pick__h"><p class="ps-pick__t">Tone</p><p class="ps-pick__s">How the reply should sound. What it says stays the same.</p></div>' +
+            (cards
+              ? '<div class="ps-tiles" role="radiogroup" aria-label="Tone">' + T.map(function (t) {
+                  var on = t.id === cur;
+                  return '<button class="ps-tile' + (on ? ' is-on' : '') + '" type="button" role="radio" aria-checked="' + on + '" data-act="tn:pick:' + t.id + '" data-tone="' + t.id + '">' +
+                    '<span class="ps-tile__n">' + esc(t.name) + (on ? mi('check') : '') + '</span>' +
+                    '<span class="ps-tile__d">' + esc(t.d) + '</span>' +
+                    (c.rec !== false && t.id === 'professional' ? '<span class="ps-tile__tag">' + tdAI('generated') + 'Recommended</span>' : '') + '</button>';
+                }).join('') + '</div>' +
+                (c.preview !== false ? '<div class="ps-sample" aria-live="polite"><p class="psc__over">Sample · ' + esc(sampleT.name) + '</p><p class="ps-sample__t">“' + esc(sampleT.ex) + '”</p></div>' : '')
+              : seg
+              ? '<div class="ps-seg" role="radiogroup" aria-label="Tone">' + T.slice(0, 4).map(function (t) {
+                  return '<button class="ps-seg__i' + (t.id === cur ? ' is-on' : '') + '" type="button" role="radio" aria-checked="' + (t.id === cur) + '" data-act="tn:pick:' + t.id + '">' + (t.id === cur ? mi('check') : '') + esc(t.name) + '</button>'; }).join('') + '</div>'
+              : '<div role="radiogroup" aria-label="Tone">' + T.map(function (t) {
+                  var on = t.id === cur;
+                  return '<button class="ps-opt' + (on ? ' is-on' : '') + '" type="button" role="radio" aria-checked="' + on + '" data-act="tn:pick:' + t.id + '">' +
+                    '<span class="ps-opt__t"><span class="ps-opt__n">' + esc(t.name) +
+                      (c.rec !== false && t.id === 'professional' ? ' <span class="ps-tag">' + tdAI('generated') + 'Recommended for stakeholders</span>' : '') + '</span>' +
+                    '<span class="ps-opt__d">' + esc(t.d) + '</span>' +
+                    (c.preview !== false ? '<span class="ps-opt__ex">“' + esc(t.ex) + '”</span>' : '') + '</span>' +
+                    (on ? '<span class="ps-opt__c">' + mi('check') + '</span>' : '') + '</button>';
+                }).join('') + '</div>') +
+            (c.custom !== false ? '<div class="ps-custom"><label class="psc__over" for="ps-tn-custom">Or describe a tone</label>' +
+              '<div class="ps-custom__row"><input id="ps-tn-custom" class="ps-custom__in" placeholder="e.g. calm, plain English" value="" />' +
+              tdM().button({ variant: 'tonal', label: 'Use', attrs: { 'data-act': 'tn:custom' } }) + '</div></div>' : '') +
+          '</div>' : '';
+        var label = cur === 'custom' ? customText : cur ? (T.filter(function (t) { return t.id === cur; })[0] || {}).name : null;
+        var chips = [];
+        var note = '';
+        if (st === 'custom') note = '<div class="ps-note" role="status">' + mi('info') + '<span>Aria will match your description as closely as it can; the facts stay the same.</span></div>';
+        if (st === 'changed') note = '<div class="ps-note" role="status">' + mi('sync') + '<span>Tone changed to ' + esc(label) + '. What the reply says stays the same.</span></div>';
+        if (st === 'removed') note = '<div class="ps-note" role="status">' + mi('close') + '<span>Tone removed — Aria will use its default voice.</span><button class="ps-link" type="button" data-act="tn:undo">Undo</button></div>';
+        var cmp = psComposer({ ask: 'Describe what to write…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Draft a product update for stakeholders.',
+          tools: psChip({ kind: 'tone', label: 'Tone', icon: mi('forum'), value: label, act: open ? 'tn:close' : 'tn:open', popup: 'dialog', open: open,
+            removeAct: label && c.remove !== false ? 'tn:remove' : null }),
+          scaffolds: chips, assist: note, pop: pop });
+        return psWrap('tn', st, cmp + psSent(s));
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, T = psToneList(c);
+        var label = { selected: 'Professional', custom: 'Calm, plain English for non-experts', changed: 'Conversational' }[st];
+        return imports([[c.layout === 'segmented' ? 'Md3SegmentedButton, Md3SegmentedButtonItem' : 'Md3RadioGroup, Md3Radio', c.layout === 'segmented' ? '@nucleux/md3-segmented-button' : '@nucleux/md3-radio'],
+                        ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+          '// State: ' + this.states[st].label + '\n// Tone = how it sounds. It is sent with the request; it never edits the prompt text.\n' +
+          (st === 'open' ? '<Md3RadioGroup label="Tone" value={tone} onValueChange={setTone}>\n' + T.map(function (t) {
+              return '  <label><Md3Radio value="' + t.id + '" /> ' + jsxText(t.name) + (c.preview !== false ? ' <small>“' + jsxText(t.ex) + '”</small>' : '') + '</label>\n'; }).join('') +
+            '</Md3RadioGroup>\n' + (c.custom !== false ? '<Md3TextField label="Or describe a tone" value={custom} onChange={setCustom} />\n' : '') + '\n' : '') +
+          (label ? '<Md3Chip variant="input"' + (c.remove !== false ? ' onRemove={removeTone}' : '') + '>Tone · ' + jsxText(label) + '</Md3Chip>\n' : '') +
+          psComposerJSX('Draft a product update for stakeholders.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openTone}>Tone</Md3Button>}\n');
+      },
+
+      mounted: function (root, s) {
+        psBind(root, s);
+        var T = psToneList(s.cfg);
+        root.querySelectorAll('.pv-stage .ps-tile[data-tone]').forEach(function (b) {
+          function show() { var t = T.filter(function (x) { return x.id === b.getAttribute('data-tone'); })[0], box = root.querySelector('.pv-stage .ps-sample');
+            if (t && box) box.innerHTML = '<p class="psc__over">Sample · ' + esc(t.name) + '</p><p class="ps-sample__t">“' + esc(t.ex) + '”</p>'; }
+          b.addEventListener('mouseenter', show); b.addEventListener('focus', show);
+        });
+        var ci = root.querySelector('.pv-stage #ps-tn-custom');
+        if (ci && !ci.dataset.psb) { ci.dataset.psb = '1'; ci.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); psKick(root, 'tn:custom'); } }); }
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg(), T = psToneList(c);
+        var f = document.querySelector('.pv-stage .psw-tn [data-ax-field]'), txt = f ? f.value : null;
+        var dflt = { default: null, open: null, selected: 'professional', custom: 'custom', changed: 'conversational', removed: null }[s.state];
+        var cur = s.tnFor === s.state ? s.tnCur : dflt;
+        function go(st, v) { s.tnCur = v; s.tnFor = st; s.state = st; if (txt !== null) { s.psText = txt; s.psFor = st; } ctx.paint(); }
+        if (a === 'tn:open') { s.tnPrev = cur; go('open', cur); return; }
+        if (a === 'tn:close') { go(s.tnPrev ? (s.tnPrev === 'custom' ? 'custom' : 'selected') : 'default', s.tnPrev); return; }
+        if (a.indexOf('tn:pick:') === 0) {
+          var id = a.slice(8), t = T.filter(function (x) { return x.id === id; })[0];
+          go(s.tnPrev && s.tnPrev !== id ? 'changed' : 'selected', id); ctx.announce('Tone: ' + t.name + '. Your text is unchanged.'); return;
+        }
+        if (a === 'tn:custom') {
+          var ci = document.getElementById('ps-tn-custom'), v = ci ? ci.value.trim() : '';
+          if (!v) { if (ci) ci.focus(); ctx.announce('Describe the tone first.'); return; }
+          s.tnCustom = v; go('custom', 'custom'); ctx.announce('Tone: ' + v + '.'); return;
+        }
+        if (a === 'tn:remove') { s.tnUndo = cur; go('removed', null); ctx.announce('Tone removed. Aria will use its default voice.'); return; }
+        if (a === 'tn:undo') { var u = s.tnUndo || 'professional'; go(u === 'custom' ? 'custom' : 'selected', u); return; }
+        if (a === 'ps:send') { s.psSent = txt || s.psText; s.tnCur = cur; s.tnFor = s.state; s.psText = ''; s.psFor = s.state; ctx.paint(); ctx.announce('Sent' + (cur ? ' with that tone. It stays for your next request.' : '.')); }
+      }
+    },
+
+    /* ── Preset Styles ───────────────────────────────────────────
+       After Claude's styles (support.claude.com/en/articles/10181068):
+       "Use style" lives with the composer's tools; a few named presets
+       (Normal, Concise, Formal, Explanatory) say how replies are
+       written; a custom style is made from a writing example or a
+       description; the choice can change at any point in a
+       conversation and applies to new messages, edits and retries.
+       Interaction principles only — the look is Nucleux Material 3. */
+    'preset-styles': {
+      initial: 'selected',
+
+      customize: {
+        api: {
+          name: 'StylePicker',
+          props: function (c) {
+            return { styles: PS_STYLES.map(function (x) { return x.id; }), defaultStyle: 'normal', customStyles: c.custom !== false,
+                     showPreview: c.preview !== false, scopeNote: c.sayScope !== false ? tdTrim(c.scope) : undefined };
+          }
+        },
+        groups: [
+          /* ══ CONTENT ═══════════════════════════════════════ */
+          { id: 'words', label: 'Custom style', section: 'content',
+            controls: [
+              { id: 'csName', label: 'Custom style name', type: 'text', value: 'Release notes voice',
+                hint: 'Named after what it sounds like or where it is used — never “Style 1”.' },
+              { id: 'csDesc', label: 'What it changes', type: 'text', value: 'One line per change, the benefit first, plain verbs, no marketing words.',
+                hint: 'Generated from the example; people can edit it.' },
+              { id: 'scope', label: 'Where it applies', type: 'text', value: 'new messages, edits and retries' }
+            ] },
+
+          /* ══ BEHAVIOR ══════════════════════════════════════ */
+          { id: 'flow', label: 'Behaviour', section: 'behavior',
+            controls: [
+              { id: 'custom', label: 'Allow custom styles', type: 'toggle', value: true, capability: true,
+                hint: 'Create from an example or a description. Off removes the Create a style and Style generated states.' },
+              { id: 'preview', label: 'Preview before choosing', type: 'toggle', value: true, capability: true,
+                hint: 'A sample reply in the style under the pointer or focus. Off removes the Previewing state.' },
+              { id: 'sayScope', label: 'Say where the style applies', type: 'toggle', value: true }
+            ] },
+
+          /* ══ APPEARANCE ════════════════════════════════════ */
+          { id: 'look', label: 'Look', section: 'appearance',
+            controls: [
+              { id: 'density', label: 'Density', type: 'segment', value: 'comfortable',
+                options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] }
+            ] },
+
+          /* ══ QUALITY ═══════════════════════════════════════ */
+          { id: 'checks', label: 'Quality', section: 'quality',
+            controls: [
+              { id: 'q-normal', type: 'check', label: 'Normal is always one choice away', test: function () { return true; } },
+              { id: 'q-desc', type: 'check', label: 'Each style says what it changes',
+                test: function (c) { return tdTrim(c.csDesc).length > 12; },
+                fail: 'A style name alone doesn’t say how the replies will read.' },
+              { id: 'q-name', type: 'check', label: 'The custom style has a real name',
+                test: function (c) { var n = tdTrim(c.csName); return n.length > 2 && !/^(style|custom|new style)\s*\d*$/i.test(n); },
+                fail: 'Name it after what it sounds like.' },
+              { id: 'q-preview', type: 'check', label: 'They see the style before relying on it',
+                test: function (c) { return c.preview !== false; },
+                fail: 'Without a preview, the first reply is the preview.' },
+              { id: 'q-scope', type: 'check', label: 'It is clear what the style applies to',
+                test: function (c) { return c.sayScope !== false && tdTrim(c.scope).length > 3; },
+                fail: 'Say that earlier replies keep their style.' },
+              { id: 'q-prompt', type: 'check', label: 'A style never edits the request', test: function () { return true; } }
+            ] }
+        ]
+      },
+
+      states: {
+        none: {
+          label: 'Normal',
+          trigger: 'They are writing a request.',
+          behaviour: 'No style chip: Aria writes the way it usually does. A Style control sits with the composer’s tools.',
+          meaning: 'Replies use the default style.',
+          action: 'Open Style, or send.',
+          next: 'Style menu open'
+        },
+        available: {
+          label: 'Style menu open',
+          trigger: 'They opened Style.',
+          behaviour: '“Use style”: Normal, Concise, Formal and Explanatory, each with one line on what changes, their own styles below, and Create & edit styles. The current style is checked.',
+          meaning: 'How Aria could write the reply.',
+          action: 'Point at a style to preview it, or choose one.',
+          next: 'Previewing a style'
+        },
+        selected: {
+          label: 'Previewing a style',
+          requires: 'preview',
+          trigger: 'They pointed at (or focused) Concise.',
+          behaviour: 'A sample reply in that style appears beside the list. Nothing changes until they choose it.',
+          meaning: 'What replies would read like.',
+          action: 'Choose it, or look at another.',
+          next: 'Style applied'
+        },
+        applied: {
+          label: 'Style applied',
+          trigger: 'They chose Concise.',
+          behaviour: 'The menu closes and the Style chip in the composer reads “Concise”, with × to go back to Normal. One line says where it applies. Their request is untouched.',
+          meaning: 'Replies from now on will be shorter and more direct.',
+          action: 'Send, switch, or go back to Normal.',
+          next: 'Style switched, or Back to Normal'
+        },
+        changed: {
+          label: 'Style switched',
+          trigger: 'Mid-conversation, they switched Concise to Formal.',
+          behaviour: 'The chip updates and one line says the new style applies from here — earlier replies keep theirs.',
+          meaning: 'The next reply will be formal.',
+          action: 'Send.',
+          next: '—'
+        },
+        removed: {
+          label: 'Back to Normal',
+          trigger: 'They pressed × on the chip (or chose Normal).',
+          behaviour: 'The chip goes; one line confirms Normal, with Undo.',
+          meaning: 'Replies go back to the default style.',
+          action: 'Undo, or carry on.',
+          next: 'Normal'
+        },
+        create: {
+          label: 'Create a style',
+          requires: 'custom',
+          trigger: 'They chose Create & edit styles.',
+          behaviour: 'A card above the composer: start from writing they like (paste or upload) or describe the style instead. Generate style is the only AI step; the example is used only to make the style.',
+          meaning: 'Aria can learn how they want replies to read.',
+          action: 'Add an example or a description, then generate.',
+          next: 'Style generated'
+        },
+        generated: {
+          label: 'Style generated',
+          requires: 'custom',
+          trigger: 'Aria made a style from their example.',
+          behaviour: 'A name and one line on what it changes, both editable and marked as Aria’s; the instructions behind it, on request; and a preview. Save keeps it in Your styles; Save and use applies it.',
+          meaning: 'Their own style — reviewed before it is used.',
+          action: 'Rename, adjust, preview, then save.',
+          next: 'Style applied'
+        }
+      },
+
+      view: function (s) {
+        var c = s.cfg, M = tdM(), st = s.state;
+        var all = psStyleList(c, true);
+        var dflt = { none: 'normal', available: 'normal', selected: 'normal', applied: 'concise', changed: 'formal', removed: 'normal', create: 'normal', generated: 'normal' }[st];
+        var cur = s.stFor === st ? s.stCur : dflt;
+        var curS = all.filter(function (x) { return x.id === cur; })[0] || all[0];
+        var open = st === 'available' || st === 'selected';
+        var peek = st === 'selected' ? (s.stPeek && s.stPeek !== cur ? s.stPeek : (cur === 'concise' ? 'formal' : 'concise')) : cur;
+        var peekS = all.filter(function (x) { return x.id === peek; })[0] || curS;
+        var scope = esc(tdTrim(c.scope) || 'new messages, edits and retries');
+        var pop = '', card = '', note = '';
+
+        if (open) {
+          var row = function (x) {
+            var on = x.id === cur;
+            return '<button class="ps-opt ps-st__row' + (on ? ' is-on' : '') + (x.id === peek && !on ? ' is-peek' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
+              ' data-act="st:pick:' + x.id + '" data-style="' + x.id + '"' + (c.preview !== false ? ' aria-describedby="ps-st-prev"' : '') + '>' +
+              '<span class="ps-opt__t"><span class="ps-opt__n">' + esc(x.name) + (x.mine ? '<span class="ps-tag">' + tdAI('generated') + 'From your writing</span>' : '') + '</span>' +
+              '<span class="ps-opt__d">' + esc(x.d) + '</span></span>' +
+              (on ? '<span class="ps-opt__c">' + mi('check') + '</span>' : '') + '</button>';
+          };
+          var presets = all.filter(function (x) { return !x.mine; }), mine = all.filter(function (x) { return x.mine && (s.stHas || false); });
+          var prev = c.preview !== false
+            ? '<div class="ps-st__prev" id="ps-st-prev" aria-live="polite">' + psStylePrev(peekS) + '</div>' : '';
+          pop = '<div class="ax__menu ax__menu--ps ps-pick ps-pick--wide ps-st" role="dialog" aria-label="Use style" data-density="' + (c.density || 'comfortable') + '">' +
+            '<div class="ps-pick__h"><p class="ps-pick__t">Use style</p><p class="ps-pick__s">How Aria writes its replies — not what it knows or does.</p></div>' +
+            '<div class="ps-st__grid' + (prev ? ' has-prev' : '') + '"><div class="ps-st__list" role="radiogroup" aria-label="Style">' +
+              presets.map(row).join('') +
+              (mine.length ? '<p class="psc__over ps-st__sec">Your styles</p>' + mine.map(row).join('') : '') +
+            '</div>' + prev + '</div>' +
+            (c.custom !== false ? '<div class="psc__foot ps-st__foot"><button class="ps-link" type="button" data-act="st:create">' + mi('add') + 'Create &amp; edit styles</button></div>' : '') +
+          '</div>';
+        }
+
+        if (st === 'create') {
+          var src = s.stSrc || 'example', busy = !!s.stGen;
+          card = '<div class="psc ps-st-card" role="region" aria-labelledby="ps-st-ch" data-density="' + (c.density || 'comfortable') + '">' +
+            '<div class="psc__head"><p class="psc__title" id="ps-st-ch">Create a style</p></div>' +
+            '<p class="psc__sub">Aria learns how you want replies to read — from writing you like, or from a description.</p>' +
+            M.segmented({ label: 'Start from', value: src, act: 'st:src:', items: [{ value: 'example', label: 'An example', icon: mi('doc') }, { value: 'describe', label: 'A description', icon: mi('editNote') }] }) +
+            (src === 'example'
+              ? M.textArea({ id: 'ps-st-ex', label: 'Paste writing you like', value: s.stEx !== undefined ? s.stEx : PS_ST_EXAMPLE, rows: 4 }) +
+                '<div class="ps-acts"><button class="ps-link" type="button" data-act="st:upload">' + mi('upload') + 'Upload a file</button>' +
+                '<span class="md-body-small ps-d">PDF, DOC or TXT. Used only to make this style.</span></div>'
+              : M.textArea({ id: 'ps-st-desc', label: 'Describe the style', value: s.stDesc !== undefined ? s.stDesc : 'Short release notes: one line per change, the customer benefit first, plain verbs.', rows: 3 })) +
+            (busy ? M.progress(undefined, 'Generating a style') : '') +
+            '<div class="psc__foot">' + M.button({ variant: 'text', label: 'Back', attrs: { 'data-act': 'st:back' } }) +
+              '<span class="psc__acts">' + M.button({ variant: 'filled', label: busy ? 'Generating…' : 'Generate style', icon: busy ? tdAI('working') : tdAI('action'),
+                attrs: busy ? { 'data-act': 'st:gen', 'aria-disabled': 'true' } : { 'data-act': 'st:gen' } }) + '</span></div>' +
+          '</div>';
+        }
+
+        if (st === 'generated') {
+          var g = all.filter(function (x) { return x.mine; })[0];
+          card = '<div class="psc ps-st-card" role="region" aria-labelledby="ps-st-gh" data-density="' + (c.density || 'comfortable') + '">' +
+            '<p class="psc__over" id="ps-st-gh">' + tdAI('generated') + 'Style made by Aria from your example</p>' +
+            M.textField({ id: 'ps-st-name', label: 'Style name', value: g.name }) +
+            '<div class="ps-st__desc"><p class="psc__over">What it changes</p><p class="md-body-medium">' + esc(g.d) + '</p></div>' +
+            '<button class="ps-link" type="button" data-act="st:inst" aria-expanded="' + !!s.stInst + '" aria-controls="ps-st-inst">' + mi(s.stInst ? 'chevDown' : 'chevRight') + 'Instructions behind it</button>' +
+            (s.stInst ? '<div id="ps-st-inst">' + M.textArea({ id: 'ps-st-inst-t', label: 'Instructions', value: PS_ST_INST, rows: 4 }) + '</div>' : '') +
+            '<div class="ps-st__prev">' + psStylePrev(g) + '</div>' +
+            '<div class="psc__foot">' + M.button({ variant: 'text', label: 'Back', attrs: { 'data-act': 'st:back' } }) +
+              '<span class="psc__acts">' + M.button({ variant: 'outlined', label: 'Save', attrs: { 'data-act': 'st:save' } }) +
+              M.button({ variant: 'filled', label: 'Save and use', attrs: { 'data-act': 'st:saveuse' } }) + '</span></div>' +
+          '</div>';
+        }
+
+        var chipOn = cur !== 'normal' && st !== 'none' && st !== 'removed';
+        if (st === 'applied' && c.sayScope !== false) note = '<div class="ps-note" role="status">' + mi('editNote') + '<span>' + esc(curS.name) + ' applies to ' + scope + '.</span></div>';
+        if (st === 'changed') note = '<div class="ps-note" role="status">' + mi('sync') + '<span>Style switched to ' + esc(curS.name) + '. It applies from here' + (c.sayScope !== false ? ' — earlier replies keep the style they were written in' : '') + '.</span></div>';
+        if (st === 'removed') note = '<div class="ps-note" role="status">' + mi('check') + '<span>Back to Normal.</span><button class="ps-link" type="button" data-act="st:undo">Undo</button></div>';
+
+        var text = psOwn(s, st) !== null ? psOwn(s, st) : (st === 'changed' ? 'Now draft the customer email about it.' : 'Summarize the October release.');
+        var cmp = psComposer({ ask: 'Describe what you need…', text: text,
+          tools: psChip({ kind: 'style', label: 'Style', icon: mi('editNote'), value: chipOn ? curS.name : null, short: chipOn && curS.name.length > 12,
+            act: open ? 'st:close' : 'st:open', popup: 'dialog', open: open, removeAct: chipOn ? 'st:normal' : null }),
+          assist: note, pop: pop });
+        return psWrap('st', st, card + cmp + psSent(s));
+      },
+
+      react: function (s) {
+        var c = s.cfg, st = s.state, all = psStyleList(c, true);
+        var cur = { applied: 'concise', changed: 'formal' }[st] || 'normal';
+        var imp = [['Md3Menu', '@nucleux/md3-menu'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']];
+        if (st === 'create' || st === 'generated') imp.push(['Md3SegmentedButton, Md3SegmentedButtonItem', '@nucleux/md3-segmented-button'], ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Button', '@nucleux/md3-button']);
+        return imports(imp) + '\n\n// State: ' + this.states[st].label + '\n' +
+          '// A style is sent with each request as its own setting. It never edits the prompt,\n// and it applies to ' + (tdTrim(c.scope) || 'new messages, edits and retries') + '.\n' +
+          'const styles = [\n' + all.map(function (x) { return '  { id: "' + x.id + '", name: ' + jsxAttr(x.name) + ', description: ' + jsxAttr(x.d) + (x.mine ? ', custom: true' : '') + ' },\n'; }).join('') + '];\n\n' +
+          (st === 'available' || st === 'selected'
+            ? '<Md3Menu role="dialog" aria-label="Use style">\n  {styles.map((st) => (\n    <button key={st.id} role="radio" aria-checked={st.id === style}\n      onPointerEnter={() => setPreview(st)} onFocus={() => setPreview(st)} onClick={() => choose(st)}>\n      {st.name} — {st.description}\n    </button>\n  ))}\n' +
+              (c.preview !== false ? '  <section aria-live="polite">{preview && <SampleReply styleId={preview.id} />}</section>\n' : '') +
+              (c.custom !== false ? '  <button onClick={openCreate}>Create &amp; edit styles</button>\n' : '') + '</Md3Menu>\n\n' : '') +
+          (st === 'create' ? '<Md3SegmentedButton value={source} onValueChange={setSource}>\n  <Md3SegmentedButtonItem value="example">An example</Md3SegmentedButtonItem>\n  <Md3SegmentedButtonItem value="describe">A description</Md3SegmentedButtonItem>\n</Md3SegmentedButton>\n<textarea aria-label="Paste writing you like" value={example} onChange={(e) => setExample(e.target.value)} />\n<Md3Button variant="filled" onClick={generateStyle}>Generate style</Md3Button>\n\n' : '') +
+          (st === 'generated' ? '<Md3TextField label="Style name" value={draft.name} onChange={(e) => rename(e.target.value)} />\n<p>{draft.description}</p>\n<Md3Button variant="outlined" onClick={save}>Save</Md3Button>\n<Md3Button variant="filled" onClick={saveAndUse}>Save and use</Md3Button>\n\n' : '') +
+          (cur !== 'normal' ? '<Md3Chip variant="input" onRemove={() => setStyle("normal")}>Style ' + jsxText((all.filter(function (x) { return x.id === cur; })[0] || {}).name || '') + '</Md3Chip>\n' : '') +
+          psComposerJSX('Summarize the October release.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openStyles}>Style</Md3Button>}\n');
+      },
+
+      mounted: function (root, s) {
+        psBind(root, s);
+        var all = psStyleList(s.cfg, true);
+        root.querySelectorAll('.pv-stage .ps-st__row[data-style]').forEach(function (b) {
+          function show() {
+            var x = all.filter(function (y) { return y.id === b.getAttribute('data-style'); })[0], box = root.querySelector('.pv-stage #ps-st-prev');
+            if (!x || !box) return;
+            box.innerHTML = psStylePrev(x);
+            root.querySelectorAll('.pv-stage .ps-st__row.is-peek').forEach(function (r) { r.classList.remove('is-peek'); });
+            if (!b.classList.contains('is-on')) b.classList.add('is-peek');
+            s.stPeek = x.id;
+            if (s.state === 'available' && !b.classList.contains('is-on') && s.cfg.preview !== false) pvLive(root, s, 'preset-styles', 'selected');
+          }
+          b.addEventListener('mouseenter', show); b.addEventListener('focus', show);
+        });
+        var ex = root.querySelector('.pv-stage #ps-st-ex'); if (ex && !ex.dataset.psb) { ex.dataset.psb = '1'; ex.addEventListener('input', function () { s.stEx = ex.value; }); }
+        var de = root.querySelector('.pv-stage #ps-st-desc'); if (de && !de.dataset.psb) { de.dataset.psb = '1'; de.addEventListener('input', function () { s.stDesc = de.value; }); }
+      },
+
+      act: function (a, ctx) {
+        var s = ctx.s, c = ctx.cfg(), all = psStyleList(c, true);
+        var f = document.querySelector('.pv-stage .psw-st [data-ax-field]'), txt = f ? f.value : null;
+        var dflt = { none: 'normal', available: 'normal', selected: 'normal', applied: 'concise', changed: 'formal', removed: 'normal', create: 'normal', generated: 'normal' }[s.state];
+        var cur = s.stFor === s.state ? s.stCur : dflt;
+        function name(id) { return (all.filter(function (x) { return x.id === id; })[0] || {}).name; }
+        function go(st, v) { s.stCur = v; s.stFor = st; s.state = st; if (txt !== null) { s.psText = txt; s.psFor = st; } ctx.paint(); }
+        if (a === 'st:open') { s.stPrev = cur; s.stPeek = null; go('available', cur); return; }
+        if (a === 'st:close') { go(s.stPrev && s.stPrev !== 'normal' ? 'applied' : 'none', s.stPrev || 'normal'); return; }
+        if (a.indexOf('st:pick:') === 0) {
+          var id = a.slice(8), was = s.stPrev || cur;
+          if (id === 'normal') { s.stUndo = was; go(was !== 'normal' ? 'removed' : 'none', 'normal'); ctx.announce('Style: Normal.'); return; }
+          go(was !== 'normal' && was !== id ? 'changed' : 'applied', id); s.psFocus = true;
+          ctx.announce('Style: ' + name(id) + '. It applies to ' + (tdTrim(c.scope) || 'new messages, edits and retries') + '.'); return;
+        }
+        if (a === 'st:normal') { s.stUndo = cur; go('removed', 'normal'); ctx.announce('Back to Normal.'); return; }
+        if (a === 'st:undo') { go('applied', s.stUndo && s.stUndo !== 'normal' ? s.stUndo : 'concise'); return; }
+        if (a === 'st:create') { s.stSrc = 'example'; s.stGen = false; go('create', s.stPrev || cur); return; }
+        if (a.indexOf('st:src:') === 0) { s.stSrc = a.slice(7); go('create', cur); return; }
+        if (a === 'st:upload') { s.stEx = PS_ST_EXAMPLE; ctx.announce('Example added from release-notes-sept.txt.'); go('create', cur); return; }
+        if (a === 'st:gen') {
+          if (s.stGen) return;
+          s.stGen = true; go('create', cur); ctx.announce('Generating a style from your example.');
+          setTimeout(function () { if (s.state === 'create' && s.stGen) { s.stGen = false; go('generated', cur); ctx.announce('Style ready: ' + name('house') + '. Review it, then save.'); } }, 1100);
+          return;
+        }
+        if (a === 'st:inst') { s.stInst = !s.stInst; go('generated', cur); return; }
+        if (a === 'st:back') { if (s.state === 'generated') { go('create', cur); return; } s.stGen = false; go('available', s.stPrev || cur); return; }
+        if (a === 'st:save') { s.stHas = true; s.stPrev = s.stPrev || 'normal'; go('available', s.stPrev); ctx.announce('Saved to Your styles.'); return; }
+        if (a === 'st:saveuse') { s.stHas = true; var w = s.stPrev || 'normal'; go(w !== 'normal' && w !== 'house' ? 'changed' : 'applied', 'house'); s.psFocus = true; ctx.announce('Saved, and in use: ' + name('house') + '.'); return; }
+        if (a === 'ps:send') { s.psSent = txt || s.psText; s.stCur = cur; s.stFor = s.state; s.psText = ''; s.psFor = s.state; ctx.paint(); ctx.announce('Sent' + (cur !== 'normal' ? ', in ' + name(cur) + '.' : '.')); }
+      }
+    },
+
     /* ── Example Gallery ─────────────────────────────────────── */
     'example-gallery': {
       initial: 'available',

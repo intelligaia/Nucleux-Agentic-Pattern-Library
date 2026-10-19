@@ -296,6 +296,44 @@
                'form with a text box on top, and the person is filling in answers they already gave.'
     },
 
+    /* ══ INITIALLY · Prompt Scaffolds ═════════════════════════ */
+    'suggestions': {
+      type: ["interaction"], maturity: 'emerging',
+      seen: ["Grammarly", "Microsoft Editor", "Gmail"],
+      seenWhat: "Inline suggestions marked as the tool’s, accepted or dismissed one at a time, with a short reason — Grammarly’s cards are the closest precedent; few chat assistants suggest additions to a prompt.",
+      whenNot: "While the person is still typing, or when the suggestion would change what they are asking for. A suggestion that redirects the request is a different request."
+    },
+    'madlibs': {
+      type: ["interaction", "component"], maturity: 'established',
+      seen: ["Microsoft Copilot Prompt Gallery", "Notion AI", "Jasper"],
+      seenWhat: "Prompts published with [bracketed] placeholders to fill in before sending, so the structure is given and the details are the person’s.",
+      whenNot: "When the request needs more than three or four details, or the details depend on each other. That is a form — use Structured Input."
+    },
+    'prompt-enhancer': {
+      type: ["interaction"], maturity: 'emerging',
+      seen: ["Anthropic Console prompt improver", "Ideogram Magic Prompt", "Grammarly"],
+      seenWhat: "A model rewrites a short prompt into a more specific one; the better implementations show the result for review instead of applying it silently.",
+      whenNot: "When the prompt is already specific, or the rewrite would have to guess the intent. Longer is not better, and an unreviewable rewrite is worse than none."
+    },
+    'modes': {
+      type: ["interaction", "control"], maturity: 'established',
+      seen: ["Perplexity", "ChatGPT", "Gemini", "Cursor"],
+      seenWhat: "A visible choice of how the assistant works — Perplexity’s search/research, ChatGPT and Gemini Deep Research, Cursor’s Agent / Ask / Plan — each changing the steps the product takes.",
+      whenNot: "When the modes don’t actually change behaviour, or when the choice is really which model answers (Model Selection) or how hard it thinks (effort)."
+    },
+    'voice-tone': {
+      type: ["control"], maturity: 'established',
+      seen: ["Grammarly", "Microsoft 365 Copilot", "Gmail Help me write", "Notion AI"],
+      seenWhat: "Tone presets on a draft — Formal, Casual, Friendly — chosen per piece of writing, with the content kept the same.",
+      whenNot: "For factual answers or analysis, where tone adds nothing, and as a standing persona — that is Personality, set once."
+    },
+    'preset-styles': {
+      type: ["control"], maturity: 'emerging',
+      seen: ["Claude styles", "Notion AI", "Microsoft 365 Copilot"],
+      seenWhat: "Claude’s styles are the model: “Use style” from the composer’s tools, presets (Normal, Concise, Formal, Explanatory), custom styles generated from a writing example or a description, switchable at any point and applied to new messages, edits and retries.",
+      whenNot: "For a one-off instruction (write it in the request), for how a single reply should change after the fact (Restyle), or for which model answers (Model Selection)."
+    },
+
     /* ══ INITIALLY · Context Expansion ════════════════════════ */
     'attachments': {
       type: ['interaction', 'capability'], maturity: 'established',

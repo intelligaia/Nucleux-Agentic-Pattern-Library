@@ -20,9 +20,10 @@
         render as cards with no href — a card that looks live and
         goes nowhere is worse than one that says it is coming.
 
-     3. A built pattern's thumbnail is its own Live preview, mounted
-        and scaled, so the card and the page can never show different
-        components. Unbuilt ones fall back to the stage abstract.
+     3. A built pattern's thumbnail is a picture of its own Live
+        Preview (thumbs/<id>.webp, made by _build/thumbs/make.js from
+        the real page), so the card shows the component the page shows.
+        Unbuilt ones fall back to the stage abstract.
 
    The pattern one-liners are deliberately IDENTICAL to the other
    set's. They are the same 89 patterns; a pattern that is described
@@ -106,14 +107,25 @@
      inside is untouched — shrinking by font-size would relayout the
      component and show a shape the real one never takes. */
   function thumb(p, stage) {
-    var def = PATTERNS[p.id];
-    if (def && def.examples && def.examples.length) {
-      return '<div class="mh-live" aria-hidden="true">' +
-               '<div class="mh-live__scale">' + def.examples[0].code + '</div>' +
-             '</div>';
+    /* An available pattern shows a picture of its own Live Preview in
+       its first state — the same component, the same tokens, the same
+       ground — taken by _build/thumbs/make.js. Re-run it whenever a
+       preview changes; THUMB_V busts the cache. If a picture is
+       missing, the stage abstract stands in. */
+    if (BUILT.indexOf(p.id) !== -1) {
+      return '<img class="mh-shot" src="thumbs/' + encodeURIComponent(p.id) + '.webp?v=' + THUMB_V + '" alt="" ' +
+        'width="1280" height="800" loading="lazy" decoding="async" data-stage="' + stage.id + '">';
     }
     return (VISUALS[stage.id] || VISUALS.onboarding)();
   }
+  var THUMB_V = 1;
+  /* A missing picture falls back to the stage abstract. */
+  document.addEventListener('error', function (e) {
+    var img = e.target;
+    if (!img || !img.classList || !img.classList.contains('mh-shot')) return;
+    img.insertAdjacentHTML('afterend', (VISUALS[img.getAttribute('data-stage')] || VISUALS.onboarding)());
+    img.remove();
+  }, true);
 
   /* A built pattern's description comes from its own definition, not
      from the nav tree. Both files carry an `oneline`, and until now

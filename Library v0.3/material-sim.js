@@ -1689,6 +1689,649 @@
 
 
     /* ──────────────────────────────────────────────────────
+       SUGGESTIONS · conversation
+
+       purpose      improve a request while it is being written
+       user goal    a summary of the September release
+       agent goal   offer one detail that makes it useful — once
+       trigger      a pause after “Summarize the September release.”
+       context      a PM release workspace with open blockers
+       decision     add it, dismiss it, or keep writing
+       after        their words plus the addition, edited, sent
+       ────────────────────────────────────────────────────── */
+    suggestions: {
+      shell: 'conversation',
+      product: 'Planboard',
+      agent: 'Aria',
+      note: 'Write the request — or press “Type the request” — and pause. Suggestions appear just above the composer. Add one, ' +
+            'edit what you have, then send. Nothing is sent or rewritten for you.',
+
+      initial: { step: 'idle', turns: [], sug: 'none', base: '', axText: '', opts: {} },
+
+      title: function () { return 'September release · summary'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.turns.length ? 'Answered' : 'Draft'; },
+
+      /* The suggestions sit just above the composer, outside it: a quiet
+         row of chips, marked as Aria's, with Why and Dismiss. */
+      dockTop: function (s) {
+        if (s.sug === 'shown') {
+          return '<div class="ps-sugs is-outlined sim-sugs" role="group" aria-label="Suggestions from Aria">' +
+            '<span class="ps-sugs__k">' + aiIcon('generated') + '<span>Aria suggests</span></span>' +
+            '<span class="ps-sugs__list">' + SIM_SUGS.map(function (t, i) {
+              return '<button class="ps-chip" type="button" data-act="add:' + i + '" aria-label="Add to prompt: ' + esc(t) + '">' + MI('add') + '<span>' + esc(t) + '</span></button>';
+            }).join('') + '</span>' +
+            '<span class="ps-sugs__a"><button class="ps-ico" type="button" data-act="why" aria-expanded="' + !!s.why + '" aria-controls="sim-sg-why" aria-label="Why these suggestions">' + MI('info') + '</button>' +
+            '<button class="ps-ico" type="button" data-act="dismiss" aria-label="Dismiss suggestions">' + MI('close') + '</button></span>' +
+            (s.why ? '<p class="ps-sugs__why" id="sim-sg-why">Release summaries are read to decide what still needs attention — 3 blockers are open.</p>' : '') + '</div>';
+        }
+        if (s.sug === 'added') return '<div class="ps-note sim-sugs" role="status">' + MI('check') + '<span>Added “and ' + esc(s.pick || 'include unresolved blockers') + '” to your request. You can edit it.</span><button class="ps-link" type="button" data-act="undo">Undo</button></div>';
+        if (s.sug === 'dismissed') return '<div class="ps-note sim-sugs" role="status">' + MI('close') + '<span>Suggestions dismissed. They won’t come back for this request.</span></div>';
+        return '';
+      },
+
+      composerOpts: function (s) { return { text: s.axText, layout: 'stack' }; },
+
+      onInput: function (v, ctx) {
+        var s = ctx.s;
+        clearTimeout(s.sgTimer);
+        if (s.sug === 'shown' && !/release/i.test(v)) { s.sug = 'none'; ctx.paint(); return; }
+        if (s.sug === 'none' && /release/i.test(v) && v.trim().length > 18 && !/blocker/i.test(v)) {
+          s.sgTimer = setTimeout(function () { if (s.sug === 'none') { s.base = s.axText; s.sug = 'shown'; ctx.paint(); ctx.announce && ctx.announce('Suggestion from Aria: include unresolved blockers.'); } }, 900);
+        }
+      },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var out = s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: t.text });
+          return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; AI agent</p>', body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working('Reading the September release board…');
+        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Write a release summary request in the composer, then pause.</p>';
+        return out;
+      },
+
+      controls: function (s) {
+        return [button('Type the request', 'type', 'outlined'), button('Edit: “for leadership”', 'edit', 'outlined')]
+          .concat(s.turns.length ? [button('Start over', 'reset', 'text')] : []);
+      },
+
+      hint: function (s) {
+        if (s.step === 'working') return 'Sent only now — because you pressed Send.';
+        if (s.turns.length) return '<b>Result.</b> The summary includes the blockers because you chose to ask for them.';
+        if (s.sug === 'shown') return '<b>Suggestions available.</b> Marked as Aria’s, just above the composer, after you paused. Your sentence is untouched.';
+        if (s.sug === 'added') return '<b>Accepted.</b> The words were added after yours, editable, with Undo. Edit it — try “for leadership” — then send.';
+        if (s.sug === 'dismissed') return '<b>Dismissed.</b> It won’t come back for this request.';
+        return 'Type the request (or press “Type the request”) and pause.';
+      },
+
+      axSubmit: function (text, ctx) { return SIMS.suggestions.act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS.suggestions.initial))); ctx.paint(); return; }
+        if (a === 'type') { s.axText = 'Summarize the September release.'; s.sug = 'none'; ctx.paint(); SIMS.suggestions.onInput(s.axText, ctx); return; }
+        if (a === 'why') { s.why = !s.why; ctx.paint(); return; }
+        if (a === 'add' || a.indexOf('add:') === 0) { var t = SIM_SUGS[+(a.split(':')[1] || 0)]; s.pick = t.charAt(0).toLowerCase() + t.slice(1);
+          s.base = s.axText || s.base; s.axText = psSimAppend(s.base, s.pick); s.sug = 'added'; ctx.paint(); ctx.announce && ctx.announce('Added to your prompt. Nothing was sent.'); return; }
+        if (a === 'undo') { s.axText = s.base; s.sug = 'dismissed'; ctx.paint(); return; }
+        if (a === 'dismiss') { s.sug = 'dismissed'; ctx.paint(); return; }
+        if (a === 'edit') { if (!s.axText) s.axText = psSimAppend('Summarize the September release.', 'include unresolved blockers'); s.axText = s.axText.replace(/\.\s*$/, '') + ' for leadership.'; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText; if (!text) return;
+          s.turns.push({ who: 'you', text: esc(text) }); s.axText = ''; s.sug = 'done'; s.step = 'working'; ctx.paint();
+          await wait(1400);
+          s.turns.push({ who: 'agent', text: '<b>September release</b> — 14 of 17 items shipped: faster exports, shared-link fixes and the new dashboard.' +
+            (/blocker/i.test(text) ? '<br><b>Unresolved blockers (3)</b>: Android checkout latency (Jordan), SSO for Teams (unassigned), CSV column order (Maya).' : '') });
+          s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────
+       MADLIBS · conversation
+
+       purpose      a guided sentence for a request with a few details
+       user goal    a stakeholder summary of a project
+       agent goal   ask for exactly the details that matter
+       trigger      they asked for a stakeholder summary
+       context      a PM workspace with several projects
+       decision     fill the blanks, review the sentence, send
+       after        an ordinary, editable request in the composer
+       ────────────────────────────────────────────────────── */
+    madlibs: {
+      shell: 'conversation',
+      product: 'Planboard',
+      agent: 'Aria',
+      note: 'Aria offers a guided sentence for a stakeholder summary. Fill the blanks — the request assembles as you go — then ' +
+            'Use prompt puts it in the composer to edit and send.',
+
+      initial: { step: 'idle', turns: [], v: { Project: '', Audience: '', Topic: '' }, err: null, used: false, axText: '', opts: {} },
+
+      title: function () { return 'Stakeholder summary'; },
+      composerOpts: function (s) { return { text: s.axText, layout: 'stack' }; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.used ? 'Prompt ready' : 'Guided prompt'; },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var head = '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; AI agent</p>';
+        var tpl = 'Create a summary of {Project} for {Audience}[, focusing on {Topic}].';
+        var opts = { Project: ['Checkout redesign', 'Mobile onboarding', 'Pricing v2'], Audience: ['Leadership', 'Sales', 'Customer success'], Topic: ['Risks', 'Timeline', 'Customer impact'] };
+        function blank(n, req) {
+          var bad = s.err && s.err.indexOf(n) !== -1, v = s.v[n] || '';
+          return '<span class="ps-ml__b' + (v ? ' is-set' : '') + (bad ? ' is-err' : '') + '"><label class="tdx-sr" for="sim-ml-' + n + '">' + n + (req ? '' : ' (optional)') + '</label>' +
+            '<input id="sim-ml-' + n + '" class="ps-ml__in" data-blank="' + n + '" list="sim-ml-' + n + '-l" value="' + esc(v) + '" placeholder="' + n.toLowerCase() + '" style="width:' + psSimMlW(v || n) + '"' +
+              (req ? ' aria-required="true"' : '') + (bad ? ' aria-invalid="true" aria-describedby="sim-ml-err"' : '') + ' autocomplete="off" />' +
+            '<datalist id="sim-ml-' + n + '-l">' + opts[n].map(function (o) { return '<option value="' + o + '"></option>'; }).join('') + '</datalist>' +
+            '<span class="ps-ml__chev" aria-hidden="true">' + MI('chevDown') + '</span></span>' + (req ? '' : '<span class="ps-ml__tag" aria-hidden="true">optional</span>');
+        }
+        var card = '<div class="psc ps-ml sim-ml' + (s.used ? ' is-done' : '') + '" role="group" aria-label="Guided prompt">' +
+          '<p class="psc__over">' + (s.used ? MI('check') + 'Placed in the composer — edit it there' : 'Build your request') + '</p>' +
+          (s.used ? '' : '<p class="ps-ml__s">Create a summary of ' + blank('Project', true) + ' for ' + blank('Audience', true) + '<span class="ps-ml__opt">, focusing on </span>' + blank('Topic', false) + '.</p>' +
+            (s.err ? '<p class="ps-fielderr" id="sim-ml-err" role="alert">' + MI('error') + '<span>Add ' + s.err.join(' and ').toLowerCase() + ' — required. Everything else is kept.</span></p>' : '') +
+            '<p class="ps-ml__out"><span class="ps-ml__k">Preview</span> <span data-ml-out>' + esc(psSimMl(s.v)) + '</span></p>' +
+            '<div class="psc__foot"><span class="md-body-small ps-d">Nothing is sent until you send it.</span>' +
+              md3Button({ variant: 'filled', label: 'Use prompt', icon: MI('arrowFwd'), attrs: { 'data-act': 'use' } }) + '</div>') +
+          '</div>';
+        var out = md3Message({ role: 'user', hideAvatar: true, body: 'I need a summary for stakeholders.' }) +
+          md3Message({ role: 'assistant', avatar: av, head: head, body: 'Tell me which project, who it’s for and what to focus on:' }) + card;
+        out += s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: t.text });
+          return md3Message({ role: 'assistant', avatar: av, head: head, body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working('Reading the project board…');
+        return out;
+      },
+
+      controls: function (s) {
+        return [button('Fill the blanks', 'fill', 'outlined'), button('Edit: “in 5 bullets”', 'edit', 'outlined')]
+          .concat(s.used || s.turns.length ? [button('Start over', 'reset', 'text')] : []);
+      },
+
+      hint: function (s) {
+        if (s.turns.length) return '<b>Result.</b> The summary follows the sentence you reviewed and edited.';
+        if (s.used) return '<b>Ready to use.</b> The sentence is an ordinary request in the composer — edit it, then send.';
+        if (s.err) return '<b>Validation needed.</b> The missing blank is flagged in words; nothing you entered was cleared.';
+        return 'A sentence with three labelled blanks — topic is optional. Type or choose; the request assembles below.';
+      },
+
+      after: function (root, s) {
+        root.querySelectorAll('.sim-ml .ps-ml__in').forEach(function (inp) {
+          if (inp.dataset.psb) return; inp.dataset.psb = '1';
+          inp.addEventListener('input', function () {
+            s.v[inp.getAttribute('data-blank')] = inp.value; inp.style.width = psSimMlW(inp.value || inp.getAttribute('data-blank'));
+            inp.parentNode.classList.toggle('is-set', !!inp.value); inp.parentNode.classList.remove('is-err'); inp.removeAttribute('aria-invalid');
+            var out = root.querySelector('.sim-ml [data-ml-out]'); if (out) out.textContent = psSimMl(s.v);
+          });
+        });
+      },
+
+      axSubmit: function (text, ctx) { return SIMS.madlibs.act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, r = ctx.root;
+        if (r && !s.used) ['Project', 'Audience', 'Topic'].forEach(function (n) { var f = r.querySelector('#sim-ml-' + n); if (f) s.v[n] = f.value; });
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS.madlibs.initial))); ctx.paint(); return; }
+        if (a === 'fill') { s.v = { Project: 'Checkout redesign', Audience: 'Leadership', Topic: 'Risks' }; s.err = null; ctx.paint(); return; }
+        if (a === 'use') {
+          var miss = ['Project', 'Audience'].filter(function (n) { return !(s.v[n] || '').trim(); });
+          if (miss.length) { s.err = miss; ctx.paint(); ctx.announce && ctx.announce('Add ' + miss.join(' and ') + ' — required.'); return; }
+          s.err = null; s.used = true; s.axText = psSimMl(s.v); ctx.paint(); ctx.announce && ctx.announce('Placed in the composer. Edit it, then send.'); return;
+        }
+        if (a === 'edit') { if (!s.used) { if (!s.v.Project) s.v = { Project: 'Checkout redesign', Audience: 'Leadership', Topic: 'Risks' }; s.used = true; s.axText = psSimMl(s.v); } s.axText = s.axText.replace(/\.\s*$/, '') + ', in 5 bullets.'; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText; if (!text) return;
+          s.turns.push({ who: 'you', text: esc(text) }); s.axText = ''; s.step = 'working'; ctx.paint();
+          await wait(1400);
+          s.turns.push({ who: 'agent', text: '<b>Checkout redesign — for leadership</b><br>On track for 4 Nov. Two risks: payment-provider certification (waiting on Stripe) and Android latency (fix in review). Decision needed: approve the extra QA week.' });
+          s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────
+       PROMPT ENHANCER · conversation
+
+       purpose      improve a written request without losing it
+       user goal    an analysis of onboarding feedback
+       agent goal   propose a clearer request and show every change
+       trigger      they press Improve
+       context      a PM research workspace
+       decision     keep, remove or edit each change; use it or not
+       after        the reviewed prompt in the composer, sent by them
+       ────────────────────────────────────────────────────── */
+    'prompt-enhancer': {
+      shell: 'conversation',
+      product: 'Planboard',
+      agent: 'Aria',
+      note: 'Press Improve on a short request. Aria proposes a clearer one with every addition marked and explained — remove the ' +
+            'one you don’t need, use the rest, and send. Your original stays until you choose.',
+
+      initial: { step: 'idle', turns: [], pe: 'original', on: {}, axText: 'Analyze onboarding feedback.', orig: '', opts: { fail: false } },
+
+      title: function () { return 'Onboarding research'; },
+      pill: function (s) { return s.pe === 'enhancing' ? 'Improving' : s.step === 'working' ? 'Aria working' : s.turns.length ? 'Answered' : 'Draft'; },
+
+      composerOpts: function (s) {
+        var busy = s.pe === 'enhancing';
+        var tool = '<button class="ax__tool' + (busy ? ' is-on' : '') + '" type="button" data-act="' + (busy ? 'cancel' : 'improve') + '" aria-label="' + (busy ? 'Cancel improving' : 'Improve this prompt with AI') + '">' +
+          (busy ? aiIcon('working') : aiIcon('action')) + '<span>' + (busy ? 'Improving…' : 'Improve') + '</span></button>';
+        var note = '';
+        if (s.pe === 'used') note = '<div class="ps-note" role="status">' + MI('check') + '<span>Prompt updated. Nothing was sent.</span><button class="ps-link" type="button" data-act="undo">Undo</button></div>';
+        if (s.pe === 'failed') note = '<div class="ps-err" role="alert">' + MI('error') + '<span>Couldn’t improve this request. Your original is unchanged.</span><button class="ps-link" type="button" data-act="improve">Try again</button></div>';
+        return { tools: tool, assist: note, text: s.axText, layout: 'stack' };
+      },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var out = s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: t.text });
+          return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; AI agent</p>', body: t.text });
+        }).join('');
+        if (s.pe === 'review') {
+          var base = esc(String(s.orig).replace(/[.\s]+$/, ''));
+          var marked = base + SIM_PE.map(function (c) {
+            var lead = (c.add.match(/^[,\s]+/) || [''])[0], body = c.add.slice(lead.length);
+            return s.on[c.id] === false ? '<del class="ps-del"><span class="tdx-sr">removed: </span>' + esc(c.add) + '</del>'
+              : esc(lead) + '<ins class="ps-ins"><span class="tdx-sr">added: </span>' + esc(body) + '</ins>';
+          }).join('') + '.';
+          var kept = SIM_PE.filter(function (c) { return s.on[c.id] !== false; }).length;
+          out += '<div class="psc ps-pe sim-pe" role="region" aria-label="Suggested improvements to your prompt">' +
+            '<div class="psc__head"><p class="psc__title">Suggested improvements</p><span class="md-body-small ps-d">' + kept + ' of ' + SIM_PE.length + ' changes</span></div>' +
+            '<div class="ps-pe__split"><div class="ps-pe__col"><p class="psc__over">You wrote</p><p class="ps-pe__txt">' + esc(s.orig) + '</p></div>' +
+              '<div class="ps-pe__col is-new"><p class="psc__over">' + aiIcon('generated') + 'Improved</p><p class="ps-pe__txt">' + marked + '</p></div></div>' +
+            '<div class="ps-pe__list" role="group" aria-label="Changes — untick to leave one out">' + SIM_PE.map(function (c) {
+              var on = s.on[c.id] !== false;
+              return '<div class="ps-pe__row' + (on ? '' : ' is-off') + '">' + md3Checkbox({ checked: on, act: 'toggle:' + c.id, id: 'sim-pe-c-' + c.id,
+                label: '<span class="ps-pe__a">Add “' + esc(c.add.replace(/^[,\s]+(and\s)?/, '')) + '”</span><span class="ps-pe__why">' + esc(c.why) + '</span>' +
+                  (c.assume ? '<span class="ps-tag">' + MI('help') + esc(c.assume) + '</span>' : '') }) + '</div>';
+            }).join('') + '</div>' +
+            '<div class="psc__foot"><span></span><span class="psc__acts">' + md3Button({ variant: 'outlined', label: 'Keep original', attrs: { 'data-act': 'keep' } }) +
+              md3Button({ variant: 'filled', label: 'Use improved', attrs: { 'data-act': 'use' } }) + '</span></div></div>';
+        }
+        if (s.step === 'working') out += working('Reading 212 onboarding responses…');
+        if (!s.turns.length && s.pe === 'original') out += '<p class="sim-stage__empty">A short request is in the composer. Press Improve.</p>';
+        return out;
+      },
+
+      controls: function (s) {
+        return [toggle('Next attempt fails', 'opt:fail', s.opts.fail)].concat(s.turns.length || s.pe !== 'original' ? [button('Start over', 'reset', 'text')] : []);
+      },
+
+      hint: function (s) {
+        if (s.pe === 'enhancing') return '<b>Enhancing.</b> Your original stays in the composer, untouched.';
+        if (s.pe === 'review') return SIM_PE.some(function (c) { return s.on[c.id] === false; })
+          ? '<b>Reviewing.</b> The removed change is struck out. Use the rest when it reads right.'
+          : '<b>Proposed changes.</b> Before and after, side by side; each addition is highlighted and explained, the assumption labelled. “Propose three experiments” goes beyond the ask — untick it.';
+        if (s.pe === 'used') return '<b>Accepted.</b> The composer holds the improved prompt — still editable, still unsent. Undo restores yours.';
+        if (s.pe === 'failed') return '<b>Failed.</b> Nothing changed — try again or send your original.';
+        if (s.turns.length) return '<b>Result.</b> The analysis follows the prompt you reviewed.';
+        return 'Press Improve in the composer.';
+      },
+
+      axSubmit: function (text, ctx) { return SIMS['prompt-enhancer'].act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a === 'opt:fail') { flip(ctx, 'fail'); return; }
+        if (a === 'reset') { var o = JSON.parse(JSON.stringify(s.opts)); Object.assign(s, JSON.parse(JSON.stringify(SIMS['prompt-enhancer'].initial))); s.opts = o; ctx.paint(); return; }
+        if (a === 'improve') {
+          var run = (s.run || 0) + 1; s.run = run; s.orig = s.axText || s.orig || 'Analyze onboarding feedback.'; s.on = {};
+          s.pe = 'enhancing'; ctx.paint(); await wait(1300); if (s.run !== run || s.pe !== 'enhancing') return;
+          if (s.opts.fail) { s.pe = 'failed'; ctx.paint(); return; }
+          s.pe = 'review'; ctx.paint(); ctx.announce && ctx.announce('Suggested improvements ready. Your original is still in the composer.'); return;
+        }
+        if (a === 'cancel') { s.run = (s.run || 0) + 1; s.pe = 'original'; ctx.paint(); return; }
+        if (a.indexOf('toggle:') === 0) { var id = a.slice(7); s.on[id] = s.on[id] === false; ctx.paint(); return; }
+        if (a === 'use') { s.axText = psSimPe(s.orig, s.on); s.pe = 'used'; ctx.paint(); ctx.announce && ctx.announce('Prompt updated. Nothing was sent.'); return; }
+        if (a === 'keep') { s.pe = 'original'; ctx.paint(); return; }
+        if (a === 'undo') { s.axText = s.orig; s.pe = 'original'; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText; if (!text) return;
+          s.turns.push({ who: 'you', text: esc(text) }); s.axText = ''; s.pe = 'sent'; s.step = 'working'; ctx.paint();
+          await wait(1500);
+          s.turns.push({ who: 'agent', text: '<b>Onboarding feedback · last 30 days</b> (212 responses)<br>Import step: 41% mention it, mostly CSV mapping. Invite step: 18%, unclear roles. Workspace setup: 9%, naming confusion.' });
+          s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────
+       MODES · conversation
+
+       purpose      choose how the agent approaches the task
+       user goal    get the October release ready
+       agent goal   plan first, then review the plan
+       trigger      they open Mode before sending
+       context      a product-planning workspace; web access off
+       decision     which approach — and switch it later
+       after        a plan, then a review of the plan
+       ────────────────────────────────────────────────────── */
+    modes: {
+      shell: 'conversation',
+      product: 'Planboard',
+      agent: 'Aria',
+      note: 'Open Mode in the composer and choose Plan, then send: Aria answers with steps. Switch to Review and ask again — same ' +
+            'model, same context, a different way of working.',
+
+      initial: { step: 'idle', turns: [], mode: null, open: false, off: false, axText: 'Help me prepare the October release.', opts: {} },
+
+      title: function () { return 'October release'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.mode ? 'Mode · ' + SIM_MODES[s.mode].name : 'No mode'; },
+
+      composerOpts: function (s) {
+        var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode">' + psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.') +
+          '<div role="radiogroup" aria-label="Mode">' + Object.keys(SIM_MODES).map(function (k) {
+            var m = SIM_MODES[k], on = k === s.mode;
+            return '<button class="ps-opt' + (on ? ' is-on' : '') + (m.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' + (m.off ? ' aria-disabled="true"' : '') + ' data-act="mode:' + k + '">' +
+              '<span class="ps-opt__i">' + MI(m.icon) + '</span><span class="ps-opt__t"><span class="ps-opt__n">' + m.name + '</span><span class="ps-opt__d">' + m.d + '</span>' +
+              (m.off ? '<span class="ps-opt__off">' + m.off + '</span>' : '') + '</span>' + (on ? '<span class="ps-opt__c">' + MI('check') + '</span>' : '') + '</button>';
+          }).join('') + '</div>' +
+          (s.off ? '<p class="ps-err" role="alert">' + MI('info') + '<span>Research isn’t available here. Choose another mode.</span></p>' : '') +
+          (s.mode ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="clear">No mode</button></div>' : '') + '</div>' : '';
+        var m = s.mode && SIM_MODES[s.mode];
+        return {
+          tools: scafTool({ kind: 'mode', label: 'Mode', icon: MI('tune'), value: m ? m.name : null, valueIcon: m ? MI(m.icon) : '', act: s.open ? 'close' : 'open', popup: 'dialog', open: !!s.open, removeAct: m ? 'clear' : null }),
+          assist: s.changed ? '<div class="ps-note" role="status">' + MI('sync') + '<span>Mode changed to ' + m.name + '. Your text is unchanged.</span></div>' : '',
+          pop: pop, text: s.axText, layout: 'stack'
+        };
+      },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var out = s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: (t.mode ? '<span class="ps-tag">' + t.mode + '</span> ' : '') + t.text });
+          return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + (t.mode ? t.mode + ' mode' : 'AI agent') + '</p>', body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working(s.mode === 'review' ? 'Reviewing the plan…' : 'Planning the release…');
+        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open Mode in the composer and choose how Aria should work.</p>';
+        return out;
+      },
+
+      controls: function (s) {
+        return s.turns.length ? [button('Ask: “Review this plan for risks.”', 'askreview', 'outlined'), button('Start over', 'reset', 'text')] : [];
+      },
+
+      hint: function (s) {
+        if (s.open && s.off) return '<b>Mode unavailable.</b> Research needs web access, which is off here — so it isn’t applied. Choose another.';
+        if (s.open) return '<b>Picker open.</b> Each mode says what changes. The model chip beside it is a separate choice.';
+        if (s.step === 'working') return 'The mode travels with the request; the model and context did not change.';
+        if (s.turns.length > 2) return '<b>Mode changed the approach.</b> The same assistant planned, then reviewed — because you chose how it should work.';
+        if (s.turns.length) return '<b>Plan mode.</b> Steps with owners and dates. Now switch Mode to Review and ask for a review.';
+        if (s.mode) return '<b>Mode selected.</b> “Mode · ' + SIM_MODES[s.mode].name + '” sits in the composer. Your text is the same. Send it.';
+        return 'Open Mode in the composer.';
+      },
+
+      axSubmit: function (text, ctx) { return SIMS.modes.act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS.modes.initial))); ctx.paint(); return; }
+        if (a === 'open') { s.open = true; s.off = false; s.changed = false; ctx.paint(); return; }
+        if (a === 'close') { s.open = false; ctx.paint(); return; }
+        if (a.indexOf('mode:') === 0) {
+          var k = a.slice(5);
+          if (SIM_MODES[k].off) { s.off = true; ctx.paint(); ctx.announce && ctx.announce('Research isn’t available here. Choose another mode.'); return; }
+          s.changed = !!s.mode && s.mode !== k; s.mode = k; s.open = false; s.off = false; ctx.paint();
+          ctx.announce && ctx.announce('Mode: ' + SIM_MODES[k].name + '. Your text is unchanged.'); return;
+        }
+        if (a === 'clear') { s.mode = null; s.open = false; s.changed = false; ctx.paint(); return; }
+        if (a === 'askreview') { s.axText = 'Review this plan for risks.'; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText; if (!text) return;
+          var m = s.mode && SIM_MODES[s.mode];
+          s.turns.push({ who: 'you', text: esc(text), mode: m && m.name }); s.axText = ''; s.open = false; s.changed = false; s.step = 'working'; ctx.paint();
+          await wait(1500);
+          var body = s.mode === 'plan'
+            ? '<ol class="sim-lm__drafts"><li>Freeze scope — Mon 6 Oct (Maya)</li><li>QA sign-off on exports — Thu 9 Oct (Jordan)</li><li>Release notes + support macro — Fri 10 Oct (Dana)</li><li>Ship — Tue 14 Oct</li></ol>'
+            : s.mode === 'review'
+              ? '<b>3 risks in this plan</b><ul class="sim-lm__drafts"><li>QA has one day; exports touched 4 services.</li><li>Release notes depend on QA finishing.</li><li>No rollback owner named.</li></ul>'
+              : 'Here are a few things to consider for the October release: scope, QA, communication and timing. Want me to plan it, draft notes, or review something?';
+          s.turns.push({ who: 'agent', text: body, mode: m && m.name }); s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────
+       VOICE & TONE · conversation
+
+       purpose      set how the reply sounds for this audience
+       user goal    a short update about onboarding improvements
+       agent goal   same facts, the voice they choose
+       trigger      they open Tone before (and after) asking
+       context      a PM drafting an update for two audiences
+       decision     which tone — then a second version
+       after        two versions, same facts, different voice
+       ────────────────────────────────────────────────────── */
+    'voice-tone': {
+      shell: 'conversation',
+      product: 'Planboard',
+      agent: 'Aria',
+      note: 'Choose Professional and send. Then switch to Conversational and ask for another version — the wording changes, ' +
+            'the facts don’t. Aria’s recommendation is marked and never applied for you.',
+
+      initial: { step: 'idle', turns: [], tone: null, open: false, axText: 'Write a short update about the onboarding improvements.', opts: {} },
+
+      title: function () { return 'Onboarding update'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : s.tone ? 'Tone · ' + SIM_TONES[s.tone].name : 'Default voice'; },
+
+      composerOpts: function (s) {
+        var sample = SIM_TONES[s.tone || 'professional'];
+        var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone">' + psSimHead('Tone', 'How the reply should sound. What it says stays the same.') +
+          '<div class="ps-tiles" role="radiogroup" aria-label="Tone">' + Object.keys(SIM_TONES).map(function (k) {
+            var t = SIM_TONES[k], on = k === s.tone;
+            return '<button class="ps-tile' + (on ? ' is-on' : '') + '" type="button" role="radio" aria-checked="' + on + '" data-act="tone:' + k + '">' +
+              '<span class="ps-tile__n">' + t.name + (on ? MI('check') : '') + '</span><span class="ps-tile__d">' + t.d + '</span>' +
+              (k === 'professional' ? '<span class="ps-tile__tag">' + aiIcon('generated') + 'Recommended for stakeholders</span>' : '') + '</button>';
+          }).join('') + '</div>' +
+          '<div class="ps-sample"><p class="psc__over">Sample · ' + sample.name + '</p><p class="ps-sample__t">“' + sample.ex + '”</p></div></div>' : '';
+        var t = s.tone && SIM_TONES[s.tone];
+        return {
+          tools: scafTool({ kind: 'tone', label: 'Tone', icon: MI('forum'), value: t ? t.name : null, act: s.open ? 'close' : 'open', popup: 'dialog', open: !!s.open, removeAct: t ? 'remove' : null }),
+          assist: s.changed ? '<div class="ps-note" role="status">' + MI('sync') + '<span>Tone changed to ' + t.name + '. What the reply says stays the same.</span></div>' : '',
+          pop: pop, text: s.axText, layout: 'stack'
+        };
+      },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var out = s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: (t.tone ? '<span class="ps-tag">' + t.tone + '</span> ' : '') + t.text });
+          return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + (t.tone || 'Default voice') + '</p>', body: t.text });
+        }).join('');
+        if (s.step === 'working') out += working('Writing the update…');
+        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open Tone in the composer.</p>';
+        return out;
+      },
+
+      controls: function (s) { return s.turns.length ? [button('Ask for another version', 'again', 'outlined'), button('Start over', 'reset', 'text')] : []; },
+
+      hint: function (s) {
+        if (s.open) return '<b>Tone picker.</b> One line shows how each sounds. Professional is Aria’s recommendation — marked, not selected.';
+        if (s.turns.length > 2) return '<b>Same facts, different voice.</b> 3 steps became 1 and setup is 40% faster in both versions.';
+        if (s.turns.length && s.changed) return '<b>Tone changed.</b> Ask for another version to hear the difference.';
+        if (s.turns.length) return 'Switch Tone to Conversational, then “Ask for another version”.';
+        if (s.tone) return '<b>Tone selected.</b> “Tone · ' + SIM_TONES[s.tone].name + '” sits in the composer; your text is untouched. Send it.';
+        return 'Open Tone in the composer.';
+      },
+
+      axSubmit: function (text, ctx) { return SIMS['voice-tone'].act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s;
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS['voice-tone'].initial))); ctx.paint(); return; }
+        if (a === 'open') { s.open = true; ctx.paint(); return; }
+        if (a === 'close') { s.open = false; ctx.paint(); return; }
+        if (a.indexOf('tone:') === 0) { var k = a.slice(5); s.changed = !!s.tone && s.tone !== k; s.tone = k; s.open = false; ctx.paint(); ctx.announce && ctx.announce('Tone: ' + SIM_TONES[k].name + '.'); return; }
+        if (a === 'remove') { s.tone = null; s.changed = false; ctx.paint(); ctx.announce && ctx.announce('Tone removed.'); return; }
+        if (a === 'again') { s.axText = 'Write it again in this tone.'; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText; if (!text) return;
+          var t = s.tone && SIM_TONES[s.tone];
+          s.turns.push({ who: 'you', text: esc(text), tone: t && t.name }); s.axText = ''; s.changed = false; s.step = 'working'; ctx.paint();
+          await wait(1300);
+          s.turns.push({ who: 'agent', text: t ? t.reply : 'Onboarding now has 1 step instead of 3, and setup is 40% faster. Imports are next.', tone: t && t.name }); s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────
+       PRESET STYLES · conversation (after Claude's styles)
+
+       purpose      how replies are written — chosen, previewed, switchable
+       user goal    release communication: a summary, then a customer email
+       agent goal   answer in the style they chose; earlier replies keep theirs
+       trigger      they open Style from the composer's tools
+       context      a PM writing about the October release
+       decision     which style — preview it — or make one from their writing
+       after        each reply labelled with the style it was written in
+       ────────────────────────────────────────────────────── */
+    'preset-styles': {
+      shell: 'conversation',
+      product: 'Planboard',
+      agent: 'Aria',
+      note: 'Aria has answered in its Normal style. Open Style, point at a style to preview it, choose Concise and ask again. Then ' +
+            'Create & edit styles: Aria makes a style from your own release notes. Switching never rewrites what you typed, and ' +
+            'earlier replies keep the style they were written in.',
+
+      initial: { step: 'idle', style: 'normal', open: false, peek: null, has: false, create: null, src: 'example', inst: false,
+        turns: [{ who: 'you', text: 'Summarize the October release.' }, { who: 'agent', style: 'normal', key: 'summary' }],
+        axText: 'Now draft the customer email about it.', opts: {} },
+
+      title: function () { return 'October release · notes'; },
+      pill: function (s) { return s.step === 'working' ? 'Aria working' : 'Style · ' + simStyle(s, s.style).name; },
+
+      composerOpts: function (s) {
+        var cur = simStyle(s, s.style), pop = '';
+        if (s.open) {
+          var peek = simStyle(s, s.peek || s.style);
+          var ids = ['normal', 'concise', 'formal', 'explanatory'];
+          var row = function (k) {
+            var x = simStyle(s, k), on = k === s.style;
+            return '<button class="ps-opt ps-st__row' + (on ? ' is-on' : '') + (k === s.peek && !on ? ' is-peek' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
+              ' data-act="style:' + k + '" data-style="' + k + '" aria-describedby="sim-st-prev"><span class="ps-opt__t"><span class="ps-opt__n">' + x.name +
+              (x.mine ? '<span class="ps-tag">' + aiIcon('generated') + 'From your writing</span>' : '') + '</span><span class="ps-opt__d">' + x.d + '</span></span>' +
+              (on ? '<span class="ps-opt__c">' + MI('check') + '</span>' : '') + '</button>';
+          };
+          pop = '<div class="ax__menu ax__menu--ps ps-pick ps-pick--wide ps-st" role="dialog" aria-label="Use style">' +
+            psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.') +
+            '<div class="ps-st__grid has-prev"><div class="ps-st__list" role="radiogroup" aria-label="Style">' + ids.map(row).join('') +
+              (s.has ? '<p class="psc__over ps-st__sec">Your styles</p>' + row('house') : '') + '</div>' +
+              '<div class="ps-st__prev" id="sim-st-prev" aria-live="polite">' + simStylePrev(peek) + '</div></div>' +
+            '<div class="psc__foot ps-st__foot"><button class="ps-link" type="button" data-act="create">' + MI('add') + 'Create &amp; edit styles</button></div></div>';
+        }
+        var chip = s.style !== 'normal';
+        return {
+          tools: scafTool({ kind: 'style', label: 'Style', icon: MI('editNote'), value: chip ? cur.name : null, short: chip && cur.name.length > 12, act: s.open ? 'close' : 'open',
+            popup: 'dialog', open: !!s.open, removeAct: chip ? 'normal' : null }),
+          assist: s.note ? '<div class="ps-note" role="status">' + MI(s.note.icon) + '<span>' + s.note.text + '</span>' +
+            (s.note.undo ? '<button class="ps-link" type="button" data-act="undo">Undo</button>' : '') + '</div>' : '',
+          pop: pop, text: s.axText, layout: 'stack'
+        };
+      },
+
+      thread: function (s) {
+        var av = nxAvatar({ kind: 'agent', name: 'Aria', size: 32, label: false, src: NX_AGENT_ASSET });
+        var out = s.turns.map(function (t) {
+          if (t.who === 'you') return md3Message({ role: 'user', hideAvatar: true, body: esc(t.text) });
+          var x = simStyle(s, t.style);
+          return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + x.name + ' style</p>',
+            body: SIM_STYLE_REPLY[t.key][t.style] || SIM_STYLE_REPLY[t.key].normal });
+        }).join('');
+        if (s.create === 'source' || s.create === 'busy') {
+          out += '<div class="psc ps-st-card sim-st-card" role="region" aria-label="Create a style">' +
+            '<div class="psc__head"><p class="psc__title">Create a style</p></div>' +
+            '<p class="psc__sub">Aria learns how you want replies to read — from writing you like, or from a description.</p>' +
+            md3Segmented({ label: 'Start from', value: s.src, act: 'src:', items: [{ value: 'example', label: 'An example', icon: MI('doc') }, { value: 'describe', label: 'A description', icon: MI('editNote') }] }) +
+            (s.src === 'example'
+              ? md3TextArea({ id: 'sim-st-ex', label: 'Paste writing you like', value: s.ex || '', rows: 4 }) +
+                '<div class="ps-acts"><button class="ps-link" type="button" data-act="upload">' + MI('upload') + 'Use “release-notes-sept.txt”</button><span class="md-body-small ps-d">Used only to make this style.</span></div>'
+              : md3TextArea({ id: 'sim-st-desc', label: 'Describe the style', value: 'Short release notes: one line per change, the customer benefit first, plain verbs.', rows: 3 })) +
+            (s.create === 'busy' ? md3Progress(undefined, 'Generating a style') : '') +
+            '<div class="psc__foot">' + md3Button({ variant: 'text', label: 'Cancel', attrs: { 'data-act': 'cancel' } }) + '<span class="psc__acts">' +
+              md3Button({ variant: 'filled', label: s.create === 'busy' ? 'Generating…' : 'Generate style', icon: s.create === 'busy' ? aiIcon('working') : aiIcon('action'),
+                attrs: Object.assign({ 'data-act': 'generate' }, s.create === 'busy' || (s.src === 'example' && !(s.ex || '').trim()) ? { 'aria-disabled': 'true' } : {}) }) + '</span></div></div>';
+        }
+        if (s.create === 'review') {
+          var g = simStyle(s, 'house');
+          out += '<div class="psc ps-st-card sim-st-card" role="region" aria-label="Review the new style">' +
+            '<p class="psc__over">' + aiIcon('generated') + 'Style made by Aria from your example</p>' +
+            md3TextField({ id: 'sim-st-name', label: 'Style name', value: g.name }) +
+            '<div class="ps-st__desc"><p class="psc__over">What it changes</p><p class="md-body-medium">' + g.d + '</p></div>' +
+            '<button class="ps-link" type="button" data-act="inst" aria-expanded="' + !!s.inst + '">' + MI(s.inst ? 'chevDown' : 'chevRight') + 'Instructions behind it</button>' +
+            (s.inst ? md3TextArea({ id: 'sim-st-inst', label: 'Instructions', value: SIM_STYLE_INST, rows: 4 }) : '') +
+            '<div class="ps-st__prev">' + simStylePrev(g) + '</div>' +
+            '<div class="psc__foot">' + md3Button({ variant: 'text', label: 'Back', attrs: { 'data-act': 'back' } }) + '<span class="psc__acts">' +
+              md3Button({ variant: 'outlined', label: 'Save', attrs: { 'data-act': 'save' } }) + md3Button({ variant: 'filled', label: 'Save and use', attrs: { 'data-act': 'saveuse' } }) + '</span></div></div>';
+        }
+        if (s.step === 'working') out += working('Writing in the ' + simStyle(s, s.style).name + ' style…');
+        return out;
+      },
+
+      controls: function (s) { return [button('Start over', 'reset', 'text')]; },
+
+      hint: function (s) {
+        if (s.create === 'source' || s.create === 'busy') return '<b>Create a style.</b> Paste writing you like (or describe it). Generate is the only AI step; the example is used only for this.';
+        if (s.create === 'review') return '<b>Style generated.</b> Its name and description are Aria’s and editable; the instructions are one tap away; the preview shows how a reply would read.';
+        if (s.open) return '<b>Use style.</b> Point at a style to preview the same answer in it. Choosing applies it at once; nothing is sent.';
+        if (s.step === 'working') return 'Aria is answering in the style you chose.';
+        if (s.style !== 'normal') return '<b>' + simStyle(s, s.style).name + '.</b> The chip shows the active style; × goes back to Normal. Earlier replies keep the style they were written in.';
+        return 'The first reply used Normal. Open Style in the composer.';
+      },
+
+      after: function (root, s) {
+        root.querySelectorAll('.ps-st__row[data-style]').forEach(function (b) {
+          if (b.dataset.psb) return; b.dataset.psb = '1';
+          function show() { var box = root.querySelector('#sim-st-prev'); if (!box) return; s.peek = b.getAttribute('data-style');
+            box.innerHTML = simStylePrev(simStyle(s, s.peek));
+            root.querySelectorAll('.ps-st__row.is-peek').forEach(function (r) { r.classList.remove('is-peek'); });
+            if (!b.classList.contains('is-on')) b.classList.add('is-peek'); }
+          b.addEventListener('mouseenter', show); b.addEventListener('focus', show);
+        });
+        var ex = root.querySelector('#sim-st-ex');
+        if (ex && !ex.dataset.psb) { ex.dataset.psb = '1'; ex.addEventListener('input', function () { s.ex = ex.value; }); }
+      },
+
+      axSubmit: function (text, ctx) { return SIMS['preset-styles'].act('send:' + text, ctx); },
+
+      act: async function (a, ctx) {
+        var s = ctx.s, r = ctx.root;
+        var f = r && r.querySelector('.ax__dock [data-ax-field]'); if (f) s.axText = f.value;
+        if (a === 'reset') { Object.assign(s, JSON.parse(JSON.stringify(SIMS['preset-styles'].initial))); ctx.paint(); return; }
+        if (a === 'open') { s.open = true; s.peek = null; s.note = null; ctx.paint(); return; }
+        if (a === 'close') { s.open = false; ctx.paint(); return; }
+        if (a.indexOf('style:') === 0) {
+          var id = a.slice(6), was = s.style; s.style = id; s.open = false;
+          s.note = id === 'normal' ? (was !== 'normal' ? { icon: 'check', text: 'Back to Normal.', undo: true } : null)
+            : { icon: was === 'normal' ? 'editNote' : 'sync', text: simStyle(s, id).name + ' applies to new messages, edits and retries' + (s.turns.length ? ' — earlier replies keep their style' : '') + '.' };
+          s.undo = was; ctx.paint(); ctx.announce && ctx.announce('Style: ' + simStyle(s, id).name + '.'); return;
+        }
+        if (a === 'normal') { s.undo = s.style; s.style = 'normal'; s.note = { icon: 'check', text: 'Back to Normal.', undo: true }; ctx.paint(); return; }
+        if (a === 'undo') { s.style = s.undo && s.undo !== 'normal' ? s.undo : 'concise'; s.note = null; ctx.paint(); return; }
+        if (a === 'create') { s.open = false; s.create = 'source'; s.src = 'example'; s.ex = s.ex || ''; ctx.paint(); return; }
+        if (a.indexOf('src:') === 0) { s.src = a.slice(4); ctx.paint(); return; }
+        if (a === 'upload') { s.ex = SIM_STYLE_EXAMPLE; ctx.paint(); ctx.announce && ctx.announce('Example added: release-notes-sept.txt.'); return; }
+        if (a === 'cancel') { s.create = null; ctx.paint(); return; }
+        if (a === 'generate') {
+          if (s.create === 'busy' || (s.src === 'example' && !(s.ex || '').trim())) return;
+          s.create = 'busy'; ctx.paint(); await wait(1300);
+          if (s.create !== 'busy') return; s.create = 'review'; ctx.paint(); ctx.announce && ctx.announce('Style ready: Release notes voice. Review it, then save.'); return;
+        }
+        if (a === 'inst') { s.inst = !s.inst; ctx.paint(); return; }
+        if (a === 'back') { s.create = 'source'; ctx.paint(); return; }
+        if (a === 'save') { s.has = true; s.create = null; s.open = true; s.peek = 'house'; ctx.paint(); return; }
+        if (a === 'saveuse') { s.has = true; s.create = null; var w = s.style; s.style = 'house'; s.undo = w;
+          s.note = { icon: 'sync', text: 'Release notes voice applies to new messages, edits and retries — earlier replies keep their style.' }; ctx.paint(); return; }
+        if (a.indexOf('send:') === 0) {
+          var text = a.slice(5).trim() || s.axText; if (!text) return;
+          s.turns.push({ who: 'you', text: text }); s.axText = ''; s.note = null; s.step = 'working'; ctx.paint();
+          await wait(1400);
+          s.turns.push({ who: 'agent', style: s.style, key: /email|customer/i.test(text) ? 'email' : 'summary' }); s.step = 'idle'; ctx.paint();
+        }
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────
        EXAMPLE GALLERY · conversation
 
        purpose      show what this agent is good at, before guessing
@@ -6089,6 +6732,12 @@
      furniture, because navigation that could belong to any
      product tells a reader nothing about this one. */
   var NAVS = {
+    suggestions: { group: 'Releases', items: ['September release', 'Blockers', 'Roadmap', 'Past summaries'], on: 0 },
+    madlibs: { group: 'Projects', items: ['Stakeholder summary', 'Checkout redesign', 'Mobile onboarding', 'Pricing v2'], on: 0 },
+    'prompt-enhancer': { group: 'Research', items: ['Onboarding research', 'Survey responses', 'Interviews', 'Insights'], on: 0 },
+    modes: { group: 'Releases', items: ['October release', 'Scope', 'QA plan', 'Launch checklist'], on: 0 },
+    'voice-tone': { group: 'Updates', items: ['Onboarding update', 'Drafts', 'Sent', 'Audiences'], on: 0 },
+    'preset-styles': { group: 'Releases', items: ['October release notes', 'Changelog', 'Drafts', 'Published'], on: 0 },
     consent: { group: 'Pricing', items: ['Pricing sync · Oct 14', 'Product brief', 'Decisions', 'Past meetings'], on: 0 },
     disclaimer: { group: 'Meetings', items: ['Launch sync · action items', 'Upcoming', 'Recordings', 'Connected apps'], on: 0 },
     color: { group: 'Release 2.4', items: ['Launch board', 'Checklist', 'Risks', 'Timeline'], on: 0 },
@@ -6128,6 +6777,12 @@
      here works: choosing an attachment puts a real chip on the
      composer, and choosing a mode changes the mode. */
   var COMPOSERS = {
+    suggestions: { ask: 'Describe what you need…', plus: ['Attach a file', 'Add a release'] },
+    madlibs: { ask: 'Or write your own request…', plus: ['Attach a file', 'Add a project'] },
+    'prompt-enhancer': { ask: 'Describe what you need…', plus: ['Attach a file', 'Add a survey'] },
+    modes: { ask: 'Describe the task…', plus: ['Attach a file', 'Add a project'] },
+    'voice-tone': { ask: 'Describe what to write…', plus: ['Attach a file'] },
+    'preset-styles': { ask: 'Describe what you need…', plus: ['Attach a file', 'Add a release'] },
     'example-gallery': { ask: 'Or describe your own task…', plus: ['Attach a file', 'Add a meeting'] },
     disclaimer: { ask: 'Ask about this meeting…', plus: ['Attach a file'] },
     consent: { ask: 'Ask about this meeting…', plus: ['Attach a file', 'Add a source'] },
@@ -6719,6 +7374,70 @@
       (o.actions ? '<div class="' + MD3_BANNER_ACTIONS + '">' + o.actions + '</div>' : '') + '</div>';
   }
 
+  /* Prompt Scaffolds sims: their content. */
+  function psSimHead(t, sub) { return '<div class="ps-pick__h"><p class="ps-pick__t">' + t + '</p><p class="ps-pick__s">' + sub + '</p></div>'; }
+  function psSimMlW(t) { return 'calc(' + Math.max(6, String(t).length * 1.1).toFixed(1) + 'ch + 50px)'; }
+  var SIM_SUGS = ['Include unresolved blockers', 'Group the work by owner', 'Compare with the August release'];
+  function psSimAppend(base, add) { return String(base || '').replace(/[.\s]+$/, '') + ' and ' + add + '.'; }
+  function psSimMl(v) {
+    return 'Create a summary of ' + (v.Project || '…') + ' for ' + (v.Audience ? v.Audience.toLowerCase() : '…') +
+      ((v.Topic || '').trim() ? ', focusing on ' + v.Topic.toLowerCase() : '') + '.';
+  }
+  var SIM_PE = [
+    { id: 'time', add: ' from the last 30 days', why: 'Keeps it to the feedback since the new flow shipped.', assume: 'Assumes the last 30 days.' },
+    { id: 'step', add: ', grouped by onboarding step', why: 'Shows where in the flow people struggle.' },
+    { id: 'exp', add: ', and propose three experiments', why: 'Turns findings into next steps — more than you asked for.' }
+  ];
+  function psSimPe(orig, on) { return String(orig).replace(/[.\s]+$/, '') + SIM_PE.filter(function (c) { return on[c.id] !== false; }).map(function (c) { return c.add; }).join('') + '.'; }
+  var SIM_MODES = {
+    brainstorm: { name: 'Brainstorm', d: 'Explore several possible directions.', icon: 'lightbulb' },
+    research: { name: 'Research', d: 'Gather and compare information from the web.', icon: 'search', off: 'Not available here — web access is off.' },
+    draft: { name: 'Draft', d: 'Write a first version you can edit.', icon: 'editNote' },
+    review: { name: 'Review', d: 'Check existing work for gaps and risks.', icon: 'visibility' },
+    plan: { name: 'Plan', d: 'Break the work into steps with owners and dates.', icon: 'flag' }
+  };
+  var SIM_TONES = {
+    professional: { name: 'Professional', d: 'Clear and measured.', ex: 'Onboarding now takes one step instead of three.',
+      reply: 'Onboarding improvements are live. New users now complete setup in 1 step instead of 3, and setup is 40% faster. Next, we are improving imports.' },
+    friendly: { name: 'Friendly', d: 'Warm and approachable.', ex: 'Good news — getting started just got easier.',
+      reply: 'Good news — getting started just got easier! Setup is now 1 step instead of 3, and it’s 40% faster. Imports are next.' },
+    conversational: { name: 'Conversational', d: 'Like talking to a colleague.', ex: 'So, onboarding got a lot quicker.',
+      reply: 'So, onboarding got a lot quicker: it’s 1 step now instead of 3, and about 40% faster to set up. We’re tackling imports next.' },
+    formal: { name: 'Formal', d: 'Precise and impersonal.', ex: 'Onboarding has been streamlined.',
+      reply: 'Onboarding has been streamlined from three steps to one, reducing setup time by 40%. Import improvements will follow.' }
+  };
+  /* Preset Styles (after Claude's styles): the styles and the same
+     two answers written in each, so switching shows the difference. */
+  var SIM_STYLES = {
+    normal: { name: 'Normal', d: 'Aria’s default replies.' },
+    concise: { name: 'Concise', d: 'Shorter, more direct replies.' },
+    formal: { name: 'Formal', d: 'Clear, polished, professional replies.' },
+    explanatory: { name: 'Explanatory', d: 'Teaches as it answers — context and the reasons why.' },
+    house: { name: 'Release notes voice', d: 'One line per change, the benefit first, plain verbs, no marketing words.', mine: true }
+  };
+  var SIM_STYLE_REPLY = {
+    summary: {
+      normal: 'October shipped 14 of 17 planned items. Exports are up to twice as fast, shared links no longer expire early, and shared dashboards are live. SSO for Teams, CSV column order and Android checkout latency move to November.',
+      concise: '14 of 17 shipped: faster exports, shared-link fix, shared dashboards. Moved to November: SSO, CSV order, Android latency.',
+      formal: 'The October release delivered 14 of the 17 planned items, including improved export performance, a correction to shared-link expiry and the introduction of shared dashboards. Three items have been deferred to November.',
+      explanatory: 'Fourteen of seventeen items shipped. The biggest change is exports: they are up to twice as fast because they now run in the background. Three items slipped to November, mostly because SSO for Teams depends on identity work still in review.',
+      house: 'New: shared dashboards — your whole team sees the same numbers.<br>Faster: exports take half the time.<br>Fixed: shared links stay open until you close them.<br>Next month: SSO for Teams.'
+    },
+    email: {
+      normal: '<b>Subject:</b> What’s new in Planboard this October<br>Hi there — this month we made exports up to twice as fast, fixed shared links that expired early, and launched shared dashboards so your team works from the same numbers.',
+      concise: '<b>Subject:</b> October in Planboard<br>Faster exports. Shared links fixed. Shared dashboards are live.',
+      formal: '<b>Subject:</b> Planboard October release<br>Dear customer, we are pleased to share that the October release improves export performance, resolves an issue with shared-link expiry and introduces shared dashboards.',
+      explanatory: '<b>Subject:</b> Three changes in Planboard, and why they help<br>Exports now run in the background, so they finish up to twice as fast. Shared links stay valid until you close them. Shared dashboards mean everyone sees the same numbers.',
+      house: '<b>Subject:</b> October in Planboard<br>New: shared dashboards — your whole team sees the same numbers.<br>Faster: exports take half the time.<br>Fixed: shared links stay open until you close them.'
+    }
+  };
+  var SIM_STYLE_EXAMPLE = 'New: Slack digest — a morning summary without opening Planboard.\nFixed: comments no longer disappear when you switch boards.\nFaster: search shows results as you type.';
+  var SIM_STYLE_INST = 'Write one short line per change. Start each line with New, Faster, Fixed or Next month. Lead with what the reader can now do. Use plain verbs; avoid marketing words and exclamation marks.';
+  function simStyle(s, id) { return SIM_STYLES[id] || SIM_STYLES.normal; }
+  function simStylePrev(x) {
+    var k = Object.keys(SIM_STYLES).filter(function (q) { return SIM_STYLES[q] === x; })[0] || 'normal';
+    return '<p class="psc__over">Preview · ' + x.name + '</p><p class="ps-st__q">Summarize the October release.</p><p class="ps-st__a">' + SIM_STYLE_REPLY.summary[k] + '</p>';
+  }
   /* Capability Discovery sims: their content. */
   var SIM_EG = [
     { icon: 'doc', t: 'Summarize today’s meeting', d: 'Decisions, open questions and next steps · needs a transcript',
@@ -8616,6 +9335,26 @@
     }
     return false;
   }
+  /* PROMPT SCAFFOLDS — the trigger in the composer's tool slot.
+     Nothing chosen: an assist chip that names the setting ("Mode ▾").
+     Something chosen: an input chip that names the VALUE ("Plan ▾ ×") —
+     the label opens the picker again, × removes it. One control per
+     setting, in the row where the asking happens (no extra row). */
+  function scafTool(o) {
+    var chev = '<span class="ax__tool__c" aria-hidden="true">' + MI('chevDown') + '</span>';
+    var pop = o.popup ? ' aria-haspopup="' + o.popup + '" aria-expanded="' + !!o.open + '"' : '';
+    if (!o.value) {
+      return '<button class="ax__tool" type="button" data-kind="' + esc(o.kind || '') + '" data-act="' + esc(o.act) + '"' + pop +
+        (o.aria ? ' aria-label="' + esc(o.aria) + '"' : '') + '>' + (o.icon || '') + '<span>' + esc(o.label) + '</span>' + (o.popup ? chev : '') + '</button>';
+    }
+    return '<span class="ax__tool is-set" data-kind="' + esc(o.kind || '') + '">' +
+      '<button class="ax__tool__v" type="button" data-act="' + esc(o.act) + '"' + pop +
+        ' aria-label="' + esc(o.short ? o.value + ', ' + o.label.toLowerCase() + ' — change' : o.label + ' ' + o.value + ' — change') + '">' + (o.valueIcon || o.icon || '') +
+        (o.short ? '' : '<span class="ax__tool__k">' + esc(o.label) + '</span> ') + '<span class="ax__tool__n">' + esc(o.value) + '</span>' + chev + '</button>' +
+      (o.removeAct ? '<button class="ax__tool__x" type="button" data-act="' + esc(o.removeAct) + '" aria-label="' +
+        esc('Remove ' + o.label.toLowerCase() + ' ' + o.value) + '">' + MI('close') + '</button>' : '') +
+    '</span>';
+  }
   function composerCore(o) {
     var V = window.MaterialVoice;
     /* SIZE is a state of this one composer, not a second component.
@@ -8781,6 +9520,10 @@
            second control and no settings page, because a choice
            that only matters at the moment of asking belongs
            where the asking happens. */
+        /* PROMPT SCAFFOLDS (16 Oct): a host's own scaffold triggers —
+           Mode, Tone, Style, Enhance — sit beside the model chip. They
+           are separate settings and stay separate controls. */
+        (o.tools || '') +
         (o.model && window.MaterialModel
           /* modelOpts is the Model Selection pattern's own bag:
              the composer forwards it untouched rather than growing
@@ -8851,6 +9594,22 @@
         scopes +
         atts +
         (dict && !dLive ? vxMarker(dict) : '') +
+        /* What the request will be shaped by — a mode, a tone, an
+           output style — each named, each removable, on its own row. */
+        (o.scaffolds && o.scaffolds.length
+          ? '<span class="ax__scafs" role="group" aria-label="Request settings">' + o.scaffolds.map(function (sc) {
+              return '<span class="ax__scaf" data-kind="' + esc(sc.kind) + '">' +
+                (sc.icon || '') +
+                (sc.openAct
+                  ? '<button class="ax__scaf__v" type="button" data-act="' + esc(sc.openAct) + '" aria-label="' + esc(sc.k + ': ' + sc.v + '. Change') + '">' +
+                      '<span class="ax__scaf__k">' + esc(sc.k) + '</span> ' + esc(sc.v) + '</button>'
+                  : '<span class="ax__scaf__v"><span class="ax__scaf__k">' + esc(sc.k) + '</span> ' + esc(sc.v) + '</span>') +
+                (sc.removeAct
+                  ? '<button class="ax__scaf__x" type="button" data-act="' + esc(sc.removeAct) + '" aria-label="' + esc('Remove ' + sc.k.toLowerCase() + ' ' + sc.v) + '">' + MI('close') + '</button>'
+                  : '') + '</span>';
+            }).join('') + '</span>'
+          : '') +
+        (o.assist || '') +
         (o.visual ? viCard(o.visual) : '') +
         (o.gesture && (o.gesture.sels || []).length
           ? '<span class="ax__gesels" role="group" aria-label="Selected on screen">' + o.gesture.sels.map(function (x, i) {
@@ -8906,6 +9665,7 @@
                 (m === (o.mode_ || o.modes[0]) ? '<small>current</small>' : '') + '</button>';
             }).join('') + '</div>'
           : '') +
+        (!voice && o.pop ? o.pop : '') +
       '</form>';
     /* The default microphone (o.__dMic) never displaces a pattern's own frame. */
     var hostDict = dict && !o.__dMic;
@@ -9558,6 +10318,7 @@
        composer rather than a copy of it. If the two ever drift,
        it will be because somebody deleted this line. */
     composer: composer,
+    scafTool: scafTool,
     /* Suggested Prompts: the set, and the three things a host does
        with it. The same code drives the Live Preview and the
        simulator. */
