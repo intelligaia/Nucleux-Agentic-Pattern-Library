@@ -1895,7 +1895,7 @@
        purpose      improve a written request without losing it
        user goal    an analysis of onboarding feedback
        agent goal   propose a clearer request and show every change
-       trigger      they press Improve
+       trigger      they choose Improve prompt in the tune menu
        context      a PM research workspace
        decision     keep, remove or edit each change; use it or not
        after        the reviewed prompt in the composer, sent by them
@@ -1904,7 +1904,7 @@
       shell: 'conversation',
       product: 'Planboard',
       agent: 'Aria',
-      note: 'Press Improve on a short request. Aria proposes a clearer one with every addition marked and explained — remove the ' +
+      note: 'Open the tune control next to + and choose Improve prompt on a short request. Aria proposes a clearer one with every addition marked and explained — remove the ' +
             'one you don’t need, use the rest, and send. Your original stays until you choose.',
 
       initial: { step: 'idle', turns: [], pe: 'original', on: {}, axText: 'Analyze onboarding feedback.', orig: '', opts: { fail: false } },
@@ -1919,7 +1919,9 @@
         var note = '';
         if (s.pe === 'used') note = '<div class="ps-note" role="status">' + MI('check') + '<span>Prompt updated. Nothing was sent.</span><button class="ps-link" type="button" data-act="undo">Undo</button></div>';
         if (s.pe === 'failed') note = '<div class="ps-err" role="alert">' + MI('error') + '<span>Couldn’t improve this request. Your original is unchanged.</span><button class="ps-link" type="button" data-act="improve">Try again</button></div>';
-        return { tools: tool, assist: note, text: s.axText, layout: 'stack' };
+        /* Improve is in the tune menu (21 Oct); while it works, Cancel is here. */
+        if (busy) note = '<div class="ps-note" role="status">' + aiIcon('working') + '<span>Improving your prompt. Your original stays as it is.</span><button class="ps-link" type="button" data-act="cancel">Cancel</button></div>';
+        return { assist: note, text: s.axText, layout: 'stack' };
       },
 
       thread: function (s) {
@@ -1950,7 +1952,7 @@
               md3Button({ variant: 'filled', label: 'Use improved', attrs: { 'data-act': 'use' } }) + '</span></div></div>';
         }
         if (s.step === 'working') out += working('Reading 212 onboarding responses…');
-        if (!s.turns.length && s.pe === 'original') out += '<p class="sim-stage__empty">A short request is in the composer. Press Improve.</p>';
+        if (!s.turns.length && s.pe === 'original') out += '<p class="sim-stage__empty">A short request is in the composer. Open the tune control next to + and choose Improve prompt.</p>';
         return out;
       },
 
@@ -1959,15 +1961,18 @@
       },
 
       hint: function (s) {
-        if (s.pe === 'enhancing') return '<b>Enhancing.</b> Your original stays in the composer, untouched.';
+        if (s.pe === 'enhancing') return '<b>Enhancing.</b> Your original stays in the composer, untouched. Cancel is in the composer.';
         if (s.pe === 'review') return SIM_PE.some(function (c) { return s.on[c.id] === false; })
           ? '<b>Reviewing.</b> The removed change is struck out. Use the rest when it reads right.'
           : '<b>Proposed changes.</b> Before and after, side by side; each addition is highlighted and explained, the assumption labelled. “Propose three experiments” goes beyond the ask — untick it.';
         if (s.pe === 'used') return '<b>Accepted.</b> The composer holds the improved prompt — still editable, still unsent. Undo restores yours.';
         if (s.pe === 'failed') return '<b>Failed.</b> Nothing changed — try again or send your original.';
         if (s.turns.length) return '<b>Result.</b> The analysis follows the prompt you reviewed.';
-        return 'Press Improve in the composer.';
+        return 'Open the tune control next to + and choose Improve prompt.';
       },
+
+      /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+      tune: function (s) { var b = s.pe === 'enhancing'; return { key: 'improve', value: b ? 'Improving…' : null, act: b ? 'cancel' : 'improve', open: false }; },
 
       axSubmit: function (text, ctx) { return SIMS['prompt-enhancer'].act('send:' + text, ctx); },
 
@@ -2011,7 +2016,7 @@
       shell: 'conversation',
       product: 'Planboard',
       agent: 'Aria',
-      note: 'Open Mode in the composer and choose Plan, then send: Aria answers with steps. Switch to Review and ask again — same ' +
+      note: 'Open the tune control next to +, choose Mode and pick Plan, then send: Aria answers with steps. Switch to Review and ask again — same ' +
             'model, same context, a different way of working.',
 
       initial: { step: 'idle', turns: [], mode: null, open: false, off: false, axText: 'Help me prepare the October release.', opts: {} },
@@ -2020,7 +2025,7 @@
       pill: function (s) { return s.step === 'working' ? 'Aria working' : s.mode ? 'Mode · ' + SIM_MODES[s.mode].name : 'No mode'; },
 
       composerOpts: function (s) {
-        var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode">' + psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.') +
+        var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode">' + psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.', 'close') +
           '<div role="radiogroup" aria-label="Mode">' + Object.keys(SIM_MODES).map(function (k) {
             var m = SIM_MODES[k], on = k === s.mode;
             return '<button class="ps-opt' + (on ? ' is-on' : '') + (m.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' + (m.off ? ' aria-disabled="true"' : '') + ' data-act="mode:' + k + '">' +
@@ -2031,7 +2036,7 @@
           (s.mode ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="clear">No mode</button></div>' : '') + '</div>' : '';
         var m = s.mode && SIM_MODES[s.mode];
         return {
-          tools: scafTool({ kind: 'mode', label: 'Mode', icon: MI('tune'), value: m ? m.name : null, valueIcon: m ? MI(m.icon) : '', act: s.open ? 'close' : 'open', popup: 'dialog', open: !!s.open, removeAct: m ? 'clear' : null }),
+          tools: '',
           assist: s.changed ? '<div class="ps-note" role="status">' + MI('sync') + '<span>Mode changed to ' + m.name + '. Your text is unchanged.</span></div>' : '',
           pop: pop, text: s.axText, layout: 'stack'
         };
@@ -2044,7 +2049,7 @@
           return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + (t.mode ? t.mode + ' mode' : 'AI agent') + '</p>', body: t.text });
         }).join('');
         if (s.step === 'working') out += working(s.mode === 'review' ? 'Reviewing the plan…' : 'Planning the release…');
-        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open Mode in the composer and choose how Aria should work.</p>';
+        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open the tune control next to + and choose how Aria should work.</p>';
         return out;
       },
 
@@ -2054,13 +2059,17 @@
 
       hint: function (s) {
         if (s.open && s.off) return '<b>Mode unavailable.</b> Research needs web access, which is off here — so it isn’t applied. Choose another.';
-        if (s.open) return '<b>Picker open.</b> Each mode says what changes. The model chip beside it is a separate choice.';
+        if (s.open) return '<b>Picker open.</b> Opened from the tune control. Each mode says what changes. The model chip is a separate choice.';
         if (s.step === 'working') return 'The mode travels with the request; the model and context did not change.';
         if (s.turns.length > 2) return '<b>Mode changed the approach.</b> The same assistant planned, then reviewed — because you chose how it should work.';
         if (s.turns.length) return '<b>Plan mode.</b> Steps with owners and dates. Now switch Mode to Review and ask for a review.';
-        if (s.mode) return '<b>Mode selected.</b> “Mode · ' + SIM_MODES[s.mode].name + '” sits in the composer. Your text is the same. Send it.';
-        return 'Open Mode in the composer.';
+        if (s.mode) return '<b>Mode selected.</b> The tune control shows a dot and its menu reads “Mode · ' + SIM_MODES[s.mode].name + '”. Your text is the same. Send it.';
+        return 'Open the tune control next to + and choose Mode.';
       },
+
+      /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+      tune: function (s) { return { key: 'mode', value: s.mode ? SIM_MODES[s.mode].name : null, act: 'open', open: !!s.open, close: 'close' }; },
+      popClose: function (s) { return s.open ? 'close' : null; },
 
       axSubmit: function (text, ctx) { return SIMS.modes.act('send:' + text, ctx); },
 
@@ -2117,17 +2126,18 @@
 
       composerOpts: function (s) {
         var sample = SIM_TONES[s.tone || 'professional'];
-        var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone">' + psSimHead('Tone', 'How the reply should sound. What it says stays the same.') +
+        var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone">' + psSimHead('Tone', 'How the reply should sound. What it says stays the same.', 'close') +
           '<div class="ps-tiles" role="radiogroup" aria-label="Tone">' + Object.keys(SIM_TONES).map(function (k) {
             var t = SIM_TONES[k], on = k === s.tone;
             return '<button class="ps-tile' + (on ? ' is-on' : '') + '" type="button" role="radio" aria-checked="' + on + '" data-act="tone:' + k + '">' +
               '<span class="ps-tile__n">' + t.name + (on ? MI('check') : '') + '</span><span class="ps-tile__d">' + t.d + '</span>' +
               (k === 'professional' ? '<span class="ps-tile__tag">' + aiIcon('generated') + 'Recommended for stakeholders</span>' : '') + '</button>';
           }).join('') + '</div>' +
-          '<div class="ps-sample"><p class="psc__over">Sample · ' + sample.name + '</p><p class="ps-sample__t">“' + sample.ex + '”</p></div></div>' : '';
+          '<div class="ps-sample"><p class="psc__over">Sample · ' + sample.name + '</p><p class="ps-sample__t">“' + sample.ex + '”</p></div>' +
+          (s.tone ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="remove">Default voice</button></div>' : '') + '</div>' : '';
         var t = s.tone && SIM_TONES[s.tone];
         return {
-          tools: scafTool({ kind: 'tone', label: 'Tone', icon: MI('forum'), value: t ? t.name : null, act: s.open ? 'close' : 'open', popup: 'dialog', open: !!s.open, removeAct: t ? 'remove' : null }),
+          tools: '',
           assist: s.changed ? '<div class="ps-note" role="status">' + MI('sync') + '<span>Tone changed to ' + t.name + '. What the reply says stays the same.</span></div>' : '',
           pop: pop, text: s.axText, layout: 'stack'
         };
@@ -2140,7 +2150,7 @@
           return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + (t.tone || 'Default voice') + '</p>', body: t.text });
         }).join('');
         if (s.step === 'working') out += working('Writing the update…');
-        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open Tone in the composer.</p>';
+        if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open the tune control next to + and choose Tone.</p>';
         return out;
       },
 
@@ -2151,9 +2161,13 @@
         if (s.turns.length > 2) return '<b>Same facts, different voice.</b> 3 steps became 1 and setup is 40% faster in both versions.';
         if (s.turns.length && s.changed) return '<b>Tone changed.</b> Ask for another version to hear the difference.';
         if (s.turns.length) return 'Switch Tone to Conversational, then “Ask for another version”.';
-        if (s.tone) return '<b>Tone selected.</b> “Tone · ' + SIM_TONES[s.tone].name + '” sits in the composer; your text is untouched. Send it.';
-        return 'Open Tone in the composer.';
+        if (s.tone) return '<b>Tone selected.</b> The tune control shows a dot and its menu reads “Tone · ' + SIM_TONES[s.tone].name + '”; your text is untouched. Send it.';
+        return 'Open the tune control next to + and choose Tone.';
       },
+
+      /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+      tune: function (s) { return { key: 'tone', value: s.tone ? SIM_TONES[s.tone].name : null, act: 'open', open: !!s.open, close: 'close' }; },
+      popClose: function (s) { return s.open ? 'close' : null; },
 
       axSubmit: function (text, ctx) { return SIMS['voice-tone'].act('send:' + text, ctx); },
 
@@ -2163,7 +2177,7 @@
         if (a === 'open') { s.open = true; ctx.paint(); return; }
         if (a === 'close') { s.open = false; ctx.paint(); return; }
         if (a.indexOf('tone:') === 0) { var k = a.slice(5); s.changed = !!s.tone && s.tone !== k; s.tone = k; s.open = false; ctx.paint(); ctx.announce && ctx.announce('Tone: ' + SIM_TONES[k].name + '.'); return; }
-        if (a === 'remove') { s.tone = null; s.changed = false; ctx.paint(); ctx.announce && ctx.announce('Tone removed.'); return; }
+        if (a === 'remove') { s.tone = null; s.changed = false; s.open = false; ctx.paint(); ctx.announce && ctx.announce('Tone removed.'); return; }
         if (a === 'again') { s.axText = 'Write it again in this tone.'; ctx.paint(); return; }
         if (a.indexOf('send:') === 0) {
           var text = a.slice(5).trim() || s.axText; if (!text) return;
@@ -2181,7 +2195,7 @@
        purpose      how replies are written — chosen, previewed, switchable
        user goal    release communication: a summary, then a customer email
        agent goal   answer in the style they chose; earlier replies keep theirs
-       trigger      they open Style from the composer's tools
+       trigger      they choose Style from the composer's tune menu
        context      a PM writing about the October release
        decision     which style — preview it — or make one from their writing
        after        each reply labelled with the style it was written in
@@ -2190,7 +2204,7 @@
       shell: 'conversation',
       product: 'Planboard',
       agent: 'Aria',
-      note: 'Aria has answered in its Normal style. Open Style, point at a style to preview it, choose Concise and ask again. Then ' +
+      note: 'Aria has answered in its Normal style. Open the tune control next to + and choose Style, point at a style to preview it, choose Concise and ask again. Then ' +
             'Create & edit styles: Aria makes a style from your own release notes. Switching never rewrites what you typed, and ' +
             'earlier replies keep the style they were written in.',
 
@@ -2214,7 +2228,7 @@
               (on ? '<span class="ps-opt__c">' + MI('check') + '</span>' : '') + '</button>';
           };
           pop = '<div class="ax__menu ax__menu--ps ps-pick ps-pick--wide ps-st" role="dialog" aria-label="Use style">' +
-            psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.') +
+            psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.', 'close') +
             '<div class="ps-st__grid has-prev"><div class="ps-st__list" role="radiogroup" aria-label="Style">' + ids.map(row).join('') +
               (s.has ? '<p class="psc__over ps-st__sec">Your styles</p>' + row('house') : '') + '</div>' +
               '<div class="ps-st__prev" id="sim-st-prev" aria-live="polite">' + simStylePrev(peek) + '</div></div>' +
@@ -2222,8 +2236,7 @@
         }
         var chip = s.style !== 'normal';
         return {
-          tools: scafTool({ kind: 'style', label: 'Style', icon: MI('editNote'), value: chip ? cur.name : null, short: chip && cur.name.length > 12, act: s.open ? 'close' : 'open',
-            popup: 'dialog', open: !!s.open, removeAct: chip ? 'normal' : null }),
+          tools: '',
           assist: s.note ? '<div class="ps-note" role="status">' + MI(s.note.icon) + '<span>' + s.note.text + '</span>' +
             (s.note.undo ? '<button class="ps-link" type="button" data-act="undo">Undo</button>' : '') + '</div>' : '',
           pop: pop, text: s.axText, layout: 'stack'
@@ -2275,8 +2288,8 @@
         if (s.create === 'review') return '<b>Style generated.</b> Its name and description are Aria’s and editable; the instructions are one tap away; the preview shows how a reply would read.';
         if (s.open) return '<b>Use style.</b> Point at a style to preview the same answer in it. Choosing applies it at once; nothing is sent.';
         if (s.step === 'working') return 'Aria is answering in the style you chose.';
-        if (s.style !== 'normal') return '<b>' + simStyle(s, s.style).name + '.</b> The chip shows the active style; × goes back to Normal. Earlier replies keep the style they were written in.';
-        return 'The first reply used Normal. Open Style in the composer.';
+        if (s.style !== 'normal') return '<b>' + simStyle(s, s.style).name + '.</b> The tune control shows a dot; its menu names the style, and Normal goes back. Earlier replies keep the style they were written in.';
+        return 'The first reply used Normal. Open the tune control next to + and choose Style.';
       },
 
       after: function (root, s) {
@@ -2291,6 +2304,10 @@
         var ex = root.querySelector('#sim-st-ex');
         if (ex && !ex.dataset.psb) { ex.dataset.psb = '1'; ex.addEventListener('input', function () { s.ex = ex.value; }); }
       },
+
+      /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+      tune: function (s) { return { key: 'style', value: s.style !== 'normal' ? simStyle(s, s.style).name : null, act: 'open', open: !!s.open, close: 'close' }; },
+      popClose: function (s) { return s.open ? 'close' : null; },
 
       axSubmit: function (text, ctx) { return SIMS['preset-styles'].act('send:' + text, ctx); },
 
@@ -7375,7 +7392,10 @@
   }
 
   /* Prompt Scaffolds sims: their content. */
-  function psSimHead(t, sub) { return '<div class="ps-pick__h"><p class="ps-pick__t">' + t + '</p><p class="ps-pick__s">' + sub + '</p></div>'; }
+  /* `x` is the picker's close action: opened from +, a picker has no
+     chip beside it to close it with (user request, 21 Oct). */
+  function psSimHead(t, sub, x) { return '<div class="ps-pick__h"><p class="ps-pick__t">' + t + '</p><p class="ps-pick__s">' + sub + '</p>' +
+    (x ? '<button class="ps-ico ps-pick__x" type="button" data-act="' + x + '" aria-label="Close">' + MI('close') + '</button>' : '') + '</div>'; }
   function psSimMlW(t) { return 'calc(' + Math.max(6, String(t).length * 1.1).toFixed(1) + 'ch + 50px)'; }
   var SIM_SUGS = ['Include unresolved blockers', 'Group the work by owner', 'Compare with the August release'];
   function psSimAppend(base, add) { return String(base || '').replace(/[.\s]+$/, '') + ' and ' + add + '.'; }
@@ -9355,6 +9375,224 @@
         esc('Remove ' + o.label.toLowerCase() + ' ' + o.value) + '">' + MI('close') + '</button>' : '') +
     '</span>';
   }
+  /* ══ REQUEST SETTINGS — the tune control (user request, 21 Oct) ══
+     One icon button right after +, in the same states as + (rest,
+     hover, pressed, open, disabled while the agent works). Its menu
+     lists how the request will be shaped — Mode, Tone, Style — and
+     Improve prompt. None of them sits in the composer up front: a dot
+     on the control (and its accessible name) and the value on each row
+     say what is on. A pattern that owns one of them keeps its own
+     picker for it (`own`); the others use the shared pickers below,
+     their state on the host's state object (s.rq). Both runners use
+     it: rqTune() for the control, rqPop()/rqNote() for the composer's
+     pop and assist slots, rqAct() for ax:tune and rq:*. */
+  var RQ_ITEMS = [{ key: 'mode', label: 'Mode', icon: 'tune' }, { key: 'tone', label: 'Tone', icon: 'forum' },
+                  { key: 'style', label: 'Style', icon: 'editNote' }, { key: 'improve', label: 'Improve prompt', icon: null }];
+  var RQ_DEFAULT = { mode: 'None', tone: 'Default', style: 'Normal', improve: '' };
+  function rqS(s) { return s.rq || (s.rq = { mode: null, tone: null, style: 'normal', pop: null }); }
+  function rqVal(key, r) {
+    if (key === 'mode') return r.mode && SIM_MODES[r.mode] ? SIM_MODES[r.mode].name : null;
+    if (key === 'tone') return r.tone && SIM_TONES[r.tone] ? SIM_TONES[r.tone].name : null;
+    if (key === 'style') return r.style && r.style !== 'normal' && SIM_STYLES[r.style] ? SIM_STYLES[r.style].name : null;
+    return null;
+  }
+  function rqImproved(t) { return String(t).replace(/[.\s]+$/, '') + ', with a one-line summary first and any open questions at the end.'; }
+  function rqTune(s, own) {
+    var r = rqS(s), on = [];
+    var items = RQ_ITEMS.map(function (it) {
+      var v = own && own.key === it.key ? own.value : rqVal(it.key, r);
+      if (v && it.key !== 'improve') on.push(it.label + ' ' + v);
+      return { key: it.key, label: it.label, icon: it.icon, value: v || RQ_DEFAULT[it.key], set: !!v };
+    });
+    return { open: !!s.rqTune, items: items, on: on.length > 0,
+             label: 'Request settings' + (on.length ? ': ' + on.join(', ') : '') };
+  }
+  function rqTuneButton(t, off) {
+    return '<button class="ax__cbtn md-icon-button md-icon-button--standard ax__tune' + (t.on ? ' is-set' : '') + '" type="button" data-act="ax:tune" ' +
+      'aria-label="' + esc(t.label) + '" aria-haspopup="menu" aria-expanded="' + !!t.open + '"' + (off ? ' disabled' : '') + '>' +
+      MI('tune') + (t.on ? '<span class="ax__tune-dot" aria-hidden="true"></span>' : '') + '</button>';
+  }
+  function rqTuneMenu(t) {
+    return '<div class="ax__menu ax__menu--tune" role="menu" aria-label="Request settings">' + t.items.map(function (it) {
+      return '<button class="ax__mitem ax__mitem--tune" type="button" role="menuitem" aria-haspopup="dialog" data-act="rq:pick:' + it.key + '">' +
+        '<span class="ax__mitem__i" aria-hidden="true">' + (it.icon ? MI(it.icon) : aiIcon('action')) + '</span><span>' + esc(it.label) + '</span>' +
+        (it.value ? '<small' + (it.set ? ' class="is-set"' : '') + '>' + esc(it.value) + '</small>' : '') + '</button>';
+    }).join('') + '</div>';
+  }
+  function rqPop(s) {
+    var r = rqS(s), k = r.pop; if (!k) return '';
+    function box(label, inner) { return '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="' + label + '">' + inner + '</div>'; }
+    function opt(pre, id, x, on) {
+      return '<button class="ps-opt' + (on ? ' is-on' : '') + (x.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
+        (x.off ? ' aria-disabled="true"' : '') + ' data-act="rq:set:' + pre + ':' + id + '">' +
+        (x.icon ? '<span class="ps-opt__i">' + MI(x.icon) + '</span>' : '') +
+        '<span class="ps-opt__t"><span class="ps-opt__n">' + x.name + '</span><span class="ps-opt__d">' + x.d + '</span>' +
+        (x.off ? '<span class="ps-opt__off">' + x.off + '</span>' : '') + '</span>' +
+        (on ? '<span class="ps-opt__c">' + MI('check') + '</span>' : '') + '</button>';
+    }
+    function list(pre, data, ids, cur, label) {
+      return '<div role="radiogroup" aria-label="' + label + '">' + ids.map(function (id) { return opt(pre, id, data[id], id === cur); }).join('') + '</div>';
+    }
+    if (k === 'mode') return box('Choose a mode', psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.', 'rq:close') +
+      list('mode', SIM_MODES, Object.keys(SIM_MODES), r.mode, 'Mode') +
+      (r.off ? '<p class="ps-err" role="alert">' + MI('info') + '<span>Research isn’t available here. Choose another mode.</span></p>' : '') +
+      (r.mode ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="rq:clear:mode">No mode</button></div>' : ''));
+    if (k === 'tone') return box('Choose a tone', psSimHead('Tone', 'How the reply should sound. What it says stays the same.', 'rq:close') +
+      list('tone', SIM_TONES, Object.keys(SIM_TONES), r.tone, 'Tone') +
+      (r.tone ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="rq:clear:tone">Default voice</button></div>' : ''));
+    if (k === 'style') return box('Use style', psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.', 'rq:close') +
+      list('style', SIM_STYLES, ['normal', 'concise', 'formal', 'explanatory'], r.style || 'normal', 'Style'));
+    if (k === 'improve') {
+      var im = r.imp || { state: 'empty' }, body;
+      if (im.state === 'empty') body = '<p class="ps-note" role="status">' + MI('info') + '<span>Write a request first — there is nothing to improve yet.</span></p>';
+      else if (im.state === 'working') body = '<p class="ps-note" role="status">' + aiIcon('working') + '<span>Improving your prompt. Your original stays as it is.</span>' +
+        '<button class="ps-link" type="button" data-act="rq:close">Cancel</button></p>';
+      else {
+        var base = String(im.orig).replace(/[.\s]+$/, '');
+        body = '<div class="ps-pe__split"><div class="ps-pe__col"><p class="psc__over">You wrote</p><p class="ps-pe__txt">' + esc(im.orig) + '</p></div>' +
+          '<div class="ps-pe__col is-new"><p class="psc__over">' + aiIcon('generated') + 'Improved</p><p class="ps-pe__txt">' + esc(base) +
+          ', <ins class="ps-ins"><span class="tdx-sr">added: </span>with a one-line summary first and any open questions at the end</ins>.</p></div></div>' +
+          '<div class="psc__foot"><span class="md-body-small ps-d">Nothing is sent until you send it.</span><span class="psc__acts">' +
+          md3Button({ variant: 'outlined', label: 'Keep original', attrs: { 'data-act': 'rq:imp:keep' } }) +
+          md3Button({ variant: 'filled', label: 'Use improved', attrs: { 'data-act': 'rq:imp:use' } }) + '</span></div>';
+      }
+      return box('Improve prompt', psSimHead('Improve prompt', 'A clearer version of your request. Your original stays until you choose.', 'rq:close') + body);
+    }
+    return '';
+  }
+  /* One line about the last change, while the text it describes is
+     still the text in the composer. */
+  function rqNote(s, text) {
+    var n = s.rq && s.rq.note; if (!n || n.at !== (text || '')) return '';
+    return '<div class="ps-note" role="status">' + MI(n.icon) + '<span>' + n.text + '</span>' +
+      (n.undo ? '<button class="ps-link" type="button" data-act="' + n.undo + '">Undo</button>' : '') + '</div>';
+  }
+  /* io: { paint(), announce(t), text(), setText(t) }. Returns true when
+     handled, or the scenario's own action to run (its own picker). */
+  function rqAct(a, s, io, own) {
+    var r = rqS(s), say = function (t) { if (io.announce) io.announce(t); };
+    if (a === 'ax:tune') {
+      s.rqTune = !s.rqTune; r.pop = null; r.off = false;
+      if (s.rqTune && own && own.open && own.close) return own.close;
+      io.paint(); return true;
+    }
+    a = a.slice(3); s.rqTune = false;
+    var L = { mode: 'Mode', tone: 'Tone', style: 'Style' };
+    if (a.indexOf('pick:') === 0) {
+      var k = a.slice(5); r.off = false;
+      if (own && own.key === k) { r.pop = null; return own.act; }
+      r.pop = k;
+      if (k === 'improve') {
+        var t = String(io.text() || '').trim(), run = ((r.imp && r.imp.run) || 0) + 1;
+        r.imp = { orig: t, state: t ? 'working' : 'empty', run: run };
+        if (t) {
+          say('Improving your prompt. Your original is unchanged.');
+          setTimeout(function () { if (r.pop === 'improve' && r.imp.run === run) { r.imp.state = 'ready'; io.paint(); say('A clearer version is ready. Your original is still in the composer.'); } }, reduce ? 80 : 1100);
+        }
+      }
+      io.paint(); return true;
+    }
+    if (a === 'close') { r.pop = null; r.off = false; if (r.imp) r.imp.run++; io.paint(); return true; }
+    if (a.indexOf('set:') === 0) {
+      var p = a.split(':'), key = p[1], id = p[2];
+      if (key === 'mode' && SIM_MODES[id] && SIM_MODES[id].off) { r.off = true; io.paint(); say(SIM_MODES[id].name + ' isn’t available here. Choose another mode.'); return true; }
+      var was = rqVal(key, r); r[key] = id; r.pop = null; r.off = false;
+      var now = rqVal(key, r);
+      var line = now ? L[key] + (was && was !== now ? ' changed to ' : ': ') + now + '. Your text is unchanged.' : 'Back to ' + RQ_DEFAULT[key] + '. Your text is unchanged.';
+      r.note = { icon: was && now ? 'sync' : 'check', text: line, at: io.text() || '' };
+      io.paint(); say(line); return true;
+    }
+    if (a.indexOf('clear:') === 0) {
+      var c = a.slice(6); r[c] = c === 'style' ? 'normal' : null; r.pop = null;
+      var cl = { mode: 'No mode', tone: 'Default voice', style: 'Back to Normal' }[c] + '. Your text is unchanged.';
+      r.note = { icon: 'check', text: cl, at: io.text() || '' }; io.paint(); say(cl); return true;
+    }
+    if (a === 'imp:use') {
+      var orig = (r.imp && r.imp.orig) || '', nt = rqImproved(orig);
+      io.setText(nt); r.pop = null; r.undoText = orig;
+      r.note = { icon: 'check', text: 'Prompt updated. Nothing was sent.', undo: 'rq:imp:undo', at: nt };
+      io.paint(); say('Prompt updated. Nothing was sent.'); return true;
+    }
+    if (a === 'imp:keep') { r.pop = null; io.paint(); return true; }
+    if (a === 'imp:undo') { var back = r.undoText || ''; io.setText(back); r.note = { icon: 'undo', text: 'Your original prompt is back.', at: back }; io.paint(); return true; }
+    return true;
+  }
+  /* ══ THE COMPOSER'S HEIGHT (user request, 21 Oct) ══
+     Every prompt field grows with what is typed up to EIGHT lines and
+     then scrolls inside itself. Once there is more than fits, an
+     Expand control in the composer's top-right corner gives the
+     request most of the height there is; Collapse (or sending, which
+     empties the field) brings it back — as ChatGPT and other agentic
+     tools do. A single-line field (data-max-lines="1") stays one line.
+     One fitter for every composer on the page: on input, and on
+     every composer that is painted (a MutationObserver), so a repaint
+     keeps an expanded composer expanded. */
+  var AX_LINES = 8;
+  var AX_ICON_EXPAND = 'M120-120v-320h80v184l504-504H520v-80h320v320h-80v-184L256-200h184v80H120Z';
+  var AX_ICON_COLLAPSE = 'M440-120v-184L176-40l-56-56 264-264H200v-80h320v320h-80Zm80-400v-320h80v184l264-264 56 56-264 264h184v80H520Z';
+  function axSvg(d) { return '<svg viewBox="0 -960 960 960" width="20" height="20" aria-hidden="true" focusable="false"><path d="' + d + '"/></svg>'; }
+  var AX_EXPAND_BTN = '<button class="ax__expand" type="button" aria-label="Expand the composer" aria-pressed="false" hidden>' + axSvg(AX_ICON_EXPAND) + '</button>';
+  function axHost(form) { return form.closest('[data-preview-root],[data-sim-id]') || form.parentNode; }
+  function axFit(el) {
+    if (!el || el.tagName !== 'TEXTAREA') return;
+    var form = el.closest('.ax__composer'), cs = getComputedStyle(el);
+    var one = el.getAttribute('data-max-lines') === '1';
+    var lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    var cap = Math.round((one ? 1 : AX_LINES) * lh + pad);
+    var btn = form && form.querySelector(':scope > .ax__expand');
+    var host = form && axHost(form);
+    /* Sending empties the field, and an empty request has nothing to expand. */
+    if (host && host.__axExpanded && !el.value.trim()) host.__axExpanded = false;
+    var exp = !!(form && host && host.__axExpanded && !one);
+    if (form) form.toggleAttribute('data-expanded', exp);
+    el.style.maxHeight = 'none'; el.style.height = 'auto';
+    var natural = el.scrollHeight;
+    if (!natural) { el.style.height = ''; el.style.maxHeight = ''; return; }
+    if (exp) {
+      var big = Math.max(cap + 2 * lh, Math.min(Math.round(window.innerHeight * 0.62), 640));
+      /* Never taller than the surface that holds it (a preview frame,
+         the workspace): the controls stay in view. */
+      var box = form.closest('.pv-frame, .ax__work');
+      if (box && box.clientHeight) {
+        var chrome = form.offsetHeight - el.offsetHeight;
+        big = Math.min(big, Math.max(cap, box.clientHeight - chrome - 64));
+      }
+      el.style.height = big + 'px';
+    } else {
+      el.style.maxHeight = cap + 'px';
+      el.style.height = Math.min(natural, cap) + 'px';
+    }
+    if (btn) {
+      btn.hidden = one || !(exp || natural > cap + 1);
+      btn.setAttribute('aria-pressed', String(exp));
+      btn.setAttribute('aria-label', exp ? 'Collapse the composer' : 'Expand the composer');
+      var p = btn.querySelector('path'); if (p) p.setAttribute('d', exp ? AX_ICON_COLLAPSE : AX_ICON_EXPAND);
+    }
+  }
+  function axFitIn(root) { [].forEach.call((root || document).querySelectorAll('.ax__composer textarea[data-ax-field]'), axFit); }
+  (function () {
+    if (window.__axHeightOn || typeof document === 'undefined') return; window.__axHeightOn = true;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.ax__expand'); if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      var form = b.closest('.ax__composer'), f = form && form.querySelector('textarea[data-ax-field]'); if (!f) return;
+      var host = axHost(form); host.__axExpanded = !host.__axExpanded; axFit(f);
+      f.focus({ preventScroll: true });
+    }, true);
+    document.addEventListener('input', function (e) { if (e.target && e.target.matches && e.target.matches('.ax__composer textarea[data-ax-field]')) axFit(e.target); }, true);
+    var pending = false;
+    function sweep() { pending = false; axFitIn(document); }
+    function start() {
+      if (!window.MutationObserver || !document.body) return;
+      new MutationObserver(function (ms) {
+        if (pending) return;
+        for (var i = 0; i < ms.length; i++) { if (ms[i].addedNodes.length) { pending = true; requestAnimationFrame(sweep); return; } }
+      }).observe(document.body, { childList: true, subtree: true });
+      window.addEventListener('resize', function () { if (!pending) { pending = true; requestAnimationFrame(sweep); } });
+      sweep();
+    }
+    if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  })();
   function composerCore(o) {
     var V = window.MaterialVoice;
     /* SIZE is a state of this one composer, not a second component.
@@ -9490,6 +9728,7 @@
         '<button class="ax__cbtn md-icon-button md-icon-button--standard" type="button" data-act="ax:plus" ' +
           'aria-label="Add context" aria-expanded="' + (!!o.plusOpen) + '"' +
           (busy || blocked ? ' disabled' : '') + '>' + ICON_PLUS + '</button>') +
+        (o.tune ? rqTuneButton(o.tune, busy || blocked) : '') +
         (o.chips && o.chips.length
           ? '<span class="ax__chips">' + o.chips.map(function (ch, i) {
               return '<button class="ax__chip" type="button" data-act="ax:unchip:' + i + '" ' +
@@ -9590,6 +9829,7 @@
         (entry ? ' data-entry="' + entry + '"' : '') +
         (o.sendKey === 'mod' ? ' data-send-key="mod"' : '') +
         (voice ? ' data-voice="' + vs + '"' : '') + '>' +
+        (voice ? '' : AX_EXPAND_BTN) +
         errHTML +
         scopes +
         atts +
@@ -9665,6 +9905,7 @@
                 (m === (o.mode_ || o.modes[0]) ? '<small>current</small>' : '') + '</button>';
             }).join('') + '</div>'
           : '') +
+        (!voice && o.tune && o.tune.open ? rqTuneMenu(o.tune) : '') +
         (!voice && o.pop ? o.pop : '') +
       '</form>';
     /* The default microphone (o.__dMic) never displaces a pattern's own frame. */
@@ -9708,6 +9949,12 @@
     var blocked = phase === 'blocked';
     var busy = phase === 'thinking' || phase === 'working';
     var x = sim.composerOpts ? (sim.composerOpts(s) || {}) : {};
+    /* The tune control, for a scenario that declares its own row. */
+    if (sim.tune) {
+      x = Object.assign({}, x); x.tune = rqTune(s, sim.tune(s));
+      var rp = rqPop(s); if (rp) x.pop = rp;
+      var rn = rqNote(s, s.axText || ''); if (rn) x.assist = (x.assist || '') + rn;
+    }
     /* A scenario can put the composer into voice mode; nothing
        else about the composer changes when it does. */
     var mode = sim.composerMode ? sim.composerMode(s) : 'text';
@@ -9836,6 +10083,13 @@
      exists. */
   function shellAct(a, ctx) {
     var s = ctx.s, sim = ctx.sim;
+    if (sim.tune && (a === 'ax:tune' || a.indexOf('rq:') === 0)) {
+      if (a === 'ax:tune') { s.axPlus = false; s.axSubAt = null; s.axModes = false; }
+      var rr = rqAct(a, s, { paint: ctx.paint, announce: ctx.announce, text: function () { return s.axText || ''; },
+        setText: function (t) { s.axText = t; } }, sim.tune(s));
+      if (typeof rr === 'string') sim.act(rr, ctx);
+      return true;
+    }
     if (a.indexOf('ax:') !== 0) return false;
     var c = COMPOSERS[sim.id] || {};
 
@@ -9853,6 +10107,9 @@
       return true;
     }
     if (a === 'ax:plus')  {
+      var pc = sim.popClose && sim.popClose(s);
+      if (pc && !s.axPlus) sim.act(pc, ctx);
+      if (!s.axPlus) { s.rqTune = false; if (s.rq) s.rq.pop = null; }
       s.axPlus = !s.axPlus; s.axModes = false;
       if (!s.axPlus) s.axSubAt = null;
       ctx.paint(); return true;
@@ -9911,6 +10168,7 @@
        max-height, past which it scrolls. */
     function fitField(el) {
       if (!el || el.tagName !== 'TEXTAREA') return;
+      return axFit(el);
       /* A host can set its own ceiling in lines (the Initial CTA
          does); otherwise the working composer's three and a bit. */
       var lines = +el.getAttribute('data-max-lines');
@@ -10271,7 +10529,10 @@
       /* The shared default + and model controls close the same way as
          a host's own (user request, 7 Oct: one flyout behaviour). */
       var D = s.__axd, dOpen = !!(D && (D.plusOpen || D.modesOpen || D.effortOpen));
-      if (!s.axPlus && !s.axModes && !s.axEffort && !dOpen) return;
+      /* A scenario's picker (Mode, Tone, Style) closes the same way. */
+      var pc = sim.popClose ? sim.popClose(s) : null;
+      var rqo = !!(s.rqTune || (s.rq && s.rq.pop));
+      if (!s.axPlus && !s.axModes && !s.axEffort && !dOpen && !pc && !rqo) return;
       if (e && e.type === 'click' && e.target.closest &&
           e.target.closest('.ax__composer')) return;
       /* The repaint below destroys whatever was clicked, so the
@@ -10285,7 +10546,8 @@
       }
       s.axPlus = s.axModes = s.axEffort = false; s.axSubAt = null;
       if (D) D.plusOpen = D.modesOpen = D.effortOpen = false;
-      paint();
+      s.rqTune = false; if (s.rq) { s.rq.pop = null; s.rq.off = false; }
+      if (pc) run(pc); else paint();
       if (pending) { e.preventDefault(); e.stopPropagation(); run(pending); }
     }
     document.addEventListener('keydown', function (e) {
@@ -10349,6 +10611,8 @@
     rnd: { render: rndRender, act: rndAct, DEMO: RND_DEMO },
     /* Voice Input (dictation into the shared composer). */
     axd: { use: axdUse, act: axdAct, state: axdState },
+    rq: { tune: rqTune, pop: rqPop, note: rqNote, act: rqAct },
+    axFit: axFit,
     vx: { act: vxAct, start: vxStart, halt: vxHalt, join: vxJoin, SCRIPT: VX_SCRIPT, clock: vxClock, session: vxSession },
     /* Visual Input (visual context on the shared composer). */
     vi: { act: viAct, sources: viSources, thumb: viThumb, ITEMS: VI_ITEMS, SRC: VI_SRC },

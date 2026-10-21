@@ -1366,6 +1366,8 @@
      chose, exactly as the simulator's composer does it. */
   function icFit(el) {
     if (!el || el.tagName !== 'TEXTAREA') return;
+    /* One height rule for every composer (21 Oct): MaterialSim.axFit. */
+    if (window.MaterialSim && window.MaterialSim.axFit) return window.MaterialSim.axFit(el);
     var cs = getComputedStyle(el);
     var lines = +el.getAttribute('data-max-lines');
     var cap = lines
@@ -2120,6 +2122,86 @@
   }
   /* A setting's trigger (Mode / Tone / Style): the shared chip. */
   function psChip(o) { var S = tdS(); return S && S.scafTool ? S.scafTool(o) : ''; }
+  /* MODE, TONE AND STYLE LIVE IN + (user request, 21 Oct). The composer
+     carries no trigger for them up front: + offers the setting beside
+     Attach a file and Add context, and the composer shows it only once
+     it is on — as its chip, which reopens or removes it. */
+  var PS_PLUS = ['Attach a file', 'Add context'];
+  function psPlus(s) { return { plus: PS_PLUS, plusOpen: !!s.psPlus, chips: (s.psChips || []).slice() }; }
+  /* true: handled. 'open': the setting's own item was chosen. */
+  function psPlusAct(a, s, ctx) {
+    if (a === 'ax:plus') { s.psPlus = !s.psPlus; ctx.paint(); return true; }
+    if (a.indexOf('ax:add:') === 0) {
+      var i = +a.slice(7); s.psPlus = false;
+      if (i >= PS_PLUS.length) return 'open';
+      s.psChips = (s.psChips || []).concat([PS_PLUS[i]]); ctx.paint(); ctx.announce(PS_PLUS[i] + ' added. Your text is unchanged.'); return true;
+    }
+    if (a.indexOf('ax:unchip:') === 0) { var j = +a.slice(10); s.psChips = (s.psChips || []).filter(function (_, k) { return k !== j; }); ctx.paint(); return true; }
+    s.psPlus = false;
+    return false;
+  }
+  /* THE TUNE CONTROL (user request, 21 Oct). Mode, Tone, Style and
+     Improve prompt are in one menu behind the tune icon right after +;
+     none of them sits in the composer up front. The control and its
+     shared pickers are the simulator's (MaterialSim.rq); `own` is this
+     pattern's row, which opens the pattern's own picker. */
+  /* Escape closes an open picker or menu; a click outside the composer
+     closes the tune and + menus (a picker that is the state on show
+     stays until they close it). Bound once, on the document. */
+  var psDismissOn = false;
+  function psDismiss() {
+    if (psDismissOn) return; psDismissOn = true;
+    function close(e) {
+      var box = document.querySelector('.pv-stage .ps'); if (!box) return;
+      var menu = box.querySelector('[data-act="ax:tune"][aria-expanded="true"], [data-act="ax:plus"][aria-expanded="true"]');
+      var pick = box.querySelector('.ax__menu--ps .ps-pick__x');
+      if (e.type === 'keydown') { var t = menu || pick; if (t) { e.preventDefault(); t.click(); } return; }
+      if (!menu || (e.target.closest && e.target.closest('.ax__composer'))) return;
+      menu.click();
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(e); });
+    document.addEventListener('click', close, true);
+  }
+  function psScaf(s, own, base) {
+    var R = tdS() && tdS().rq, o = Object.assign({}, base, psPlus(s));
+    psDismiss();
+    if (!R) return o;
+    o.tune = R.tune(s, own);
+    var p = R.pop(s); if (p) o.pop = p;
+    var n = R.note(s, base.text || ''); if (n) o.assist = (o.assist || '') + n;
+    return o;
+  }
+  /* true: handled; a string: run this pattern action instead. */
+  function psScafAct(a, s, ctx, own, sel) {
+    var R = tdS() && tdS().rq;
+    if (R && (a === 'ax:tune' || a.indexOf('rq:') === 0)) {
+      var f = document.querySelector('.pv-stage ' + sel + ' [data-ax-field]');
+      if (f) { s.psText = f.value; s.psFor = s.state; }
+      if (a === 'ax:tune') s.psPlus = false;
+      return R.act(a, s, { paint: ctx.paint, announce: ctx.announce,
+        text: function () { return f ? f.value : (s.psText || ''); },
+        setText: function (t) { s.psText = t; s.psFor = s.state; s.psFocus = true; } }, own);
+    }
+    /* + while a picker is open closes the picker and opens +. */
+    if (a === 'ax:plus' && own.open) { s.psPlus = true; s.rqTune = false; return own.close; }
+    if (a === 'ax:plus') { s.rqTune = false; if (s.rq) s.rq.pop = null; }
+    if (a.indexOf('ax:') !== 0) s.rqTune = false;
+    return psPlusAct(a, s, ctx);
+  }
+  function psTuneJSX() {
+    return '  leftActions={<>\n' +
+      '    <Md3IconButton aria-label="Add context" aria-haspopup="menu" onClick={toggleAdd}>' + sym('add') + '</Md3IconButton>\n' +
+      '    <Md3IconButton aria-label={settingsLabel} aria-haspopup="menu" aria-expanded={settingsOpen} onClick={toggleSettings}>' + sym('tune') + '</Md3IconButton>\n' +
+      '    {settingsOpen && (\n      <Md3Menu role="menu" aria-label="Request settings">\n' +
+      '        <Md3MenuItem aria-haspopup="dialog" onClick={openModes} trailing={mode ?? "None"}>Mode</Md3MenuItem>\n' +
+      '        <Md3MenuItem aria-haspopup="dialog" onClick={openTone} trailing={tone ?? "Default"}>Tone</Md3MenuItem>\n' +
+      '        <Md3MenuItem aria-haspopup="dialog" onClick={openStyles} trailing={style ?? "Normal"}>Style</Md3MenuItem>\n' +
+      '        <Md3MenuItem aria-haspopup="dialog" onClick={improve}>Improve prompt</Md3MenuItem>\n' +
+      '      </Md3Menu>\n    )}\n  </>}\n';
+  }
+  var PS_TUNE_IMPORTS = [['Md3Menu, Md3MenuItem', '@nucleux/md3-menu'], ['Md3IconButton', '@nucleux/md3-icon-button']];
+  /* Opened from the tune menu, a picker has no chip beside it to close it with. */
+  function psPickX(act) { return '<button class="ps-ico ps-pick__x" type="button" data-act="' + act + '" aria-label="Close">' + mi('close') + '</button>'; }
   /* Bind the composer field in a preview: keep the draft on state,
      keep Send honest, send through a hidden act button, and let the
      pattern react to typing without a repaint (onInput). */
@@ -2826,15 +2908,15 @@
         original: {
           label: 'Original',
           trigger: 'They have written a short request.',
-          behaviour: 'Their prompt in the composer, with Improve beside the model chip.',
+          behaviour: 'Their prompt in the composer. Improve prompt is in the tune menu right after +.',
           meaning: 'They can ask for a clearer version — or just send.',
-          action: 'Improve, or send.',
+          action: 'Open tune and choose Improve prompt, or send.',
           next: 'Enhancing'
         },
         enhancing: {
           label: 'Enhancing',
-          trigger: 'They pressed Improve.',
-          behaviour: 'Improve says “Improving…”; the original stays in the composer, readable and untouched.',
+          trigger: 'They chose Improve prompt in the tune menu.',
+          behaviour: 'A line in the composer says “Improving…”, with Cancel; the original stays in the composer, readable and untouched.',
           meaning: 'Aria is working on a suggestion. Nothing has changed yet.',
           action: 'Wait, or cancel.',
           next: 'Enhanced, or Enhancement failed'
@@ -2899,8 +2981,6 @@
         var improved = st === 'edited' ? (s.peEdit || psPeText(orig, on)) : psPeText(orig, on);
         var lab = esc(tdTrim(c.actLabel)) || 'Improve';
         var busy = st === 'enhancing';
-        var tool = psTool({ act: busy ? 'pe:cancel' : 'pe:go', text: busy ? 'Improving…' : lab, busy: false,
-          icon: busy ? tdAI('working') : tdAI('action'), label: busy ? 'Cancel improving' : lab + ' this prompt with AI' });
         var text = st === 'accepted' ? (psOwn(s, 'accepted') !== null ? psOwn(s, 'accepted') : (s.peUsed || psPeText(orig, {})))
           : (psOwn(s, st) !== null ? psOwn(s, st) : orig);
         var review = '';
@@ -2932,24 +3012,24 @@
             '</span></div></div>';
         }
         var note = '';
-        if (busy) note = '<div class="ps-note" role="status">' + tdAI('working') + '<span>Improving your prompt. Your original stays as it is.</span></div>';
+        if (busy) note = '<div class="ps-note" role="status">' + tdAI('working') + '<span>Improving your prompt. Your original stays as it is.</span><button class="ps-link" type="button" data-act="pe:cancel">Cancel</button></div>';
         if (st === 'accepted') note = '<div class="ps-note" role="status">' + mi('check') + '<span>Prompt updated. Nothing was sent.</span>' +
           (c.undo !== false ? '<button class="ps-link" type="button" data-act="pe:undo">Undo</button>' : '') + '</div>';
         if (st === 'reverted') note = '<div class="ps-note" role="status">' + mi('undo') + '<span>Your original prompt is back.</span></div>';
         if (st === 'failed') note = '<div class="ps-err" role="alert">' + mi('error') + '<span>' + (esc(tdTrim(c.failCopy)) || 'Couldn’t improve this request. Your original is unchanged.') + '</span>' +
           '<button class="ps-link" type="button" data-act="pe:go">Try again</button><button class="ps-link" type="button" data-act="pe:keep">Keep original</button></div>';
-        var cmp = psComposer({ ask: 'Describe what you need…', text: text, tools: tool, assist: note });
+        var cmp = psComposer(psScaf(s, { key: 'improve', value: busy ? 'Improving…' : null }, { ask: 'Describe what you need…', text: text, assist: note }));
         return psWrap('pe', st, review + cmp + psSent(s), ' data-density="' + (c.density || 'comfortable') + '"');
       },
 
       react: function (s) {
         var c = s.cfg, st = s.state;
-        return imports([['PromptEnhancer', '@nucleux/prompt-enhancer'], ['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button'],
-                        ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+        return imports([['PromptEnhancer', '@nucleux/prompt-enhancer'], ['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button']].concat(PS_TUNE_IMPORTS,
+                        [['Md3AgentComposer', '@nucleux/md3-agent-composer']])) + '\n\n' +
           '// State: ' + this.states[st].label + '\n' +
           '// PromptEnhancer (base Nucleux) offers the intents; the review below is the\n// pattern: the original stays in the composer until they choose.\n' +
           psComposerJSX(st === 'accepted' ? psPeText(PS_PE_ORIG, {}) : PS_PE_ORIG,
-            '  leftActions={<Md3Button variant="text" onClick={improve}>' + jsxText(tdTrim(c.actLabel) || 'Improve') + '</Md3Button>}\n') + '\n\n' +
+            psTuneJSX()) + '\n\n' +
           (st === 'enhanced' || st === 'reviewing' || st === 'edited'
             ? '<Md3Card variant="outlined" role="region" aria-label="Suggested improvements to your prompt">\n' +
               '  <p>{original}<ins>{change.text}</ins>…</p>\n' +
@@ -2971,6 +3051,8 @@
       act: async function (a, ctx) {
         var s = ctx.s, c = ctx.cfg();
         var orig = s.peOrig || PS_PE_ORIG;
+        var sc = psScafAct(a, s, ctx, { key: 'improve', act: s.state === 'enhancing' ? 'pe:cancel' : 'pe:go', open: false }, '.psw-pe');
+        if (sc === true) return; if (typeof sc === 'string') a = sc;
         if (a === 'pe:go') {
           var run = (s.peRun || 0) + 1; s.peRun = run; s.peOn = {}; s.peEdit = null;
           s.state = 'enhancing'; ctx.paint(); ctx.announce('Improving your prompt. Your original is unchanged.');
@@ -3058,14 +3140,14 @@
         none: {
           label: 'No mode selected',
           trigger: 'They are writing a request.',
-          behaviour: 'A Mode control beside the model chip. Aria works the general way until a mode is chosen.',
+          behaviour: 'No Mode control up front: Mode is in the tune menu right after +. Aria works the general way until a mode is chosen.',
           meaning: 'They can choose how Aria should approach this.',
-          action: 'Open Mode, or just send.',
+          action: 'Open tune and choose Mode, or just send.',
           next: 'Mode picker open'
         },
         open: {
           label: 'Mode picker open',
-          trigger: 'They opened Mode.',
+          trigger: 'They chose Mode in the tune menu.',
           behaviour: 'A short list of modes, each with one line on what changes. An unavailable mode says why.',
           meaning: 'What each mode would do with this request.',
           action: 'Choose one, or close.',
@@ -3074,7 +3156,7 @@
         selected: {
           label: 'Mode selected',
           trigger: 'They chose Plan.',
-          behaviour: 'The Mode chip in the composer now reads “Plan”, with a way to change or remove it. The text and the model are untouched.',
+          behaviour: 'The tune control shows a dot and its Mode row reads “Plan”; it is changed or removed from there. The text and the model are untouched.',
           meaning: 'Aria will approach this as a planning task.',
           action: 'Send, change, or clear.',
           next: 'Mode changed'
@@ -3082,7 +3164,7 @@
         changed: {
           label: 'Mode changed',
           trigger: 'They switched Plan to Review.',
-          behaviour: 'The chip updates and one line says what changed — and that their text is the same.',
+          behaviour: 'The Mode row updates and one line says what changed — and that their text is the same.',
           meaning: 'The next request will be a review.',
           action: 'Send.',
           next: '—'
@@ -3106,7 +3188,7 @@
         var open = st === 'open' || st === 'unavailable';
         var m = cur && L.filter(function (x) { return x.id === cur; })[0];
         var pop = open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode" data-density="' + (c.density || 'comfortable') + '">' +
-            '<div class="ps-pick__h"><p class="ps-pick__t">Mode</p><p class="ps-pick__s">How Aria approaches this request. Model and effort stay as they are.</p></div>' +
+            '<div class="ps-pick__h"><p class="ps-pick__t">Mode</p><p class="ps-pick__s">How Aria approaches this request. Model and effort stay as they are.</p>' + psPickX('md:close') + '</div>' +
             '<div role="radiogroup" aria-label="Mode">' + L.filter(function (x) { return !x.off || c.showOff !== false; }).map(function (x) {
               var on = x.id === cur;
               return '<button class="ps-opt' + (on ? ' is-on' : '') + (x.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
@@ -3121,24 +3203,22 @@
           '</div>' : '';
         var chips = [];
         var note = st === 'changed' ? '<div class="ps-note" role="status">' + mi('sync') + '<span>Mode changed to ' + esc(m.name) + '. Your text is unchanged.</span></div>' : '';
-        var cmp = psComposer({ ask: 'Describe the task…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Help me prepare the next product release.',
-          tools: psChip({ kind: 'mode', label: 'Mode', icon: mi('tune'), value: m ? m.name : null, valueIcon: m ? mi(m.icon) : '', short: c.indicator === 'icon',
-            act: open ? 'md:close' : 'md:open', popup: 'dialog', open: open, removeAct: m && c.clear !== false ? 'md:clear' : null }),
-          scaffolds: chips, assist: note, pop: pop });
+        var cmp = psComposer(psScaf(s, { key: 'mode', value: m ? m.name : null }, { ask: 'Describe the task…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Help me prepare the next product release.',
+          scaffolds: chips, assist: note, pop: pop }));
         return psWrap('md', st, cmp + psSent(s));
       },
 
       react: function (s) {
         var c = s.cfg, st = s.state, L = psModeList(c);
         var cur = st === 'changed' ? 'review' : st === 'none' ? (c.def === 'draft' ? 'draft' : null) : 'plan';
-        return imports([['Md3Menu', '@nucleux/md3-menu'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+        return imports(PS_TUNE_IMPORTS.concat([['Md3AgentComposer', '@nucleux/md3-agent-composer']])) + '\n\n' +
           '// State: ' + this.states[st].label + '\n// Mode = how Aria works. Model and effort stay in the model chip.\n' +
           'const modes = [\n' + L.filter(function (x) { return !x.off || c.showOff !== false; }).map(function (x) {
             return '  { id: "' + x.id + '", name: ' + jsxAttr(x.name) + ', description: ' + jsxAttr(x.d) + (x.off ? ', unavailable: ' + jsxAttr(x.off) : '') + ' },\n';
           }).join('') + '];\n\n' +
           (st === 'open' || st === 'unavailable' ? '<Md3Menu role="dialog" aria-label="Choose a mode">\n  {modes.map((m) => (\n    <button key={m.id} role="radio" aria-checked={m.id === mode} aria-disabled={!!m.unavailable} onClick={() => choose(m)}>\n      {m.name} — {m.description}{m.unavailable && <small>{m.unavailable}</small>}\n    </button>\n  ))}\n</Md3Menu>\n\n' : '') +
           (cur ? '<Md3Chip variant="input" onRemove={' + (c.clear !== false ? 'clearMode' : 'undefined') + '}>Mode · ' + jsxText((L.filter(function (x) { return x.id === cur; })[0] || {}).name || '') + '</Md3Chip>\n' : '') +
-          psComposerJSX('Help me prepare the next product release.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openModes}>Mode</Md3Button>}\n');
+          psComposerJSX('Help me prepare the next product release.', psTuneJSX());
       },
 
       mounted: function (root, s) { psBind(root, s); },
@@ -3149,6 +3229,8 @@
         function go(st, cur) { var keep = txt; s.mdCur = cur; s.mdFor = st; s.state = st; if (keep !== null) { s.psText = keep; s.psFor = st; } ctx.paint(); }
         var dflt = { none: c.def === 'draft' ? 'draft' : null, open: null, unavailable: null, selected: 'plan', changed: 'review' }[s.state];
         var cur = s.mdFor === s.state ? s.mdCur : dflt;
+        var sc = psScafAct(a, s, ctx, { key: 'mode', act: 'md:open', open: s.state === 'open' || s.state === 'unavailable', close: 'md:close' }, '.psw-md');
+        if (sc === true) return; if (typeof sc === 'string') a = sc;
         if (a === 'md:open') { s.mdPrev = s.state === 'none' ? null : cur; go('open', cur); return; }
         if (a === 'md:close') { go(s.mdPrev ? 'selected' : 'none', s.mdPrev); return; }
         if (a.indexOf('md:pick:') === 0) {
@@ -3228,14 +3310,14 @@
         default: {
           label: 'Default',
           trigger: 'No tone chosen.',
-          behaviour: 'A Tone control beside the model chip. Aria uses its default voice.',
+          behaviour: 'No Tone control up front: Tone is in the tune menu right after +. Aria uses its default voice.',
           meaning: 'They can say how the reply should sound.',
-          action: 'Open Tone, or send.',
+          action: 'Open tune and choose Tone, or send.',
           next: 'Tone picker open'
         },
         open: {
           label: 'Tone picker open',
-          trigger: 'They opened Tone.',
+          trigger: 'They chose Tone in the tune menu.',
           behaviour: 'Tones with one line each showing how it sounds; Aria’s recommendation is marked, not selected; a field for their own description.',
           meaning: 'How the reply would sound in each.',
           action: 'Choose one, describe one, or close.',
@@ -3244,7 +3326,7 @@
         selected: {
           label: 'Tone selected',
           trigger: 'They chose Professional.',
-          behaviour: 'The Tone chip in the composer now reads “Professional”, with a way to change or remove it. Their text is untouched.',
+          behaviour: 'The tune control shows a dot and its Tone row reads “Professional”; it is changed or removed from there. Their text is untouched.',
           meaning: 'The reply will sound professional — saying the same things.',
           action: 'Send, change, or remove.',
           next: 'Tone changed, or Tone removed'
@@ -3253,7 +3335,7 @@
           label: 'Custom tone',
           requires: 'custom',
           trigger: 'They described their own tone.',
-          behaviour: 'Their words become the tone chip, with a note that Aria will match it as closely as it can.',
+          behaviour: 'Their words become the tone on the Tone row, with a note that Aria will match it as closely as it can.',
           meaning: 'Their description guides how it sounds.',
           action: 'Send, edit, or remove.',
           next: '—'
@@ -3261,7 +3343,7 @@
         changed: {
           label: 'Tone changed',
           trigger: 'They switched to Conversational.',
-          behaviour: 'The chip updates; one line says the facts stay the same.',
+          behaviour: 'The Tone row updates; one line says the facts stay the same.',
           meaning: 'Same content, different voice.',
           action: 'Send, or ask for a new version.',
           next: '—'
@@ -3270,7 +3352,7 @@
           label: 'Tone removed',
           requires: 'remove',
           trigger: 'They removed the tone.',
-          behaviour: 'The chip goes; Aria uses its default voice. Undo is offered.',
+          behaviour: 'The tone goes and the dot with it; Aria uses its default voice. Undo is offered.',
           meaning: 'Back to the default.',
           action: 'Undo, or carry on.',
           next: 'Default'
@@ -3287,7 +3369,7 @@
         var cards = (c.layout || 'cards') === 'cards';
         var sampleT = T.filter(function (t) { return t.id === (s.tnHover || cur); })[0] || T[0];
         var pop = open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone" data-density="' + (c.density || 'comfortable') + '">' +
-            '<div class="ps-pick__h"><p class="ps-pick__t">Tone</p><p class="ps-pick__s">How the reply should sound. What it says stays the same.</p></div>' +
+            '<div class="ps-pick__h"><p class="ps-pick__t">Tone</p><p class="ps-pick__s">How the reply should sound. What it says stays the same.</p>' + psPickX('tn:close') + '</div>' +
             (cards
               ? '<div class="ps-tiles" role="radiogroup" aria-label="Tone">' + T.map(function (t) {
                   var on = t.id === cur;
@@ -3312,6 +3394,7 @@
             (c.custom !== false ? '<div class="ps-custom"><label class="psc__over" for="ps-tn-custom">Or describe a tone</label>' +
               '<div class="ps-custom__row"><input id="ps-tn-custom" class="ps-custom__in" placeholder="e.g. calm, plain English" value="" />' +
               tdM().button({ variant: 'tonal', label: 'Use', attrs: { 'data-act': 'tn:custom' } }) + '</div></div>' : '') +
+            (cur && c.remove !== false ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="tn:remove">Default voice</button></div>' : '') +
           '</div>' : '';
         var label = cur === 'custom' ? customText : cur ? (T.filter(function (t) { return t.id === cur; })[0] || {}).name : null;
         var chips = [];
@@ -3319,10 +3402,8 @@
         if (st === 'custom') note = '<div class="ps-note" role="status">' + mi('info') + '<span>Aria will match your description as closely as it can; the facts stay the same.</span></div>';
         if (st === 'changed') note = '<div class="ps-note" role="status">' + mi('sync') + '<span>Tone changed to ' + esc(label) + '. What the reply says stays the same.</span></div>';
         if (st === 'removed') note = '<div class="ps-note" role="status">' + mi('close') + '<span>Tone removed — Aria will use its default voice.</span><button class="ps-link" type="button" data-act="tn:undo">Undo</button></div>';
-        var cmp = psComposer({ ask: 'Describe what to write…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Draft a product update for stakeholders.',
-          tools: psChip({ kind: 'tone', label: 'Tone', icon: mi('forum'), value: label, act: open ? 'tn:close' : 'tn:open', popup: 'dialog', open: open,
-            removeAct: label && c.remove !== false ? 'tn:remove' : null }),
-          scaffolds: chips, assist: note, pop: pop });
+        var cmp = psComposer(psScaf(s, { key: 'tone', value: label }, { ask: 'Describe what to write…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Draft a product update for stakeholders.',
+          scaffolds: chips, assist: note, pop: pop }));
         return psWrap('tn', st, cmp + psSent(s));
       },
 
@@ -3330,13 +3411,13 @@
         var c = s.cfg, st = s.state, T = psToneList(c);
         var label = { selected: 'Professional', custom: 'Calm, plain English for non-experts', changed: 'Conversational' }[st];
         return imports([[c.layout === 'segmented' ? 'Md3SegmentedButton, Md3SegmentedButtonItem' : 'Md3RadioGroup, Md3Radio', c.layout === 'segmented' ? '@nucleux/md3-segmented-button' : '@nucleux/md3-radio'],
-                        ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+                        ['Md3TextField', '@nucleux/md3-text-field']].concat(PS_TUNE_IMPORTS, [['Md3AgentComposer', '@nucleux/md3-agent-composer']])) + '\n\n' +
           '// State: ' + this.states[st].label + '\n// Tone = how it sounds. It is sent with the request; it never edits the prompt text.\n' +
           (st === 'open' ? '<Md3RadioGroup label="Tone" value={tone} onValueChange={setTone}>\n' + T.map(function (t) {
               return '  <label><Md3Radio value="' + t.id + '" /> ' + jsxText(t.name) + (c.preview !== false ? ' <small>“' + jsxText(t.ex) + '”</small>' : '') + '</label>\n'; }).join('') +
             '</Md3RadioGroup>\n' + (c.custom !== false ? '<Md3TextField label="Or describe a tone" value={custom} onChange={setCustom} />\n' : '') + '\n' : '') +
           (label ? '<Md3Chip variant="input"' + (c.remove !== false ? ' onRemove={removeTone}' : '') + '>Tone · ' + jsxText(label) + '</Md3Chip>\n' : '') +
-          psComposerJSX('Draft a product update for stakeholders.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openTone}>Tone</Md3Button>}\n');
+          psComposerJSX('Draft a product update for stakeholders.', psTuneJSX());
       },
 
       mounted: function (root, s) {
@@ -3357,6 +3438,8 @@
         var dflt = { default: null, open: null, selected: 'professional', custom: 'custom', changed: 'conversational', removed: null }[s.state];
         var cur = s.tnFor === s.state ? s.tnCur : dflt;
         function go(st, v) { s.tnCur = v; s.tnFor = st; s.state = st; if (txt !== null) { s.psText = txt; s.psFor = st; } ctx.paint(); }
+        var sc = psScafAct(a, s, ctx, { key: 'tone', act: 'tn:open', open: s.state === 'open', close: 'tn:close' }, '.psw-tn');
+        if (sc === true) return; if (typeof sc === 'string') a = sc;
         if (a === 'tn:open') { s.tnPrev = cur; go('open', cur); return; }
         if (a === 'tn:close') { go(s.tnPrev ? (s.tnPrev === 'custom' ? 'custom' : 'selected') : 'default', s.tnPrev); return; }
         if (a.indexOf('tn:pick:') === 0) {
@@ -3376,7 +3459,7 @@
 
     /* ── Preset Styles ───────────────────────────────────────────
        After Claude's styles (support.claude.com/en/articles/10181068):
-       "Use style" lives with the composer's tools; a few named presets
+       "Style" lives in the composer's tune menu (21 Oct); a few named presets
        (Normal, Concise, Formal, Explanatory) say how replies are
        written; a custom style is made from a writing example or a
        description; the choice can change at any point in a
@@ -3446,14 +3529,14 @@
         none: {
           label: 'Normal',
           trigger: 'They are writing a request.',
-          behaviour: 'No style chip: Aria writes the way it usually does. A Style control sits with the composer’s tools.',
+          behaviour: 'Nothing up front: Aria writes the way it usually does. Style is in the tune menu right after +.',
           meaning: 'Replies use the default style.',
-          action: 'Open Style, or send.',
+          action: 'Open tune and choose Style, or send.',
           next: 'Style menu open'
         },
         available: {
           label: 'Style menu open',
-          trigger: 'They opened Style.',
+          trigger: 'They chose Style in the tune menu.',
           behaviour: '“Use style”: Normal, Concise, Formal and Explanatory, each with one line on what changes, their own styles below, and Create & edit styles. The current style is checked.',
           meaning: 'How Aria could write the reply.',
           action: 'Point at a style to preview it, or choose one.',
@@ -3471,7 +3554,7 @@
         applied: {
           label: 'Style applied',
           trigger: 'They chose Concise.',
-          behaviour: 'The menu closes and the Style chip in the composer reads “Concise”, with × to go back to Normal. One line says where it applies. Their request is untouched.',
+          behaviour: 'The menu closes; the tune control shows a dot and its Style row reads “Concise” (Normal goes back). One line says where it applies. Their request is untouched.',
           meaning: 'Replies from now on will be shorter and more direct.',
           action: 'Send, switch, or go back to Normal.',
           next: 'Style switched, or Back to Normal'
@@ -3479,15 +3562,15 @@
         changed: {
           label: 'Style switched',
           trigger: 'Mid-conversation, they switched Concise to Formal.',
-          behaviour: 'The chip updates and one line says the new style applies from here — earlier replies keep theirs.',
+          behaviour: 'The Style row updates and one line says the new style applies from here — earlier replies keep theirs.',
           meaning: 'The next reply will be formal.',
           action: 'Send.',
           next: '—'
         },
         removed: {
           label: 'Back to Normal',
-          trigger: 'They pressed × on the chip (or chose Normal).',
-          behaviour: 'The chip goes; one line confirms Normal, with Undo.',
+          trigger: 'They chose Normal.',
+          behaviour: 'The dot goes; one line confirms Normal, with Undo.',
           meaning: 'Replies go back to the default style.',
           action: 'Undo, or carry on.',
           next: 'Normal'
@@ -3537,7 +3620,7 @@
           var prev = c.preview !== false
             ? '<div class="ps-st__prev" id="ps-st-prev" aria-live="polite">' + psStylePrev(peekS) + '</div>' : '';
           pop = '<div class="ax__menu ax__menu--ps ps-pick ps-pick--wide ps-st" role="dialog" aria-label="Use style" data-density="' + (c.density || 'comfortable') + '">' +
-            '<div class="ps-pick__h"><p class="ps-pick__t">Use style</p><p class="ps-pick__s">How Aria writes its replies — not what it knows or does.</p></div>' +
+            '<div class="ps-pick__h"><p class="ps-pick__t">Use style</p><p class="ps-pick__s">How Aria writes its replies — not what it knows or does.</p>' + psPickX('st:close') + '</div>' +
             '<div class="ps-st__grid' + (prev ? ' has-prev' : '') + '"><div class="ps-st__list" role="radiogroup" aria-label="Style">' +
               presets.map(row).join('') +
               (mine.length ? '<p class="psc__over ps-st__sec">Your styles</p>' + mine.map(row).join('') : '') +
@@ -3585,17 +3668,15 @@
         if (st === 'removed') note = '<div class="ps-note" role="status">' + mi('check') + '<span>Back to Normal.</span><button class="ps-link" type="button" data-act="st:undo">Undo</button></div>';
 
         var text = psOwn(s, st) !== null ? psOwn(s, st) : (st === 'changed' ? 'Now draft the customer email about it.' : 'Summarize the October release.');
-        var cmp = psComposer({ ask: 'Describe what you need…', text: text,
-          tools: psChip({ kind: 'style', label: 'Style', icon: mi('editNote'), value: chipOn ? curS.name : null, short: chipOn && curS.name.length > 12,
-            act: open ? 'st:close' : 'st:open', popup: 'dialog', open: open, removeAct: chipOn ? 'st:normal' : null }),
-          assist: note, pop: pop });
+        var cmp = psComposer(psScaf(s, { key: 'style', value: chipOn ? curS.name : null }, { ask: 'Describe what you need…', text: text,
+          assist: note, pop: pop }));
         return psWrap('st', st, card + cmp + psSent(s));
       },
 
       react: function (s) {
         var c = s.cfg, st = s.state, all = psStyleList(c, true);
         var cur = { applied: 'concise', changed: 'formal' }[st] || 'normal';
-        var imp = [['Md3Menu', '@nucleux/md3-menu'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']];
+        var imp = PS_TUNE_IMPORTS.concat([['Md3AgentComposer', '@nucleux/md3-agent-composer']]);
         if (st === 'create' || st === 'generated') imp.push(['Md3SegmentedButton, Md3SegmentedButtonItem', '@nucleux/md3-segmented-button'], ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Button', '@nucleux/md3-button']);
         return imports(imp) + '\n\n// State: ' + this.states[st].label + '\n' +
           '// A style is sent with each request as its own setting. It never edits the prompt,\n// and it applies to ' + (tdTrim(c.scope) || 'new messages, edits and retries') + '.\n' +
@@ -3607,7 +3688,7 @@
           (st === 'create' ? '<Md3SegmentedButton value={source} onValueChange={setSource}>\n  <Md3SegmentedButtonItem value="example">An example</Md3SegmentedButtonItem>\n  <Md3SegmentedButtonItem value="describe">A description</Md3SegmentedButtonItem>\n</Md3SegmentedButton>\n<textarea aria-label="Paste writing you like" value={example} onChange={(e) => setExample(e.target.value)} />\n<Md3Button variant="filled" onClick={generateStyle}>Generate style</Md3Button>\n\n' : '') +
           (st === 'generated' ? '<Md3TextField label="Style name" value={draft.name} onChange={(e) => rename(e.target.value)} />\n<p>{draft.description}</p>\n<Md3Button variant="outlined" onClick={save}>Save</Md3Button>\n<Md3Button variant="filled" onClick={saveAndUse}>Save and use</Md3Button>\n\n' : '') +
           (cur !== 'normal' ? '<Md3Chip variant="input" onRemove={() => setStyle("normal")}>Style ' + jsxText((all.filter(function (x) { return x.id === cur; })[0] || {}).name || '') + '</Md3Chip>\n' : '') +
-          psComposerJSX('Summarize the October release.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openStyles}>Style</Md3Button>}\n');
+          psComposerJSX('Summarize the October release.', psTuneJSX());
       },
 
       mounted: function (root, s) {
@@ -3636,6 +3717,8 @@
         var cur = s.stFor === s.state ? s.stCur : dflt;
         function name(id) { return (all.filter(function (x) { return x.id === id; })[0] || {}).name; }
         function go(st, v) { s.stCur = v; s.stFor = st; s.state = st; if (txt !== null) { s.psText = txt; s.psFor = st; } ctx.paint(); }
+        var sc = psScafAct(a, s, ctx, { key: 'style', act: 'st:open', open: s.state === 'available' || s.state === 'selected', close: 'st:close' }, '.psw-st');
+        if (sc === true) return; if (typeof sc === 'string') a = sc;
         if (a === 'st:open') { s.stPrev = cur; s.stPeek = null; go('available', cur); return; }
         if (a === 'st:close') { go(s.stPrev && s.stPrev !== 'normal' ? 'applied' : 'none', s.stPrev || 'normal'); return; }
         if (a.indexOf('st:pick:') === 0) {

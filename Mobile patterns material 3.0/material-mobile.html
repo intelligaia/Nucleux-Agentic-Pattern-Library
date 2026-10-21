@@ -406,8 +406,8 @@ td:first-child { min-width: 0; color: var(--fg); }
   .cmp:focus-within { border-radius: 20px; }
   .cmp__field { flex-basis: 100%; order: -1; padding: 6px 10px 4px; }
   .cmp[data-size="initial"] .cmp__field { min-height: 62px; }
-  .cmp__model { margin-right: auto; }
-  .cmp__plus { order: 0; }
+  .cmp__model { margin-left: auto; margin-right: 0; }
+  .cmp__plus, .cmp__tune { order: 0; }
 }
 @container cmp (max-width: 340px) { .cmp__model .e { display: none; } }
 @container cmp (min-width: 521px) { .cmp__model { margin-left: auto; } }
@@ -626,7 +626,7 @@ td:first-child { min-width: 0; color: var(--fg); }
 .win[data-text="large"] .pv__sec h2 { font-size: 26px; }
 .win[data-text="large"] .cmp__model { flex: 1 1 100%; order: 0; justify-content: flex-start; margin: 0; font-size: 17px; min-height: 48px; }
 .win[data-text="large"] .cmp__model .e { display: inline; }
-.win[data-text="large"] .cmp__plus, .win[data-text="large"] .cmp__send { order: 1; }
+.win[data-text="large"] .cmp__plus, .win[data-text="large"] .cmp__tune, .win[data-text="large"] .cmp__send { order: 1; }
 .win[data-text="large"] .cmp__mic { order: 1; margin-left: auto; }
 .win[data-text="large"] .cmp .ib { width: 48px; height: 48px; }
 .win[data-text="large"] .mi { font-size: 18px; min-height: 52px; }
@@ -3291,7 +3291,7 @@ td:first-child { min-width: 0; color: var(--fg); }
 .cmp__panel[hidden], .cmp__mark[hidden], .cmp__vx[hidden] { display: none; }
 .cmp__mark { flex: 1 1 100%; order: -4; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 0 0 10px; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--on-sv); }
 .cmp__mark .mb { margin-left: auto; }
-.cmp[data-mode="voice"] .cmp__field, .cmp[data-mode="voice"] .cmp__plus, .cmp[data-mode="voice"] .cmp__model,
+.cmp[data-mode="voice"] .cmp__field, .cmp[data-mode="voice"] .cmp__plus, .cmp[data-mode="voice"] .cmp__tune, .cmp[data-mode="voice"] .cmp__model,
 .cmp[data-mode="voice"] .cmp__mic, .cmp[data-mode="voice"] .cmp__send { display: none; }
 .cmp[data-mode="voice"] { border-color: color-mix(in srgb, var(--p) 55%, transparent); border-radius: 24px; }
 
@@ -4613,6 +4613,27 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
 .dp.psx-m { align-items: stretch; align-content: stretch; }
 .psx-m > .dp__stage { align-self: stretch; align-content: stretch; align-items: stretch; }
 .psx-m .ps { min-height: 100%; justify-content: flex-end; }
+/* The tune control (desktop, 21 Oct): +'s button, a dot when a
+   setting is on; its menu rows carry the current value. */
+.cmp__tune { position: relative; }
+.cmp__tune[hidden] { display: none; }
+.cmp__tdot { position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--p); box-shadow: 0 0 0 2px var(--s-lowest, #fff); pointer-events: none; }
+.cmp__tdot[hidden] { display: none; }
+.mi--tune .mi__v { margin-left: auto; padding-left: 12px; font-size: 13px; color: var(--on-sv); white-space: nowrap; }
+.mi--tune .mi__v.is-set { color: var(--p); font-weight: 600; }
+/* In a sheet the sheet's own × closes the picker; the desktop header
+   × stays for the in-flow panel of the Live Preview. */
+.psx-sheet .ps-pick__x { display: none; }
+.cmpw > .cmp__panel .ps-pick__x { min-width: 44px; min-height: 44px; }
+/* The composer's height (21 Oct): Expand / Collapse, top-right. */
+.cmp__exp { position: absolute; top: 2px; right: 2px; z-index: 2; color: var(--on-sv); }
+.cmp__exp[hidden] { display: none; }
+.cmp:has(> .cmp__exp:not([hidden])) > .cmp__field { padding-right: 44px; }
+.cmp[data-expanded] > .cmp__field { flex-basis: 100%; }
+/* Edge to edge (21 Oct): wrapped text takes the full width above the
+   controls, which stay together on the bottom row. */
+.cmp[data-wrap] .cmp__field, .cmp[data-narrow="inline"][data-wrap] .cmp__field { flex-basis: 100%; order: -1; padding: 6px 10px 4px; }
+.cmp[data-wrap] .cmp__model, .cmp[data-narrow="inline"][data-wrap] .cmp__model { margin-left: auto; margin-right: 0; }
 
 </style>
 
@@ -4765,6 +4786,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     toolFill: 'M705-128 447-388q-23 8-46 13t-47 5q-97 0-165-67.5T121-602q0-31 8-60.5t23-55.5l145 145 92-86-149-149q26-15 55-23.5t59-8.5q99 0 168.5 69.5T592-602q0 24-5 47t-13 46l259 258q11 11 11 26.5T833-198l-76 70q-11 11-26 11t-26-11Z',
     handyman: 'M753-82q-5-2-10-7L501-331q-5-5-7-10t-2-11q0-6 2-11t7-10l85-85q5-5 10-7t11-2q6 0 11 2t10 7l242 242q5 5 7 10t2 11q0 6-2 11t-7 10l-85 85q-5 5-10 7t-11 2q-6 0-11-2Zm11-70 43-43-200-200-43 43 200 200ZM183.5-82q-5.5-2-10.5-7l-84-84q-5-5-7-10.5T80-195q0-6 2-11t7-10l225-225h85l38-38-175-175h-57L80-779l99-99 125 125v57l175 175 130-130-67-67 56-56H485l-18-18 128-128 18 18v113l56-56 169 169q15 15 23.5 34.5T870-600q0 20-6.5 38.5T845-528l-85-85-56 56-52-52-211 211v84L216-89q-5 5-10 7t-11 2q-6 0-11.5-2Zm11.5-70 200-200v-43h-43L152-195l43 43Zm0 0-43-43 22 21 21 22Zm569 0 43-43-43 43Z'
   };
+  P.expandFull = 'M120-120v-320h80v184l504-504H520v-80h320v320h-80v-184L256-200h184v80H120Z';
+  P.collapseFull = 'M440-120v-184L176-40l-56-56 264-264H200v-80h320v320h-80Zm80-400v-320h80v184l264-264 56 56-264 264h184v80H520Z';
   function scaleOf(el) { var w = el.offsetWidth; return w ? (el.getBoundingClientRect().width / w) || 1 : 1; }
   function ico(n, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="' + (P[n] || (window.MaterialIcons && window.MaterialIcons.PATH[n]) || P.spark) + '"/></svg>'; }
   function guardBox(items) {
@@ -4914,11 +4937,13 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
       '<span class="cmp__glow" aria-hidden="true"></span>' +
       '<div class="cmp__panel" hidden></div>' +
       '<form class="cmp" data-size="working" data-entry="empty" novalidate>' +
+        '<button type="button" class="ib cmp__exp" aria-label="Expand the composer" aria-pressed="false" hidden>' + ico('expandFull') + '</button>' +
         '<div class="cmp__mark" hidden></div><div class="cmp__vx" hidden></div>' +
         '<div class="cmp__err" role="alert" id="' + fid + '-err" hidden><span class="cmp__erri"></span><span class="cmp__errt"></span><button type="button" class="tbtn cmp__retry">Retry</button></div>' +
         '<div class="cmp__scopes" hidden></div><div class="cmp__atts" hidden></div>' +
         '<div class="cmp__chips" role="list" aria-label="Added context"></div>' +
         '<button type="button" class="ib cmp__plus" aria-label="Add context" aria-haspopup="dialog" aria-expanded="false">' + ico('add') + '</button>' +
+        '<button type="button" class="ib cmp__tune" aria-label="Request settings" aria-haspopup="dialog" aria-expanded="false" hidden>' + ico('tune') + '<span class="cmp__tdot" aria-hidden="true" hidden></span></button>' +
         '<textarea class="cmp__field" id="' + fid + '" rows="1" enterkeyhint="send" autocomplete="off"></textarea>' +
         '<button type="button" class="cmp__model" aria-haspopup="dialog" aria-expanded="false"><span class="m"></span><span class="e"></span></button>' +
         '<span class="cmp__tools" hidden></span>' +
@@ -4928,7 +4953,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
       '<p class="cmp__note" role="status" hidden></p>';
     slot.appendChild(w);
     this.el = w; this.form = $('form', w); this.field = $('textarea', w);
-    this.plusBtn = $('.cmp__plus', w); this.modelBtn = $('.cmp__model', w); this.micBtn = $('.cmp__mic', w); this.sendBtn = $('.cmp__send', w);
+    this.plusBtn = $('.cmp__plus', w); this.tuneBtn = $('.cmp__tune', w); this.expBtn = $('.cmp__exp', w); this.expanded = false; this.modelBtn = $('.cmp__model', w); this.micBtn = $('.cmp__mic', w); this.sendBtn = $('.cmp__send', w);
     this.chipsEl = $('.cmp__chips', w); this.errEl = $('.cmp__err', w); this.noteEl = $('.cmp__note', w);
     var self = this, f = this.field;
     this.form.addEventListener('submit', function (e) { e.preventDefault(); self.submit(); });
@@ -4942,6 +4967,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
       if (key === 'mod') { if (mod) { e.preventDefault(); self.submit(); } return; }
       if (!e.shiftKey) { e.preventDefault(); self.submit(); }
     });
+    this.tuneBtn.addEventListener('click', function () { if (self.o.onTune) self.o.onTune(); });
+    this.expBtn.addEventListener('click', function () { self.expanded = !self.expanded; self.fit(); self.field.focus({ preventScroll: true }); self.I.announce(self.expanded ? 'Composer expanded.' : 'Composer collapsed.'); self.I.sync(); });
     this.plusBtn.addEventListener('click', function () { if (self.o.onPlus) self.o.onPlus(); else self.openPlus(); });
     this.scopesEl = $('.cmp__scopes', w); this.attsEl = $('.cmp__atts', w);
     this.panelEl = $('.cmp__panel', w); this.markEl = $('.cmp__mark', w); this.vxEl = $('.cmp__vx', w); this.toolsEl = $('.cmp__tools', w);
@@ -4985,8 +5012,25 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
   };
   K.fit = function () {
     var f = this.field, cs = getComputedStyle(f);
+    var fm = this.form, multi = this.multiline();
+    if (multi && !fm.hasAttribute('data-wrap')) {
+      if (f.value && cs.order !== '-1') {
+        f.style.height = 'auto';
+        var one = (parseFloat(cs.lineHeight) || 24) + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+        if (f.value.indexOf('\n') >= 0 || f.scrollHeight > one + 4) { this.inlineW = f.clientWidth; fm.setAttribute('data-wrap', ''); }
+      }
+    } else if (fm.hasAttribute('data-wrap')) {
+      /* Back on the row only when the text would fit there again. */
+      var fits = !f.value;
+      if (!fits && f.value.indexOf('\n') < 0 && this.inlineW) {
+        var cx = K.__cx || (K.__cx = document.createElement('canvas').getContext('2d'));
+        cx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+        fits = cx.measureText(f.value).width < this.inlineW - 20;
+      }
+      if (fits || !multi) fm.removeAttribute('data-wrap');
+    }
     var narrow = this.el.clientWidth <= 520;
-    var lines = !this.multiline() ? 1 : Math.min(this.o.maxLines ? this.o.maxLines() : 6, narrow ? 6 : 99);
+    var lines = !this.multiline() ? 1 : 8;
     /* Height is the scarce thing (landscape, the lower half of a
        tabletop fold): two lines, then the field scrolls inside. */
     var app = this.I.kind === 'sim' && this.I.root;
@@ -4996,8 +5040,36 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     f.style.height = 'auto';
     var sh = f.scrollHeight;
     if (!sh) { f.style.height = ''; return; }
-    f.style.height = Math.min(sh, cap) + 'px';
-    f.style.overflowY = sh > cap + 1 ? 'auto' : 'hidden';
+    if (this.expanded && !f.value.trim()) this.expanded = false;
+    var exp = this.expanded && lines > 1;
+    if (exp) {
+      /* Most of the window, with the composer's own rows still in view. */
+      var W = this.I.win, chrome = this.form.offsetHeight - f.offsetHeight, room;
+      if (app && W && this.I.top) {
+        /* From the top of the workspace to just above the keyboard (or
+           the bottom safe area): the controls never go under either. */
+        var sc = scaleOf(W), wr = W.getBoundingClientRect();
+        var topY = (this.I.top.getBoundingClientRect().top - wr.top) / sc;
+        var kb = parseFloat(W.style.getPropertyValue('--kb')) || 0, sab = parseFloat(getComputedStyle(W).getPropertyValue('--sa-b-live')) || 0;
+        room = W.clientHeight - kb - sab - topY - chrome - 28;
+      } else room = (W && W.clientHeight ? W.clientHeight : 640) * 0.5 - chrome;
+      f.style.height = Math.round(Math.max(cap + 2 * lh, room)) + 'px';
+      f.style.overflowY = 'auto';
+    } else {
+      f.style.height = Math.min(sh, cap) + 'px';
+      f.style.overflowY = sh > cap + 1 ? 'auto' : 'hidden';
+    }
+    this.form.toggleAttribute('data-expanded', exp);
+    var eb = this.expBtn;
+    if (eb) {
+      var show = lines > 1 && (exp || sh > cap + 1);
+      if (eb.hidden === show) eb.hidden = !show;
+      if (eb.getAttribute('aria-pressed') !== String(exp)) {
+        eb.setAttribute('aria-pressed', String(exp));
+        eb.setAttribute('aria-label', exp ? 'Collapse the composer' : 'Expand the composer');
+        eb.innerHTML = ico(exp ? 'collapseFull' : 'expandFull');
+      }
+    }
   };
   K.renderChips = function () {
     this.chipsEl.innerHTML = this.chips.map(function (c, i) {
@@ -5018,7 +5090,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
   };
   K.reset = function () {
     if (this.voice) this.stopVoice(true);
-    clearTimeout(this.tt); this.hold = false; this.setText('', 'empty');
+    clearTimeout(this.tt); this.hold = false; this.expanded = false; this.setText('', 'empty');
     this.chips = []; this.voiceUsed = false; this.el.removeAttribute('data-vx');
     this.setError(null); this.running = false; this.note = '';
     this.renderChips();
@@ -5068,7 +5140,9 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
       this.micBtn.setAttribute('title', un ? 'No microphone was found' : 'Speak instead of typing');
     }
     var busy = o.busy ? o.busy() : false;
-    f.disabled = !!busy; this.plusBtn.disabled = !!busy; if (this.micBtn) this.micBtn.disabled = !!busy;
+    f.disabled = !!busy; this.plusBtn.disabled = !!busy;
+    var tn = o.tune ? o.tune() : null; this.tuneBtn.hidden = !tn; this.tuneBtn.disabled = !!busy;
+    if (tn) { this.tuneBtn.setAttribute('aria-label', tn.label); $('.cmp__tdot', this.tuneBtn).hidden = !tn.on; this.tuneBtn.classList.toggle('is-set', !!tn.on); } if (this.micBtn) this.micBtn.disabled = !!busy;
     if (busy && f.placeholder) f.placeholder = '';
     var note = o.note ? o.note() : '';
     this.noteEl.hidden = !note; if (this.noteEl.textContent !== note) this.noteEl.textContent = note;
@@ -5095,6 +5169,21 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
   };
   /* Voice: a state of the same composer, with the desktop's voice
      gradient behind the bar (it swells a little with each word). */
+  /* The tune control's menu (Mode, Tone, Style, Improve prompt), each
+     row with its current value; a sheet like +'s. pick(key). */
+  K.openTune = function (pick) {
+    var self = this, tn = this.o.tune ? this.o.tune() : null; if (!tn) return;
+    this.I.ov.open({ anchor: this.tuneBtn, inst: this.I, title: 'Request settings', build: function (b) {
+      b.innerHTML = tn.items.map(function (it) {
+        return '<button type="button" class="mi mi--tune" data-k="' + esc(it.key) + '" aria-haspopup="dialog">' + ico(it.icon || 'spark') +
+          '<span class="mi__t">' + esc(it.label) + '</span>' + (it.value ? '<span class="mi__v' + (it.set ? ' is-set' : '') + '">' + esc(it.value) + '</span>' : '') + '</button>';
+      }).join('');
+      b.addEventListener('click', function (e) {
+        var it = e.target.closest('.mi'); if (!it || !b.contains(it)) return;
+        self.I.ov.close(true); pick(it.getAttribute('data-k')); self.I.sync();
+      });
+    } });
+  };
   K.startVoice = function () {
     var self = this, words = (this.o.voice || 'summarize the biggest risks for the september release').split(' '), i = 0;
     var base = this.field.value.replace(/\s+$/, '');
@@ -13983,7 +14072,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     window.addEventListener('load', postH); postH();
     window.parent.postMessage({ type: 'nx-bench-ready', id: bench.nav }, '*');
   }
-  window.addEventListener('resize', function () { fit(); relayoutAll(); });
+  var lastW = window.innerWidth;
+  window.addEventListener('resize', function () { fit(); if (window.innerWidth !== lastW) { lastW = window.innerWidth; relayoutAll(); } });
 
 
   /* ════════════════════════════════════════════════════════════
@@ -23276,6 +23366,15 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     function MI(name, cls) {
         return window.MaterialIcons ? window.MaterialIcons.icon(name, { cls: cls }) : '';
       }
+    function run(ctx) {
+        var s = ctx.s;
+        s.step = 'working';
+        ctx.paint();
+        return wait(900).then(function () {
+          s.step = 'done';
+          ctx.paint();
+        });
+      }
     var MD3_BTN = "relative inline-flex h-10 items-center justify-center gap-2 overflow-hidden rounded-full text-sm font-medium transition-shadow [&_svg]:size-[18px] " +
         "before:absolute before:inset-0 before:bg-current before:opacity-0 before:transition-opacity before:content-[''] hover:before:opacity-[0.08] focus-visible:before:opacity-[0.12] active:before:opacity-[0.12] " +
         "outline-none focus-visible:ring-2 focus-visible:ring-md-primary focus-visible:ring-offset-2 focus-visible:ring-offset-md-surface disabled:pointer-events-none disabled:opacity-[0.38] disabled:shadow-none";
@@ -23421,7 +23520,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         '<path d="M29.5 14.5A11 11 0 1 0 31 20" fill="none" stroke="#6750A4" stroke-width="3" stroke-linecap="round"/>' +
         '<circle cx="20" cy="20" r="5.5" fill="#6750A4"/>' +
         '<circle cx="30.5" cy="11.5" r="2.5" fill="#6750A4"/></svg>');
-    function psSimHead(t, sub) { return '<div class="ps-pick__h"><p class="ps-pick__t">' + t + '</p><p class="ps-pick__s">' + sub + '</p></div>'; }
+    function psSimHead(t, sub, x) { return '<div class="ps-pick__h"><p class="ps-pick__t">' + t + '</p><p class="ps-pick__s">' + sub + '</p>' +
+        (x ? '<button class="ps-ico ps-pick__x" type="button" data-act="' + x + '" aria-label="Close">' + MI('close') + '</button>' : '') + '</div>'; }
     function psSimMlW(t) { return 'calc(' + Math.max(6, String(t).length * 1.1).toFixed(1) + 'ch + 50px)'; }
     var SIM_SUGS = ['Include unresolved blockers', 'Group the work by owner', 'Compare with the August release'];
     function psSimAppend(base, add) { return String(base || '').replace(/[.\s]+$/, '') + ' and ' + add + '.'; }
@@ -23519,6 +23619,121 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           (o.removeAct ? '<button class="ax__tool__x" type="button" data-act="' + esc(o.removeAct) + '" aria-label="' +
             esc('Remove ' + o.label.toLowerCase() + ' ' + o.value) + '">' + MI('close') + '</button>' : '') +
         '</span>';
+      }
+    var RQ_ITEMS = [{ key: 'mode', label: 'Mode', icon: 'tune' }, { key: 'tone', label: 'Tone', icon: 'forum' },
+                      { key: 'style', label: 'Style', icon: 'editNote' }, { key: 'improve', label: 'Improve prompt', icon: null }];
+    var RQ_DEFAULT = { mode: 'None', tone: 'Default', style: 'Normal', improve: '' };
+    function rqS(s) { return s.rq || (s.rq = { mode: null, tone: null, style: 'normal', pop: null }); }
+    function rqVal(key, r) {
+        if (key === 'mode') return r.mode && SIM_MODES[r.mode] ? SIM_MODES[r.mode].name : null;
+        if (key === 'tone') return r.tone && SIM_TONES[r.tone] ? SIM_TONES[r.tone].name : null;
+        if (key === 'style') return r.style && r.style !== 'normal' && SIM_STYLES[r.style] ? SIM_STYLES[r.style].name : null;
+        return null;
+      }
+    function rqImproved(t) { return String(t).replace(/[.\s]+$/, '') + ', with a one-line summary first and any open questions at the end.'; }
+    function rqTune(s, own) {
+        var r = rqS(s), on = [];
+        var items = RQ_ITEMS.map(function (it) {
+          var v = own && own.key === it.key ? own.value : rqVal(it.key, r);
+          if (v && it.key !== 'improve') on.push(it.label + ' ' + v);
+          return { key: it.key, label: it.label, icon: it.icon, value: v || RQ_DEFAULT[it.key], set: !!v };
+        });
+        return { open: !!s.rqTune, items: items, on: on.length > 0,
+                 label: 'Request settings' + (on.length ? ': ' + on.join(', ') : '') };
+      }
+    function rqPop(s) {
+        var r = rqS(s), k = r.pop; if (!k) return '';
+        function box(label, inner) { return '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="' + label + '">' + inner + '</div>'; }
+        function opt(pre, id, x, on) {
+          return '<button class="ps-opt' + (on ? ' is-on' : '') + (x.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
+            (x.off ? ' aria-disabled="true"' : '') + ' data-act="rq:set:' + pre + ':' + id + '">' +
+            (x.icon ? '<span class="ps-opt__i">' + MI(x.icon) + '</span>' : '') +
+            '<span class="ps-opt__t"><span class="ps-opt__n">' + x.name + '</span><span class="ps-opt__d">' + x.d + '</span>' +
+            (x.off ? '<span class="ps-opt__off">' + x.off + '</span>' : '') + '</span>' +
+            (on ? '<span class="ps-opt__c">' + MI('check') + '</span>' : '') + '</button>';
+        }
+        function list(pre, data, ids, cur, label) {
+          return '<div role="radiogroup" aria-label="' + label + '">' + ids.map(function (id) { return opt(pre, id, data[id], id === cur); }).join('') + '</div>';
+        }
+        if (k === 'mode') return box('Choose a mode', psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.', 'rq:close') +
+          list('mode', SIM_MODES, Object.keys(SIM_MODES), r.mode, 'Mode') +
+          (r.off ? '<p class="ps-err" role="alert">' + MI('info') + '<span>Research isn’t available here. Choose another mode.</span></p>' : '') +
+          (r.mode ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="rq:clear:mode">No mode</button></div>' : ''));
+        if (k === 'tone') return box('Choose a tone', psSimHead('Tone', 'How the reply should sound. What it says stays the same.', 'rq:close') +
+          list('tone', SIM_TONES, Object.keys(SIM_TONES), r.tone, 'Tone') +
+          (r.tone ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="rq:clear:tone">Default voice</button></div>' : ''));
+        if (k === 'style') return box('Use style', psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.', 'rq:close') +
+          list('style', SIM_STYLES, ['normal', 'concise', 'formal', 'explanatory'], r.style || 'normal', 'Style'));
+        if (k === 'improve') {
+          var im = r.imp || { state: 'empty' }, body;
+          if (im.state === 'empty') body = '<p class="ps-note" role="status">' + MI('info') + '<span>Write a request first — there is nothing to improve yet.</span></p>';
+          else if (im.state === 'working') body = '<p class="ps-note" role="status">' + aiIcon('working') + '<span>Improving your prompt. Your original stays as it is.</span>' +
+            '<button class="ps-link" type="button" data-act="rq:close">Cancel</button></p>';
+          else {
+            var base = String(im.orig).replace(/[.\s]+$/, '');
+            body = '<div class="ps-pe__split"><div class="ps-pe__col"><p class="psc__over">You wrote</p><p class="ps-pe__txt">' + esc(im.orig) + '</p></div>' +
+              '<div class="ps-pe__col is-new"><p class="psc__over">' + aiIcon('generated') + 'Improved</p><p class="ps-pe__txt">' + esc(base) +
+              ', <ins class="ps-ins"><span class="tdx-sr">added: </span>with a one-line summary first and any open questions at the end</ins>.</p></div></div>' +
+              '<div class="psc__foot"><span class="md-body-small ps-d">Nothing is sent until you send it.</span><span class="psc__acts">' +
+              md3Button({ variant: 'outlined', label: 'Keep original', attrs: { 'data-act': 'rq:imp:keep' } }) +
+              md3Button({ variant: 'filled', label: 'Use improved', attrs: { 'data-act': 'rq:imp:use' } }) + '</span></div>';
+          }
+          return box('Improve prompt', psSimHead('Improve prompt', 'A clearer version of your request. Your original stays until you choose.', 'rq:close') + body);
+        }
+        return '';
+      }
+    function rqNote(s, text) {
+        var n = s.rq && s.rq.note; if (!n || n.at !== (text || '')) return '';
+        return '<div class="ps-note" role="status">' + MI(n.icon) + '<span>' + n.text + '</span>' +
+          (n.undo ? '<button class="ps-link" type="button" data-act="' + n.undo + '">Undo</button>' : '') + '</div>';
+      }
+    function rqAct(a, s, io, own) {
+        var r = rqS(s), say = function (t) { if (io.announce) io.announce(t); };
+        if (a === 'ax:tune') {
+          s.rqTune = !s.rqTune; r.pop = null; r.off = false;
+          if (s.rqTune && own && own.open && own.close) return own.close;
+          io.paint(); return true;
+        }
+        a = a.slice(3); s.rqTune = false;
+        var L = { mode: 'Mode', tone: 'Tone', style: 'Style' };
+        if (a.indexOf('pick:') === 0) {
+          var k = a.slice(5); r.off = false;
+          if (own && own.key === k) { r.pop = null; return own.act; }
+          r.pop = k;
+          if (k === 'improve') {
+            var t = String(io.text() || '').trim(), run = ((r.imp && r.imp.run) || 0) + 1;
+            r.imp = { orig: t, state: t ? 'working' : 'empty', run: run };
+            if (t) {
+              say('Improving your prompt. Your original is unchanged.');
+              setTimeout(function () { if (r.pop === 'improve' && r.imp.run === run) { r.imp.state = 'ready'; io.paint(); say('A clearer version is ready. Your original is still in the composer.'); } }, reduce ? 80 : 1100);
+            }
+          }
+          io.paint(); return true;
+        }
+        if (a === 'close') { r.pop = null; r.off = false; if (r.imp) r.imp.run++; io.paint(); return true; }
+        if (a.indexOf('set:') === 0) {
+          var p = a.split(':'), key = p[1], id = p[2];
+          if (key === 'mode' && SIM_MODES[id] && SIM_MODES[id].off) { r.off = true; io.paint(); say(SIM_MODES[id].name + ' isn’t available here. Choose another mode.'); return true; }
+          var was = rqVal(key, r); r[key] = id; r.pop = null; r.off = false;
+          var now = rqVal(key, r);
+          var line = now ? L[key] + (was && was !== now ? ' changed to ' : ': ') + now + '. Your text is unchanged.' : 'Back to ' + RQ_DEFAULT[key] + '. Your text is unchanged.';
+          r.note = { icon: was && now ? 'sync' : 'check', text: line, at: io.text() || '' };
+          io.paint(); say(line); return true;
+        }
+        if (a.indexOf('clear:') === 0) {
+          var c = a.slice(6); r[c] = c === 'style' ? 'normal' : null; r.pop = null;
+          var cl = { mode: 'No mode', tone: 'Default voice', style: 'Back to Normal' }[c] + '. Your text is unchanged.';
+          r.note = { icon: 'check', text: cl, at: io.text() || '' }; io.paint(); say(cl); return true;
+        }
+        if (a === 'imp:use') {
+          var orig = (r.imp && r.imp.orig) || '', nt = rqImproved(orig);
+          io.setText(nt); r.pop = null; r.undoText = orig;
+          r.note = { icon: 'check', text: 'Prompt updated. Nothing was sent.', undo: 'rq:imp:undo', at: nt };
+          io.paint(); say('Prompt updated. Nothing was sent.'); return true;
+        }
+        if (a === 'imp:keep') { r.pop = null; io.paint(); return true; }
+        if (a === 'imp:undo') { var back = r.undoText || ''; io.setText(back); r.note = { icon: 'undo', text: 'Your original prompt is back.', at: back }; io.paint(); return true; }
+        return true;
       }
     var SIMS = {};
     SIMS['suggestions'] = {
@@ -23702,7 +23917,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         shell: 'conversation',
         product: 'Planboard',
         agent: 'Aria',
-        note: 'Press Improve on a short request. Aria proposes a clearer one with every addition marked and explained — remove the ' +
+        note: 'Open the tune control next to + and choose Improve prompt on a short request. Aria proposes a clearer one with every addition marked and explained — remove the ' +
               'one you don’t need, use the rest, and send. Your original stays until you choose.',
   
         initial: { step: 'idle', turns: [], pe: 'original', on: {}, axText: 'Analyze onboarding feedback.', orig: '', opts: { fail: false } },
@@ -23717,7 +23932,9 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var note = '';
           if (s.pe === 'used') note = '<div class="ps-note" role="status">' + MI('check') + '<span>Prompt updated. Nothing was sent.</span><button class="ps-link" type="button" data-act="undo">Undo</button></div>';
           if (s.pe === 'failed') note = '<div class="ps-err" role="alert">' + MI('error') + '<span>Couldn’t improve this request. Your original is unchanged.</span><button class="ps-link" type="button" data-act="improve">Try again</button></div>';
-          return { tools: tool, assist: note, text: s.axText, layout: 'stack' };
+          /* Improve is in the tune menu (21 Oct); while it works, Cancel is here. */
+          if (busy) note = '<div class="ps-note" role="status">' + aiIcon('working') + '<span>Improving your prompt. Your original stays as it is.</span><button class="ps-link" type="button" data-act="cancel">Cancel</button></div>';
+          return { assist: note, text: s.axText, layout: 'stack' };
         },
   
         thread: function (s) {
@@ -23748,7 +23965,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
                 md3Button({ variant: 'filled', label: 'Use improved', attrs: { 'data-act': 'use' } }) + '</span></div></div>';
           }
           if (s.step === 'working') out += working('Reading 212 onboarding responses…');
-          if (!s.turns.length && s.pe === 'original') out += '<p class="sim-stage__empty">A short request is in the composer. Press Improve.</p>';
+          if (!s.turns.length && s.pe === 'original') out += '<p class="sim-stage__empty">A short request is in the composer. Open the tune control next to + and choose Improve prompt.</p>';
           return out;
         },
   
@@ -23757,15 +23974,18 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         },
   
         hint: function (s) {
-          if (s.pe === 'enhancing') return '<b>Enhancing.</b> Your original stays in the composer, untouched.';
+          if (s.pe === 'enhancing') return '<b>Enhancing.</b> Your original stays in the composer, untouched. Cancel is in the composer.';
           if (s.pe === 'review') return SIM_PE.some(function (c) { return s.on[c.id] === false; })
             ? '<b>Reviewing.</b> The removed change is struck out. Use the rest when it reads right.'
             : '<b>Proposed changes.</b> Before and after, side by side; each addition is highlighted and explained, the assumption labelled. “Propose three experiments” goes beyond the ask — untick it.';
           if (s.pe === 'used') return '<b>Accepted.</b> The composer holds the improved prompt — still editable, still unsent. Undo restores yours.';
           if (s.pe === 'failed') return '<b>Failed.</b> Nothing changed — try again or send your original.';
           if (s.turns.length) return '<b>Result.</b> The analysis follows the prompt you reviewed.';
-          return 'Press Improve in the composer.';
+          return 'Open the tune control next to + and choose Improve prompt.';
         },
+  
+        /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+        tune: function (s) { var b = s.pe === 'enhancing'; return { key: 'improve', value: b ? 'Improving…' : null, act: b ? 'cancel' : 'improve', open: false }; },
   
         axSubmit: function (text, ctx) { return SIMS['prompt-enhancer'].act('send:' + text, ctx); },
   
@@ -23797,7 +24017,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         shell: 'conversation',
         product: 'Planboard',
         agent: 'Aria',
-        note: 'Open Mode in the composer and choose Plan, then send: Aria answers with steps. Switch to Review and ask again — same ' +
+        note: 'Open the tune control next to +, choose Mode and pick Plan, then send: Aria answers with steps. Switch to Review and ask again — same ' +
               'model, same context, a different way of working.',
   
         initial: { step: 'idle', turns: [], mode: null, open: false, off: false, axText: 'Help me prepare the October release.', opts: {} },
@@ -23806,7 +24026,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         pill: function (s) { return s.step === 'working' ? 'Aria working' : s.mode ? 'Mode · ' + SIM_MODES[s.mode].name : 'No mode'; },
   
         composerOpts: function (s) {
-          var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode">' + psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.') +
+          var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode">' + psSimHead('Mode', 'How Aria approaches this request. Model and effort stay as they are.', 'close') +
             '<div role="radiogroup" aria-label="Mode">' + Object.keys(SIM_MODES).map(function (k) {
               var m = SIM_MODES[k], on = k === s.mode;
               return '<button class="ps-opt' + (on ? ' is-on' : '') + (m.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' + (m.off ? ' aria-disabled="true"' : '') + ' data-act="mode:' + k + '">' +
@@ -23817,7 +24037,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             (s.mode ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="clear">No mode</button></div>' : '') + '</div>' : '';
           var m = s.mode && SIM_MODES[s.mode];
           return {
-            tools: scafTool({ kind: 'mode', label: 'Mode', icon: MI('tune'), value: m ? m.name : null, valueIcon: m ? MI(m.icon) : '', act: s.open ? 'close' : 'open', popup: 'dialog', open: !!s.open, removeAct: m ? 'clear' : null }),
+            tools: '',
             assist: s.changed ? '<div class="ps-note" role="status">' + MI('sync') + '<span>Mode changed to ' + m.name + '. Your text is unchanged.</span></div>' : '',
             pop: pop, text: s.axText, layout: 'stack'
           };
@@ -23830,7 +24050,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + (t.mode ? t.mode + ' mode' : 'AI agent') + '</p>', body: t.text });
           }).join('');
           if (s.step === 'working') out += working(s.mode === 'review' ? 'Reviewing the plan…' : 'Planning the release…');
-          if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open Mode in the composer and choose how Aria should work.</p>';
+          if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open the tune control next to + and choose how Aria should work.</p>';
           return out;
         },
   
@@ -23840,13 +24060,17 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
   
         hint: function (s) {
           if (s.open && s.off) return '<b>Mode unavailable.</b> Research needs web access, which is off here — so it isn’t applied. Choose another.';
-          if (s.open) return '<b>Picker open.</b> Each mode says what changes. The model chip beside it is a separate choice.';
+          if (s.open) return '<b>Picker open.</b> Opened from the tune control. Each mode says what changes. The model chip is a separate choice.';
           if (s.step === 'working') return 'The mode travels with the request; the model and context did not change.';
           if (s.turns.length > 2) return '<b>Mode changed the approach.</b> The same assistant planned, then reviewed — because you chose how it should work.';
           if (s.turns.length) return '<b>Plan mode.</b> Steps with owners and dates. Now switch Mode to Review and ask for a review.';
-          if (s.mode) return '<b>Mode selected.</b> “Mode · ' + SIM_MODES[s.mode].name + '” sits in the composer. Your text is the same. Send it.';
-          return 'Open Mode in the composer.';
+          if (s.mode) return '<b>Mode selected.</b> The tune control shows a dot and its menu reads “Mode · ' + SIM_MODES[s.mode].name + '”. Your text is the same. Send it.';
+          return 'Open the tune control next to + and choose Mode.';
         },
+  
+        /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+        tune: function (s) { return { key: 'mode', value: s.mode ? SIM_MODES[s.mode].name : null, act: 'open', open: !!s.open, close: 'close' }; },
+        popClose: function (s) { return s.open ? 'close' : null; },
   
         axSubmit: function (text, ctx) { return SIMS.modes.act('send:' + text, ctx); },
   
@@ -23891,17 +24115,18 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
   
         composerOpts: function (s) {
           var sample = SIM_TONES[s.tone || 'professional'];
-          var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone">' + psSimHead('Tone', 'How the reply should sound. What it says stays the same.') +
+          var pop = s.open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone">' + psSimHead('Tone', 'How the reply should sound. What it says stays the same.', 'close') +
             '<div class="ps-tiles" role="radiogroup" aria-label="Tone">' + Object.keys(SIM_TONES).map(function (k) {
               var t = SIM_TONES[k], on = k === s.tone;
               return '<button class="ps-tile' + (on ? ' is-on' : '') + '" type="button" role="radio" aria-checked="' + on + '" data-act="tone:' + k + '">' +
                 '<span class="ps-tile__n">' + t.name + (on ? MI('check') : '') + '</span><span class="ps-tile__d">' + t.d + '</span>' +
                 (k === 'professional' ? '<span class="ps-tile__tag">' + aiIcon('generated') + 'Recommended for stakeholders</span>' : '') + '</button>';
             }).join('') + '</div>' +
-            '<div class="ps-sample"><p class="psc__over">Sample · ' + sample.name + '</p><p class="ps-sample__t">“' + sample.ex + '”</p></div></div>' : '';
+            '<div class="ps-sample"><p class="psc__over">Sample · ' + sample.name + '</p><p class="ps-sample__t">“' + sample.ex + '”</p></div>' +
+            (s.tone ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="remove">Default voice</button></div>' : '') + '</div>' : '';
           var t = s.tone && SIM_TONES[s.tone];
           return {
-            tools: scafTool({ kind: 'tone', label: 'Tone', icon: MI('forum'), value: t ? t.name : null, act: s.open ? 'close' : 'open', popup: 'dialog', open: !!s.open, removeAct: t ? 'remove' : null }),
+            tools: '',
             assist: s.changed ? '<div class="ps-note" role="status">' + MI('sync') + '<span>Tone changed to ' + t.name + '. What the reply says stays the same.</span></div>' : '',
             pop: pop, text: s.axText, layout: 'stack'
           };
@@ -23914,7 +24139,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             return md3Message({ role: 'assistant', avatar: av, head: '<p class="idv-msg__h md-label-medium"><b>Aria</b> &middot; ' + (t.tone || 'Default voice') + '</p>', body: t.text });
           }).join('');
           if (s.step === 'working') out += working('Writing the update…');
-          if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open Tone in the composer.</p>';
+          if (!s.turns.length && s.step === 'idle') out += '<p class="sim-stage__empty">Open the tune control next to + and choose Tone.</p>';
           return out;
         },
   
@@ -23925,9 +24150,13 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           if (s.turns.length > 2) return '<b>Same facts, different voice.</b> 3 steps became 1 and setup is 40% faster in both versions.';
           if (s.turns.length && s.changed) return '<b>Tone changed.</b> Ask for another version to hear the difference.';
           if (s.turns.length) return 'Switch Tone to Conversational, then “Ask for another version”.';
-          if (s.tone) return '<b>Tone selected.</b> “Tone · ' + SIM_TONES[s.tone].name + '” sits in the composer; your text is untouched. Send it.';
-          return 'Open Tone in the composer.';
+          if (s.tone) return '<b>Tone selected.</b> The tune control shows a dot and its menu reads “Tone · ' + SIM_TONES[s.tone].name + '”; your text is untouched. Send it.';
+          return 'Open the tune control next to + and choose Tone.';
         },
+  
+        /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+        tune: function (s) { return { key: 'tone', value: s.tone ? SIM_TONES[s.tone].name : null, act: 'open', open: !!s.open, close: 'close' }; },
+        popClose: function (s) { return s.open ? 'close' : null; },
   
         axSubmit: function (text, ctx) { return SIMS['voice-tone'].act('send:' + text, ctx); },
   
@@ -23937,7 +24166,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           if (a === 'open') { s.open = true; ctx.paint(); return; }
           if (a === 'close') { s.open = false; ctx.paint(); return; }
           if (a.indexOf('tone:') === 0) { var k = a.slice(5); s.changed = !!s.tone && s.tone !== k; s.tone = k; s.open = false; ctx.paint(); ctx.announce && ctx.announce('Tone: ' + SIM_TONES[k].name + '.'); return; }
-          if (a === 'remove') { s.tone = null; s.changed = false; ctx.paint(); ctx.announce && ctx.announce('Tone removed.'); return; }
+          if (a === 'remove') { s.tone = null; s.changed = false; s.open = false; ctx.paint(); ctx.announce && ctx.announce('Tone removed.'); return; }
           if (a === 'again') { s.axText = 'Write it again in this tone.'; ctx.paint(); return; }
           if (a.indexOf('send:') === 0) {
             var text = a.slice(5).trim() || s.axText; if (!text) return;
@@ -23952,7 +24181,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         shell: 'conversation',
         product: 'Planboard',
         agent: 'Aria',
-        note: 'Aria has answered in its Normal style. Open Style, point at a style to preview it, choose Concise and ask again. Then ' +
+        note: 'Aria has answered in its Normal style. Open the tune control next to + and choose Style, point at a style to preview it, choose Concise and ask again. Then ' +
               'Create & edit styles: Aria makes a style from your own release notes. Switching never rewrites what you typed, and ' +
               'earlier replies keep the style they were written in.',
   
@@ -23976,7 +24205,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
                 (on ? '<span class="ps-opt__c">' + MI('check') + '</span>' : '') + '</button>';
             };
             pop = '<div class="ax__menu ax__menu--ps ps-pick ps-pick--wide ps-st" role="dialog" aria-label="Use style">' +
-              psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.') +
+              psSimHead('Use style', 'How Aria writes its replies — not what it knows or does.', 'close') +
               '<div class="ps-st__grid has-prev"><div class="ps-st__list" role="radiogroup" aria-label="Style">' + ids.map(row).join('') +
                 (s.has ? '<p class="psc__over ps-st__sec">Your styles</p>' + row('house') : '') + '</div>' +
                 '<div class="ps-st__prev" id="sim-st-prev" aria-live="polite">' + simStylePrev(peek) + '</div></div>' +
@@ -23984,8 +24213,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           }
           var chip = s.style !== 'normal';
           return {
-            tools: scafTool({ kind: 'style', label: 'Style', icon: MI('editNote'), value: chip ? cur.name : null, short: chip && cur.name.length > 12, act: s.open ? 'close' : 'open',
-              popup: 'dialog', open: !!s.open, removeAct: chip ? 'normal' : null }),
+            tools: '',
             assist: s.note ? '<div class="ps-note" role="status">' + MI(s.note.icon) + '<span>' + s.note.text + '</span>' +
               (s.note.undo ? '<button class="ps-link" type="button" data-act="undo">Undo</button>' : '') + '</div>' : '',
             pop: pop, text: s.axText, layout: 'stack'
@@ -24037,8 +24265,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           if (s.create === 'review') return '<b>Style generated.</b> Its name and description are Aria’s and editable; the instructions are one tap away; the preview shows how a reply would read.';
           if (s.open) return '<b>Use style.</b> Point at a style to preview the same answer in it. Choosing applies it at once; nothing is sent.';
           if (s.step === 'working') return 'Aria is answering in the style you chose.';
-          if (s.style !== 'normal') return '<b>' + simStyle(s, s.style).name + '.</b> The chip shows the active style; × goes back to Normal. Earlier replies keep the style they were written in.';
-          return 'The first reply used Normal. Open Style in the composer.';
+          if (s.style !== 'normal') return '<b>' + simStyle(s, s.style).name + '.</b> The tune control shows a dot; its menu names the style, and Normal goes back. Earlier replies keep the style they were written in.';
+          return 'The first reply used Normal. Open the tune control next to + and choose Style.';
         },
   
         after: function (root, s) {
@@ -24053,6 +24281,10 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var ex = root.querySelector('#sim-st-ex');
           if (ex && !ex.dataset.psb) { ex.dataset.psb = '1'; ex.addEventListener('input', function () { s.ex = ex.value; }); }
         },
+  
+        /* Its own row in the tune menu (21 Oct): this scenario's picker. */
+        tune: function (s) { return { key: 'style', value: s.style !== 'normal' ? simStyle(s, s.style).name : null, act: 'open', open: !!s.open, close: 'close' }; },
+        popClose: function (s) { return s.open ? 'close' : null; },
   
         axSubmit: function (text, ctx) { return SIMS['preset-styles'].act('send:' + text, ctx); },
   
@@ -24094,7 +24326,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
       };
     var MD3 = { button: md3Button, checkbox: md3Checkbox, progress: md3Progress, segmented: md3Segmented,
       textArea: md3TextArea, textField: md3TextField, message: md3Message, avatar: nxAvatar };
-    return { SIMS: SIMS, MD3: MD3, aiIcon: aiIcon, scafTool: scafTool };
+    return { SIMS: SIMS, MD3: MD3, aiIcon: aiIcon, scafTool: scafTool, RQ: { tune: rqTune, pop: rqPop, note: rqNote, act: rqAct } };
   })();
 
   var PSXPV = (function () {
@@ -24135,13 +24367,71 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         return S ? S.composer(Object.assign({ agent: 'Aria', ask: 'Ask Aria…', label: 'Message Aria',
           plus: ['Attach a file', 'Add context'], mic: true, maxLines: 6, grow: true, layout: 'stack' }, o)) : '';
       }
-    function psTool(o) {
-        return '<button class="ax__tool' + (o.on ? ' is-on' : '') + '" type="button" data-act="' + o.act + '"' +
-          (o.popup ? ' aria-haspopup="' + o.popup + '" aria-expanded="' + !!o.open + '"' : '') +
-          (o.busy ? ' aria-disabled="true"' : '') + (o.label ? ' aria-label="' + esc(o.label) + '"' : '') + '>' +
-          (o.icon || '') + '<span>' + o.text + '</span></button>';
+    var PS_PLUS = ['Attach a file', 'Add context'];
+    function psPlus(s) { return { plus: PS_PLUS, plusOpen: !!s.psPlus, chips: (s.psChips || []).slice() }; }
+    function psPlusAct(a, s, ctx) {
+        if (a === 'ax:plus') { s.psPlus = !s.psPlus; ctx.paint(); return true; }
+        if (a.indexOf('ax:add:') === 0) {
+          var i = +a.slice(7); s.psPlus = false;
+          if (i >= PS_PLUS.length) return 'open';
+          s.psChips = (s.psChips || []).concat([PS_PLUS[i]]); ctx.paint(); ctx.announce(PS_PLUS[i] + ' added. Your text is unchanged.'); return true;
+        }
+        if (a.indexOf('ax:unchip:') === 0) { var j = +a.slice(10); s.psChips = (s.psChips || []).filter(function (_, k) { return k !== j; }); ctx.paint(); return true; }
+        s.psPlus = false;
+        return false;
       }
-    function psChip(o) { var S = tdS(); return S && S.scafTool ? S.scafTool(o) : ''; }
+    var psDismissOn = false;
+    function psDismiss() {
+        if (psDismissOn) return; psDismissOn = true;
+        function close(e) {
+          var box = document.querySelector('.pv-stage .ps'); if (!box) return;
+          var menu = box.querySelector('[data-act="ax:tune"][aria-expanded="true"], [data-act="ax:plus"][aria-expanded="true"]');
+          var pick = box.querySelector('.ax__menu--ps .ps-pick__x');
+          if (e.type === 'keydown') { var t = menu || pick; if (t) { e.preventDefault(); t.click(); } return; }
+          if (!menu || (e.target.closest && e.target.closest('.ax__composer'))) return;
+          menu.click();
+        }
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(e); });
+        document.addEventListener('click', close, true);
+      }
+    function psScaf(s, own, base) {
+        var R = tdS() && tdS().rq, o = Object.assign({}, base, psPlus(s));
+        psDismiss();
+        if (!R) return o;
+        o.tune = R.tune(s, own);
+        var p = R.pop(s); if (p) o.pop = p;
+        var n = R.note(s, base.text || ''); if (n) o.assist = (o.assist || '') + n;
+        return o;
+      }
+    function psScafAct(a, s, ctx, own, sel) {
+        var R = tdS() && tdS().rq;
+        if (R && (a === 'ax:tune' || a.indexOf('rq:') === 0)) {
+          var f = document.querySelector('.pv-stage ' + sel + ' [data-ax-field]');
+          if (f) { s.psText = f.value; s.psFor = s.state; }
+          if (a === 'ax:tune') s.psPlus = false;
+          return R.act(a, s, { paint: ctx.paint, announce: ctx.announce,
+            text: function () { return f ? f.value : (s.psText || ''); },
+            setText: function (t) { s.psText = t; s.psFor = s.state; s.psFocus = true; } }, own);
+        }
+        /* + while a picker is open closes the picker and opens +. */
+        if (a === 'ax:plus' && own.open) { s.psPlus = true; s.rqTune = false; return own.close; }
+        if (a === 'ax:plus') { s.rqTune = false; if (s.rq) s.rq.pop = null; }
+        if (a.indexOf('ax:') !== 0) s.rqTune = false;
+        return psPlusAct(a, s, ctx);
+      }
+    function psTuneJSX() {
+        return '  leftActions={<>\n' +
+          '    <Md3IconButton aria-label="Add context" aria-haspopup="menu" onClick={toggleAdd}>' + sym('add') + '</Md3IconButton>\n' +
+          '    <Md3IconButton aria-label={settingsLabel} aria-haspopup="menu" aria-expanded={settingsOpen} onClick={toggleSettings}>' + sym('tune') + '</Md3IconButton>\n' +
+          '    {settingsOpen && (\n      <Md3Menu role="menu" aria-label="Request settings">\n' +
+          '        <Md3MenuItem aria-haspopup="dialog" onClick={openModes} trailing={mode ?? "None"}>Mode</Md3MenuItem>\n' +
+          '        <Md3MenuItem aria-haspopup="dialog" onClick={openTone} trailing={tone ?? "Default"}>Tone</Md3MenuItem>\n' +
+          '        <Md3MenuItem aria-haspopup="dialog" onClick={openStyles} trailing={style ?? "Normal"}>Style</Md3MenuItem>\n' +
+          '        <Md3MenuItem aria-haspopup="dialog" onClick={improve}>Improve prompt</Md3MenuItem>\n' +
+          '      </Md3Menu>\n    )}\n  </>}\n';
+      }
+    var PS_TUNE_IMPORTS = [['Md3Menu, Md3MenuItem', '@nucleux/md3-menu'], ['Md3IconButton', '@nucleux/md3-icon-button']];
+    function psPickX(act) { return '<button class="ps-ico ps-pick__x" type="button" data-act="' + act + '" aria-label="Close">' + mi('close') + '</button>'; }
     function psBind(root, s, o) {
         var box = root.querySelector('.pv-stage .ps');
         var f = box && box.querySelector('[data-ax-field]'), form = box && box.querySelector('.ax__composer');
@@ -24808,15 +25098,15 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           original: {
             label: 'Original',
             trigger: 'They have written a short request.',
-            behaviour: 'Their prompt in the composer, with Improve beside the model chip.',
+            behaviour: 'Their prompt in the composer. Improve prompt is in the tune menu right after +.',
             meaning: 'They can ask for a clearer version — or just send.',
-            action: 'Improve, or send.',
+            action: 'Open tune and choose Improve prompt, or send.',
             next: 'Enhancing'
           },
           enhancing: {
             label: 'Enhancing',
-            trigger: 'They pressed Improve.',
-            behaviour: 'Improve says “Improving…”; the original stays in the composer, readable and untouched.',
+            trigger: 'They chose Improve prompt in the tune menu.',
+            behaviour: 'A line in the composer says “Improving…”, with Cancel; the original stays in the composer, readable and untouched.',
             meaning: 'Aria is working on a suggestion. Nothing has changed yet.',
             action: 'Wait, or cancel.',
             next: 'Enhanced, or Enhancement failed'
@@ -24881,8 +25171,6 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var improved = st === 'edited' ? (s.peEdit || psPeText(orig, on)) : psPeText(orig, on);
           var lab = esc(tdTrim(c.actLabel)) || 'Improve';
           var busy = st === 'enhancing';
-          var tool = psTool({ act: busy ? 'pe:cancel' : 'pe:go', text: busy ? 'Improving…' : lab, busy: false,
-            icon: busy ? tdAI('working') : tdAI('action'), label: busy ? 'Cancel improving' : lab + ' this prompt with AI' });
           var text = st === 'accepted' ? (psOwn(s, 'accepted') !== null ? psOwn(s, 'accepted') : (s.peUsed || psPeText(orig, {})))
             : (psOwn(s, st) !== null ? psOwn(s, st) : orig);
           var review = '';
@@ -24914,24 +25202,24 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
               '</span></div></div>';
           }
           var note = '';
-          if (busy) note = '<div class="ps-note" role="status">' + tdAI('working') + '<span>Improving your prompt. Your original stays as it is.</span></div>';
+          if (busy) note = '<div class="ps-note" role="status">' + tdAI('working') + '<span>Improving your prompt. Your original stays as it is.</span><button class="ps-link" type="button" data-act="pe:cancel">Cancel</button></div>';
           if (st === 'accepted') note = '<div class="ps-note" role="status">' + mi('check') + '<span>Prompt updated. Nothing was sent.</span>' +
             (c.undo !== false ? '<button class="ps-link" type="button" data-act="pe:undo">Undo</button>' : '') + '</div>';
           if (st === 'reverted') note = '<div class="ps-note" role="status">' + mi('undo') + '<span>Your original prompt is back.</span></div>';
           if (st === 'failed') note = '<div class="ps-err" role="alert">' + mi('error') + '<span>' + (esc(tdTrim(c.failCopy)) || 'Couldn’t improve this request. Your original is unchanged.') + '</span>' +
             '<button class="ps-link" type="button" data-act="pe:go">Try again</button><button class="ps-link" type="button" data-act="pe:keep">Keep original</button></div>';
-          var cmp = psComposer({ ask: 'Describe what you need…', text: text, tools: tool, assist: note });
+          var cmp = psComposer(psScaf(s, { key: 'improve', value: busy ? 'Improving…' : null }, { ask: 'Describe what you need…', text: text, assist: note }));
           return psWrap('pe', st, review + cmp + psSent(s), ' data-density="' + (c.density || 'comfortable') + '"');
         },
   
         react: function (s) {
           var c = s.cfg, st = s.state;
-          return imports([['PromptEnhancer', '@nucleux/prompt-enhancer'], ['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button'],
-                          ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+          return imports([['PromptEnhancer', '@nucleux/prompt-enhancer'], ['Md3Card', '@nucleux/md3-card'], ['Md3Button', '@nucleux/md3-button']].concat(PS_TUNE_IMPORTS,
+                          [['Md3AgentComposer', '@nucleux/md3-agent-composer']])) + '\n\n' +
             '// State: ' + this.states[st].label + '\n' +
             '// PromptEnhancer (base Nucleux) offers the intents; the review below is the\n// pattern: the original stays in the composer until they choose.\n' +
             psComposerJSX(st === 'accepted' ? psPeText(PS_PE_ORIG, {}) : PS_PE_ORIG,
-              '  leftActions={<Md3Button variant="text" onClick={improve}>' + jsxText(tdTrim(c.actLabel) || 'Improve') + '</Md3Button>}\n') + '\n\n' +
+              psTuneJSX()) + '\n\n' +
             (st === 'enhanced' || st === 'reviewing' || st === 'edited'
               ? '<Md3Card variant="outlined" role="region" aria-label="Suggested improvements to your prompt">\n' +
                 '  <p>{original}<ins>{change.text}</ins>…</p>\n' +
@@ -24953,6 +25241,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         act: async function (a, ctx) {
           var s = ctx.s, c = ctx.cfg();
           var orig = s.peOrig || PS_PE_ORIG;
+          var sc = psScafAct(a, s, ctx, { key: 'improve', act: s.state === 'enhancing' ? 'pe:cancel' : 'pe:go', open: false }, '.psw-pe');
+          if (sc === true) return; if (typeof sc === 'string') a = sc;
           if (a === 'pe:go') {
             var run = (s.peRun || 0) + 1; s.peRun = run; s.peOn = {}; s.peEdit = null;
             s.state = 'enhancing'; ctx.paint(); ctx.announce('Improving your prompt. Your original is unchanged.');
@@ -25038,14 +25328,14 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           none: {
             label: 'No mode selected',
             trigger: 'They are writing a request.',
-            behaviour: 'A Mode control beside the model chip. Aria works the general way until a mode is chosen.',
+            behaviour: 'No Mode control up front: Mode is in the tune menu right after +. Aria works the general way until a mode is chosen.',
             meaning: 'They can choose how Aria should approach this.',
-            action: 'Open Mode, or just send.',
+            action: 'Open tune and choose Mode, or just send.',
             next: 'Mode picker open'
           },
           open: {
             label: 'Mode picker open',
-            trigger: 'They opened Mode.',
+            trigger: 'They chose Mode in the tune menu.',
             behaviour: 'A short list of modes, each with one line on what changes. An unavailable mode says why.',
             meaning: 'What each mode would do with this request.',
             action: 'Choose one, or close.',
@@ -25054,7 +25344,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           selected: {
             label: 'Mode selected',
             trigger: 'They chose Plan.',
-            behaviour: 'The Mode chip in the composer now reads “Plan”, with a way to change or remove it. The text and the model are untouched.',
+            behaviour: 'The tune control shows a dot and its Mode row reads “Plan”; it is changed or removed from there. The text and the model are untouched.',
             meaning: 'Aria will approach this as a planning task.',
             action: 'Send, change, or clear.',
             next: 'Mode changed'
@@ -25062,7 +25352,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           changed: {
             label: 'Mode changed',
             trigger: 'They switched Plan to Review.',
-            behaviour: 'The chip updates and one line says what changed — and that their text is the same.',
+            behaviour: 'The Mode row updates and one line says what changed — and that their text is the same.',
             meaning: 'The next request will be a review.',
             action: 'Send.',
             next: '—'
@@ -25086,7 +25376,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var open = st === 'open' || st === 'unavailable';
           var m = cur && L.filter(function (x) { return x.id === cur; })[0];
           var pop = open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a mode" data-density="' + (c.density || 'comfortable') + '">' +
-              '<div class="ps-pick__h"><p class="ps-pick__t">Mode</p><p class="ps-pick__s">How Aria approaches this request. Model and effort stay as they are.</p></div>' +
+              '<div class="ps-pick__h"><p class="ps-pick__t">Mode</p><p class="ps-pick__s">How Aria approaches this request. Model and effort stay as they are.</p>' + psPickX('md:close') + '</div>' +
               '<div role="radiogroup" aria-label="Mode">' + L.filter(function (x) { return !x.off || c.showOff !== false; }).map(function (x) {
                 var on = x.id === cur;
                 return '<button class="ps-opt' + (on ? ' is-on' : '') + (x.off ? ' is-off' : '') + '" type="button" role="radio" aria-checked="' + on + '"' +
@@ -25101,24 +25391,22 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             '</div>' : '';
           var chips = [];
           var note = st === 'changed' ? '<div class="ps-note" role="status">' + mi('sync') + '<span>Mode changed to ' + esc(m.name) + '. Your text is unchanged.</span></div>' : '';
-          var cmp = psComposer({ ask: 'Describe the task…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Help me prepare the next product release.',
-            tools: psChip({ kind: 'mode', label: 'Mode', icon: mi('tune'), value: m ? m.name : null, valueIcon: m ? mi(m.icon) : '', short: c.indicator === 'icon',
-              act: open ? 'md:close' : 'md:open', popup: 'dialog', open: open, removeAct: m && c.clear !== false ? 'md:clear' : null }),
-            scaffolds: chips, assist: note, pop: pop });
+          var cmp = psComposer(psScaf(s, { key: 'mode', value: m ? m.name : null }, { ask: 'Describe the task…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Help me prepare the next product release.',
+            scaffolds: chips, assist: note, pop: pop }));
           return psWrap('md', st, cmp + psSent(s));
         },
   
         react: function (s) {
           var c = s.cfg, st = s.state, L = psModeList(c);
           var cur = st === 'changed' ? 'review' : st === 'none' ? (c.def === 'draft' ? 'draft' : null) : 'plan';
-          return imports([['Md3Menu', '@nucleux/md3-menu'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+          return imports(PS_TUNE_IMPORTS.concat([['Md3AgentComposer', '@nucleux/md3-agent-composer']])) + '\n\n' +
             '// State: ' + this.states[st].label + '\n// Mode = how Aria works. Model and effort stay in the model chip.\n' +
             'const modes = [\n' + L.filter(function (x) { return !x.off || c.showOff !== false; }).map(function (x) {
               return '  { id: "' + x.id + '", name: ' + jsxAttr(x.name) + ', description: ' + jsxAttr(x.d) + (x.off ? ', unavailable: ' + jsxAttr(x.off) : '') + ' },\n';
             }).join('') + '];\n\n' +
             (st === 'open' || st === 'unavailable' ? '<Md3Menu role="dialog" aria-label="Choose a mode">\n  {modes.map((m) => (\n    <button key={m.id} role="radio" aria-checked={m.id === mode} aria-disabled={!!m.unavailable} onClick={() => choose(m)}>\n      {m.name} — {m.description}{m.unavailable && <small>{m.unavailable}</small>}\n    </button>\n  ))}\n</Md3Menu>\n\n' : '') +
             (cur ? '<Md3Chip variant="input" onRemove={' + (c.clear !== false ? 'clearMode' : 'undefined') + '}>Mode · ' + jsxText((L.filter(function (x) { return x.id === cur; })[0] || {}).name || '') + '</Md3Chip>\n' : '') +
-            psComposerJSX('Help me prepare the next product release.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openModes}>Mode</Md3Button>}\n');
+            psComposerJSX('Help me prepare the next product release.', psTuneJSX());
         },
   
         mounted: function (root, s) { psBind(root, s); },
@@ -25129,6 +25417,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           function go(st, cur) { var keep = txt; s.mdCur = cur; s.mdFor = st; s.state = st; if (keep !== null) { s.psText = keep; s.psFor = st; } ctx.paint(); }
           var dflt = { none: c.def === 'draft' ? 'draft' : null, open: null, unavailable: null, selected: 'plan', changed: 'review' }[s.state];
           var cur = s.mdFor === s.state ? s.mdCur : dflt;
+          var sc = psScafAct(a, s, ctx, { key: 'mode', act: 'md:open', open: s.state === 'open' || s.state === 'unavailable', close: 'md:close' }, '.psw-md');
+          if (sc === true) return; if (typeof sc === 'string') a = sc;
           if (a === 'md:open') { s.mdPrev = s.state === 'none' ? null : cur; go('open', cur); return; }
           if (a === 'md:close') { go(s.mdPrev ? 'selected' : 'none', s.mdPrev); return; }
           if (a.indexOf('md:pick:') === 0) {
@@ -25206,14 +25496,14 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           default: {
             label: 'Default',
             trigger: 'No tone chosen.',
-            behaviour: 'A Tone control beside the model chip. Aria uses its default voice.',
+            behaviour: 'No Tone control up front: Tone is in the tune menu right after +. Aria uses its default voice.',
             meaning: 'They can say how the reply should sound.',
-            action: 'Open Tone, or send.',
+            action: 'Open tune and choose Tone, or send.',
             next: 'Tone picker open'
           },
           open: {
             label: 'Tone picker open',
-            trigger: 'They opened Tone.',
+            trigger: 'They chose Tone in the tune menu.',
             behaviour: 'Tones with one line each showing how it sounds; Aria’s recommendation is marked, not selected; a field for their own description.',
             meaning: 'How the reply would sound in each.',
             action: 'Choose one, describe one, or close.',
@@ -25222,7 +25512,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           selected: {
             label: 'Tone selected',
             trigger: 'They chose Professional.',
-            behaviour: 'The Tone chip in the composer now reads “Professional”, with a way to change or remove it. Their text is untouched.',
+            behaviour: 'The tune control shows a dot and its Tone row reads “Professional”; it is changed or removed from there. Their text is untouched.',
             meaning: 'The reply will sound professional — saying the same things.',
             action: 'Send, change, or remove.',
             next: 'Tone changed, or Tone removed'
@@ -25231,7 +25521,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             label: 'Custom tone',
             requires: 'custom',
             trigger: 'They described their own tone.',
-            behaviour: 'Their words become the tone chip, with a note that Aria will match it as closely as it can.',
+            behaviour: 'Their words become the tone on the Tone row, with a note that Aria will match it as closely as it can.',
             meaning: 'Their description guides how it sounds.',
             action: 'Send, edit, or remove.',
             next: '—'
@@ -25239,7 +25529,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           changed: {
             label: 'Tone changed',
             trigger: 'They switched to Conversational.',
-            behaviour: 'The chip updates; one line says the facts stay the same.',
+            behaviour: 'The Tone row updates; one line says the facts stay the same.',
             meaning: 'Same content, different voice.',
             action: 'Send, or ask for a new version.',
             next: '—'
@@ -25248,7 +25538,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             label: 'Tone removed',
             requires: 'remove',
             trigger: 'They removed the tone.',
-            behaviour: 'The chip goes; Aria uses its default voice. Undo is offered.',
+            behaviour: 'The tone goes and the dot with it; Aria uses its default voice. Undo is offered.',
             meaning: 'Back to the default.',
             action: 'Undo, or carry on.',
             next: 'Default'
@@ -25265,7 +25555,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var cards = (c.layout || 'cards') === 'cards';
           var sampleT = T.filter(function (t) { return t.id === (s.tnHover || cur); })[0] || T[0];
           var pop = open ? '<div class="ax__menu ax__menu--ps ps-pick" role="dialog" aria-label="Choose a tone" data-density="' + (c.density || 'comfortable') + '">' +
-              '<div class="ps-pick__h"><p class="ps-pick__t">Tone</p><p class="ps-pick__s">How the reply should sound. What it says stays the same.</p></div>' +
+              '<div class="ps-pick__h"><p class="ps-pick__t">Tone</p><p class="ps-pick__s">How the reply should sound. What it says stays the same.</p>' + psPickX('tn:close') + '</div>' +
               (cards
                 ? '<div class="ps-tiles" role="radiogroup" aria-label="Tone">' + T.map(function (t) {
                     var on = t.id === cur;
@@ -25290,6 +25580,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
               (c.custom !== false ? '<div class="ps-custom"><label class="psc__over" for="ps-tn-custom">Or describe a tone</label>' +
                 '<div class="ps-custom__row"><input id="ps-tn-custom" class="ps-custom__in" placeholder="e.g. calm, plain English" value="" />' +
                 tdM().button({ variant: 'tonal', label: 'Use', attrs: { 'data-act': 'tn:custom' } }) + '</div></div>' : '') +
+              (cur && c.remove !== false ? '<div class="ps-acts"><button class="ps-link" type="button" data-act="tn:remove">Default voice</button></div>' : '') +
             '</div>' : '';
           var label = cur === 'custom' ? customText : cur ? (T.filter(function (t) { return t.id === cur; })[0] || {}).name : null;
           var chips = [];
@@ -25297,10 +25588,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           if (st === 'custom') note = '<div class="ps-note" role="status">' + mi('info') + '<span>Aria will match your description as closely as it can; the facts stay the same.</span></div>';
           if (st === 'changed') note = '<div class="ps-note" role="status">' + mi('sync') + '<span>Tone changed to ' + esc(label) + '. What the reply says stays the same.</span></div>';
           if (st === 'removed') note = '<div class="ps-note" role="status">' + mi('close') + '<span>Tone removed — Aria will use its default voice.</span><button class="ps-link" type="button" data-act="tn:undo">Undo</button></div>';
-          var cmp = psComposer({ ask: 'Describe what to write…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Draft a product update for stakeholders.',
-            tools: psChip({ kind: 'tone', label: 'Tone', icon: mi('forum'), value: label, act: open ? 'tn:close' : 'tn:open', popup: 'dialog', open: open,
-              removeAct: label && c.remove !== false ? 'tn:remove' : null }),
-            scaffolds: chips, assist: note, pop: pop });
+          var cmp = psComposer(psScaf(s, { key: 'tone', value: label }, { ask: 'Describe what to write…', text: psOwn(s, st) !== null ? psOwn(s, st) : 'Draft a product update for stakeholders.',
+            scaffolds: chips, assist: note, pop: pop }));
           return psWrap('tn', st, cmp + psSent(s));
         },
   
@@ -25308,13 +25597,13 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var c = s.cfg, st = s.state, T = psToneList(c);
           var label = { selected: 'Professional', custom: 'Calm, plain English for non-experts', changed: 'Conversational' }[st];
           return imports([[c.layout === 'segmented' ? 'Md3SegmentedButton, Md3SegmentedButtonItem' : 'Md3RadioGroup, Md3Radio', c.layout === 'segmented' ? '@nucleux/md3-segmented-button' : '@nucleux/md3-radio'],
-                          ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']]) + '\n\n' +
+                          ['Md3TextField', '@nucleux/md3-text-field']].concat(PS_TUNE_IMPORTS, [['Md3AgentComposer', '@nucleux/md3-agent-composer']])) + '\n\n' +
             '// State: ' + this.states[st].label + '\n// Tone = how it sounds. It is sent with the request; it never edits the prompt text.\n' +
             (st === 'open' ? '<Md3RadioGroup label="Tone" value={tone} onValueChange={setTone}>\n' + T.map(function (t) {
                 return '  <label><Md3Radio value="' + t.id + '" /> ' + jsxText(t.name) + (c.preview !== false ? ' <small>“' + jsxText(t.ex) + '”</small>' : '') + '</label>\n'; }).join('') +
               '</Md3RadioGroup>\n' + (c.custom !== false ? '<Md3TextField label="Or describe a tone" value={custom} onChange={setCustom} />\n' : '') + '\n' : '') +
             (label ? '<Md3Chip variant="input"' + (c.remove !== false ? ' onRemove={removeTone}' : '') + '>Tone · ' + jsxText(label) + '</Md3Chip>\n' : '') +
-            psComposerJSX('Draft a product update for stakeholders.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openTone}>Tone</Md3Button>}\n');
+            psComposerJSX('Draft a product update for stakeholders.', psTuneJSX());
         },
   
         mounted: function (root, s) {
@@ -25335,6 +25624,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var dflt = { default: null, open: null, selected: 'professional', custom: 'custom', changed: 'conversational', removed: null }[s.state];
           var cur = s.tnFor === s.state ? s.tnCur : dflt;
           function go(st, v) { s.tnCur = v; s.tnFor = st; s.state = st; if (txt !== null) { s.psText = txt; s.psFor = st; } ctx.paint(); }
+          var sc = psScafAct(a, s, ctx, { key: 'tone', act: 'tn:open', open: s.state === 'open', close: 'tn:close' }, '.psw-tn');
+          if (sc === true) return; if (typeof sc === 'string') a = sc;
           if (a === 'tn:open') { s.tnPrev = cur; go('open', cur); return; }
           if (a === 'tn:close') { go(s.tnPrev ? (s.tnPrev === 'custom' ? 'custom' : 'selected') : 'default', s.tnPrev); return; }
           if (a.indexOf('tn:pick:') === 0) {
@@ -25415,14 +25706,14 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           none: {
             label: 'Normal',
             trigger: 'They are writing a request.',
-            behaviour: 'No style chip: Aria writes the way it usually does. A Style control sits with the composer’s tools.',
+            behaviour: 'Nothing up front: Aria writes the way it usually does. Style is in the tune menu right after +.',
             meaning: 'Replies use the default style.',
-            action: 'Open Style, or send.',
+            action: 'Open tune and choose Style, or send.',
             next: 'Style menu open'
           },
           available: {
             label: 'Style menu open',
-            trigger: 'They opened Style.',
+            trigger: 'They chose Style in the tune menu.',
             behaviour: '“Use style”: Normal, Concise, Formal and Explanatory, each with one line on what changes, their own styles below, and Create & edit styles. The current style is checked.',
             meaning: 'How Aria could write the reply.',
             action: 'Point at a style to preview it, or choose one.',
@@ -25440,7 +25731,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           applied: {
             label: 'Style applied',
             trigger: 'They chose Concise.',
-            behaviour: 'The menu closes and the Style chip in the composer reads “Concise”, with × to go back to Normal. One line says where it applies. Their request is untouched.',
+            behaviour: 'The menu closes; the tune control shows a dot and its Style row reads “Concise” (Normal goes back). One line says where it applies. Their request is untouched.',
             meaning: 'Replies from now on will be shorter and more direct.',
             action: 'Send, switch, or go back to Normal.',
             next: 'Style switched, or Back to Normal'
@@ -25448,15 +25739,15 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           changed: {
             label: 'Style switched',
             trigger: 'Mid-conversation, they switched Concise to Formal.',
-            behaviour: 'The chip updates and one line says the new style applies from here — earlier replies keep theirs.',
+            behaviour: 'The Style row updates and one line says the new style applies from here — earlier replies keep theirs.',
             meaning: 'The next reply will be formal.',
             action: 'Send.',
             next: '—'
           },
           removed: {
             label: 'Back to Normal',
-            trigger: 'They pressed × on the chip (or chose Normal).',
-            behaviour: 'The chip goes; one line confirms Normal, with Undo.',
+            trigger: 'They chose Normal.',
+            behaviour: 'The dot goes; one line confirms Normal, with Undo.',
             meaning: 'Replies go back to the default style.',
             action: 'Undo, or carry on.',
             next: 'Normal'
@@ -25506,7 +25797,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             var prev = c.preview !== false
               ? '<div class="ps-st__prev" id="ps-st-prev" aria-live="polite">' + psStylePrev(peekS) + '</div>' : '';
             pop = '<div class="ax__menu ax__menu--ps ps-pick ps-pick--wide ps-st" role="dialog" aria-label="Use style" data-density="' + (c.density || 'comfortable') + '">' +
-              '<div class="ps-pick__h"><p class="ps-pick__t">Use style</p><p class="ps-pick__s">How Aria writes its replies — not what it knows or does.</p></div>' +
+              '<div class="ps-pick__h"><p class="ps-pick__t">Use style</p><p class="ps-pick__s">How Aria writes its replies — not what it knows or does.</p>' + psPickX('st:close') + '</div>' +
               '<div class="ps-st__grid' + (prev ? ' has-prev' : '') + '"><div class="ps-st__list" role="radiogroup" aria-label="Style">' +
                 presets.map(row).join('') +
                 (mine.length ? '<p class="psc__over ps-st__sec">Your styles</p>' + mine.map(row).join('') : '') +
@@ -25554,17 +25845,15 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           if (st === 'removed') note = '<div class="ps-note" role="status">' + mi('check') + '<span>Back to Normal.</span><button class="ps-link" type="button" data-act="st:undo">Undo</button></div>';
   
           var text = psOwn(s, st) !== null ? psOwn(s, st) : (st === 'changed' ? 'Now draft the customer email about it.' : 'Summarize the October release.');
-          var cmp = psComposer({ ask: 'Describe what you need…', text: text,
-            tools: psChip({ kind: 'style', label: 'Style', icon: mi('editNote'), value: chipOn ? curS.name : null, short: chipOn && curS.name.length > 12,
-              act: open ? 'st:close' : 'st:open', popup: 'dialog', open: open, removeAct: chipOn ? 'st:normal' : null }),
-            assist: note, pop: pop });
+          var cmp = psComposer(psScaf(s, { key: 'style', value: chipOn ? curS.name : null }, { ask: 'Describe what you need…', text: text,
+            assist: note, pop: pop }));
           return psWrap('st', st, card + cmp + psSent(s));
         },
   
         react: function (s) {
           var c = s.cfg, st = s.state, all = psStyleList(c, true);
           var cur = { applied: 'concise', changed: 'formal' }[st] || 'normal';
-          var imp = [['Md3Menu', '@nucleux/md3-menu'], ['Md3Chip', '@nucleux/md3-chip'], ['Md3AgentComposer', '@nucleux/md3-agent-composer']];
+          var imp = PS_TUNE_IMPORTS.concat([['Md3AgentComposer', '@nucleux/md3-agent-composer']]);
           if (st === 'create' || st === 'generated') imp.push(['Md3SegmentedButton, Md3SegmentedButtonItem', '@nucleux/md3-segmented-button'], ['Md3TextField', '@nucleux/md3-text-field'], ['Md3Button', '@nucleux/md3-button']);
           return imports(imp) + '\n\n// State: ' + this.states[st].label + '\n' +
             '// A style is sent with each request as its own setting. It never edits the prompt,\n// and it applies to ' + (tdTrim(c.scope) || 'new messages, edits and retries') + '.\n' +
@@ -25576,7 +25865,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             (st === 'create' ? '<Md3SegmentedButton value={source} onValueChange={setSource}>\n  <Md3SegmentedButtonItem value="example">An example</Md3SegmentedButtonItem>\n  <Md3SegmentedButtonItem value="describe">A description</Md3SegmentedButtonItem>\n</Md3SegmentedButton>\n<textarea aria-label="Paste writing you like" value={example} onChange={(e) => setExample(e.target.value)} />\n<Md3Button variant="filled" onClick={generateStyle}>Generate style</Md3Button>\n\n' : '') +
             (st === 'generated' ? '<Md3TextField label="Style name" value={draft.name} onChange={(e) => rename(e.target.value)} />\n<p>{draft.description}</p>\n<Md3Button variant="outlined" onClick={save}>Save</Md3Button>\n<Md3Button variant="filled" onClick={saveAndUse}>Save and use</Md3Button>\n\n' : '') +
             (cur !== 'normal' ? '<Md3Chip variant="input" onRemove={() => setStyle("normal")}>Style ' + jsxText((all.filter(function (x) { return x.id === cur; })[0] || {}).name || '') + '</Md3Chip>\n' : '') +
-            psComposerJSX('Summarize the October release.', '  leftActions={<Md3Button variant="text" aria-haspopup="dialog" onClick={openStyles}>Style</Md3Button>}\n');
+            psComposerJSX('Summarize the October release.', psTuneJSX());
         },
   
         mounted: function (root, s) {
@@ -25605,6 +25894,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           var cur = s.stFor === s.state ? s.stCur : dflt;
           function name(id) { return (all.filter(function (x) { return x.id === id; })[0] || {}).name; }
           function go(st, v) { s.stCur = v; s.stFor = st; s.state = st; if (txt !== null) { s.psText = txt; s.psFor = st; } ctx.paint(); }
+          var sc = psScafAct(a, s, ctx, { key: 'style', act: 'st:open', open: s.state === 'available' || s.state === 'selected', close: 'st:close' }, '.psw-st');
+          if (sc === true) return; if (typeof sc === 'string') a = sc;
           if (a === 'st:open') { s.stPrev = cur; s.stPeek = null; go('available', cur); return; }
           if (a === 'st:close') { go(s.stPrev && s.stPrev !== 'normal' ? 'applied' : 'none', s.stPrev || 'normal'); return; }
           if (a.indexOf('st:pick:') === 0) {
@@ -25658,6 +25949,10 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     if (!window.MaterialSim.scafTool) window.MaterialSim.scafTool = PSX.scafTool;
     if (!window.MaterialSim.aiIcon) window.MaterialSim.aiIcon = PSX.aiIcon;
     if (!window.MaterialSim.composer) window.MaterialSim.composer = function (co) { window.MaterialSim.__cmp = co; return '<div class="mm-cmp-slot"></div>'; };
+    /* The desktop's request settings (the tune control's menu and its
+       shared pickers), verbatim, for both runners. */
+    window.MaterialSim.rq = PSX.RQ;
+    if (!P.tune) P.tune = 'M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z';
 
     function deskSchema(P) {
       var secs = {}, order = [];
@@ -25716,7 +26011,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           (sc.removeAct ? '<button class="ax__scaf__x" type="button" data-act="' + esc(sc.removeAct) + '" aria-label="' + esc('Remove ' + sc.k.toLowerCase() + ' ' + sc.v) + '">' + ico('close') + '</button>' : '') + '</span>';
       }).join('') + '</span>';
     }
-    /* A picker opened from the composer's tools is a dialog of its own
+    /* A picker opened from the tune menu is a dialog of its own
        on mobile: its inner wrapper is a group inside the sheet. */
     function demote(el) { var m = el && $('.ax__menu--ps[role="dialog"]', el); if (m) m.setAttribute('role', 'group'); }
 
@@ -25772,7 +26067,10 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
                desktop binding records it, before anything repaints. */
             onInput: function () { var s = I.ps; s.psText = pc.cmp.text(); s.psFor = s.state; },
             /* Send goes through the desktop binding (form submit / Enter). */
-            onSend: function () {}
+            onSend: function () {},
+            /* The tune control right after +: its menu is a sheet, like +. */
+            tune: function () { return pc.o.tune || null; },
+            onTune: function () { pvTune(I); }
           });
           pc.cmp.form.classList.add('ax__composer');
           pc.cmp.field.setAttribute('data-ax-field', '');
@@ -25785,14 +26083,39 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
         if (keep) { fld.focus({ preventScroll: true }); try { fld.setSelectionRange(keep[0], keep[1]); } catch (e) {} }
       }
 
+      /* Tune in the Live Preview: whatever picker is open closes first
+         (the desktop's own close action), then the menu; a row runs the
+         desktop's rq:pick, which opens this pattern's own picker or a
+         shared one. */
+      function pvTune(I) {
+        var s = I.ps, own = o.pvOwn ? o.pvOwn(s) : null;
+        if (own && own.open) P.act(own.close, pvCtx(I));
+        if (s.rq && s.rq.pop) P.act('rq:close', pvCtx(I));
+        I.pcmp.cmp.openTune(function (key) { P.act('rq:pick:' + key, pvCtx(I)); });
+      }
+
       /* ── Simulator ── */
       function phase(I) { return S.phase ? S.phase(I.ss) : (I.ss && I.ss.step === 'working' ? 'thinking' : 'idle'); }
       function simCtx(I, el) {
         return { s: I.ss, paint: function () { simPaint(I); }, announce: function (t) { I.announce(txt(t)); }, el: el || null, root: I.root };
       }
+      function rqRun(I, a) {
+        var ss = I.ss;
+        var r = PSX.RQ.act(a, ss, { paint: function () { simPaint(I); }, announce: function (t) { I.announce(txt(t)); },
+          text: function () { return I.cmp ? I.cmp.text() : (ss.axText || ''); }, setText: function (t) { ss.axText = t; } }, S.tune ? S.tune(ss) : null);
+        if (typeof r === 'string') run(I, r);
+      }
+      function simTune(I) {
+        var ss = I.ss, own = S.tune ? S.tune(ss) : null;
+        if (I.cmp) { ss.axText = I.cmp.text(); I.lastAx = ss.axText; }
+        if (own && own.open && own.close) run(I, own.close);
+        if (ss.rq && ss.rq.pop) rqRun(I, 'rq:close');
+        I.cmp.openTune(function (key) { rqRun(I, 'rq:pick:' + key); });
+      }
       function run(I, a, el) {
         var ss = I.ss;
         if (I.cmp) { ss.axText = I.cmp.text(); I.lastAx = ss.axText; }
+        if (a.indexOf('rq:') === 0) { rqRun(I, a); return; }
         if (a === 'ax:plus' && I.cmp) { I.cmp.openPlus(); return; }
         if (a === 'ax:new') { reset(I); return; }
         if (/^ax:unqueue:/.test(a)) { I.queue.splice(+a.split(':')[2], 1); simPaint(I); return; }
@@ -25816,9 +26139,10 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
          ×, Escape) is the desktop's own close action. */
       function syncPop(I) {
         var pop = I.cx.pop || '';
-        var tool = I.cmp && $('.cmp__tools [aria-haspopup][aria-expanded="true"]', I.cmp.el);
+        var tool = I.cmp && I.cmp.tuneBtn;
         if (pop) {
-          if (tool) I.popClose = tool.getAttribute('data-act');
+          var own = S.tune ? S.tune(I.ss) : null;
+          I.popClose = I.ss.rq && I.ss.rq.pop ? 'rq:close' : (own && own.close) || 'close';
           if (!I.popEl || !I.popEl.isConnected) {
             var lab = (pop.match(/aria-label="([^"]+)"/) || [])[1] || 'Choose';
             I.ov.open({ anchor: tool || I.cmp.form, inst: I, title: lab, bare: true, cls: 'psx-sheet',
@@ -25835,13 +26159,20 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           if (I.popEl) { repaint(I.popEl, pop); demote(I.popEl); }
         } else if (I.popEl) {
           closePop(I);
-          var t = I.cmp && $('.cmp__tools [aria-haspopup]', I.cmp.el); if (t) t.focus({ preventScroll: true });
+          if (tool && !tool.hidden) tool.focus({ preventScroll: true });
         }
       }
       function simPaint(I) {
         var ss = I.ss, ph = phase(I);
         I.step = ph;
         I.cx = S.composerOpts ? (S.composerOpts(ss) || {}) : {};
+        /* As the desktop shell: the tune control, its shared pickers
+           and its one-line notes, for a scenario that has its own row. */
+        if (S.tune) {
+          I.cx = Object.assign({}, I.cx); I.cx.tune = PSX.RQ.tune(ss, S.tune(ss));
+          var rp = PSX.RQ.pop(ss); if (rp) I.cx.pop = rp;
+          var rn = PSX.RQ.note(ss, ss.axText || ''); if (rn) I.cx.assist = (I.cx.assist || '') + rn;
+        }
         var key = (ss.turns ? ss.turns.length : 0) + '|' + ss.step;
         repaint(I.surface, S.thread(ss));
         if (key !== I.lastKey) { I.lastKey = key; requestAnimationFrame(function () { I.scrollEnd(); }); }
@@ -25871,6 +26202,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             voice: o.voice, maxLines: function () { return 6; },
             plus: CO.plus,
             toolsHTML: function () { return I.cx.tools || ''; },
+            tune: function () { return I.cx.tune || null; },
+            onTune: function () { simTune(I); },
             markHTML: function () { return scafsHTML(I.cx.scaffolds) + (I.cx.assist || ''); },
             busy: function () { return ['thinking', 'working', 'blocked'].indexOf(phase(I)) >= 0; },
             note: function () {
@@ -25978,6 +26311,14 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     function pf(I) { return I.pcmp && I.pcmp.cmp.field; }
     function sent(I) { return !!(I.ss && I.ss.turns && I.ss.turns.some(function (t) { return t.who === 'you'; })); }
     function sheetOpen(I) { return !!(I.popEl && I.popEl.isConnected); }
+    /* Open the tune control and choose a row, as a person would. */
+    async function tunePick(I, h, key) {
+      var cm = I.kind === 'sim' ? I.cmp : I.pcmp.cmp;
+      cm.tuneBtn.click(); await h.wait(220);
+      var it = $('.layer .mi--tune[data-k="' + key + '"]', I.win); if (it) it.click(); await h.wait(220);
+      return !!it;
+    }
+    function tuneLabel(I) { var cm = I.kind === 'sim' ? I.cmp : I.pcmp.cmp; return cm.tuneBtn.getAttribute('aria-label') || ''; }
 
     /* ── Suggestions ──
        Mobile decisions: the chips sit just above the bottom composer,
@@ -26066,8 +26407,8 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           await walkStates(I, h);
           I.def.preview.setState(I, 'original'); I.sync(); await h.wait(60);
           var before = pf(I).value;
-          click(I, '[data-act="pe:go"]'); await h.wait(80);
-          h.check('Improve — working, the original untouched', I.ps.state === 'enhancing' && pf(I).value === before);
+          await tunePick(I, h, 'improve');
+          h.check('Tune → Improve prompt — working, the original untouched', I.ps.state === 'enhancing' && pf(I).value === before);
           await h.wait(1600);
           h.check('Proposal ready — changes listed, original still in the composer', I.ps.state === 'enhanced' && pf(I).value === before);
           click(I, '[data-act="pe:use"]'); await h.wait(120);
@@ -26075,10 +26416,12 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           await devices(I, h, function () { return I.ps.state === 'accepted' && pf(I).value !== before; }, 'improved prompt kept');
           click(I, '[data-act="pe:undo"]'); await h.wait(100);
           h.check('Undo — the original is back', pf(I).value === before);
+          await tunePick(I, h, 'mode'); click(I, '[data-act="rq:set:mode:review"]'); await h.wait(150);
+          h.check('Tune → Mode here too — Review is set, named on the control, text unchanged', I.ps.rq && I.ps.rq.mode === 'review' && /Mode Review/.test(tuneLabel(I)) && pf(I).value === before);
           return;
         }
         var orig = I.cmp.text();
-        click(I, '.cmp__tools [data-act="improve"]'); await h.wait(1700);
+        await tunePick(I, h, 'improve'); await h.wait(1500);
         h.check('Improve — proposed changes in the thread, original in the composer', I.ss.pe === 'review' && I.cmp.text() === orig);
         await devices(I, h, function () { return I.ss.pe === 'review' && I.cmp.text() === orig; }, 'proposal and original kept');
         var t = $('.sim-pe [data-act^="toggle:"]', I.root); if (t) t.click(); await h.wait(100);
@@ -26088,11 +26431,12 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     });
 
     /* ── Modes ──
-       Mobile decisions: Mode is a chip among the composer's tools; the
-       picker is a bottom sheet with each mode’s description; the active
-       mode stays visible on the chip; nothing runs on selection. */
+       Mobile decisions: Mode is in the tune menu right after + (a sheet,
+       like +); the picker is a bottom sheet with each mode’s description;
+       the dot and the tune control's name say what is on; nothing runs. */
     definePS({
       id: 'psmd', key: 'modes', name: 'Modes',
+      pvOwn: function (s) { return { open: s.state === 'open' || s.state === 'unavailable', close: 'md:close' }; },
       oneline: 'Lets them choose how the agent approaches the task — Plan, Review, Draft — without changing the model, context or permissions.',
       nav: { group: 'Releases', items: ['October release', 'Scope', 'QA plan', 'Launch checklist'] },
       composer: { ask: 'Describe the task…', plus: ['Attach a file', 'Add a project'] },
@@ -26104,34 +26448,39 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           await walkStates(I, h);
           I.def.preview.setState(I, 'none'); I.sync(); await h.wait(60);
           var before = pf(I).value;
-          click(I, '.cmp__tools [data-act="md:open"]'); await h.wait(100);
+          await tunePick(I, h, 'mode');
           h.check('Open Mode — the picker opens above the bar; nothing else changes', I.ps.state === 'open' && !!A(I, '.cmp__panel .ps-pick') && pf(I).value === before);
           click(I, '[data-act="md:pick:research"]'); await h.wait(100);
           h.check('Research — unavailable, said why; the prompt is kept', I.ps.state === 'unavailable' && pf(I).value === before);
           click(I, '[data-act="md:pick:plan"]'); await h.wait(100);
-          h.check('Plan — chosen, shown on the chip, unsent', I.ps.state === 'selected' && /Plan/.test((A(I, '.cmp__tools') || {}).textContent || '') && !I.ps.psSent);
+          h.check('Plan — chosen, named on the tune control, unsent', I.ps.state === 'selected' && /Mode Plan/.test(tuneLabel(I)) && !I.ps.psSent);
           await devices(I, h, function () { return I.ps.state === 'selected' && pf(I).value === before; }, 'mode and prompt kept');
           return;
         }
         var before2 = I.cmp.text();
-        click(I, '.cmp__tools [data-act="open"]'); await h.wait(150);
+        await tunePick(I, h, 'mode');
         h.check('Open Mode — a sheet with each mode and what it changes', sheetOpen(I) && !!$('.ps-opt', I.popEl));
         $('[data-act="mode:research"]', I.popEl).click(); await h.wait(120);
         h.check('Research — unavailable, explained; nothing applied', sheetOpen(I) && I.ss.off && !I.ss.mode);
         $('[data-act="mode:plan"]', I.popEl).click(); await h.wait(150);
         h.check('Plan — the sheet closes; the chip says Plan; text unchanged', !sheetOpen(I) && I.ss.mode === 'plan' && I.cmp.text() === before2);
         await devices(I, h, function () { return I.ss.mode === 'plan' && I.cmp.text() === before2; }, 'mode and text kept');
+        await tunePick(I, h, 'tone');
+        h.check('Tune → Tone here too — a sheet with the tones', sheetOpen(I) && !!$('[data-act="rq:set:tone:friendly"]', I.popEl));
+        $('[data-act="rq:set:tone:friendly"]', I.popEl).click(); await h.wait(150);
+        h.check('Friendly — set, the sheet closes, text unchanged', !sheetOpen(I) && I.ss.rq.tone === 'friendly' && /Tone Friendly/.test(tuneLabel(I)) && I.cmp.text() === before2);
         I.cmp.submit(); await h.wait(1800);
         h.check('Send — answered in Plan mode', sent(I) && I.ss.turns.length === 2);
       } }
     });
 
     /* ── Voice & Tone ──
-       Mobile decisions: Tone is a chip among the composer's tools; the
+       Mobile decisions: Tone is in the tune menu right after +; the
        picker is a bottom sheet with a sample; the recommendation is
        marked, never applied; custom tone entry sits above the keyboard. */
     definePS({
       id: 'pstn', key: 'voice-tone', name: 'Voice & Tone',
+      pvOwn: function (s) { return { open: s.state === 'open', close: 'tn:close' }; },
       oneline: 'Sets how the reply should sound for its audience — the facts, caveats and permissions stay exactly the same.',
       nav: { group: 'Updates', items: ['Onboarding update', 'Drafts', 'Sent', 'Audiences'] },
       composer: { ask: 'Describe what to write…', plus: ['Attach a file'] },
@@ -26143,18 +26492,18 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           await walkStates(I, h);
           I.def.preview.setState(I, 'default'); I.sync(); await h.wait(60);
           var before = pf(I).value;
-          click(I, '.cmp__tools [data-act="tn:open"]'); await h.wait(100);
+          await tunePick(I, h, 'tone');
           h.check('Open Tone — the picker opens above the bar', I.ps.state === 'open' && !!A(I, '.cmp__panel .ps-pick'));
           click(I, '[data-act="tn:pick:professional"]'); await h.wait(100);
           h.check('Professional — chosen, on the chip; text unchanged', I.ps.state === 'selected' && pf(I).value === before);
-          click(I, '[data-act="tn:remove"]'); await h.wait(100);
+          await tunePick(I, h, 'tone'); click(I, '[data-act="tn:remove"]'); await h.wait(100);
           h.check('Remove — back to the default voice, with Undo', I.ps.state === 'removed' && !!A(I, '[data-act="tn:undo"]'));
           click(I, '[data-act="tn:undo"]'); await h.wait(100);
           await devices(I, h, function () { return I.ps.state === 'selected' && pf(I).value === before; }, 'tone and prompt kept');
           return;
         }
         var before2 = I.cmp.text();
-        click(I, '.cmp__tools [data-act="open"]'); await h.wait(150);
+        await tunePick(I, h, 'tone');
         h.check('Open Tone — a sheet; Professional is recommended, not selected', sheetOpen(I) && !$('[aria-checked="true"]', I.popEl) && !!$('.ps-tile__tag', I.popEl));
         $('[data-act="tone:professional"]', I.popEl).click(); await h.wait(150);
         h.check('Professional — the sheet closes; text unchanged', !sheetOpen(I) && I.ss.tone === 'professional' && I.cmp.text() === before2);
@@ -26165,12 +26514,13 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     });
 
     /* ── Preset Styles ──
-       Mobile decisions: Style is a chip among the composer's tools; the
+       Mobile decisions: Style is in the tune menu right after +; the
        style list and its preview stack in a bottom sheet; Create a
        style is an inline card in the conversation; earlier replies keep
        their style. */
     definePS({
       id: 'psst', key: 'preset-styles', name: 'Preset Styles',
+      pvOwn: function (s) { return { open: s.state === 'available' || s.state === 'selected', close: 'st:close' }; },
       oneline: 'Named styles for how replies are written — previewed before use, switchable at any point, and made from your own writing.',
       nav: { group: 'Releases', items: ['October release notes', 'Changelog', 'Drafts', 'Published'] },
       composer: { ask: 'Describe what you need…', plus: ['Attach a file', 'Add a release'] },
@@ -26182,7 +26532,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           await walkStates(I, h);
           I.def.preview.setState(I, 'none'); I.sync(); await h.wait(60);
           var before = pf(I).value;
-          click(I, '.cmp__tools [data-act="st:open"]'); await h.wait(100);
+          await tunePick(I, h, 'style');
           h.check('Open Style — styles and a preview above the bar', I.ps.state === 'available' && !!A(I, '.cmp__panel .ps-st__prev'));
           click(I, '[data-act="st:pick:concise"]'); await h.wait(100);
           h.check('Concise — applied, on the chip; text unchanged', I.ps.state === 'applied' && pf(I).value === before && !I.ps.psSent);
@@ -26190,7 +26540,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
           return;
         }
         var before2 = I.cmp.text();
-        click(I, '.cmp__tools [data-act="open"]'); await h.wait(150);
+        await tunePick(I, h, 'style');
         h.check('Open Style — a sheet with the styles and a preview', sheetOpen(I) && !!$('.ps-st__prev', I.popEl));
         $('[data-act="style:concise"]', I.popEl).click(); await h.wait(150);
         h.check('Concise — the sheet closes; a note says earlier replies keep theirs; text unchanged', !sheetOpen(I) && I.ss.style === 'concise' && I.cmp.text() === before2 && !!$('.cmp__mark .ps-note', I.cmp.el));

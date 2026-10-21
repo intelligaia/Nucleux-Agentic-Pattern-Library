@@ -3256,6 +3256,20 @@
     .pv-stage .ax__composer { width: 100%; max-width: var(--ax-composer-max); }
     .pv-stage .pv-ml { width: 100%; display: grid; justify-items: center; }
 
+    /* Eight lines, then the field scrolls; Expand (top-right) gives the
+       request most of the height there is (21 Oct). */
+    .ax__expand { position: absolute; top: 6px; right: 6px; z-index: 2; display: inline-grid; place-items: center;
+      width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer;
+      color: var(--md-sys-color-on-surface-variant); }
+    .ax__expand[hidden] { display: none; }
+    .ax__expand svg { width: 20px; height: 20px; fill: currentColor; }
+    .ax__expand::after { content: ''; position: absolute; inset: -6px; }
+    .ax__expand:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+    .ax__expand:active { background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent); }
+    .ax__expand:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+    .ax__composer:has(> .ax__expand:not([hidden])) > .ax__field { padding-right: 36px; }
+    .ax__composer[data-expanded] { align-items: flex-start; }
+    .ax__composer[data-expanded] > .ax__field { flex-basis: 100%; order: -1; max-height: none; }
     .ax__composer {
       position: relative; z-index: 1;
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -6856,7 +6870,7 @@
          supported; the height is also set in script so the result
          is the same everywhere. */
       resize: none; overflow-y: auto; line-height: 1.45;
-      padding: 0; margin: 0; max-height: 72px;
+      padding: 0; margin: 0; max-height: calc(1.45em * 8);
       field-sizing: content;
       scrollbar-width: thin;
     }
@@ -7157,6 +7171,17 @@
       .ax__submenu { animation: none; }
     }
     .ax__mitem small { margin-left: auto; color: var(--md-sys-color-on-surface-variant); font-size: 11px; }
+    /* THE TUNE CONTROL (21 Oct): an icon button in +'s exact states
+       (it shares +'s classes). A dot says something is set; its menu
+       names each setting and its value. */
+    .ax__tune { position: relative; }
+    .ax__tune-dot { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--md-sys-color-primary); box-shadow: 0 0 0 2px var(--md-sys-color-surface-container-lowest, #fff); pointer-events: none; }
+    .ax__menu--tune { left: 40px; min-width: 248px; }
+    .ax__mitem--tune { gap: 12px; }
+    .ax__mitem__i { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 auto; color: var(--md-sys-color-on-surface-variant); }
+    .ax__mitem__i svg { width: 20px; height: 20px; fill: currentColor; }
+    .ax__mitem small.is-set { color: var(--md-sys-color-primary); font-weight: 600; }
     /* What the composer is doing, in words, under the capsule. */
     .ax__cnote {
       position: relative; z-index: 1;
@@ -8281,9 +8306,16 @@
     .ax__menu--ps { left: 0; right: 0; min-width: 0; max-height: 440px; overflow: auto; padding: 8px; text-align: left; border-radius: 20px;
       background: var(--md-sys-color-surface-container-lowest, #fff); border: 1px solid var(--md-sys-color-outline-variant); }
     .pv-stage:has(.ax__menu--ps) { padding-top: 470px; }
+    /* + now carries Mode / Tone / Style (21 Oct): room for its menu. */
+    .pv-stage:has(.ps .ax__menu--plus) { padding-top: 130px; }
+    .pv-stage:has(.ps .ax__menu--tune) { padding-top: 220px; }
     /* In a Live Preview the picker is shown whole; the stage makes room (psRoom). */
     .ps .ax__menu--ps { max-height: none; overflow: visible; }
     .ps-pick__h { padding: 10px 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+    /* Opened from + (21 Oct), a picker closes from its own header. */
+    .ps-pick__h { position: relative; }
+    .ps-pick__h:has(.ps-pick__x) { padding-right: 48px; }
+    .ps-pick__x { position: absolute; top: 4px; right: 4px; }
     .ps-pick__t { font-size: 16px; line-height: 24px; font-weight: 500; color: var(--md-sys-color-on-surface); }
     .ps-pick__s { font-size: 12.5px; line-height: 18px; color: var(--md-sys-color-on-surface-variant); }
     .ps-pick > .ps-warn, .ps-pick > .ps-err, .ps-pick > .ps-pr__prev, .ps-pick > .ps-sample, .ps-pick > .ps-custom, .ps-pick > .psc__foot { margin: 8px 8px 0; }
@@ -8537,7 +8569,7 @@
         /* Grows with the request up to six lines on a phone, then
            scrolls inside itself; the host's own ceiling still wins
            when it is lower. */
-        max-height: calc(1.5em * min(var(--axi-lines, 3), 6) + 6px);
+        max-height: calc(1.5em * 8 + 6px);
       }
       /* The invitation starts two lines tall: room that says "write
          here", without making the composer the height of the screen. */
@@ -8906,7 +8938,7 @@
       .ax__composer:focus-within { border-radius: 20px; }
       .ax__composer .ax__field {
         flex: 1 1 100%; order: -1; font-size: 16px; line-height: 1.5; padding: 4px 8px 2px;
-        max-height: calc(1.5em * min(var(--axi-lines, 3), 6) + 6px);
+        max-height: calc(1.5em * 8 + 6px);
       }
       .ax__composer[data-size="initial"] .ax__field { min-height: calc(1.5em * 2 + 6px); }
       .ax__field::placeholder { white-space: normal; text-overflow: clip; overflow: visible; }
@@ -8917,7 +8949,7 @@
       .ax__composer > .ax__cbtn--mic { margin-left: auto; }
       .ax__composer > .ax__cbtn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
       .ax__composer .ax__menu { top: auto; bottom: calc(100% + 8px); }
-      .ax__composer .ax__menu--plus { left: 0; right: 0; min-width: 0; }
+      .ax__composer .ax__menu--plus, .ax__composer .ax__menu--tune { left: 0; right: 0; min-width: 0; }
       .ax__composer .ax__mitem { min-height: 48px; }
       .ax__composer .ax__menu--model, .ax__composer .ax__menu--effort { left: auto; right: 0; max-width: 100cqw; }
     }
@@ -9245,8 +9277,8 @@
   <script src="material-mcp.js"></script>
   <script src="material-kb.js"></script>
   <script src="material-model.js"></script>
-  <script src="material-sim.js?v=28"></script>
-  <script src="material-preview.js?v=28"></script>
+  <script src="material-sim.js?v=31"></script>
+  <script src="material-preview.js?v=31"></script>
   <script src="material-pattern.js"></script>
   <script src="global.js"></script>
   <script src="nav-splitflap.js"></script>
