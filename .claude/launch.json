@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "research-assistant",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "Nucleux-social post/research-assistant", "run", "dev"],
+      "port": 5174,
+      "url": "http://127.0.0.1:5174"
+    },
+    {
+      "name": "content-studio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "Nucleux-social post/content-studio", "run", "dev"],
+      "port": 5175,
+      "url": "http://127.0.0.1:5175"
+    },
+    {
+      "name": "content-studio-md3",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "Nucleux-social post/content-studio-md3", "run", "dev"],
+      "port": 5176,
+      "url": "http://127.0.0.1:5176"
+    }
+  ]
+}
