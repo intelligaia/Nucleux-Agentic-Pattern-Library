@@ -341,7 +341,21 @@
   };
   let device = "desktop", screen = null;
 
-  function sceneUrl(id) { return "material-pattern?id=" + encodeURIComponent(id) + "&embed=sim"; }
+  // On a phone, patterns that have a mobile layout show it (the mobile bench,
+  // Mobile patterns material 3.0); the rest fall back to the desktop scene.
+  const PHONES = new Set(["android", "iphone"]);
+  const MOBILE = new Set(["disclosure", "consent", "caveat", "avatar", "name", "personality", "iconography", "color",
+    "example-gallery", "templates", "nudges", "disclaimer", "suggestions", "madlibs", "prompt-enhancer",
+    "modes", "voice-tone", "preset-styles", "initial-cta", "open-input", "suggested-prompts", "ai-icons",
+    "autocomplete", "proactive", "randomize", "attachments", "model-selection", "connectors", "mcp",
+    "knowledge-base", "voice-input", "visual-input", "handwriting", "gesture", "structured-input"]);
+  const MOBILE_SRC = "../Mobile%20patterns%20material%203.0/material-mobile.html";
+  const isMobileScene = (id) => PHONES.has(device) && MOBILE.has(id);
+  function sceneUrl(id) {
+    return isMobileScene(id)
+      ? MOBILE_SRC + "?embed=sim&id=" + encodeURIComponent(id) + "&device=" + device
+      : "material-pattern?id=" + encodeURIComponent(id) + "&embed=sim";
+  }
 
   function renderScreens() {
     const built = state.items.filter(isBuilt);
@@ -376,15 +390,41 @@
   // Make the kit scene read as the user's product: their app + agent name,
   // and none of the kit's demo chrome (reviewer toggles, sim footnotes).
   const SIM_PRODUCTS = /\b(Cadence|Fieldnotes|Folio|Huddle|Launchpad|Ledger|Northwind Desk|Orbit|Planboard|Prism|Relay|Scout|Signal)\b/g;
+  // The mobile bench draws its own phone, device picker and reviewer toggles
+  // around the app; the Playground's frame is the phone, so only the screen stays.
+  const MOBILE_CSS = "#bar, #sim-ctl, .pnav { display: none !important; }" +
+    " html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: hidden !important; }" +
+    " .shell, .bench, .stage, #stage-sim { margin: 0 !important; padding: 0 !important; max-width: none !important; width: 100% !important; height: 100vh !important; min-height: 0 !important; }" +
+    " #dev { width: 100% !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; transform: none !important; }" +
+    " #dev > .dev__screen { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; }" +
+    " #dev #win-sim { width: 100% !important; height: 100% !important; }";
+  function addStyle(doc, id, css) {
+    if (doc.getElementById(id)) return;
+    const st = doc.createElement("style"); st.id = id; st.textContent = css;
+    (doc.head || doc.documentElement).appendChild(st);
+  }
   function brandScene() {
     let doc; try { doc = $("#pg-iframe").contentDocument; } catch (e) { return; }
     if (!doc || !doc.body) return;
-    if (!doc.getElementById("pg-brand")) {
-      const st = doc.createElement("style"); st.id = "pg-brand";
-      st.textContent = "[data-sim-root] > .sc-bar, .sc-bar, .ax__foot, .sim__hint, .app__hint, .wf-hint, .wf-sim, .nx-launcher, #nx-launcher { display: none !important; }" +
-        " html, body { background: #fff !important; }";
-      doc.head.appendChild(st);
+    const bench = doc.getElementById("mm-bench");
+    if (bench) {
+      addStyle(doc, "pg-brand", "#mm-bench { height: 100vh !important; } html, body { background: #fff !important; }");
+      // The bench fills its frame a moment after load; style and rename it once it's there.
+      let tries = 0;
+      (function inner() {
+        let d; try { d = bench.contentDocument; } catch (e) { return; }
+        if (!d || !d.getElementById("dev")) { if (tries++ < 50) setTimeout(inner, 100); return; }
+        addStyle(d, "pg-brand", MOBILE_CSS + (device === "android" ? " .sb--ios { visibility: hidden !important; }" : ""));
+        renameIn(d);
+      })();
+      return;
     }
+    addStyle(doc, "pg-brand", "[data-sim-root] > .sc-bar, .sc-bar, .ax__foot, .sim__hint, .app__hint, .wf-hint, .wf-sim, .nx-launcher, #nx-launcher { display: none !important; }" +
+      " html, body { background: #fff !important; }");
+    renameIn(doc);
+  }
+  // The user's product and agent name in place of the kit's demo ones.
+  function renameIn(doc) {
     const product = state.domain.product, agent = state.agent;
     const swap = () => {
       const w = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
@@ -703,7 +743,8 @@
       $("#pg-pane-patterns").hidden = tab.dataset.view !== "patterns";
     }));
     $("#pg-devices").innerHTML = Object.entries(DEVICES).map(([k, d]) => `<option value="${k}">${esc(d.label)}</option>`).join("");
-    $("#pg-devices").addEventListener("change", (e) => { device = e.target.value; fitDevice(); });
+    // A phone swaps in the mobile layouts, so the screen reloads, not just resizes.
+    $("#pg-devices").addEventListener("change", (e) => { device = e.target.value; loadScreen(); });
     window.addEventListener("resize", fitDevice);
     $("#pg-open").addEventListener("click", () => { if (screen) window.open(sceneUrl(screen), "_blank", "noopener"); });
 
