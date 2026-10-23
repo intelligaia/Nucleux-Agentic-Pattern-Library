@@ -86,20 +86,26 @@
     .t-k { color: #c4b5fd; } .t-s { color: #fde68a; } .t-p { color: var(--ink-400); }
 
     /* Quick connect */
-    .mx-get { margin: var(--s-6) 0 0; padding: var(--s-5); border: 1px solid var(--border); border-radius: var(--r-4); background: var(--surface); }
-    .mx-get__lead { margin: 0 0 var(--s-4); font-size: 14px; }
-    .mx-get__row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
     .mx-btn { font: inherit; font-size: 14px; font-weight: 500; padding: 9px 16px; border-radius: var(--r-3); border: 1px solid var(--border-strong); background: var(--surface); color: var(--fg); cursor: pointer; transition: background var(--dur-1) var(--ease); }
     .mx-btn:hover { background: var(--ink-50); }
     .mx-btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
     .mx-btn--primary { background: var(--ink-950); border-color: var(--ink-950); color: var(--ink-0); }
     .mx-btn--primary:hover { background: var(--ink-800); }
     .mx-btn[disabled] { opacity: .6; cursor: progress; }
-    .mx-get__status { margin: var(--s-3) 0 0; font-size: 13px; color: var(--fg-mid); min-height: 1em; }
-    .mx-get__status.is-error { color: #b42318; }
     .mx-get__token { margin-top: var(--s-3); }
-    .mx-connect { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: var(--s-8) 0 0; }
-    @media (max-width: 560px) { .mx-connect { grid-template-columns: 1fr; } }
+    .mx-connect { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); margin: var(--s-8) 0 0; }
+    @media (max-width: 760px) { .mx-connect { grid-template-columns: 1fr; } }
+    button.mx-connect__btn { font: inherit; text-align: left; width: 100%; cursor: pointer; }
+    .mx-connect__btn[aria-busy="true"] { cursor: progress; opacity: .7; }
+    .mx-connect__icon { width: 28px; height: 28px; flex-shrink: 0; display: grid; place-items: center; border-radius: 7px; background: var(--ink-950); color: var(--ink-0); }
+    .mx-connect__status { margin: var(--s-3) 0 0; font-size: 13px; color: var(--fg-mid); min-height: 1em; }
+    .mx-connect__status.is-error, .mx-token__status.is-error { color: #b42318; }
+    .mx-connect__status:empty { display: none; }
+    .mx-token { margin: 0 0 var(--s-6); padding: var(--s-4) var(--s-5); border: 1px solid var(--border); border-radius: var(--r-4); background: var(--ink-50); }
+    .mx-token__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3); font-size: 14px; color: var(--fg-mid); }
+    .mx-token__row b { color: var(--fg); font-weight: 600; }
+    .mx-token__status { margin: var(--s-2) 0 0; font-size: 13px; color: var(--fg-mid); }
+    .mx-token__status:empty { display: none; }
     .mx-connect__btn {
       display: flex; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-5);
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-4); box-shadow: var(--shadow-2);
@@ -217,29 +223,33 @@
         <div class="mx-connect">
           <a class="mx-connect__btn" id="connect-claude" href="#" target="_blank" rel="noopener">
             <img src="./assets/logos/claude-mark.svg" alt="" aria-hidden="true">
-            <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with your connect prompt</span></span>
+            <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with your prompt</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
           <a class="mx-connect__btn" id="connect-codex" href="#" target="_blank" rel="noopener">
             <img src="./assets/logos/openai.svg" alt="" aria-hidden="true">
-            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Copies your connect prompt and opens Codex</span></span>
+            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Copies your prompt, opens Codex</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
+          <button class="mx-connect__btn" id="connect-other" type="button">
+            <span class="mx-connect__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 8 4 4-4 4M12 16h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><span class="mx-connect__name">Other coding agent</span><span class="mx-connect__hint">Copies a prompt for Cursor, VS Code…</span></span>
+            <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
         </div>
 
-        <div class="mx-get" id="get-token">
-          <p class="mx__p mx-get__lead"><b>Fastest, for any coding agent:</b> copy a connect prompt and paste it into your agent. It sets up every agent on your machine with a token of its own.</p>
-          <div class="mx-get__row">
-            <button class="mx-btn mx-btn--primary" type="button" id="copy-prompt">Copy connect prompt</button>
-            <button class="mx-btn" type="button" id="new-token">Get a token</button>
-          </div>
-          <p class="mx-get__status" id="get-status" role="status" aria-live="polite"></p>
-          <div class="mx-code mx-get__token" id="token-box" hidden><button class="mx-copy" type="button" aria-label="Copy token" data-copy=""></button><pre><code><span class="ln" id="token-text"></span></code></pre>
-            <p class="mx-code__note">Shown once. It's filled into the setup steps below; for any other agent, send it as the header <code>Authorization: Bearer &lt;token&gt;</code>. Keep it private.</p></div>
-        </div>
+        <p class="mx-connect__status" id="connect-status" role="status" aria-live="polite"></p>
+        <div class="mx-code mx-get__token" id="prompt-box" hidden><button class="mx-copy" type="button" aria-label="Copy prompt" data-copy=""></button><pre><code><span class="ln" id="prompt-text"></span></code></pre>
+          <p class="mx-code__note">Your browser blocked the clipboard: copy this and paste it into your coding agent. It works once, within 10 minutes.</p></div>
 
         <h2 class="mx__h2" id="setup">Setup</h2>
         <p class="mx__p">Pick where you work. The steps change to match.</p>
+        <div class="mx-token" id="get-token">
+          <div class="mx-token__row"><span><b>Setting it up by hand?</b> Get a token and it's filled into the steps below.</span><button class="mx-btn" type="button" id="new-token">Get a token</button></div>
+          <p class="mx-token__status" id="token-status" role="status" aria-live="polite"></p>
+          <div class="mx-code mx-get__token" id="token-box" hidden><button class="mx-copy" type="button" aria-label="Copy token" data-copy=""></button><pre><code><span class="ln" id="token-text"></span></code></pre>
+            <p class="mx-code__note">Copy it now: it isn't shown again. For any other client, send it as the header <code>Authorization: Bearer &lt;token&gt;</code>. Keep it private.</p></div>
+        </div>
         <div class="mx-tabs" role="tablist" aria-label="Platform" id="platform-tabs"></div>
         <div role="tabpanel" id="platform-panel" tabindex="0"></div>
 
@@ -312,7 +322,7 @@
             code: function (t) { return '{\n  "servers": {\n    "nucleux": {\n      "type": "http",\n      "url": "' + URL_MCP + '",\n      "headers": { "Authorization": "Bearer ' + t + '" }\n    }\n  }\n}'; } },
           { title: 'Start it', text: 'Click <b>Start</b> above the nucleux entry in <code>mcp.json</code>. Use it from Copilot Chat in <b>Agent</b> mode.' } ] },
         { id: 'any', name: 'Any agent', logo: '../../fav%20icon/Fav%20icon%203.png', steps: [
-          { title: 'Copy the prompt', text: 'Click <a href="#get-token">Copy connect prompt</a> above. It works once, within 10 minutes.' },
+          { title: 'Copy the prompt', text: 'Click <a href="#connect-other">Other coding agent</a> at the top of the page. It copies a connect prompt that works once, within 10 minutes.' },
           { title: 'Paste it into your agent', text: 'Claude Code, Cursor, VS Code, Codex, Windsurf, Gemini CLI or Claude Desktop runs the setup for every agent on your machine, checks it, and tells you to restart.' },
           { title: 'Or connect it by hand', text: 'Any MCP client that speaks Streamable HTTP works with the server URL and your token as a header:', token: true, lang: 'url',
             code: function (t) { return URL_MCP + '\nAuthorization: Bearer ' + t; } } ] },
@@ -349,18 +359,12 @@
       var tabs = Array.prototype.slice.call(tabsEl.children);
 
       var current = 'claude';
-      function tokenBar(pl) {
-        if (!pl.steps.some(function (st) { return st.token; })) return '';
-        return TOKEN
-          ? '<p class="mx-tokbar is-set">Your token is filled in below. It\'s shown only on this page, once: copy what you need now.</p>'
-          : '<p class="mx-tokbar">These steps include your token. <button class="mx-btn mx-btn--sm" type="button" data-get-token>Get a token</button> and it\'s filled in below.</p>';
-      }
       function show(id) {
         var pl = PLATFORMS.filter(function (x) { return x.id === id; })[0] || PLATFORMS[0];
         current = pl.id;
         tabs.forEach(function (t) { var on = t.id === 'tab-' + pl.id; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
         panel.setAttribute('aria-labelledby', 'tab-' + pl.id);
-        panel.innerHTML = tokenBar(pl) + '<ol class="mx-steps">' + pl.steps.map(function (st, i) {
+        panel.innerHTML = '<ol class="mx-steps">' + pl.steps.map(function (st, i) {
           return '<li><span class="mx-steps__n">' + (i + 1) + '</span><h3 class="mx-steps__title">' + st.title + '</h3>' +
             '<p class="mx__p">' + st.text + '</p>' + (st.code ? codeBlock(st) : (st.note ? '<p class="mx-code__note">' + st.note + '</p>' : '')) +
             '</li>';
@@ -380,10 +384,9 @@
       show(saved || 'claude');
 
       document.addEventListener('click', function (e) {
-        if (e.target.closest('[data-get-token]')) { getToken(); return; }
         var b = e.target.closest('[data-copy]');
         if (!b) return;
-        if (b.hasAttribute('data-needs-token')) { say('Get a token first: it\'s filled into the snippet'); }
+        if (b.hasAttribute('data-needs-token')) { say('Get a token first: it\'s filled into the snippet'); document.getElementById('get-token').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         navigator.clipboard.writeText(b.dataset.copy).then(function () {
           b.innerHTML = CHECK; b.classList.add('is-done');
           setTimeout(function () { b.innerHTML = COPY; b.classList.remove('is-done'); }, 1600);
@@ -393,13 +396,19 @@
       var toast = document.querySelector('.mx-toast');
       // ── Tokens: no account; the server issues a one-time connect prompt or a token ──
       // Same origin as the MCP server (nucleux.in/mcp), so no credentials or CORS.
-      var getStatus = document.getElementById('get-status');
+      var connectStatus = document.getElementById('connect-status');
+      var tokenStatus = document.getElementById('token-status');
       var tokenBox = document.getElementById('token-box');
       var tokenCopy = tokenBox.querySelector('.mx-copy');
-      tokenCopy.innerHTML = COPY;
-      function status(msg, isError) { getStatus.textContent = msg; getStatus.classList.toggle('is-error', !!isError); }
+      var promptBox = document.getElementById('prompt-box');
+      var promptCopy = promptBox.querySelector('.mx-copy');
+      tokenCopy.innerHTML = COPY; promptCopy.innerHTML = COPY;
+      function setStatus(el, msg, isError) { el.textContent = msg; el.classList.toggle('is-error', !!isError); }
+      function status(msg, isError) { setStatus(connectStatus, msg, isError); }
+      function showPrompt(t) { promptBox.hidden = false; document.getElementById('prompt-text').textContent = t; promptCopy.dataset.copy = t; }
       function issue(path) {
         return fetch(URL_MCP + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: '{}' })
+          .catch(function () { throw new Error('Couldn\'t reach the Nucleux server. Check your connection and try again.'); })
           .then(function (r) {
             if (r.status === 429) throw new Error('Too many requests from your network. Try again in a little while.');
             if (!r.ok) throw new Error('Couldn\'t get a token right now (' + r.status + '). Try again shortly.');
@@ -407,34 +416,21 @@
           });
       }
       function busy(btn, on) { btn.disabled = on; btn.setAttribute('aria-busy', on ? 'true' : 'false'); }
-      var promptBtn = document.getElementById('copy-prompt');
-      promptBtn.addEventListener('click', function () {
-        busy(promptBtn, true); status('Getting your connect prompt…');
-        issue('/tokens/prompt').then(function (d) {
-          return navigator.clipboard.writeText(d.prompt).then(function () {
-            status('Copied. Paste it into your coding agent; it works once, within 10 minutes.');
-            say('Connect prompt copied');
-          }, function () {
-            // Clipboard blocked: show it so it can be copied by hand.
-            tokenBox.hidden = false; document.getElementById('token-text').textContent = d.prompt; tokenCopy.dataset.copy = d.prompt;
-            status('Your browser blocked the clipboard. Copy the prompt below.');
-          });
-        }).catch(function (e) { status(e.message, true); }).then(function () { busy(promptBtn, false); });
-      });
       var tokenBtn = document.getElementById('new-token');
       function getToken() {
         if (TOKEN) return;
-        var inline = panel.querySelector('[data-get-token]');
-        busy(tokenBtn, true); if (inline) busy(inline, true); status('Creating a token…');
+        busy(tokenBtn, true); setStatus(tokenStatus, 'Creating a token…');
         issue('/tokens').then(function (d) {
           TOKEN = d.token;
           document.getElementById('token-text').textContent = d.token;
           tokenCopy.dataset.copy = d.token;
           tokenBox.hidden = false;
-          status('Your token is below, and filled into the setup steps. It\'s shown once.');
+          tokenBtn.hidden = true;
+          tokenBtn.previousElementSibling.innerHTML = '<b>Your token</b>, shown once. It\'s filled into the steps below.';
+          setStatus(tokenStatus, '');
           show(current);
-          say('Token created');
-        }).catch(function (e) { status(e.message, true); if (inline) busy(inline, false); }).then(function () { busy(tokenBtn, false); });
+          say('Token created and filled into the steps');
+        }).catch(function (e) { setStatus(tokenStatus, e.message, true); }).then(function () { busy(tokenBtn, false); });
       }
       tokenBtn.addEventListener('click', getToken);
 
@@ -474,6 +470,21 @@
           status('Claude opened with your connect prompt (also copied). It works once, within 10 minutes. If Claude can\'t run commands, paste it into Claude Code or Claude Desktop.');
         });
       });
+      // Any other agent: copy the prompt; it goes into whichever agent they use.
+      var other = document.getElementById('connect-other');
+      other.addEventListener('click', function () {
+        if (other.getAttribute('aria-busy') === 'true') return;
+        other.setAttribute('aria-busy', 'true'); status('Getting your connect prompt…'); promptBox.hidden = true;
+        var prompt = issue('/tokens/prompt').then(function (d) { return d.prompt; });
+        copyPending(prompt).then(function () {
+          status('Connect prompt copied. Paste it into your coding agent; it works once, within 10 minutes.');
+          say('Connect prompt copied');
+        }, function () {
+          return prompt.then(function (t) { showPrompt(t); status(''); });
+        }).catch(function (err) {
+          status(err && err.message ? err.message : 'Couldn\'t get a connect prompt. Try again shortly.', true);
+        }).then(function () { other.setAttribute('aria-busy', 'false'); });
+      });
       // Codex has no prefill link, so copy the prompt and open it.
       connectVia(document.getElementById('connect-codex'), function (prompt, win) {
         var copied = copyPending(prompt);
@@ -484,8 +495,8 @@
             say('Connect prompt copied — paste it into Codex');
           }, function () {
             if (win) win.close();
-            tokenBox.hidden = false; document.getElementById('token-text').textContent = t; tokenCopy.dataset.copy = t;
-            status('Your browser blocked the clipboard. Copy the prompt below and paste it into Codex.');
+            showPrompt(t);
+            status('');
           });
         });
       });
