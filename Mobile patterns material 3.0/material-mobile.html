@@ -5,6 +5,7 @@
   <!-- This page lives in "Mobile patterns material 3.0"; the site files it uses are in "Library v0.3". -->
   <base href="../Library%20v0.3/" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <script>if (/[?&]embed=(preview|sim)\b/.test(location.search)) document.documentElement.classList.add('mm-embedded');</script>
   <title>Mobile Agentic Patterns · Material 3.0 — Nucleux</title>
   <meta name="description" content="The Material 3.0 agentic patterns on iPhone, iPhone Duo and Galaxy Fold — the same states and behaviour as desktop, adapted to the window." />
 
@@ -76,6 +77,13 @@
       .detail-shell { grid-template-columns: minmax(0, 1fr); }
       .detail-shell > .sidebar { height: auto; }
     }
+    /* Embedded in a desktop component page: only the bench frame. */
+    html.mm-embedded, html.mm-embedded body { background: transparent !important; margin: 0; padding: 0; overflow: hidden; }
+    html.mm-embedded .gnav, html.mm-embedded #sidebar, html.mm-embedded .bread,
+    html.mm-embedded .detail__hero, html.mm-embedded .toc { display: none !important; }
+    html.mm-embedded .detail-shell, html.mm-embedded .detail, html.mm-embedded #sec-mobile {
+      display: block !important; margin: 0 !important; padding: 0 !important; max-width: none !important; width: 100% !important; border: 0 !important; }
+    html.mm-embedded .mm-bench { display: block; width: 100%; min-height: 0; border: 0; margin: 0; }
   </style>
 <link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=7">
 </head>
@@ -3626,6 +3634,28 @@ html[data-embed] .shell { display: block; }
 html[data-embed] .pnav, html[data-embed] #p-crumb, html[data-embed] #p-name, html[data-embed] #p-lede { display: none !important; }
 html[data-embed] .bench { max-width: none; margin: 0; padding-block: 0 8px; }
 html[data-embed] .bar { margin-top: 0; }
+/* Embedded in a desktop component page (?embed=preview|sim): that page
+   already has the title, Preview/Code, State and Customize, so only the
+   mobile component (preview) or the device (sim) is drawn here. */
+html[data-embed-view] #seg-view, html[data-embed-view] .panels, html[data-embed-view] #p-soon { display: none !important; }
+html[data-embed-view="preview"] .bar, html[data-embed-view="preview"] #sim-ctl, html[data-embed-view="preview"] .pv__info { display: none !important; }
+html[data-embed-view] .bench { padding-block: 0; }
+/* Preview: no device and no second card. The mobile component sits at the
+   phone's width straight on the desktop page's own stage, at that stage's
+   height, so the Live preview section is built the same on both devices. */
+html[data-embed-view="preview"], html[data-embed-view="preview"] body { background: transparent !important; overflow: hidden; margin: 0; }
+html[data-embed-view="preview"] .stage { margin: 0; padding: 0; }
+html[data-embed-view="preview"] #stage-preview { height: 100vh !important; }
+html[data-embed-view="preview"] .cv { border-radius: 0; box-shadow: none; overflow: visible; }
+html[data-embed-view="preview"] #win-preview { height: 100vh !important; background: transparent; }
+html[data-embed-view="preview"] #win-preview .pv__main { padding: 0; }
+html[data-embed-view="preview"] #win-preview .pv-card { background: transparent; border-radius: 0; min-height: 0 !important; overflow: visible; }
+/* The stage grows to fit, so the short-window cap on the composer panel is not needed here. */
+html[data-embed-view="preview"] #win-preview .cmpw > .cmp__panel { max-height: none !important; overflow: visible !important; }
+/* Measuring pass: a 1px window where nothing stretches or shrinks. */
+html.nx-measure[data-embed-view="preview"] #win-preview, html.nx-measure[data-embed-view="preview"] #stage-preview { height: 1px !important; }
+html.nx-measure[data-embed-view="preview"] #win-preview .pv-card, html.nx-measure[data-embed-view="preview"] #win-preview .pv__main { min-height: 0 !important; }
+html.nx-measure[data-embed-view="preview"] #win-preview .pv-body * { flex-shrink: 0 !important; }
 
 /* ═══ TRUST & DISCLOSURE (desktop CSS, verbatim) ═══ */
 .sc-caret {
@@ -5661,6 +5691,14 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
 
   /* Everything cheap; nothing repaints a field (the caret stays put). */
   N.sync = function () {
+    this.syncCore();
+    /* Embedded: tell the desktop page when the component moves state on its own. */
+    if (this.kind === 'preview' && !this.el.hidden && window.parent !== window && document.documentElement.hasAttribute('data-embed-view')) {
+      var st = this.state();
+      if (st !== this._posted) { this._posted = st; window.parent.postMessage({ type: 'nx-mobile-state-changed', state: st }, '*'); }
+    }
+  };
+  N.syncCore = function () {
     var d = this.def, h = d[this.kind], c = this.cfg;
     this.el.setAttribute('data-targets', c.showTargets ? 'true' : 'false');
     this.el.setAttribute('data-text', c.textSize === 'large' ? 'large' : 'default');
@@ -13775,6 +13813,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     var g = geo();
     var pw = $('#win-preview'), sw = $('#win-sim'), dev = $('#dev');
     setWin(pw, g, false); setWin(sw, g, true);
+    if (document.documentElement.getAttribute('data-embed-view') === 'preview') pw.style.setProperty('--h', Math.max(240, window.innerHeight) + 'px');
     var gd = $('#guide'), c = g.crease;
     gd.hidden = !(c && c.active);
     if (!gd.hidden) { gd.setAttribute('data-axis', c.axis); gd.style.setProperty('--pos', c.pos + 'px'); gd.style.setProperty('--gutw', Math.max(24, c.size || 0) + 'px'); }
@@ -13792,7 +13831,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
   function fit() {
     var g = geo(), stage = $('.stage');
     var top = stage.getBoundingClientRect().top + window.scrollY + 4;
-    var availH = Math.max(320, window.innerHeight - top - 20), availW = Math.max(240, stage.clientWidth);
+    var availH = document.documentElement.hasAttribute('data-embed-view') ? 1e5 : Math.max(320, window.innerHeight - top - 20), availW = Math.max(240, stage.clientWidth);
     [['#stage-preview', g.app, g.h], ['#stage-sim', g.w + 22, g.h + 22]].forEach(function (f) {
       var box = $(f[0]), s = Math.min(1, availH / f[2], availW / f[1]);
       box.style.setProperty('--fit', s.toFixed(4));
@@ -14063,12 +14102,62 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
       if (e.source !== window.parent || !e.data || e.data.type !== 'nx-mobile-pattern') return;
       if (typeof e.data.id === 'string') selectNav(e.data.id, false);
     });
+    /* The desktop page's own State and Customize drive this copy. */
+    var EV = document.documentElement.getAttribute('data-embed-view');
+    if (EV) setView(EV === 'sim' ? 'sim' : 'preview');
+    if (EV === 'preview') window.addEventListener('resize', function () { $('#win-preview').style.setProperty('--h', Math.max(240, window.innerHeight) + 'px'); relayoutAll(); });
+    window.addEventListener('message', function (e) {
+      if (e.source !== window.parent || !e.data) return;
+      var p = INST[bench.pattern]; if (!p) return;
+      if (e.data.type === 'nx-mobile-state') {
+        var I = p.pv, k = e.data.state, d = I.def;
+        if (d.states && d.states[k] && I.state() !== k && d.preview.setState) { d.preview.setState(I, k); I.sync(); }
+      } else if (e.data.type === 'nx-mobile-cfg' && e.data.cfg) {
+        [p.pv, p.sim].forEach(function (I) {
+          var changed = false;
+          Object.keys(e.data.cfg).forEach(function (k) {
+            var v = e.data.cfg[k];
+            if (!(k in I.cfg) || typeof v !== typeof I.cfg[k] || I.cfg[k] === v) return;
+            I.cfg[k] = v; changed = true;
+          });
+          if (changed) { if (I.def.preview.onCfg && I.kind === 'preview') I.def.preview.onCfg(I, '*'); I.sync(); }
+        });
+      }
+    });
     var lastH = 0;
     var postH = function () {
       var h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+      /* Preview: report what the mobile component itself needs, not the
+         window, which is sized from outside to the desktop stage. */
+      if (document.documentElement.getAttribute('data-embed-view') === 'preview') {
+        var P = INST[bench.pattern], pb = P && P.pv.el.querySelector('.pv-body');
+        if (pb) {
+          /* The span from the highest to the lowest piece of content
+             (innermost elements, absolute ones included, decorative halos
+             left out), laid out once at a 1px window where nothing stretches
+             or shrinks, so it is the content's own height whatever its
+             alignment. */
+          var R = document.documentElement; R.classList.add('nx-measure');
+          var lo = Infinity, hi = -Infinity;
+          pb.querySelectorAll('*').forEach(function (el) {
+            if (el.firstElementChild && getComputedStyle(el).display !== 'inline') return;
+            if (el.closest('[class*="halo"], [class*="aura"], [class*="glow"], .sr')) return;
+            var cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') return;
+            var r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+            if (r.top < lo) lo = r.top; if (r.bottom > hi) hi = r.bottom;
+          });
+          R.classList.remove('nx-measure');
+          h = Math.ceil((hi > lo ? hi - lo : 0) + 32);
+        }
+      }
       if (Math.abs(h - lastH) > 1) { lastH = h; window.parent.postMessage({ type: 'nx-bench-h', h: h }, '*'); }
     };
     if (window.ResizeObserver) new ResizeObserver(postH).observe(document.body);
+    /* Preview: the body never changes size (it is the stage), so re-report
+       whenever the component itself changes. */
+    var postT = 0, kick = function () { clearTimeout(postT); postT = setTimeout(postH, 60); };
+    if (document.documentElement.getAttribute('data-embed-view') === 'preview' && window.MutationObserver)
+      new MutationObserver(kick).observe($('#win-preview'), { childList: true, subtree: true, attributes: true, characterData: true });
     window.addEventListener('load', postH); postH();
     window.parent.postMessage({ type: 'nx-bench-ready', id: bench.nav }, '*');
   }
@@ -26563,6 +26652,7 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     var MOBILE = ['disclosure', 'consent', 'caveat', 'avatar', 'name', 'personality', 'iconography', 'color', 'example-gallery', 'templates', 'nudges', 'disclaimer', 'suggestions', 'madlibs', 'prompt-enhancer', 'modes', 'voice-tone', 'preset-styles', 'initial-cta', 'open-input', 'suggested-prompts', 'ai-icons', 'autocomplete', 'proactive', 'randomize',
                   'voice-input', 'visual-input', 'handwriting', 'gesture', 'structured-input',
                   'attachments', 'connectors', 'mcp', 'knowledge-base', 'model-selection'];
+    var EMBED = (/[?&]embed=(preview|sim)\b/.exec(location.search) || [])[1] || null;
     var HERE = location.pathname.replace(/[^/]*$/, ''); /* this folder (the <base> points at the library) */
     var N = window.MaterialNav, D = window.MaterialPatterns || {};
     var INDEX = {};
@@ -26621,13 +26711,28 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
     /* The bench reports its height; the frame follows, so the page scrolls as one. */
     window.addEventListener('message', function (e) {
       if (e.source !== frame.contentWindow || !e.data) return;
-      if (e.data.type === 'nx-bench-h') frame.style.height = Math.max(640, e.data.h) + 'px';
-      if (e.data.type === 'nx-bench-ready') { ready = true; if (e.data.id !== current) frame.contentWindow.postMessage({ type: 'nx-mobile-pattern', id: current }, '*'); }
+      if (e.data.type === 'nx-bench-h') {
+        /* Preview fills the desktop stage it is laid over; only the sim takes its own height. */
+        frame.style.height = EMBED === 'preview' ? '100vh' : (EMBED ? Math.max(120, e.data.h) : Math.max(640, e.data.h)) + 'px';
+        if (EMBED) window.parent.postMessage({ type: 'nx-mob-h', h: e.data.h }, '*');
+      }
+      if (EMBED && e.data.type === 'nx-mobile-state-changed') window.parent.postMessage(e.data, '*');
+      if (e.data.type === 'nx-bench-ready') {
+        ready = true; if (e.data.id !== current) frame.contentWindow.postMessage({ type: 'nx-mobile-pattern', id: current }, '*');
+        if (EMBED) { queue.forEach(function (m) { frame.contentWindow.postMessage(m, '*'); }); queue = []; window.parent.postMessage({ type: 'nx-mob-ready' }, '*'); }
+      }
     });
-    frame.srcdoc = '<!doctype html><html lang="en">' + document.getElementById('mm-bench-src').innerHTML + '</html>';
+    /* Embedded: the desktop page picks the pattern, the state and the settings. */
+    var queue = [];
+    if (EMBED) window.addEventListener('message', function (e) {
+      if (e.source !== window.parent || !e.data) return;
+      if (e.data.type === 'nx-mobile-pattern') { if (INDEX[e.data.id]) show(e.data.id, false); return; }
+      if (e.data.type === 'nx-mobile-state' || e.data.type === 'nx-mobile-cfg') { if (ready) frame.contentWindow.postMessage(e.data, '*'); else queue.push(e.data); }
+    });
+    frame.srcdoc = '<!doctype html><html lang="en"' + (EMBED ? ' data-embed-view="' + EMBED + '"' : '') + '>' + document.getElementById('mm-bench-src').innerHTML + '</html>';
     show(current, false);
   })();
   </script>
-  <script src="global.js"></script>
+  <script>if (!document.documentElement.classList.contains('mm-embedded')) document.write('<script src="global.js"><\/script>');</script>
 </body>
 </html>

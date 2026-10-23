@@ -12256,6 +12256,25 @@
     var busy = false;
     var tunable = groups(def).length > 0;
 
+    /* The desktop / mobile toggle (material-device.js) reads the state,
+       the settings and the view from here, and asks for a state when the
+       mobile component moves on its own. Nothing here changes how the
+       desktop preview behaves. */
+    function pvChanged() {
+      try { root.dispatchEvent(new CustomEvent('nx-pv-change', { bubbles: true })); } catch (e) {}
+    }
+    root.__nxpv = {
+      id: id,
+      state: function () { return s.state; },
+      cfg: function () { return s.cfg; },
+      view: function () { return s.view; },
+      setState: function (k) {
+        if (!def.states[k] || k === s.state) return false;
+        if (liveStates(def, s.cfg).indexOf(k) === -1) return false;
+        s.state = k; s.menu = false; paint(); return true;
+      }
+    };
+
     /* ── Undo / redo ──────────────────────────────────────────
        A stack of snapshots, not a stack of edits: values here are
        flat scalars, so the whole configuration is cheap to keep
@@ -12485,6 +12504,8 @@
       pvMenuRoom(root);
       pvAura(root);
       if (window.MaterialKB && window.MaterialKB.fit) window.MaterialKB.fit(root);
+
+      pvChanged();
     }
 
     function row(k, v) {
@@ -12667,6 +12688,7 @@
       if (id) touchRow(id);
       repaintOutput();
       syncPanel();
+      pvChanged();
     }
 
     /* The state select and the Preview/Code switch are head furniture:
@@ -12684,6 +12706,7 @@
       root.querySelectorAll('.mp-seg__btn').forEach(function (b) {
         b.setAttribute('aria-selected', String(b.dataset.view === s.view));
       });
+      pvChanged();
     }
 
     /* Reset changes every value at once. Emptying the row containers
