@@ -1081,7 +1081,7 @@
                     <a class="tree__pattern"
                        data-pattern="${p.id}"
                        data-status="${p.placeholder ? 'scaffold' : 'full'}"
-                       href="pattern.html?id=${encodeURIComponent(p.id)}">
+                       href="pattern?id=${encodeURIComponent(p.id)}">
                       ${esc(p.name)}<span class="badge-dot" aria-hidden="true"></span>
                     </a>
                   `).join("")}
@@ -1093,7 +1093,7 @@
       </div>
 
       <div class="sidebar__extras">
-        <a class="sidebar__extra" href="index.html#whats-inside">Framework</a>
+        <a class="sidebar__extra" href="index#whats-inside">Framework</a>
         <a class="sidebar__extra" href="https://www.intelligaia.com/portfolio" target="_blank" rel="noopener">Portfolio ↗</a>
         <a class="sidebar__extra" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Contact ↗</a>
       </div>
@@ -1156,7 +1156,7 @@
     const v = visualFor(p)();
     return `
       <a class="pcard ${ph ? "pcard--placeholder" : ""}"
-         href="pattern.html?id=${encodeURIComponent(p.id)}"
+         href="pattern?id=${encodeURIComponent(p.id)}"
          data-pattern="${p.id}">
         <div class="pcard__visual">${v}</div>
         <div class="pcard__body">

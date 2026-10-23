@@ -20,13 +20,17 @@ Maintained by [Intelligaia](https://github.com/intelligaia).
 
 ## Library v0.3 — the current site
 
-Static site, no build step. Open `index-v2.html` directly, or serve the folder:
+Static site, no build step. Serve the folder with the bundled preview server:
 
 ```bash
 cd "Library v0.3"
-python3 -m http.server 8000
-# then open http://localhost:8000/index-v2.html
+python3 serve.py
+# then open http://localhost:8000
 ```
+
+Links are clean URLs (`/library`, `/material-pattern?id=…`), as on nucleux.in.
+`serve.py` maps them to the `.html` files; `python3 -m http.server` doesn't,
+so links 404 there.
 
 ### Key files
 

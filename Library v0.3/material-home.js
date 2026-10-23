@@ -140,7 +140,7 @@
   function card(p, stage) {
     var built = BUILT.indexOf(p.id) !== -1;
     var tag   = built ? 'a' : 'div';
-    var href  = built ? ' href="material-pattern.html?id=' + encodeURIComponent(p.id) + '"' : '';
+    var href  = built ? ' href="material-pattern?id=' + encodeURIComponent(p.id) + '"' : '';
     return '' +
       '<' + tag + ' class="pcard' + (built ? '' : ' pcard--placeholder') + '"' + href +
         ' data-pattern="' + p.id + '">' +

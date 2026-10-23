@@ -282,7 +282,7 @@
 
   // ───────────────────────────────────────────────────────
   // Live preview — each built pattern is the kit's own product scene
-  // (material-pattern.html?embed=sim), not a drawing of it.
+  // (material-pattern?embed=sim), not a drawing of it.
   // ───────────────────────────────────────────────────────
   let BUILT = new Set();
   const isBuilt = (it) => BUILT.has(it.id);
@@ -295,7 +295,7 @@
   };
   let device = "desktop", screen = null;
 
-  function sceneUrl(id) { return "material-pattern.html?id=" + encodeURIComponent(id) + "&embed=sim"; }
+  function sceneUrl(id) { return "material-pattern?id=" + encodeURIComponent(id) + "&embed=sim"; }
 
   function renderScreens() {
     const built = state.items.filter(isBuilt);
@@ -364,7 +364,7 @@
       return `<section class="pg-bd__group"><h3 class="pg-bd__stage">${esc(its[0].x.stageLabel)}</h3>` + its.map(it => `
         <article class="pg-bd__item">
           <div class="pg-bd__top">
-            <a class="pg-bd__name" href="material-pattern.html?id=${encodeURIComponent(it.id)}">${esc(it.x.p.name)}</a>
+            <a class="pg-bd__name" href="material-pattern?id=${encodeURIComponent(it.id)}">${esc(it.x.p.name)}</a>
             ${isBuilt(it) ? `<span class="pg-tag pg-tag--live">Live in kit</span>` : `<span class="pg-tag">Not in the kit yet</span>`}
           </div>
           <p class="pg-bd__why">${esc(it.note || it.x.p.why)}</p>

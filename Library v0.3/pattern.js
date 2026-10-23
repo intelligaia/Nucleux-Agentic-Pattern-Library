@@ -4945,7 +4945,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
                     <a class="tree__pattern ${p.id === currentId ? 'is-current' : ''}"
                        data-pattern="${p.id}"
                        data-status="${p.placeholder ? 'scaffold' : 'full'}"
-                       href="pattern.html?id=${encodeURIComponent(p.id)}">
+                       href="pattern?id=${encodeURIComponent(p.id)}">
                       ${esc(p.name)}<span class="badge-dot" aria-hidden="true"></span>
                     </a>
                   `).join("")}
@@ -4956,8 +4956,8 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
         `).join("")}
       </div>
       <div class="sidebar__extras">
-        <a class="sidebar__extra" href="library.html">All patterns</a>
-        <a class="sidebar__extra" href="index.html">Landing</a>
+        <a class="sidebar__extra" href="library">All patterns</a>
+        <a class="sidebar__extra" href="index">Landing</a>
         <a class="sidebar__extra" href="https://www.intelligaia.com/contact" target="_blank" rel="noopener">Contact ↗</a>
       </div>
     `;
@@ -4973,9 +4973,9 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
 
     const breadHTML = `
       <nav class="bread" aria-label="Breadcrumb">
-        <a href="index.html">Home</a>
+        <a href="index">Home</a>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <a href="library.html#stage-${stage.id}">${esc(stage.label)}</a>
+        <a href="library#stage-${stage.id}">${esc(stage.label)}</a>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <span class="current">${esc(sub.title)}</span>
       </nav>
@@ -5059,7 +5059,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
         </div>
         <p class="t-mid" style="font-size:16px;line-height:1.6;max-width:620px">
           This pattern is in the scaffold. Full documentation, live composition, and code snippet will be filled in as we deepen this stage. Browse
-          <a href="library.html#stage-onboarding" style="border-bottom:1px solid var(--fg);color:var(--fg)">Onboarding</a>
+          <a href="library#stage-onboarding" style="border-bottom:1px solid var(--fg);color:var(--fg)">Onboarding</a>
           for examples of fully documented patterns.
         </p>
       </section>
@@ -5100,12 +5100,12 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
     const navHTML = `
       <div class="detail__nav">
         ${neighbours.prev ? `
-          <a href="pattern.html?id=${encodeURIComponent(neighbours.prev.p.id)}">
+          <a href="pattern?id=${encodeURIComponent(neighbours.prev.p.id)}">
             <span class="dir">← Previous</span>
             <span class="name">${esc(neighbours.prev.p.name)}</span>
           </a>` : `<span></span>`}
         ${neighbours.next ? `
-          <a class="next" href="pattern.html?id=${encodeURIComponent(neighbours.next.p.id)}">
+          <a class="next" href="pattern?id=${encodeURIComponent(neighbours.next.p.id)}">
             <span class="dir">Next →</span>
             <span class="name">${esc(neighbours.next.p.name)}</span>
           </a>` : `<span></span>`}
@@ -5492,7 +5492,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
 
     if (push) {
       history.pushState({ id: current.p.id }, "",
-        `pattern.html?id=${encodeURIComponent(current.p.id)}`);
+        `pattern?id=${encodeURIComponent(current.p.id)}`);
     }
     window.scrollTo({ top: 0, behavior: "instant" });
   }
@@ -5506,7 +5506,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
           e.shiftKey || e.altKey) return;
 
-      const a = e.target.closest('a[href^="pattern.html?id="]');
+      const a = e.target.closest('a[href^="pattern?id="]');
       if (!a || a.target === "_blank") return;
 
       const next = new URLSearchParams(a.getAttribute("href").split("?")[1]).get("id");
@@ -5530,7 +5530,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
     // Default to "disclosure" if no ?id= is present (so the file works
     // when double-clicked from Finder, no server required).
     const id = getId() || "disclosure";
-    if (!all.length) { location.href = "library.html"; return; }
+    if (!all.length) { location.href = "library"; return; }
 
     buildLightbox();
     wire();
