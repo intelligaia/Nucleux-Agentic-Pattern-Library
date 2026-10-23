@@ -186,7 +186,7 @@
   // ── Render ───────────────────────────────────────────
   function renderScenario(id) {
     const s = SCENARIOS[id];
-    if (!s) { location.href = "practices.html"; return; }
+    if (!s) { location.href = "practices"; return; }
 
     document.title = `${s.title} — Nucleux`;
     $("[data-scn-tag]").textContent = s.tag;
@@ -219,9 +219,9 @@
     const grid = $("#scn-patterns-grid");
     grid.innerHTML = s.patterns.map(pid => {
       const x = lookup(pid);
-      if (!x) return `<a class="scn-detail__pcard" href="library.html"><span class="scn-detail__pcard-name">${esc(pid)}</span><span class="scn-detail__pcard-meta">Library</span></a>`;
+      if (!x) return `<a class="scn-detail__pcard" href="library"><span class="scn-detail__pcard-name">${esc(pid)}</span><span class="scn-detail__pcard-meta">Library</span></a>`;
       return `
-        <a class="scn-detail__pcard" href="pattern.html?id=${encodeURIComponent(pid)}">
+        <a class="scn-detail__pcard" href="pattern?id=${encodeURIComponent(pid)}">
           <span class="scn-detail__pcard-name">${esc(x.p.name)}</span>
           <span class="scn-detail__pcard-meta">${esc(x.stage.label)} · ${esc(x.sub.title)}</span>
         </a>`;
@@ -229,9 +229,9 @@
 
     // Launch sandbox CTA
     if (s.sandbox) {
-      $("#scn-launch-cta").href = `sandbox.html?usecase=${encodeURIComponent(s.sandbox)}`;
+      $("#scn-launch-cta").href = `sandbox?usecase=${encodeURIComponent(s.sandbox)}`;
     } else {
-      $("#scn-launch-cta").href = "sandbox.html";
+      $("#scn-launch-cta").href = "sandbox";
     }
   }
 
@@ -250,7 +250,7 @@
 
   ready(() => {
     const id = new URLSearchParams(location.search).get("id");
-    if (!id || !SCENARIOS[id]) { location.href = "practices.html"; return; }
+    if (!id || !SCENARIOS[id]) { location.href = "practices"; return; }
     renderScenario(id);
     wire();
   });

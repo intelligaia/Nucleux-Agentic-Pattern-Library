@@ -182,8 +182,8 @@
 
     var bread =
       '<nav class="bread" aria-label="Breadcrumb">' +
-        '<a href="material-agentic.html">Home</a>' + CHEV +
-        '<a href="material-agentic.html#mx-stages">' + esc(p.stage) + '</a>' + CHEV +
+        '<a href="material-agentic">Home</a>' + CHEV +
+        '<a href="material-agentic#mx-stages">' + esc(p.stage) + '</a>' + CHEV +
         '<span class="current">' + esc(p.sub) + '</span>' +
       '</nav>';
 
@@ -320,12 +320,12 @@
     var nav =
       '<div class="detail__nav">' +
         (n.prev
-          ? '<a href="material-pattern.html?id=' + encodeURIComponent(n.prev.id) + '">' +
+          ? '<a href="material-pattern?id=' + encodeURIComponent(n.prev.id) + '">' +
               '<span class="dir">← Previous</span>' +
               '<span class="name">' + esc(n.prev.name) + '</span></a>'
           : '<span></span>') +
         (n.next
-          ? '<a class="next" href="material-pattern.html?id=' + encodeURIComponent(n.next.id) + '">' +
+          ? '<a class="next" href="material-pattern?id=' + encodeURIComponent(n.next.id) + '">' +
               '<span class="dir">Next →</span>' +
               '<span class="name">' + esc(n.next.name) + '</span></a>'
           : '<span></span>') +
@@ -518,12 +518,12 @@
     if (!row) {
       document.getElementById('detail').innerHTML =
         '<nav class="bread" aria-label="Breadcrumb">' +
-          '<a href="material-agentic.html">Overview</a>' + CHEV +
+          '<a href="material-agentic">Overview</a>' + CHEV +
           '<span class="current">Not found</span></nav>' +
         '<header class="detail__hero">' +
           '<h1 class="detail__name">No pattern called &ldquo;' + esc(id || '') + '&rdquo;</h1>' +
           '<p class="detail__oneline">It is not in the map under that name. The ' +
-          '<a href="material-agentic.html">overview</a> lists everything there is.</p>' +
+          '<a href="material-agentic">overview</a> lists everything there is.</p>' +
         '</header>';
       document.title = 'Not found · Material 3 — Nucleux';
       return;
@@ -534,8 +534,8 @@
 
     document.getElementById('detail').innerHTML =
       '<nav class="bread" aria-label="Breadcrumb">' +
-        '<a href="material-agentic.html">Overview</a>' + CHEV +
-        '<a href="material-agentic.html#stage-' + stage.id + '">' + esc(stage.label) + '</a>' +
+        '<a href="material-agentic">Overview</a>' + CHEV +
+        '<a href="material-agentic#stage-' + stage.id + '">' + esc(stage.label) + '</a>' +
         CHEV + '<span class="current">' + esc(row.name) + '</span></nav>' +
       '<header class="detail__hero">' +
         '<h1 class="detail__name">' + esc(row.name) + '</h1>' +
@@ -623,7 +623,7 @@
       window.MaterialNav.setActive(p ? id : null);
     }
     if (push) {
-      history.pushState({ id: id }, '', 'material-pattern.html?id=' + encodeURIComponent(id));
+      history.pushState({ id: id }, '', 'material-pattern?id=' + encodeURIComponent(id));
     }
     window.scrollTo(0, 0);
   }
@@ -636,7 +636,7 @@
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
         e.shiftKey || e.altKey) return;
 
-    var a = e.target.closest('a[href^="material-pattern.html?id="]');
+    var a = e.target.closest('a[href^="material-pattern?id="]');
     if (!a || a.target === '_blank') return;
 
     var next = new URLSearchParams(a.getAttribute('href').split('?')[1]).get('id');
@@ -670,7 +670,7 @@
   if (current && RED[current]) {
     current = RED[current];
     history.replaceState({ id: current }, '',
-      'material-pattern.html?id=' + encodeURIComponent(current));
+      'material-pattern?id=' + encodeURIComponent(current));
   }
 
   if (window.MaterialNav) window.MaterialNav.mount(PATTERNS[current] ? current : null);

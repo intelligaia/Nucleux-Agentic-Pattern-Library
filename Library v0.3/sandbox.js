@@ -434,7 +434,7 @@
       const m = lookup(id);
       if (!m) return "";
       return `
-        <a class="sbx-rail-pattern" href="pattern.html?id=${encodeURIComponent(id)}" target="_blank" rel="noopener">
+        <a class="sbx-rail-pattern" href="pattern?id=${encodeURIComponent(id)}" target="_blank" rel="noopener">
           <span class="sbx-rail-pattern__name">${esc(m.p.name)}</span>
           <span class="sbx-rail-pattern__meta">${esc(m.stage.label)} · ${esc(m.sub.title)}</span>
         </a>

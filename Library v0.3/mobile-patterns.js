@@ -131,7 +131,7 @@
     $('#mpx-crumb').textContent = p.stage + ' · ' + p.sub;
     $('#mpx-title').textContent = p.name;
     $('#mpx-lede').textContent = p.oneline || '';
-    $('#mpx-desktop').href = 'material-pattern.html?id=' + encodeURIComponent(id);
+    $('#mpx-desktop').href = 'material-pattern?id=' + encodeURIComponent(id);
     document.title = p.name + ' · Mobile patterns — Nucleux';
     var ready = !!READY[id];
     $('#mpx-device').hidden = !ready;
@@ -278,7 +278,7 @@
   }
   function loadFrames() {
     ['preview', 'sim'].forEach(function (m) {
-      var f = frame(m), src = 'material-pattern.html?id=' + encodeURIComponent(id) + '&embed=' + m;
+      var f = frame(m), src = 'material-pattern?id=' + encodeURIComponent(id) + '&embed=' + m;
       if (f.getAttribute('src') !== src) f.setAttribute('src', src);
     });
     hideKb();

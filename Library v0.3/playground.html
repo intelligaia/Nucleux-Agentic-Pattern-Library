@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Playground — Nucleux</title>
+  <meta name="description" content="Playground — describe an AI product and Nucleux builds a live preview from its pattern library." />
+
+  <!-- ── SHARE CARD ──
+       X (and LinkedIn, Slack, iMessage…) build their link preview by
+       crawling these tags, not from anything the share button can pass in
+       the intent URL — there is no way to attach an image to a post from a
+       link. `summary_large_image` is what makes the card render as the wide
+       banner rather than a small thumbnail. The image URL must be absolute
+       and publicly reachable: the crawler fetches it from its own servers,
+       so a relative path or a localhost address renders no card at all. -->
+  <link rel="canonical" href="https://nucleux.in/playground" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleux" />
+  <meta property="og:url" content="https://nucleux.in/playground" />
+  <meta property="og:title" content="Playground — Nucleux" />
+  <meta property="og:description" content="Playground — describe an AI product and Nucleux builds a live preview from its pattern library." />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png?v=2" />
+  <meta property="og:image:width" content="2400" />
+  <meta property="og:image:height" content="1260" />
+  <meta property="og:image:alt" content="Nucleux — Agentic UX patterns. Ready to build." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Playground — Nucleux" />
+  <meta name="twitter:description" content="Playground — describe an AI product and Nucleux builds a live preview from its pattern library." />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png?v=2" />
+  <meta name="twitter:image:alt" content="Nucleux — Agentic UX patterns. Ready to build." />
+
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+  <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="nav-mega.css" />
+  <!-- Responsive layer: last, so it wins on order over the page styles above. -->
+  <link rel="stylesheet" href="responsive.css" />
+<link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=7">
+  <link rel="stylesheet" href="nucleux-md3.css?v=4" />
+  <link rel="stylesheet" href="playground.css?v=1792760800" />
+  <script>if (/[?&]embed=1\b/.test(location.search)) document.documentElement.classList.add("pg-embed");</script>
+</head>
+<body class="has-shell">
+
+  <header class="gnav">
+    <div class="container gnav__inner">
+      <a class="brand" href="/" aria-label="Nucleux">
+        <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M38.0781 11.5382C38.0781 5.9997 40.5397 3.23047 45.4627 3.23047H51.9243V6.92278H46.155C43.5397 6.92278 42.232 8.46124 42.232 11.5382C42.232 14.6151 43.5397 16.1535 46.155 16.1535H51.9243V19.8459H45.4627C40.5397 19.8459 38.0781 17.0766 38.0781 11.5382Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M54.2344 3.23047V19.8459H65.7728V16.1535H58.3882V3.23047H54.2344Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M68.0781 3.23047V19.8459H80.7704V16.1535H72.232V13.1535H79.8474V9.92278H72.232V6.92278H80.7704V3.23047H68.0781Z" fill="var(--brand-word, #8A8F96)"/>
+        <path d="M83.5391 3V14.0769C83.5391 18.0769 85.8468 20.0769 90.4621 20.0769C95.0775 20.0769 97.3852 18.0769 97.3852 14.0769V3H93.2314V13.6154C93.2314 15.4615 92.3083 16.3846 90.4621 16.3846C88.616 16.3846 87.6929 15.4615 87.6929 13.6154V3H83.5391Z" fill="url(#paint0_linear_mark)"/>
+        <path d="M99.6959 3H104.773L108.465 8.53846L112.157 3H117.696L112.157 11.3077L117.696 19.6154H112.157L108.465 14.0769L104.773 19.6154H99.2344L105.234 11.3077L99.6959 3Z" fill="url(#paint1_linear_mark)"/>
+        <defs>
+        <linearGradient id="paint0_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_mark" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#21A4D7"/>
+        <stop offset="0.975962" stop-color="#8B57C7"/>
+        </linearGradient>
+        </defs>
+        </svg>
+      </a>
+
+      <nav class="gnav__center" aria-label="Primary">
+                <div class="gnav__item">
+          <a class="gnav__link" href="#components">Components</a>
+        </div>
+        <a class="gnav__link" href="practices">Scenarios</a>
+        <a class="gnav__link" href="docs">Docs</a>
+        <a class="gnav__link" href="mcp">MCP</a>
+        <a class="gnav__link" href="labs">Labs</a>
+        <a class="gnav__link gnav__link--featured" href="design-system">Design System</a>
+        <a class="gnav__link" href="blog">Blog</a>
+      </nav>
+
+      <div class="gnav__actions">
+        <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          GitHub
+        </a>
+        <a class="gnav__cta" href="contact">
+          Contact Us
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Home: centred prompt ── -->
+  <section class="pg-home" id="pg-home" aria-labelledby="pg-home-title">
+    <div class="pg-home__inner">
+      <img class="pg-home__logo" src="nucleux-logo.svg" alt="Nucleux" width="280" height="56">
+      <h1 class="pg-home__title" id="pg-home-title">What will you build?</h1>
+      <div class="pg-chips" id="pg-chips" aria-label="Suggestions"></div>
+      <div class="pg-home__bar" id="pg-home-bar"></div>
+      <a class="pg-btn-tertiary pg-home__lib" href="library">Open pattern library<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </section>
+
+  <!-- ── Studio: chat · live preview ── -->
+  <main class="pg-studio" id="pg-studio" aria-label="Playground" hidden>
+    <section class="pg-chat" aria-label="Chat">
+      <header class="pg-chat__head">
+        <img class="pg-chat__mark" src="nucleux-logo.svg" alt="Nucleux" width="80" height="16">
+        <a class="pg-btn-tertiary pg-chat__lib" href="library" target="_top">Pattern library</a>
+        <button class="pg-btn" type="button" id="pg-reset"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>New</button>
+      </header>
+      <div class="pg-log" id="pg-log" aria-live="polite"></div>
+      <div class="pg-dock">
+        <div id="pg-dock-bar"></div>
+      </div>
+    </section>
+
+    <section class="pg-view" aria-label="Preview">
+      <div class="pg-toolbar">
+        <div class="pg-tabs" role="tablist" aria-label="View">
+          <button class="pg-tab" role="tab" type="button" aria-selected="true" data-view="preview">Preview</button>
+          <button class="pg-tab" role="tab" type="button" aria-selected="false" data-view="patterns">Patterns</button>
+        </div>
+        <div class="pg-toolbar__end">
+          <label class="pg-sr" for="pg-devices">Device</label>
+          <select class="pg-select" id="pg-devices"></select>
+          <label class="pg-sr" for="pg-version">Version</label>
+          <select class="pg-select" id="pg-version"></select>
+          <button class="pg-icon" type="button" id="pg-open" aria-label="Open this screen in a new tab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+      <div class="pg-pane" id="pg-pane-preview">
+        <div class="pg-screens-bar">
+          <div class="pg-screens" id="pg-screens" role="tablist" aria-label="Screens"></div>
+          <span class="pg-screens-note" id="pg-screens-note"></span>
+        </div>
+        <div class="pg-stage" id="pg-stage">
+          <div class="pg-device" id="pg-device" data-device="desktop">
+            <div class="pg-device__bar"><span class="pg-device__dots" aria-hidden="true"><span></span><span></span><span></span></span><span class="pg-device__url" id="pg-url">—</span><span class="pg-device__title" id="pg-title"></span></div>
+            <div class="pg-device__screen">
+              <iframe class="pg-iframe" id="pg-iframe" title="Live Nucleux screen" hidden></iframe>
+              <div class="pg-noscreen" id="pg-noscreen"><p>Nothing live yet</p><span>The patterns in this build aren't in the component kit yet.</span></div>
+              <div class="pg-loading" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pg-pane pg-pane--scroll" id="pg-pane-patterns" hidden><div class="pg-bd" id="pg-breakdown"></div></div>
+    </section>
+  </main>
+
+  <script src="patterns.js"></script>
+  <script src="material-icons.js"></script>
+  <script src="playground.js?v=1792760800"></script>
+  <script src="global.js"></script>
+<script src="nav-splitflap.js?v=2"></script>
+<script src="nav-mega.js"></script>
+</body>
+</html>

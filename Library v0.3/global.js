@@ -230,7 +230,7 @@
       sandbox: { templates: ["chat", "rightrail"], patterns: ["disclosure", "streaming", "controls"], title: "The load-bearing eight" }
     },
     "Where do I start?": {
-      body: "Three steps. Open the <a href='library.html'>Library</a> to see all 84 patterns. Click any pattern to see its variants and in-context placements. Or stay in this assistant — pick a starter prompt above and I'll curate a path for you.",
+      body: "Three steps. Open the <a href='library'>Library</a> to see all 84 patterns. Click any pattern to see its variants and in-context placements. Or stay in this assistant — pick a starter prompt above and I'll curate a path for you.",
       patterns: ["disclosure", "avatar", "example-gallery"],
       followups: ["What is Nucleux?", "Walk me through the framework"],
       sandbox: null
@@ -523,11 +523,11 @@
           </div>
           <div class="nx-asst__sb-section">
             <div class="nx-asst__sb-eyebrow">Pinned</div>
-            <a class="nx-asst__sb-recent" href="library.html">
+            <a class="nx-asst__sb-recent" href="library">
               <span class="nx-asst__sb-recent-name">Browse library</span>
               <span class="nx-asst__sb-recent-meta">84 patterns</span>
             </a>
-            <a class="nx-asst__sb-recent" href="sandbox.html">
+            <a class="nx-asst__sb-recent" href="sandbox">
               <span class="nx-asst__sb-recent-name">Open sandbox</span>
               <span class="nx-asst__sb-recent-meta">6 agent demos</span>
             </a>
@@ -626,7 +626,7 @@
     }) : items.slice(0, 12);
     searchActiveIdx = 0;
     results.innerHTML = filtered.length ? filtered.slice(0, 30).map(({ p, sub, stage }, i) => `
-      <a class="nx-search__row ${i === 0 ? 'is-active' : ''}" href="pattern.html?id=${encodeURIComponent(p.id)}" data-row="${i}">
+      <a class="nx-search__row ${i === 0 ? 'is-active' : ''}" href="pattern?id=${encodeURIComponent(p.id)}" data-row="${i}">
         <span class="nx-search__row-name">${esc(p.name)}</span>
         <span class="nx-search__row-meta">${esc(stage.label)} · ${esc(sub.title)}</span>
         <span class="nx-search__row-oneline">${esc(p.oneline)}</span>
@@ -906,7 +906,7 @@
     const patterns = (opts.patternBundle || []).map(id => {
       const x = lookup(id);
       if (!x) return "";
-      return `<a class="nx-asst__pcard" href="pattern.html?id=${encodeURIComponent(id)}">
+      return `<a class="nx-asst__pcard" href="pattern?id=${encodeURIComponent(id)}">
         <span class="nx-asst__pcard-name">${esc(x.p.name)}</span>
         <span class="nx-asst__pcard-meta">${esc(x.stage.label)} · ${esc(x.sub.title)}</span>
       </a>`;
@@ -1079,7 +1079,7 @@
     const patternCards = (resp.patterns || []).map(id => {
       const m = lookup(id);
       if (!m) return "";
-      return `<a class="nx-asst__pcard" href="pattern.html?id=${encodeURIComponent(id)}">
+      return `<a class="nx-asst__pcard" href="pattern?id=${encodeURIComponent(id)}">
         <span class="nx-asst__pcard-name">${esc(m.p.name)}</span>
         <span class="nx-asst__pcard-meta">${esc(m.stage.label)} · ${esc(m.sub.title)}</span>
       </a>`;
@@ -1121,7 +1121,7 @@
       const usecase = resp.sandbox.usecase || "code-agent";
       const patternId = resp.sandbox.patterns?.[0] || "";
       const tpl = resp.sandbox.templates?.[0] || "chat";
-      const url = `sandbox.html?usecase=${encodeURIComponent(usecase)}&pattern=${encodeURIComponent(patternId)}&tpl=${encodeURIComponent(tpl)}`;
+      const url = `sandbox?usecase=${encodeURIComponent(usecase)}&pattern=${encodeURIComponent(patternId)}&tpl=${encodeURIComponent(tpl)}`;
       sandboxBtn = `
         <a class="nx-asst__cta" href="${url}" target="_blank" rel="noopener" data-launch-sandbox>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M14 3h7v7M10 21H3v-7M21 3l-7 7M3 21l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1374,12 +1374,18 @@
     return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   /* pages that live under another destination in the menu */
-  var SECTION_OF = { "scenario.html": "practices.html", "sandbox.html": "practices.html" };
+  var SECTION_OF = { "scenario": "practices", "sandbox": "practices" };
+  /* "library", "library.html", "/library" and "https://nucleux.in/library"
+     all name the same page; "", "/" and "index-v2" are home. */
+  function pageName(url) {
+    var p = String(url).split(/[?#]/)[0].toLowerCase().split("/").pop().replace(/\.html$/, "");
+    return p === "" || p === "index-v2" ? "index-v2" : p;
+  }
   function here(href) {
     if (!href) return false;
-    var page = (location.pathname.split("/").pop() || "index-v2.html").toLowerCase();
+    var page = pageName(location.pathname);
     page = SECTION_OF[page] || page;
-    return href.split(/[?#]/)[0].toLowerCase() === page;
+    return pageName(href) === page;
   }
 
   /* Read synchronously, before nav-splitflap.js replaces each label with
@@ -1442,11 +1448,11 @@
     function componentsGroup(l, intents) {
       var fams = window.NX_NAV_FAMILIES || [
         { id: "shadcn", label: "ShadCN", rows: [
-          { title: "Basic Components", desc: "Buttons, inputs, cards and the other foundational building blocks.", href: "basic-components.html" },
-          { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for AI-native flows.", href: "library.html" } ] },
+          { title: "Basic Components", desc: "Buttons, inputs, cards and the other foundational building blocks.", href: "basic-components" },
+          { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for AI-native flows.", href: "library" } ] },
         { id: "material", label: "Material 3.0", rows: [
           { title: "Basic Components", desc: "Coming soon", href: null },
-          { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.", href: "material-agentic.html" } ] }
+          { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.", href: "material-agentic" } ] }
       ];
       var intent = intents[l.label] || "";
       var anyCurrent = false;
@@ -1488,9 +1494,9 @@
       var x  = document.querySelector(".gnav__actions .gnav__x");
       var ct = document.querySelector(".gnav__actions .gnav__cta");
       var si = document.querySelector(".gnav__actions .gnav__signup");
-      var html = '<a class="nx-msheet__primary" href="' + esc(si ? si.getAttribute("href") : "signin.html") + '">Sign In</a>';
+      var html = '<a class="nx-msheet__primary" href="' + esc(si ? si.getAttribute("href") : "signin") + '">Sign In</a>';
       html += '<div class="nx-msheet__quick">';
-      html += '<a class="nx-msheet__qa" href="' + esc(ct ? ct.getAttribute("href") : "contact.html") + '">' + ICONS.mail + "<span>Contact</span></a>";
+      html += '<a class="nx-msheet__qa" href="' + esc(ct ? ct.getAttribute("href") : "contact") + '">' + ICONS.mail + "<span>Contact</span></a>";
       if (gh) html += '<a class="nx-msheet__qa" href="' + esc(gh.getAttribute("href")) + '" target="_blank" rel="noopener" aria-label="GitHub (opens in a new tab)">' + ICONS.github + "<span>GitHub</span></a>";
       if (x)  html += '<a class="nx-msheet__qa" href="' + esc(x.getAttribute("href")) + '" target="_blank" rel="noopener" aria-label="Share on X (opens in a new tab)">' + ICONS.x + "<span>Share</span></a>";
       html += "</div>";
@@ -1511,7 +1517,7 @@
         '<div class="nx-msheet__scrim" data-msheet-close></div>' +
         '<div class="nx-msheet__panel" role="dialog" aria-modal="true" aria-label="Site menu" tabindex="-1">' +
           '<div class="nx-msheet__head">' +
-            (brand ? '<a class="nx-msheet__brand" href="' + esc(brand.getAttribute("href") || "index-v2.html") + '" aria-label="Nucleux home">' + (brand.querySelector("svg") ? brand.querySelector("svg").outerHTML : "Nucleux") + "</a>" : "<span></span>") +
+            (brand ? '<a class="nx-msheet__brand" href="' + esc(brand.getAttribute("href") || "/") + '" aria-label="Nucleux home">' + (brand.querySelector("svg") ? brand.querySelector("svg").outerHTML : "Nucleux") + "</a>" : "<span></span>") +
             '<button type="button" class="nx-msheet__close" data-msheet-close aria-label="Close menu">' + ICONS.close + "</button>" +
           "</div>" +
           '<nav class="nx-msheet__body" aria-label="Primary">' + rows + "</nav>" +

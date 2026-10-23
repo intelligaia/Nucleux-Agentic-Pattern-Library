@@ -266,7 +266,7 @@
   function rowHTML(id, name, current) {
     var built = BUILT.indexOf(id) !== -1;
     var tag   = built ? 'a' : 'span';
-    var attr  = built ? ' href="material-pattern.html?id=' + encodeURIComponent(id) + '"' : '';
+    var attr  = built ? ' href="material-pattern?id=' + encodeURIComponent(id) + '"' : '';
     var cls   = 'tree__pattern' + (id === current ? ' is-current' : '');
     /* data-status keeps its original two values because the dot's
        styling reads them; data-avail carries the finer state and
@@ -320,9 +320,9 @@
       '<div class="sidebar__title"><h2>Material 3.0</h2><small>Agentic components</small></div>' +
       '<div class="tree" role="tree">' + treeHTML(current) + '</div>' +
       '<div class="sidebar__extras">' +
-        '<a class="sidebar__extra" href="material-agentic.html">Overview</a>' +
-        '<a class="sidebar__extra" href="library.html">ShadCN set</a>' +
-        '<a class="sidebar__extra" href="contact.html">Contact</a>' +
+        '<a class="sidebar__extra" href="material-agentic">Overview</a>' +
+        '<a class="sidebar__extra" href="library">ShadCN set</a>' +
+        '<a class="sidebar__extra" href="contact">Contact</a>' +
       '</div>';
 
     sb.addEventListener('click', function (e) {
