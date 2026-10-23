@@ -169,3 +169,7 @@
 .pg-embed { --nav-h: 0px; }
 .pg-embed .pg-home { padding-bottom: var(--s-12); }
 .pg-embed .pg-studio { border-top: 0; }
+
+/* The Playground opens in the studio: the welcome is the chat's first message. */
+.pg-welcome__title { display: block; font-size: 18px; line-height: 26px; letter-spacing: -0.01em; margin-bottom: 4px; }
+.pg-msg-row--welcome .pg-chips { justify-content: flex-start; margin: 12px 0 0; }

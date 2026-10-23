@@ -310,7 +310,12 @@
   function loadScreen() {
     const frame = $("#pg-iframe");
     const empty = $("#pg-noscreen");
-    if (!screen) { frame.hidden = true; empty.hidden = false; $("#pg-url").textContent = "—"; return; }
+    if (!screen) {
+      // Before the first build the preview says where it will appear, not that something is missing.
+      empty.querySelector("p").textContent = state ? "Nothing live yet" : "Your preview appears here";
+      empty.querySelector("span").textContent = state ? "The patterns in this build aren't in the component kit yet." : "Describe an AI product in the chat to build it.";
+      frame.hidden = true; empty.hidden = false; $("#pg-url").textContent = "—"; return;
+    }
     empty.hidden = true; frame.hidden = false;
     const src = sceneUrl(screen);
     $("#pg-url").textContent = state.agent.toLowerCase() + ".app/" + screen;
@@ -495,6 +500,7 @@
         "Assembling the screens from Nucleux components",
       ]);
       state = next;
+      prompt(false);
       commit("First build");
       render();
       await result("First build", `Here's a first version of <b>${esc(state.agent)}</b> as a ${esc(SURFACES[state.surface].label.toLowerCase())}. ` +
@@ -529,7 +535,7 @@
   }
 
   // ───────────────────────────────────────────────────────
-  // Home ↔ Studio
+  // Examples, welcome and New
   // ───────────────────────────────────────────────────────
   const EXAMPLES = [
     { label: "HR policy assistant", q: "An HR assistant that answers policy questions from the handbook and asks consent before recording calls" },
@@ -539,13 +545,38 @@
     { label: "Onboarding tour", q: "Onboarding for a new AI workspace with an example gallery, templates and a disclaimer about limits" },
   ];
 
-  function showHome() { $("#pg-home").hidden = false; $("#pg-studio").hidden = true; $("#pg-home-input").focus(); }
-  function showStudio() { $("#pg-home").hidden = true; $("#pg-studio").hidden = false; requestAnimationFrame(fitDevice); }
+  // The Playground opens straight into the studio: the chat starts with what to do and a few
+  // examples, and the composer is ready. There is no separate home screen to get past.
+  function prompt(first) {
+    const input = $("#pg-input");
+    input.placeholder = first ? "Describe what to build…" : "Ask for a change…";
+    const label = document.querySelector('label[for="pg-input"]');
+    if (label) label.textContent = first ? "Describe what to build" : "Ask for a change";
+    // The examples start a build; once there is one, they'd read as changes, so they step away (New brings them back).
+    document.querySelectorAll(".pg-msg-row--welcome .pg-chips, .pg-welcome__or").forEach(el => { el.hidden = !first; });
+  }
+  function welcome() {
+    const row = say(`<p class="pg-ai pg-welcome"><b class="pg-welcome__title">What will you build?</b>Describe an AI product and Nucleux picks the patterns it needs and builds a live preview.<span class="pg-welcome__or"> Or start from one of these:</span></p>
+      <div class="pg-chips" aria-label="Suggestions">${EXAMPLES.map((e, i) => md3Chip(e.label, `data-i="${i}"`, "spark")).join("")}</div>`, "pg-msg-row--ai pg-msg-row--welcome");
+    // A suggestion fills the prompt bar, the way it does in a real assistant; you send it.
+    row.querySelector(".pg-chips").addEventListener("click", async (e) => {
+      const c = e.target.closest("[data-i]"); if (!c || busy) return;
+      const input = $("#pg-input"), q = EXAMPLES[+c.dataset.i].q;
+      input.value = ""; input.focus();
+      for (let i = 1; i <= q.length; i += 3) { input.value = q.slice(0, i); input.dispatchEvent(new Event("input")); await wait(8); }
+      input.value = q; input.dispatchEvent(new Event("input"));
+    });
+    prompt(true);
+  }
   function reset() {
+    if (busy) return; // Stop ends a run first; New starts over from a quiet chat.
     state = null; versions = []; current = -1; screen = null;
     $("#pg-log").innerHTML = ""; $("#pg-breakdown").innerHTML = ""; $("#pg-screens").innerHTML = "";
     const f = $("#pg-iframe"); f.removeAttribute("src"); f.dataset.src = "";
-    showHome();
+    renderVersions();
+    loadScreen();
+    welcome();
+    $("#pg-input").focus();
   }
 
   function wireComposer(form, input, onSend) {
@@ -573,21 +604,11 @@
     buildIndex();
     await loadBuilt();
 
-    $("#pg-home-bar").innerHTML = md3Composer({ formId: "pg-home-form", id: "pg-home-input", rows: 3, label: "Describe what to build", placeholder: "Ask me Anything", sendLabel: "Build", cls: "pg-cmp--home" });
     $("#pg-dock-bar").innerHTML = md3Composer({ formId: "pg-form", id: "pg-input", rows: 1, label: "Ask for a change", placeholder: "Ask for a change…", cls: "nx-ib--dock" });
     document.querySelectorAll("[data-pg-stats]").forEach(el => { el.textContent = " · " + PATTERNS.length + " patterns"; });
 
-    $("#pg-chips").innerHTML = EXAMPLES.map((e, i) => md3Chip(e.label, `data-i="${i}"`, "spark")).join("");
-    const start = (q) => { showStudio(); submit(q); };
-    // A suggestion fills the prompt bar, the way it does in a real assistant; you send it.
-    $("#pg-chips").addEventListener("click", async (e) => {
-      const c = e.target.closest("[data-i]"); if (!c) return;
-      const input = $("#pg-home-input"), q = EXAMPLES[+c.dataset.i].q;
-      input.value = ""; input.focus();
-      for (let i = 1; i <= q.length; i += 3) { input.value = q.slice(0, i); input.dispatchEvent(new Event("input")); await wait(8); }
-      input.value = q; input.dispatchEvent(new Event("input"));
-    });
-    wireComposer($("#pg-home-form"), $("#pg-home-input"), start);
+    welcome();
+    loadScreen();
     wireComposer($("#pg-form"), $("#pg-input"), submit);
 
     $("#pg-reset").addEventListener("click", reset);
@@ -610,7 +631,8 @@
     window.addEventListener("resize", fitDevice);
     $("#pg-open").addEventListener("click", () => { if (screen) window.open(sceneUrl(screen), "_blank", "noopener"); });
 
+    requestAnimationFrame(fitDevice);
     const q = new URLSearchParams(location.search).get("q");
-    if (q) start(q); else $("#pg-home-input").focus();
+    if (q) submit(q); else if (!document.documentElement.classList.contains("pg-embed")) $("#pg-input").focus();
   });
 })();
