@@ -12,6 +12,7 @@
      Scenarios    →  8 Scenarios
      Docs         →  How to use
      MCP          →  Connect to AI
+     Playground   →  Build with AI
      Labs         →  Motion & Type
      Design System →  Gaiametry (external, new tab)
      Blog         →  Read insights
@@ -25,6 +26,7 @@
     'Scenarios':  '8 Scenarios',
     'Docs':       'How to use',
     'MCP':        'Connect to AI',
+    'Playground': 'Build with AI',
     'Labs':       'Motion & Type',
     'Design System': 'Gaiametry',
     'Blog':       'Read insights'

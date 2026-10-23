@@ -517,6 +517,8 @@ html.gnav-pending .gnav__actions { visibility: hidden; }
   background: transparent; color: var(--fg); border-color: var(--border-strong);
 }
 .btn--ghost:hover { border-color: var(--fg); background: var(--ink-50); }
+.btn--tertiary { background: transparent; color: var(--fg); border-color: transparent; }
+.btn--tertiary:hover { background: var(--ink-50); }
 .btn--live {
   background: var(--ink-950); color: var(--ink-0); border-color: var(--ink-950);
   padding: 13px 22px;
