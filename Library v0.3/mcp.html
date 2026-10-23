@@ -42,491 +42,87 @@
   <link rel="stylesheet" href="nav-mega.css" />
   <style>
 
-    /* ─── MCP PAGE ─── */
-    .mcp-page { position: relative; z-index: 1; }
-
-    /* Inner content cap — matches docs page --docs-w: 980px */
-    .mcp-inner {
-      max-width: 980px;
-    }
-
-    /* ── Shared section heading (matches docs ## style) ── */
-    .mcp-h2 {
-      font-size: clamp(26px, 3vw, 36px);
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      color: var(--fg);
-      margin: 0 0 var(--s-6);
-    }
-
-    /* ── Hero ── */
-    .mcp-hero {
-      padding-block: var(--s-16) var(--s-12);
-      border-bottom: 1px solid var(--border);
-      /* The Scenarios page background (.shape in styles.css): pink glow top-right, violet top-left. */
-      background:
-        radial-gradient(900px 420px at 88% -10%, rgba(233,75,156,0.10), transparent 60%),
-        radial-gradient(820px 460px at 4% 6%, rgba(124,92,246,0.10), transparent 58%),
-        var(--bg);
-    }
-    /* Subtle gradient glow behind the diagram */
-    .mcp-hero__right {
-      position: relative;
-    }
-    .mcp-hero__right::before {
-      content: "";
-      position: absolute;
-      inset: -30% -20%;
-      background:
-        radial-gradient(closest-side at 70% 40%, rgba(16,185,129,0.28), transparent 65%),
-        radial-gradient(closest-side at 30% 70%, rgba(99,102,241,0.18), transparent 65%);
-      filter: blur(40px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .mcp-hero__right > * { position: relative; z-index: 1; }
-
-    /* Two-column hero grid — wide container (1320px), heading gets majority of space */
-    .mcp-hero__grid {
+    /* ─── MCP DOCS PAGE ─── */
+    .mx { position: relative; z-index: 1; }
+    .mx__grid {
       display: grid;
-      grid-template-columns: 58fr 42fr;
+      grid-template-columns: minmax(0, 760px);
+      justify-content: center;
       gap: var(--s-12);
-      align-items: center;
+      padding-block: var(--s-12) var(--s-24);
     }
-    .mcp-hero__eyebrow {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--fg-muted);
-      letter-spacing: 0.02em;
-      margin-bottom: var(--s-4);
-    }
-    .mcp-hero__pulse {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #10b981;
-      flex-shrink: 0;
-      animation: nx-pulse 2.2s ease-in-out infinite;
-    }
-    @keyframes nx-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
-      50%       { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
-    }
-    /* Matches shared .hero__title from styles.css exactly */
-    .mcp-hero__title {
-      font-size: var(--t-display-1);
-      line-height: 1.02;
-      letter-spacing: -0.045em;
-      font-weight: 600;
-      margin: 0 0 var(--s-5);
-      color: var(--fg);
-    }
-    .mcp-hero__sub {
-      font-size: 17px;
-      line-height: 1.6;
-      color: var(--fg-mid);
-      margin: 0 0 var(--s-6);
+        @media (max-width: 820px)  { .mx__grid { grid-template-columns: minmax(0, 1fr); padding-top: var(--s-8); } }
+
+
+    /* Article head */
+    .mx__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-4); }
+    .mx__title { font-size: var(--t-display-3); line-height: 1.05; letter-spacing: -0.04em; font-weight: 600; color: var(--fg); margin: 0; }
+    .mx__lede { font-size: 19px; line-height: 1.55; color: var(--fg); margin: var(--s-5) 0 var(--s-3); }
+    .mx__p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); margin: 0 0 var(--s-4); }
+    .mx__p a, .mx__lede a { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+    .mx__h2 { font-size: var(--t-h2); letter-spacing: -0.025em; font-weight: 600; color: var(--fg); margin: var(--s-16) 0 var(--s-5); scroll-margin-top: calc(var(--nav-h) + var(--s-6)); }
+    .mx code:not(pre code) {
+      font: 500 0.86em var(--font-mono); color: var(--fg);
+      background: var(--ink-50); border: 1px solid var(--border); border-radius: var(--r-1); padding: 1px 5px;
     }
 
-    /* Install bar */
-    .mcp-install {
-      display: flex;
-      align-items: stretch;
-      background: var(--ink-950);
-      border: 1px solid var(--ink-800);
-      border-radius: var(--r-3);
-      width: fit-content;
-      overflow: hidden;
-      font-family: var(--font-mono);
-      font-size: 14px;
-    }
-    .mcp-install__cmd {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 13px 20px;
-      color: var(--ink-100);
-    }
-    .mcp-install__cmd .prompt { color: var(--ink-500); }
-    .mcp-install__copy {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 13px 16px;
-      font-size: 12px;
-      color: var(--ink-400);
-      background: var(--ink-900);
-      border-left: 1px solid var(--ink-800);
-      cursor: pointer;
-      transition: background var(--dur-1), color var(--dur-1);
-    }
-    .mcp-install__copy:hover { background: var(--ink-800); color: var(--ink-100); }
 
-    /* ── Flow diagram — light-themed, lives inside hero right column ── */
-    .mcp-flow__diagram {
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
-    .mcp-flow__node {
-      flex: 1;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--r-4);
-      padding: var(--s-4) var(--s-4);
-      min-width: 0;
-    }
-    /* MCP server node — light, accent border for emphasis */
-    .mcp-flow__node--server {
-      background: #fff;
-      border: 1.5px solid rgba(16,185,129,0.35);
-      flex: 1.1;
-    }
-    .mcp-flow__node-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--fg-muted);
-      margin-bottom: 4px;
-    }
-    .mcp-flow__node-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--fg);
-      letter-spacing: -0.01em;
-      margin-bottom: 8px;
-    }
-    .mcp-flow__node--server .mcp-flow__node-name {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #059669;
-    }
-    .mcp-flow__node-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-    .mcp-flow__pill {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      padding: 2px 7px;
-      border-radius: 99px;
-      background: rgba(12,12,10,0.05);
-      color: var(--fg-muted);
-      border: 1px solid rgba(12,12,10,0.08);
-      white-space: nowrap;
-    }
-    .mcp-flow__node--server .mcp-flow__pill {
-      background: rgba(16,185,129,0.07);
-      border-color: rgba(16,185,129,0.2);
-      color: #047857;
-    }
-    /* Connector line */
-    .mcp-flow__connector {
-      flex: 0 0 36px;
-      height: 1px;
-      background: var(--border);
-      position: relative;
-      overflow: visible;
-    }
-    .mcp-flow__dot {
-      position: absolute;
-      top: -3px;
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-      animation: flow-fwd 1.8s ease-in-out infinite;
-    }
-    .mcp-flow__dot:nth-child(2) { animation-delay: 0.6s; }
-    .mcp-flow__dot:nth-child(3) { animation-delay: 1.2s; }
-    @keyframes flow-fwd {
-      0%   { left: 0%;   opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { left: 100%; opacity: 0; }
-    }
-    .mcp-flow__connector--rev .mcp-flow__dot { animation-name: flow-rev; }
-    @keyframes flow-rev {
-      0%   { left: 100%; opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { left: 0%;   opacity: 0; }
-    }
-    /* AI clients column */
-    .mcp-flow__clients {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      min-width: 0;
-    }
-    .mcp-flow__client {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--r-3);
-      padding: 7px 12px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--fg);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      white-space: nowrap;
-    }
-    .mcp-flow__client-logo {
-      flex-shrink: 0;
-      width: 22px;
-      height: 22px;
-      display: block;
-      object-fit: cover;
-      object-position: center;
-      border-radius: 4px;
-    }
 
-    /* ── Responsive ── */
-    /* Tablet: compress gap, equal-ish columns */
-    @media (max-width: 1100px) {
-      .mcp-hero__grid { gap: var(--s-8); grid-template-columns: 54fr 46fr; }
-      .mcp-flow__connector { flex: 0 0 24px; }
+    /* Manual setup — client code blocks */
+    .mx-code { position: relative; border: 1px solid var(--ink-800); border-radius: var(--r-4); background: var(--ink-950); overflow: hidden; margin: 0 0 var(--s-4); }
+    .mx-code__head { display: flex; align-items: center; gap: 10px; padding: 12px 16px 0; font-size: 13px; font-weight: 600; color: var(--ink-50); }
+    .mx-code__head img { width: 18px; height: 18px; border-radius: 4px; }
+    .mx-code pre { margin: 0; padding: var(--s-4) 56px var(--s-4) 16px; font: 13px/1.75 var(--font-mono); color: var(--ink-100); overflow-x: auto; counter-reset: ln; }
+    .mx-code pre .ln { display: block; }
+    .mx-code pre .ln::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 2ch; margin-right: 16px; text-align: right; color: var(--ink-500); user-select: none; }
+    .mx-code__note { padding: 0 16px 14px; margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink-400); }
+    .mx-code__note code { font: 12px var(--font-mono) !important; color: var(--ink-100) !important; background: var(--ink-800) !important; border: 1px solid var(--ink-700) !important; }
+    .mx-copy {
+      position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 30px; height: 30px;
+      color: var(--ink-300); background: var(--ink-900); border: 1px solid var(--ink-700); border-radius: var(--r-2); cursor: pointer;
     }
-    /* Tablet narrow: stack */
-    @media (max-width: 780px) {
-      .mcp-hero__grid {
-        grid-template-columns: 1fr;
-        gap: var(--s-8);
-      }
-      .mcp-hero__title { font-size: clamp(36px, 8vw, 56px); }
-    }
-    /* Mobile: vertical diagram */
-    @media (max-width: 520px) {
-      .mcp-flow__diagram {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-      }
-      .mcp-flow__connector {
-        flex: none;
-        width: 1px;
-        height: 28px;
-        align-self: center;
-      }
-      .mcp-flow__clients {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-      .mcp-flow__client { white-space: normal; }
-    }
+    .mx-copy:hover { color: var(--ink-0); background: var(--ink-800); }
+    .mx-copy.is-done { color: #86efac; }
+    .t-k { color: #c4b5fd; } .t-s { color: #fde68a; } .t-p { color: var(--ink-400); }
 
-    /* ── Setup / Instructions ── */
-    .mcp-setup {
-      padding-block: var(--s-12);
-      border-bottom: 1px solid var(--border);
+    /* Quick connect */
+    .mx-connect { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: var(--s-8) 0 0; }
+    @media (max-width: 560px) { .mx-connect { grid-template-columns: 1fr; } }
+    .mx-connect__btn {
+      display: flex; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-5);
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-4); box-shadow: var(--shadow-2);
+      text-decoration: none; color: var(--fg); transition: border-color var(--dur-1), box-shadow var(--dur-1);
     }
-    .mcp-steps { display: flex; flex-direction: column; }
-    .mcp-step {
-      display: grid;
-      grid-template-columns: 38px 1fr;
-      gap: var(--s-5);
-      padding-bottom: var(--s-8);
-      position: relative;
+    .mx-connect__btn:hover { border-color: var(--border-strong); box-shadow: var(--shadow-3); }
+    .mx-connect__btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+    .mx-connect__btn img { width: 28px; height: 28px; flex-shrink: 0; }
+    .mx-connect__name { display: block; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .mx-connect__hint { display: block; font-size: 13px; color: var(--fg-muted); margin-top: 2px; }
+    .mx-connect__arrow { margin-left: auto; color: var(--fg-muted); }
+    .mx-toast {
+      position: fixed; left: 50%; bottom: var(--s-6); transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+      padding: 10px 16px; border-radius: var(--r-3); background: var(--ink-900); color: var(--ink-50); font-size: 14px; box-shadow: var(--shadow-4);
+      transition: opacity var(--dur-2), transform var(--dur-2) var(--ease-out); z-index: 50;
     }
-    .mcp-step:not(:last-child)::before {
-      content: "";
-      position: absolute;
-      left: 18px;
-      top: 38px;
-      bottom: 0;
-      width: 1px;
-      background: var(--border);
-    }
-    .mcp-step__num {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: #ebebeb;
-      border: none;
-      color: #111;
-      font-family: var(--font-sans);
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
-    .mcp-step__name {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--fg);
-      letter-spacing: -0.015em;
-      margin: 6px 0 var(--s-2);
-    }
-    .mcp-step__desc {
-      font-size: 14px;
-      color: var(--fg-mid);
-      line-height: 1.55;
-      margin: 0 0 var(--s-4);
-    }
+    .mx-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
-    /* Code blocks */
-    .mcp-code {
-      background: var(--ink-950);
-      border: 1px solid var(--ink-800);
-      border-radius: var(--r-3);
-      padding: var(--s-4) var(--s-5);
-      font-family: var(--font-mono);
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--ink-200);
-      position: relative;
-      overflow-x: auto;
-    }
-    .c  { color: var(--ink-600); }  /* comment */
-    .k  { color: #93c5fd; }         /* key */
-    .v  { color: #86efac; }         /* value / cmd */
-    .s  { color: #fcd34d; }         /* string */
-    .mcp-code__copy {
-      position: absolute;
-      top: 10px; right: 10px;
-      padding: 3px 10px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      border-radius: var(--r-2);
-      background: var(--ink-800);
-      color: var(--ink-300);
-      border: 1px solid var(--ink-700);
-      cursor: pointer;
-    }
-    .mcp-code__copy:hover { background: var(--ink-700); color: #fff; }
+    /* Platform switcher */
+    .mx-tabs { display: flex; gap: 4px; padding: 4px; margin: 0 0 var(--s-8); background: var(--ink-50); border: 1px solid var(--border); border-radius: var(--r-4); width: fit-content; max-width: 100%; overflow-x: auto; }
+    .mx-tab { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font: 500 13px/1.4 var(--font-sans); color: var(--fg-mid); background: transparent; border: 0; border-radius: var(--r-3); cursor: pointer; white-space: nowrap; transition: color var(--dur-1), background var(--dur-1); }
+    .mx-tab img { width: 16px; height: 16px; border-radius: 3px; }
+    .mx-tab:hover:not([aria-selected="true"]) { color: var(--fg); }
+    .mx-tab[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-2); }
+    .mx-tab:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+    .mx-steps { list-style: none; margin: 0; padding: 0; }
+    .mx-steps > li { position: relative; padding: 0 0 var(--s-8) 42px; }
+    .mx-steps > li:not(:last-child)::before { content: ""; position: absolute; left: 13px; top: 32px; bottom: 6px; width: 1px; background: var(--border); }
+    .mx-steps__n { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 27px; height: 27px; border-radius: var(--r-2); background: var(--ink-100); font: 600 13px var(--font-mono); color: var(--fg); }
+    .mx-steps__title { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin: 2px 0 var(--s-2); }
+    .mx-steps .mx__p { margin-bottom: var(--s-3); }
+    .mx-steps .mx-code { margin: var(--s-3) 0; }
+    .mx-steps b { color: var(--fg); font-weight: 600; }
 
-    /* ── Install segmented control ── */
-    .mcp-pkg-tabs {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      background: #eeeef0;
-      border-radius: 10px;
-      padding: 3px;
-      width: fit-content;
-      margin-bottom: 14px;
-    }
-    .mcp-pkg-tab {
-      padding: 5px 16px;
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 500;
-      color: #6b7280;
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: color 0.15s, background 0.15s, box-shadow 0.15s;
-      line-height: 1.4;
-      white-space: nowrap;
-    }
-    .mcp-pkg-tab:hover:not(.is-active) { color: #374151; }
-    .mcp-pkg-tab.is-active {
-      background: #fff;
-      color: #111;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06);
-    }
-    .mcp-pkg-tab:focus-visible {
-      outline: 2px solid #10b981;
-      outline-offset: 2px;
-    }
-    /* Code panel — standalone, full rounded corners */
-    .mcp-code--tabbed {
-      border-radius: var(--r-3);
-      margin-top: 0;
-    }
 
-    /* ── What's exposed ── */
-    .mcp-exposed {
-      padding-block: var(--s-12);
-    }
-    .mcp-exposed__grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--s-4);
-    }
-    @media (max-width: 860px) { .mcp-exposed__grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 540px) { .mcp-exposed__grid { grid-template-columns: 1fr; } }
-    .mcp-exposed__card {
-      padding: var(--s-5);
-      border: 1px solid var(--border);
-      border-radius: var(--r-3);
-      background: rgba(255,255,255,0.5);
-    }
-    .mcp-exposed__card-icon {
-      width: 32px; height: 32px;
-      border-radius: var(--r-2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: var(--s-3);
-    }
-    .mcp-exposed__card-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--fg);
-      margin: 0 0 4px;
-      letter-spacing: -0.01em;
-    }
-    .mcp-exposed__card-desc {
-      font-size: 13px;
-      color: var(--fg-muted);
-      line-height: 1.5;
-      margin: 0;
-    }
-
-    /* ── Compatible ── */
-    .mcp-compat {
-      padding-block: var(--s-10) var(--s-12);
-    }
-    .mcp-compat__inner {
-      display: flex;
-      align-items: baseline;
-      gap: var(--s-10);
-    }
-    @media (max-width: 700px) { .mcp-compat__inner { flex-direction: column; gap: var(--s-5); } }
-    .mcp-compat__left { flex-shrink: 0; }
-    .mcp-compat__left p {
-      font-size: 14px;
-      color: var(--fg-muted);
-      margin: var(--s-1) 0 0;
-      max-width: 200px;
-      line-height: 1.5;
-    }
-    .mcp-compat__chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      flex: 1;
-    }
-    .mcp-compat__chip {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 7px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--fg);
-      background: rgba(255,255,255,0.6);
-    }
-    .mcp-compat__chip-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-      flex-shrink: 0;
-    }
   </style>
   <!-- Responsive layer: last, so it wins on order over the page styles above. -->
   <link rel="stylesheet" href="responsive.css" />
@@ -583,206 +179,42 @@
     </div>
   </header>
 
-  <main class="mcp-page">
+  <main class="mx">
+    <div class="container mx__grid">
 
-    <!-- ── Hero ── -->
-    <section class="mcp-hero">
-      <div class="container">
-        <div class="mcp-hero__grid">
 
-          <!-- Left: copy -->
-          <div class="mcp-hero__left">
-            <h1 class="mcp-hero__title">Connect your design system to AI.</h1>
-            <p class="mcp-hero__sub">Give AI assistants real-time access to your components, tokens, and documentation — no manual copy-paste, no stale context.</p>
-          </div>
-
-          <!-- Right: connection diagram -->
-          <div class="mcp-hero__right">
-            <div class="mcp-flow__diagram">
-
-              <div class="mcp-flow__node">
-                <div class="mcp-flow__node-label">Your workspace</div>
-                <div class="mcp-flow__node-name">Nucleux Design System</div>
-                <div class="mcp-flow__node-pills">
-                  <span class="mcp-flow__pill">Components</span>
-                  <span class="mcp-flow__pill">Tokens</span>
-                  <span class="mcp-flow__pill">Patterns</span>
-                  <span class="mcp-flow__pill">Docs</span>
-                </div>
-              </div>
-
-              <div class="mcp-flow__connector">
-                <span class="mcp-flow__dot"></span>
-                <span class="mcp-flow__dot"></span>
-                <span class="mcp-flow__dot"></span>
-              </div>
-
-              <div class="mcp-flow__node mcp-flow__node--server">
-                <div class="mcp-flow__node-label">MCP server</div>
-                <div class="mcp-flow__node-name">@nucleux/mcp</div>
-                <div class="mcp-flow__node-pills">
-                  <span class="mcp-flow__pill">JSON-RPC</span>
-                  <span class="mcp-flow__pill">Structured tools</span>
-                </div>
-              </div>
-
-              <div class="mcp-flow__connector mcp-flow__connector--rev">
-                <span class="mcp-flow__dot"></span>
-                <span class="mcp-flow__dot"></span>
-                <span class="mcp-flow__dot"></span>
-              </div>
-
-              <div class="mcp-flow__clients">
-                <div class="mcp-flow__client">
-                  <img src="./assets/logos/claude.png" width="22" height="22" alt="" aria-hidden="true" class="mcp-flow__client-logo">
-                  Claude
-                </div>
-                <div class="mcp-flow__client">
-                  <img src="./assets/logos/cursor.jpeg" width="22" height="22" alt="" aria-hidden="true" class="mcp-flow__client-logo">
-                  Cursor
-                </div>
-                <div class="mcp-flow__client">
-                  <img src="./assets/logos/windsurf.png" width="22" height="22" alt="" aria-hidden="true" class="mcp-flow__client-logo">
-                  Windsurf
-                </div>
-                <div class="mcp-flow__client">
-                  <img src="./assets/logos/vscode.webp" width="22" height="22" alt="" aria-hidden="true" class="mcp-flow__client-logo">
-                  VS Code
-                </div>
-              </div>
-
-            </div>
-          </div>
-
+      <article class="mx__main">
+        <div class="mx__head">
+          <h1 class="mx__title">MCP Server</h1>
         </div>
-      </div>
-    </section>
 
-    <!-- ── Setup Instructions ── -->
-    <section class="mcp-setup">
-      <div class="container">
-        <div class="mcp-inner">
+        <p class="mx__lede">Let your AI assistant search Nucleux patterns, components and tokens for you, straight from a prompt.</p>
+        <p class="mx__p">It works through the Nucleux MCP server. <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Model Context Protocol</a> is an open standard that lets AI assistants connect to tools and data.</p>
 
-        <h2 class="mcp-h2">Get started.</h2>
-
-        <div class="mcp-steps">
-
-          <div class="mcp-step">
-            <div class="mcp-step__num">1</div>
-            <div>
-              <h3 class="mcp-step__name">Install</h3>
-              <p class="mcp-step__desc">Add the MCP server package to your project.</p>
-
-              <!-- Segmented control -->
-              <div class="mcp-pkg-tabs" role="tablist" aria-label="Package manager">
-                <button class="mcp-pkg-tab is-active" role="tab" aria-selected="true"  data-cmd="npm install @nucleux/mcp"  id="tab-npm"  aria-controls="panel-install">npm</button>
-                <button class="mcp-pkg-tab"            role="tab" aria-selected="false" data-cmd="pnpm add @nucleux/mcp"      id="tab-pnpm" aria-controls="panel-install">pnpm</button>
-              </div>
-
-              <!-- Code panel — separate block, full rounded corners -->
-              <div class="mcp-code mcp-code--tabbed" id="panel-install" role="tabpanel" aria-labelledby="tab-npm">
-                <button class="mcp-code__copy" id="install-copy-btn">Copy</button>
-                <span class="v" id="install-cmd">npm install @nucleux/mcp</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mcp-step">
-            <div class="mcp-step__num">2</div>
-            <div>
-              <h3 class="mcp-step__name">Configure your AI client</h3>
-              <p class="mcp-step__desc">Add the server entry to your MCP client config — works with Claude Desktop, Cursor, Windsurf, and any JSON-RPC MCP host.</p>
-              <div class="mcp-code">
-                <button class="mcp-code__copy" onclick="navigator.clipboard.writeText(`{\n  &quot;mcpServers&quot;: {\n    &quot;nucleux&quot;: {\n      &quot;command&quot;: &quot;npx&quot;,\n      &quot;args&quot;: [&quot;@nucleux/mcp&quot;],\n      &quot;env&quot;: {\n        &quot;NUCLEUX_WORKSPACE&quot;: &quot;your-workspace-id&quot;\n      }\n    }\n  }\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
-<span class="c">// mcp.json</span>
-{
-  <span class="k">"mcpServers"</span>: {
-    <span class="k">"nucleux"</span>: {
-      <span class="k">"command"</span>: <span class="s">"npx"</span>,
-      <span class="k">"args"</span>: [<span class="s">"@nucleux/mcp"</span>],
-      <span class="k">"env"</span>: { <span class="k">"NUCLEUX_WORKSPACE"</span>: <span class="s">"your-workspace-id"</span> }
-    }
-  }
-}
-              </div>
-            </div>
-          </div>
-
-          <div class="mcp-step">
-            <div class="mcp-step__num">3</div>
-            <div>
-              <h3 class="mcp-step__name">Start building</h3>
-              <p class="mcp-step__desc">Ask your AI to use your components. It now pulls from your live design system, not training data.</p>
-              <div class="mcp-code">
-<span class="c">// Example prompt to your AI</span>
-<span style="color:var(--ink-200)">"Build a meeting summary view using Nucleux components"</span>
-
-<span class="c">// AI resolves from your live design system ↓</span>
-import { <span class="v">Thread</span>, <span class="v">Message</span>, <span class="v">AgentComposer</span> } from <span class="s">'@nucleux/react'</span>
-              </div>
-            </div>
-          </div>
-
+        <div class="mx-connect">
+          <a class="mx-connect__btn" id="connect-claude" href="#" target="_blank" rel="noopener">
+            <img src="./assets/logos/claude-mark.svg" alt="" aria-hidden="true">
+            <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with setup steps in the prompt</span></span>
+            <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="mx-connect__btn" id="connect-codex" href="#" target="_blank" rel="noopener">
+            <img src="./assets/logos/openai.svg" alt="" aria-hidden="true">
+            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Opens Codex with setup steps in the prompt</span></span>
+            <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ── What's exposed ── -->
-    <section class="mcp-exposed">
-      <div class="container">
-        <div class="mcp-inner">
-        <h2 class="mcp-h2">What AI can access.</h2>
-        <div class="mcp-exposed__grid">
-          <div class="mcp-exposed__card">
-            <div class="mcp-exposed__card-icon" style="background:#ede9fe">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="#7c3aed" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="#7c3aed" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="#7c3aed" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="#7c3aed" stroke-width="1.8"/></svg>
-            </div>
-            <p class="mcp-exposed__card-name">Components</p>
-            <p class="mcp-exposed__card-desc">Props, variants, and examples for every component.</p>
-          </div>
-          <div class="mcp-exposed__card">
-            <div class="mcp-exposed__card-icon" style="background:#d1fae5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#10b981"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#10b981" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </div>
-            <p class="mcp-exposed__card-name">Design Tokens</p>
-            <p class="mcp-exposed__card-desc">Colors, spacing, and radii — generated code stays visually consistent.</p>
-          </div>
-          <div class="mcp-exposed__card">
-            <div class="mcp-exposed__card-icon" style="background:#dbeafe">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12h6M9 16h4M7 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/><rect x="9" y="2" width="6" height="5" rx="1" stroke="#2563eb" stroke-width="1.8"/></svg>
-            </div>
-            <p class="mcp-exposed__card-name">Documentation</p>
-            <p class="mcp-exposed__card-desc">Searchable docs so AI answers from your own guidance.</p>
-          </div>
-          <div class="mcp-exposed__card">
-            <div class="mcp-exposed__card-icon" style="background:#fef3c7">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M8 3H5a2 2 0 0 0-2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 3h3a2 2 0 0 1 2 2v3M16 21h3a2 2 0 0 0 2-2v-3" stroke="#d97706" stroke-width="1.8" stroke-linecap="round"/><rect x="8" y="8" width="8" height="8" rx="1" stroke="#d97706" stroke-width="1.8"/></svg>
-            </div>
-            <p class="mcp-exposed__card-name">Blocks &amp; Templates</p>
-            <p class="mcp-exposed__card-desc">Reusable layouts for full-page and full-flow generation.</p>
-          </div>
-          <div class="mcp-exposed__card">
-            <div class="mcp-exposed__card-icon" style="background:#fce7f3">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="16 18 22 12 16 6" stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8 6 2 12 8 18" stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <p class="mcp-exposed__card-name">Code Examples</p>
-            <p class="mcp-exposed__card-desc">Production-ready snippets AI uses when generating code.</p>
-          </div>
-          <div class="mcp-exposed__card">
-            <div class="mcp-exposed__card-icon" style="background:#f0f9ff">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#0284c7" stroke-width="1.8" stroke-linejoin="round"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#0284c7" stroke-width="1.8" stroke-linejoin="round"/></svg>
-            </div>
-            <p class="mcp-exposed__card-name">AI UX Patterns</p>
-            <p class="mcp-exposed__card-desc">The full pattern library — design vocabulary, not just APIs.</p>
-          </div>
-        </div>
-        </div>
-      </div>
-    </section>
+        <h2 class="mx__h2" id="setup">Setup</h2>
+        <p class="mx__p">Pick where you work. The steps change to match.</p>
+        <div class="mx-tabs" role="tablist" aria-label="Platform" id="platform-tabs"></div>
+        <div role="tabpanel" id="platform-panel" tabindex="0"></div>
+
+      </article>
 
 
+    </div>
   </main>
+  <div class="mx-toast" role="status" aria-live="polite"></div>
 
   <footer class="foot foot--simple">
     <div class="container">
@@ -804,36 +236,123 @@ import { <span class="v">Thread</span>, <span class="v">Message</span>, <span cl
 <script src="nav-splitflap.js"></script>
 <script src="nav-mega.js"></script>
   <script>
-    // ── Install tab switcher ──
+    // ── MCP docs page ──
     (function () {
-      var tabs    = document.querySelectorAll('.mcp-pkg-tab');
-      var cmdEl   = document.getElementById('install-cmd');
-      var copyBtn = document.getElementById('install-copy-btn');
-      var panel   = document.getElementById('panel-install');
+      var URL_MCP = 'https://nucleux.in/mcp';
+            var COPY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+      var CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-      tabs.forEach(function (tab) {
-        tab.addEventListener('click', function () {
-          // Update tab states
-          tabs.forEach(function (t) {
-            t.classList.remove('is-active');
-            t.setAttribute('aria-selected', 'false');
-          });
-          tab.classList.add('is-active');
-          tab.setAttribute('aria-selected', 'true');
-          panel.setAttribute('aria-labelledby', tab.id);
 
-          // Update displayed command
-          cmdEl.textContent = tab.dataset.cmd;
+      // Each platform: logo + ordered steps. A step may carry a code block (code/lang/note).
+      var PLATFORMS = [
+        { id: 'claude', name: 'Claude', logo: 'claude-mark.svg', steps: [
+          { title: 'Add a custom connector', text: 'In claude.ai or Claude Desktop, open <b>Settings → Connectors</b> and choose <b>Add custom connector</b>.' },
+          { title: 'Enter the server URL', text: 'Paste this as the URL, then click <b>Add</b>.', code: URL_MCP, lang: 'url' },
+          { title: 'Connect and sign in', text: 'Click <b>Connect</b> next to Nucleux and sign in with the same Google account. Turn it on from the <b>Search and tools</b> menu in any chat.' } ] },
+        { id: 'claude-code', name: 'Claude Code', logo: 'claude-mark.svg', steps: [
+          { title: 'Add the server', text: 'Run this in your terminal:', code: 'claude mcp add --transport http nucleux ' + URL_MCP, lang: 'sh',
+            note: 'Add <code>--scope project</code> to share it with your team through <code>.mcp.json</code>.' },
+          { title: 'Sign in', text: 'Restart Claude Code, run <code>/mcp</code>, pick <b>nucleux</b> and choose <b>Authenticate</b>. If it doesn\'t show up, <code>/mcp</code> also shows why.' } ] },
+        { id: 'codex', name: 'Codex', logo: 'openai.svg', steps: [
+          { title: 'Add the server', text: 'Add this to <code>~/.codex/config.toml</code>:', code: '[mcp_servers.nucleux]\nurl = "' + URL_MCP + '"', lang: 'toml' },
+          { title: 'Sign in', text: 'Run <code>codex mcp login nucleux</code>, finish sign-in in the browser, then restart Codex.' } ] },
+        { id: 'cursor', name: 'Cursor', logo: 'cursor.svg', steps: [
+          { title: 'Add the server', text: 'Add this to <code>~/.cursor/mcp.json</code> (or <code>.cursor/mcp.json</code> in your project):',
+            code: '{\n  "mcpServers": {\n    "nucleux": {\n      "url": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
+          { title: 'Enable it', text: 'Open <b>Cursor Settings → MCP</b>, turn on <b>nucleux</b> and click <b>Needs login</b> to sign in.' } ] },
+        { id: 'vscode', name: 'VS Code', logo: 'vscode.svg', steps: [
+          { title: 'Add the server', text: 'Add this to <code>.vscode/mcp.json</code> in your project:',
+            code: '{\n  "servers": {\n    "nucleux": {\n      "type": "http",\n      "url": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
+          { title: 'Start it', text: 'Click <b>Start</b> above the nucleux entry in <code>mcp.json</code> and sign in when asked. Use it from Copilot Chat in <b>Agent</b> mode.' } ] },
+        { id: 'windsurf', name: 'Windsurf', logo: 'windsurf.svg', steps: [
+          { title: 'Add the server', text: 'Add this to <code>~/.codeium/windsurf/mcp_config.json</code>:',
+            code: '{\n  "mcpServers": {\n    "nucleux": {\n      "serverUrl": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
+          { title: 'Refresh', text: 'Open the <b>Cascade</b> MCP panel, click <b>Refresh</b> and sign in when asked.' } ] }
+      ];
+
+      function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      function tint(line, lang) {
+        var h = esc(line);
+        if (lang === 'json') return h.replace(/"([^"]*)"(\s*:)?/g, function (m, v, colon) {
+          return colon ? '<span class="t-k">"' + v + '"</span>' + colon : '<span class="t-s">"' + v + '"</span>';
+        }).replace(/([{}\[\],])(?![^<]*<\/span>)/g, '<span class="t-p">$1</span>');
+        if (lang === 'toml') return /^\[/.test(h) ? '<span class="t-k">' + h + '</span>' : h.replace(/("[^"]*")/g, '<span class="t-s">$1</span>');
+        if (lang === 'url') return '<span class="t-s">' + h + '</span>';
+        return h.replace(/^(claude mcp add)/, '<span class="t-k">$1</span>');
+      }
+      function codeBlock(st) {
+        var lines = st.code.split('\n').map(function (l) { return '<span class="ln">' + tint(l, st.lang) + '</span>'; }).join('');
+        return '<div class="mx-code"><button class="mx-copy" type="button" aria-label="Copy" data-copy="' + esc(st.code).replace(/"/g, '&quot;') + '">' + COPY + '</button>' +
+          '<pre><code>' + lines + '</code></pre>' + (st.note ? '<p class="mx-code__note">' + st.note + '</p>' : '') + '</div>';
+      }
+
+      var tabsEl = document.getElementById('platform-tabs');
+      var panel = document.getElementById('platform-panel');
+      tabsEl.innerHTML = PLATFORMS.map(function (pl) {
+        return '<button class="mx-tab" role="tab" type="button" id="tab-' + pl.id + '" aria-controls="platform-panel" aria-selected="false" tabindex="-1">' +
+          '<img src="./assets/logos/' + pl.logo + '" alt="" aria-hidden="true">' + pl.name + '</button>';
+      }).join('');
+      var tabs = Array.prototype.slice.call(tabsEl.children);
+
+      function show(id) {
+        var pl = PLATFORMS.filter(function (x) { return x.id === id; })[0] || PLATFORMS[0];
+        tabs.forEach(function (t) { var on = t.id === 'tab-' + pl.id; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
+        panel.setAttribute('aria-labelledby', 'tab-' + pl.id);
+        panel.innerHTML = '<ol class="mx-steps">' + pl.steps.map(function (st, i) {
+          return '<li><span class="mx-steps__n">' + (i + 1) + '</span><h3 class="mx-steps__title">' + st.title + '</h3>' +
+            '<p class="mx__p">' + st.text + '</p>' + (st.code ? codeBlock(st) : '') +
+            '</li>';
+        }).join('') + '</ol>';
+        try { localStorage.setItem('nx-mcp-platform', pl.id); } catch (e) {}
+      }
+      tabs.forEach(function (t, i) {
+        t.addEventListener('click', function () { show(t.id.slice(4)); });
+        t.addEventListener('keydown', function (e) {
+          var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (!d) return;
+          var next = tabs[(i + d + tabs.length) % tabs.length];
+          show(next.id.slice(4)); next.focus();
+        });
+      });
+      var saved; try { saved = localStorage.getItem('nx-mcp-platform'); } catch (e) {}
+      show(saved || 'claude');
+
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-copy]');
+        if (!b) return;
+        navigator.clipboard.writeText(b.dataset.copy).then(function () {
+          b.innerHTML = CHECK; b.classList.add('is-done');
+          setTimeout(function () { b.innerHTML = COPY; b.classList.remove('is-done'); }, 1600);
         });
       });
 
-      // Copy button — always copies current command text
-      copyBtn.addEventListener('click', function () {
-        var cmd = cmdEl.textContent;
-        navigator.clipboard.writeText(cmd).then(function () {
-          copyBtn.textContent = 'Copied!';
-          setTimeout(function () { copyBtn.textContent = 'Copy'; }, 2000);
+      // ── Connect buttons: the whole guide as a prompt ──
+      function setupMd() {
+        var md = ['Read the Nucleux documentation below, then help me apply it. Ask which platform I use, then walk me through its setup.', '',
+          '# MCP Server', '', '> Source: https://nucleux.in/mcp.html', '',
+          'Let your AI assistant search Nucleux patterns, components and tokens for you, straight from a prompt.', '',
+          'It works through the Nucleux MCP server at `' + URL_MCP + '`. [Model Context Protocol](https://modelcontextprotocol.io/) is an open standard that lets AI assistants connect to tools and data.', '',
+          '## Setup', ''];
+        PLATFORMS.forEach(function (pl) {
+          md.push('### ' + pl.name, '');
+          pl.steps.forEach(function (st, i) {
+            md.push((i + 1) + '. **' + st.title + '** — ' + st.text.replace(/<\/?b>/g, '**').replace(/<\/?code>/g, '`'));
+            if (st.code) md.push('', '   ```' + (st.lang === 'url' ? '' : st.lang), st.code.replace(/^/gm, '   '), '   ```');
+            if (st.note) md.push('', '   ' + st.note.replace(/<\/?code>/g, '`'));
+          });
+          md.push('');
         });
+        return md.join('\n').trim();
+      }
+      var toast = document.querySelector('.mx-toast');
+      function say(msg) { toast.textContent = msg; toast.classList.add('is-on'); clearTimeout(say.t); say.t = setTimeout(function () { toast.classList.remove('is-on'); }, 2600); }
+
+      // Claude takes the prompt in the URL. Codex has no prefill link, so copy and say so.
+      document.getElementById('connect-claude').href = 'https://claude.ai/new?q=' + encodeURIComponent(setupMd());
+      var codex = document.getElementById('connect-codex');
+      codex.href = 'https://chatgpt.com/codex';
+      codex.addEventListener('click', function () {
+        navigator.clipboard.writeText(setupMd()).then(function () { say('Setup guide copied — paste it into Codex'); });
       });
     })();
   </script>
