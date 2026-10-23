@@ -479,21 +479,6 @@
       document.body.appendChild(m);
     }
 
-    // Assistant launcher (floating button)
-    if (!$("#nx-launcher")) {
-      const l = document.createElement("button");
-      l.id = "nx-launcher";
-      l.className = "nx-launcher";
-      l.type = "button";
-      l.setAttribute("data-asst-open", "");
-      l.setAttribute("aria-label", "Talk to Lumen, Intelligaia's discovery guide");
-      l.innerHTML = `
-        <span class="nx-launcher__orb"></span>
-        <span class="nx-launcher__label">Ask Lumen</span>
-      `;
-      document.body.appendChild(l);
-    }
-
     // Assistant panel
     if (!$("#nx-asst")) {
       const a = document.createElement("aside");
