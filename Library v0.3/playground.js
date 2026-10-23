@@ -3,7 +3,9 @@
 // Describe a product in plain words; the playground works out which
 // Nucleux patterns it needs, picks the right variant for the surface,
 // and composes a live preview from the mocks in patterns.js.
-// Runs entirely in the browser: matching is rule-based, not a model.
+// Yantra (Intelligaia's model, through nucleux.in/mcp/playground) picks the
+// patterns for a new build and for changes the rules can't place; the
+// rule-based matching here is the fallback whenever it's unreachable or slow.
 // ============================================================
 (function () {
   const ready = (fn) => document.readyState !== "loading" ? fn() : document.addEventListener("DOMContentLoaded", fn);
@@ -184,6 +186,50 @@
     });
     return { text, surface, domain, agent: domain.agent, theme: "light", items: sortItems(items) };
   }
+  // Ask Yantra which patterns fit. The server holds the key; this page only
+  // sends the request and the catalog it already has. Resolves to null on any
+  // failure (offline, slow, local preview without the server), so callers fall
+  // back to the rules.
+  const PLANNER = "/mcp/playground";
+  const PLANNER_TIMEOUT = 22000;
+  async function askYantra(text, exclude) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), PLANNER_TIMEOUT);
+    try {
+      const r = await fetch(PLANNER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          prompt: text,
+          patterns: PATTERNS.filter(x => !(exclude && exclude.has(x.p.id)))
+            .map(x => ({ id: x.p.id, name: x.p.name, summary: x.p.oneline || x.sub })),
+        }),
+        signal: ctrl.signal,
+      });
+      if (!r.ok) return null;
+      const d = await r.json();
+      const picks = (d.picks || []).map(pk => byId(pk.id)).filter(Boolean);
+      return picks.length ? { picks, reply: String(d.reply || "") } : null;
+    } catch (e) {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // A plan from Yantra's picks: surface and domain still come from the rules,
+  // and any stage it left empty gets the usual baseline pattern.
+  function planFrom(text, ai) {
+    const base = plan(text);
+    const items = ai.picks.map(x => makeItem(x, [], base.surface, text, "asked"));
+    Object.entries(BASELINE).forEach(([stage, id]) => {
+      if (items.some(it => it.x.stage === stage)) return;
+      const x = byId(id);
+      if (x) items.push(makeItem(x, [], base.surface, text, "baseline"));
+    });
+    return { ...base, items: sortItems(items), ai: ai.reply };
+  }
+
   function sortItems(items) {
     return items.sort((a, b) => STAGE_ORDER.indexOf(a.x.stage) - STAGE_ORDER.indexOf(b.x.stage));
   }
@@ -427,11 +473,24 @@
     const ol = box.querySelector("ol"), t0 = performance.now();
     thinking = box;
     await tick(900);
-    for (const s of steps) {
+    for (const step of steps) {
+      // A step is HTML, a function returning HTML (worked out when it's reached,
+      // or skipped if it returns nothing), or { label, until } that runs until a
+      // promise settles and then shows what until's done() says.
+      const s = typeof step === "function" ? step() : step;
+      if (!s) continue;
       const li = document.createElement("li");
-      li.className = "is-run"; li.innerHTML = s;
+      li.className = "is-run"; li.innerHTML = s.label || s;
       ol.appendChild(li); scrollLog();
-      await tick(1100 + Math.random() * 900);
+      if (s.until) {
+        let settled = false, value;
+        s.until.then(v => { settled = true; value = v; });
+        await tick(700);
+        while (!settled) await tick(200);
+        if (s.done) li.innerHTML = s.done(value);
+      } else {
+        await tick(1100 + Math.random() * 900);
+      }
       li.className = "is-done";
     }
     await tick(500);
@@ -488,27 +547,44 @@
     try {
 
     if (!state) {
-      const next = plan(text);
-      const asked = next.items.filter(i => i.reason === "asked");
-      const live = next.items.filter(isBuilt);
+      let next = null;
+      const asking = askYantra(text).then(ai => (next = ai ? planFrom(text, ai) : plan(text), ai));
+      const asked = () => next.items.filter(i => i.reason === "asked");
+      const live = () => next.items.filter(isBuilt);
       await think([
         `Connected to Nucleux · reading ${PATTERNS.length} patterns and the Md3 component kit`,
-        `Understanding the request — surface: <b>${esc(SURFACES[next.surface].label)}</b>, domain: <b>${esc(next.domain.key)}</b>`,
-        asked.length ? `Matched ${asked.length} patterns: ${asked.map(i => esc(i.x.p.name)).join(", ")}` : "No strong matches — starting from the essentials",
+        { label: "Asking Yantra which patterns fit", until: asking,
+          done: ai => ai ? `Yantra picked ${asked().length} patterns: ${asked().map(i => esc(i.x.p.name)).join(", ")}` : "Matching the request against the library" },
+        () => `Understanding the request — surface: <b>${esc(SURFACES[next.surface].label)}</b>, domain: <b>${esc(next.domain.key)}</b>`,
+        () => next.ai ? "" : asked().length ? `Matched ${asked().length} patterns: ${asked().map(i => esc(i.x.p.name)).join(", ")}` : "No strong matches — starting from the essentials",
         "Adding the baseline every AI product needs",
-        `Checking the kit — ${live.length} of ${next.items.length} are built as live components`,
+        () => `Checking the kit — ${live().length} of ${next.items.length} are built as live components`,
         "Assembling the screens from Nucleux components",
       ]);
       state = next;
       prompt(false);
       commit("First build");
       render();
-      await result("First build", `Here's a first version of <b>${esc(state.agent)}</b> as a ${esc(SURFACES[state.surface].label.toLowerCase())}. ` +
-        (live.length ? `It's built from ${live.length} live Nucleux components — use the tabs above the preview to move between screens.` : `None of the patterns it needs are in the kit yet, so there's nothing live to show.`) +
+      const liveNow = live();
+      await result("First build", (state.ai ? esc(state.ai) + " " : "") + `Here's a first version of <b>${esc(state.agent)}</b> as a ${esc(SURFACES[state.surface].label.toLowerCase())}. ` +
+        (liveNow.length ? `It's built from ${liveNow.length} live Nucleux components — use the tabs above the preview to move between screens.` : `None of the patterns it needs are in the kit yet, so there's nothing live to show.`) +
         ` Tell me what to change.`);
     } else {
       await think(["Reading your change", "Finding the matching patterns in Nucleux", "Updating the build"]);
-      const changes = refine(state, text);
+      let changes = refine(state, text);
+      if (!changes.length) {
+        // The rules couldn't place it: ask Yantra for patterns this build doesn't have yet.
+        const ai = await askYantra(text, new Set(state.items.map(it => it.id)));
+        if (stopped) throw HALT;
+        if (ai) {
+          ai.picks.slice(0, 3).forEach(x => {
+            state.items.push(makeItem(x, [], state.surface, text, "asked"));
+            changes.push("Added " + x.p.name + " (" + x.stageLabel.toLowerCase() + ").");
+          });
+          sortItems(state.items);
+          if (ai.reply) changes.push(ai.reply);
+        }
+      }
       if (changes.length) {
         commit(changes[0].replace(/\.$/, "").slice(0, 40));
         const added = state.items.find(it => changes[0].startsWith("Added " + it.x.p.name) && isBuilt(it));
