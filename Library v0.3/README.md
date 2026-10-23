@@ -29,19 +29,22 @@ patterns.js     ← Pattern catalog (shared)
 No build step.
 
 ```sh
-cd v0.2/
-python3 -m http.server 5510
+cd "Library v0.3"
+python3 serve.py 5510
 # → http://localhost:5510
 ```
+
+Links are clean URLs (`library`, not `library.html`), like nucleux.in.
+`serve.py` maps them; plain `python3 -m http.server` can't.
 
 Drop the entire folder into any static host (Netlify, Vercel, GitHub Pages, internal CDN).
 
 Direct-links:
-- `index.html` — landing
-- `library.html` — full library
-- `library.html#stage-onboarding` — jumps to the Onboarding section
-- `pattern.html?id=disclosure` — opens the Disclosure detail page
-- `pattern.html?id=templates` — opens Templates, etc.
+- `/` — landing (index-v2.html)
+- `library` — full library
+- `library#stage-onboarding` — jumps to the Onboarding section
+- `pattern?id=disclosure` — opens the Disclosure detail page
+- `pattern?id=templates` — opens Templates, etc.
 
 ## Stages + counts
 

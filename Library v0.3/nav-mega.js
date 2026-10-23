@@ -55,10 +55,10 @@
       rows: [
         { icon: 'basic',   title: 'Basic Components',
           desc: 'Buttons, inputs, cards and the other foundational building blocks.',
-          href: 'basic-components.html' },
+          href: 'basic-components' },
         { icon: 'agentic', title: 'Agentic Components',
           desc: 'Task, reasoning and agent-state components built for AI-native flows.',
-          href: 'library.html' }
+          href: 'library' }
       ]
     },
     {
@@ -68,7 +68,7 @@
         { icon: 'basic',   title: 'Basic Components',   desc: 'Coming soon', href: null },
         { icon: 'agentic', title: 'Agentic Components',
           desc: 'Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.',
-          href: 'material-agentic.html' }
+          href: 'material-agentic' }
       ]
     }
   ];
@@ -356,7 +356,7 @@
 
       /* the X button always points at the Library landing page, not
          whichever page the visitor happens to be reading */
-      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/index-v2.html';
+      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/';
 
       xa.href = 'https://x.com/intent/post?url=' + encodeURIComponent(xUrl) +
                 '&text=' + encodeURIComponent(shareText);
@@ -382,7 +382,7 @@
        to its left slide out of the way instead of being covered. */
     var cta = wrap.querySelector('.gnav__cta');
     if (cta && !cta.classList.contains('gnav__cta--x')) {
-      var ctaHref = cta.getAttribute('href') || 'contact.html';
+      var ctaHref = cta.getAttribute('href') || 'contact';
       var ctaText = (cta.textContent || 'Contact Us').trim() || 'Contact Us';
       cta.classList.add('gnav__cta--x');
       cta.setAttribute('href', ctaHref);
@@ -398,7 +398,7 @@
       signup.className = 'gnav__signup';
       /* No sign-up page exists yet, so this points at contact.html —
          change the href here and every page follows. */
-      signup.href = 'signin.html';
+      signup.href = 'signin';
       signup.textContent = 'Sign In';
       /* Last in the cluster — after Contact Us — but BEFORE .gnav__toggle,
          the mobile hamburger, which is display:none on desktop yet still
