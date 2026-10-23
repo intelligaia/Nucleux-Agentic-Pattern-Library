@@ -3650,10 +3650,19 @@ html[data-embed-view="preview"] .cv { border-radius: 0; box-shadow: none; overfl
 html[data-embed-view="preview"] #win-preview { height: 100vh !important; background: transparent; }
 html[data-embed-view="preview"] #win-preview .pv__main { padding: 0; }
 html[data-embed-view="preview"] #win-preview .pv-card { background: transparent; border-radius: 0; min-height: 0 !important; overflow: visible; }
+/* Centred on the stage, as the desktop preview is: the card hugs its content
+   and sits in the middle of the window instead of filling it, so nothing is
+   pinned to the bottom edge. */
+html[data-embed-view="preview"] #win-preview .pv__main { justify-content: center; }
+html[data-embed-view="preview"] #win-preview .pv-card { flex: 0 0 auto; transform: translateY(var(--nx-cshift, 0px)); }
+/* Parts that would fill the remaining space (thread, workspace above the
+   composer) take their content's height instead, or they collapse to
+   nothing once the card hugs its content. */
+html[data-embed-view="preview"] #win-preview .pv-body, html[data-embed-view="preview"] #win-preview .pv-body :not(.cmpw, .cmpw *) { flex-basis: auto !important; }
 /* The stage grows to fit, so the short-window cap on the composer panel is not needed here. */
 html[data-embed-view="preview"] #win-preview .cmpw > .cmp__panel { max-height: none !important; overflow: visible !important; }
 /* Measuring pass: a 1px window where nothing stretches or shrinks. */
-html.nx-measure[data-embed-view="preview"] #win-preview, html.nx-measure[data-embed-view="preview"] #stage-preview { height: 1px !important; }
+/* measuring pass: real layout, nothing shrinks */
 html.nx-measure[data-embed-view="preview"] #win-preview .pv-card, html.nx-measure[data-embed-view="preview"] #win-preview .pv__main { min-height: 0 !important; }
 html.nx-measure[data-embed-view="preview"] #win-preview .pv-body * { flex-shrink: 0 !important; }
 
@@ -14147,7 +14156,26 @@ button.ax__tool:focus-visible { outline: 3px solid color-mix(in oklab, var(--md-
             if (r.top < lo) lo = r.top; if (r.bottom > hi) hi = r.bottom;
           });
           R.classList.remove('nx-measure');
-          h = Math.ceil((hi > lo ? hi - lo : 0) + 32);
+          h = Math.ceil(hi > lo ? hi - lo : 0);
+          /* The card now hugs its content: its own height is what the stage needs. */
+          var cardEl = P.pv.card; if (cardEl) h = Math.max(h, Math.ceil(cardEl.getBoundingClientRect().height) + 48);
+          /* Centre what is visible, not the box: empty padding above or
+             below the content would otherwise push it off centre. Measured
+             inside the card, so the shift itself never changes the result. */
+          if (cardEl) {
+            var cr = cardEl.getBoundingClientRect(), vlo = Infinity, vhi = -Infinity;
+            pb.querySelectorAll('*').forEach(function (el) {
+              if (el.firstElementChild && getComputedStyle(el).display !== 'inline') return;
+              if (el.closest('[class*="halo"], [class*="aura"], [class*="glow"], .sr')) return;
+              var cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') return;
+              var r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+              if (r.top < vlo) vlo = r.top; if (r.bottom > vhi) vhi = r.bottom;
+            });
+            var shift = vhi > vlo ? ((cr.bottom - vhi) - (vlo - cr.top)) / 2 : 0;
+            var room = (window.innerHeight - cr.height) / 2;
+            shift = Math.max(-room, Math.min(room, shift));
+            cardEl.style.setProperty('--nx-cshift', Math.round(shift) + 'px');
+          }
         }
       }
       if (Math.abs(h - lastH) > 1) { lastH = h; window.parent.postMessage({ type: 'nx-bench-h', h: h }, '*'); }
