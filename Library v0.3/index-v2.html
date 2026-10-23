@@ -2140,6 +2140,228 @@
   </header>
 
   <!-- ────────────────────────────────────────────────────
+       ANNOUNCEMENT — Nucleux for iPhone Duo (23 Oct, slim rev.)
+       One slim strip under the nav: a small iPhone Duo (a Nucleux
+       drawing, open like a book, showing the Initial CTA pattern as it
+       runs on the mobile patterns page), one sentence, one outlined
+       link. It slides down from under the nav on every page load and
+       settles at the top; × hides it for this visit only — a reload
+       brings it back. It scrolls away with the page (never sticky).
+       ──────────────────────────────────────────────────── -->
+  <style>
+    .nx-ann {
+      --nx-ann-bg: #161617;
+      --nx-ann-fg: #f5f5f7;
+      --nx-ann-mid: rgb(245 245 247 / .72);
+      position: relative; z-index: 1;
+      background: var(--nx-ann-bg);
+      color: var(--nx-ann-fg);
+      overflow: hidden;
+      container-type: inline-size; container-name: nxann;
+    }
+    .nx-ann__inner {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      gap: var(--s-6);
+      min-height: 72px;
+      padding-block: 12px;
+      padding-inline: calc(var(--gutter) + 40px);   /* room for × on either side, so the row stays centred */
+    }
+    .nx-ann__text {
+      margin: 0; min-width: 0;
+      font-size: 17px; line-height: 1.35; letter-spacing: -0.012em;
+      color: var(--nx-ann-mid);
+      text-wrap: balance;
+    }
+    .nx-ann__text strong { font-weight: 600; color: var(--nx-ann-fg); }
+    .nx-ann__link {
+      flex: 0 0 auto;
+      display: inline-flex; align-items: center; gap: 0;
+      min-height: 40px; padding: 0 18px;
+      /* Same shape language as every .btn on the site: a pill at rest
+         (radius stated as half the 40px height so it can animate), a
+         rounded rectangle under the pointer or keyboard focus. */
+      border: 1px solid rgb(245 245 247 / .42); border-radius: 20px;
+      font-size: 15px; font-weight: 500; line-height: 1;
+      color: var(--nx-ann-fg); text-decoration: none; white-space: nowrap;
+      transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease),
+                  transform var(--dur-2) var(--ease), border-radius 260ms cubic-bezier(.22, 1, .36, 1);
+    }
+    /* .btn goes 26px → 16px on a 52px control; same proportion here. */
+    .nx-ann__link:hover, .nx-ann__link:focus-visible {
+      border-radius: 12px;
+      border-color: rgb(245 245 247 / .72); background: rgb(245 245 247 / .08);
+    }
+    .nx-ann__link:hover { transform: translateY(-1px); }
+    .nx-ann__nb { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .nx-ann__arrow { transition: transform var(--dur-2) var(--ease); }
+    .nx-ann__link:hover .nx-ann__arrow { transform: translateX(3px); }
+    .nx-ann__close {
+      position: absolute; top: 50%; right: calc(var(--gutter) - 10px); transform: translateY(-50%);
+      width: 40px; height: 40px; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; border-radius: 50%; background: transparent; color: var(--nx-ann-mid);
+      cursor: pointer;
+      transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+    }
+    .nx-ann__close::after { content: ""; position: absolute; inset: -2px; }
+    .nx-ann__close:hover { background: rgb(245 245 247 / .12); color: var(--nx-ann-fg); }
+    .nx-ann__link:focus-visible, .nx-ann__close:focus-visible { outline: 2px solid var(--nx-ann-fg); outline-offset: 3px; }
+
+    /* ── arrival: the strip slides down from under the nav and settles ── */
+    @keyframes nx-ann-open { from { grid-template-rows: 0fr; } to { grid-template-rows: 1fr; } }
+    @keyframes nx-ann-drop { from { transform: translateY(-18px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes nx-ann-fade { from { opacity: 0; } to { opacity: 1; } }
+    .nx-ann[hidden] { display: none; }
+    /* Arrival waits ~0.7s so the page paints and settles first. Then the
+       row opens on a critically damped spring (no bounce: it can't
+       overshoot its own content) and, 60ms behind it, the content drops
+       18px on a lightly underdamped spring (~4% overshoot, damping 0.72)
+       and settles. */
+    .nx-ann { --nx-ann-spring: linear(0, 0.0284, 0.1001, 0.198, 0.3089, 0.4228, 0.5328, 0.6342, 0.7241, 0.8014, 0.8656, 0.9174, 0.9578, 0.9881, 1.0097, 1.0243, 1.033, 1.0374, 1.0384, 1.037, 1.0341, 1.0303, 1.026, 1.0216, 1.0174, 1.0136, 1.0102, 1.0073, 1.0049, 1.0029, 1.0014, 1.0003, 0.9995, 0.999, 0.9987, 0.9986, 0.9986, 0.9988, 0.9992, 0.9996, 1);
+      display: grid; grid-template-rows: 1fr; --nx-ann-settle: linear(0, 0.0218, 0.0754, 0.1472, 0.2275, 0.3101, 0.3908, 0.467, 0.5372, 0.6007, 0.6575, 0.7075, 0.7513, 0.7894, 0.8222, 0.8503, 0.8743, 0.8947, 0.912, 0.9266, 0.9389, 0.9492, 0.9579, 0.9651, 0.9711, 0.9761, 0.9803, 0.9837, 0.9866, 0.989, 0.9909, 0.9925, 0.9939, 0.995, 0.9959, 0.9966, 0.9972, 0.9977, 0.9982, 0.9985, 1);
+      animation: nx-ann-open 760ms var(--nx-ann-settle) 700ms both; }
+    .nx-ann__clip { min-height: 0; overflow: hidden; }
+    .nx-ann__inner { transform-origin: 50% 0;
+      animation: nx-ann-drop 900ms var(--nx-ann-spring) 760ms both, nx-ann-fade 420ms var(--ease-out) 760ms both; }
+    .nx-ann.is-leaving { display: block; overflow: hidden; animation: none; pointer-events: none; }
+    .nx-ann.is-leaving .nx-ann__inner { animation: none; }
+
+    /* ── settled: a few seconds after it arrives, the strip changes colour
+       only — dark to light grey. Size, type, layout and the button shape
+       stay exactly as they were; text, border and × flip to dark so they
+       stay legible on the light ground. ── */
+    .nx-ann { transition: background-color 700ms var(--ease), color 700ms var(--ease), box-shadow 700ms var(--ease); }
+    .nx-ann__text, .nx-ann__text strong { transition: color 700ms var(--ease); }
+    .nx-ann.is-compact .nx-ann__link { transition: background var(--dur-2) var(--ease), border-color 700ms var(--ease), color 700ms var(--ease),
+                  transform var(--dur-2) var(--ease), border-radius 260ms cubic-bezier(.22, 1, .36, 1); }
+    .nx-ann.is-compact {
+      --nx-ann-bg: #f5f5f7; --nx-ann-fg: #1d1d1f; --nx-ann-mid: rgb(29 29 31 / .72);
+      box-shadow: inset 0 -1px 0 rgb(0 0 0 / .06);
+    }
+    .nx-ann.is-compact .nx-ann__link { border-color: rgb(29 29 31 / .42); }
+    .nx-ann.is-compact .nx-ann__link:hover, .nx-ann.is-compact .nx-ann__link:focus-visible {
+      border-color: rgb(29 29 31 / .72); background: rgb(29 29 31 / .06);
+    }
+    .nx-ann.is-compact .nx-ann__close { color: rgb(29 29 31 / .72); }
+    .nx-ann.is-compact .nx-ann__close:hover { background: rgb(0 0 0 / .06); color: #1d1d1f; }
+    @media (prefers-reduced-motion: reduce) {
+      .nx-ann, .nx-ann__inner { animation: none; }
+      .nx-ann, .nx-ann__text, .nx-ann__text strong,
+      .nx-ann__link, .nx-ann__arrow, .nx-ann__close, .nx-ann.is-compact .nx-ann__link { transition: none; }
+    }
+
+    /* ── medium: the same row, tighter ── */
+    @container nxann (max-width: 819px) {
+      .nx-ann__inner { gap: 14px; padding-inline: calc(var(--gutter) + 34px); }
+      .nx-ann__text { font-size: 15px; }
+      .nx-ann__link { min-height: 36px; padding: 0 14px; font-size: 14px; border-radius: 18px; }
+      .nx-ann__link:hover, .nx-ann__link:focus-visible { border-radius: 11px; }
+    }
+    /* ── phone: device and sentence on one row, the link beneath ── */
+    @container nxann (max-width: 599px) {
+      .nx-ann__inner {
+        flex-wrap: wrap; justify-content: flex-start;
+        row-gap: 10px; min-height: 0; padding-block: 14px;
+        padding-inline: var(--gutter) calc(var(--gutter) + 34px);
+      }
+      .nx-ann__text { flex: 1 1 100%; }
+      .nx-ann__close { top: 8px; transform: none; right: calc(var(--gutter) - 12px); }
+    }
+
+    /* The hero is sized to the first screen below the nav; with the
+       announcement showing, the strip is part of that first screen. */
+    body.landing-light .hero {
+      min-height: calc(100vh - var(--nav-h, 72px) - var(--nx-ann-h, 0px) - var(--fold-peek));
+      min-height: calc(100svh - var(--nav-h, 72px) - var(--nx-ann-h, 0px) - var(--fold-peek));
+    }
+    /* While the strip closes, the hero tracks it frame by frame. */
+    html.nx-ann-leaving body.landing-light .hero { transition: none; }
+    @media (max-width: 720px) {
+      body.landing-light .hero {
+        min-height: calc(100vh - var(--nav-h) - var(--nx-ann-h, 0px));
+        min-height: calc(100svh - var(--nav-h) - var(--nx-ann-h, 0px));
+      }
+      html.hero-intro-done body.landing-light .hero { min-height: var(--hero-rest, 0px); }
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      body.landing-light .hero,
+      html.hero-intro-done body.landing-light .hero { min-height: 0; }
+    }
+  </style>
+
+  <section class="nx-ann" id="nx-ann" aria-label="Nucleux for iPhone Duo">
+    <div class="nx-ann__clip">
+      <div class="nx-ann__inner">
+        <p class="nx-ann__text"><strong>Nucleux for iPhone Duo.</strong> The same agentic patterns. Now adapted for mobile.</p>
+        <a class="nx-ann__link" href="../Mobile%20patterns%20material%203.0/material-mobile.html">
+          Explore mobile&nbsp;<span class="nx-ann__nb">patterns<svg class="nx-ann__arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg></span>
+        </a>
+        <button class="nx-ann__close" type="button" aria-label="Dismiss announcement">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+  <script>
+  (function () {
+    var el = document.getElementById('nx-ann'), root = document.documentElement;
+    if (!el) return;
+    /* An earlier version remembered a dismissal; the strip now returns on
+       every load, so any stored flag is cleared. */
+    try { localStorage.removeItem('nx-ann-iphone-duo'); } catch (e) {}
+    root.classList.remove('nx-ann-off');
+    function setH(h) { root.style.setProperty('--nx-ann-h', h + 'px'); }
+    /* the hero subtracts the strip's settled height from its first screen */
+    var inner = el.querySelector('.nx-ann__inner');
+    setH(inner.offsetHeight);
+    var ro = window.ResizeObserver ? new ResizeObserver(function () { if (!el.hidden && !el.classList.contains('is-leaving')) setH(inner.offsetHeight); }) : null;
+    if (ro) ro.observe(inner);
+    /* a few seconds after arrival, switch to the light grey colourway */
+    var settle = setTimeout(function () {
+      if (el.hidden || el.classList.contains('is-leaving')) return;
+      el.classList.add('is-compact');
+    }, 4200);
+    el.querySelector('.nx-ann__close').addEventListener('click', function () {
+      clearTimeout(settle);
+      if (ro) ro.disconnect();
+      var fin = false;
+      function done() {
+        if (fin) return; fin = true;
+        el.hidden = true; el.classList.remove('is-leaving'); root.classList.remove('nx-ann-leaving'); el.style.height = ''; setH(0);
+        if (el.getAnimations) el.getAnimations({ subtree: true }).forEach(function (a) { a.cancel(); });
+        var t = document.querySelector('.hero__title');
+        if (t) { t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true }); }
+      }
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || !el.animate) { done(); return; }
+      /* Freeze the current geometry, then slide the strip up under the nav
+         while its height collapses — the hero follows frame by frame. */
+      var h = el.getBoundingClientRect().height;
+      el.style.height = h + 'px';
+      el.classList.add('is-leaving'); root.classList.add('nx-ann-leaving');
+      var ease = 'cubic-bezier(0.4, 0, 0.2, 1)', dur = 440;
+      /* Content and strip move as one piece: the inner slides up by exactly
+         the height that collapses, so it reads as the strip retreating
+         beneath the nav rather than squashing. */
+      inner.animate(
+        [{ transform: 'translateY(0)', opacity: 1 },
+         { transform: 'translateY(-45%)', opacity: 0.85, offset: 0.5 },
+         { transform: 'translateY(-100%)', opacity: 0 }],
+        { duration: dur, easing: ease, fill: 'forwards' });
+      var shut = el.animate([{ height: h + 'px' }, { height: '0px' }],
+        { duration: dur, easing: ease, fill: 'forwards' });
+      (function sync() { if (fin) return; setH(el.getBoundingClientRect().height); requestAnimationFrame(sync); })();
+      shut.onfinish = done;
+      setTimeout(done, 700);
+    });
+  })();
+  </script>
+
+  <!-- ────────────────────────────────────────────────────
        SCENE — wraps hero + framework so the particle cluster
        persists and morphs through both sections via a sticky
        canvas behind the content.
