@@ -86,8 +86,18 @@
     .t-k { color: #c4b5fd; } .t-s { color: #fde68a; } .t-p { color: var(--ink-400); }
 
     /* Quick connect */
-    .mx-quick { margin: var(--s-4) 0 0; font-size: 14px; }
-    .mx-quick a { color: var(--fg); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+    .mx-get { margin: var(--s-6) 0 0; padding: var(--s-5); border: 1px solid var(--border); border-radius: var(--r-4); background: var(--surface); }
+    .mx-get__lead { margin: 0 0 var(--s-4); font-size: 14px; }
+    .mx-get__row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+    .mx-btn { font: inherit; font-size: 14px; font-weight: 500; padding: 9px 16px; border-radius: var(--r-3); border: 1px solid var(--border-strong); background: var(--surface); color: var(--fg); cursor: pointer; transition: background var(--dur-1) var(--ease); }
+    .mx-btn:hover { background: var(--ink-50); }
+    .mx-btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+    .mx-btn--primary { background: var(--ink-950); border-color: var(--ink-950); color: var(--ink-0); }
+    .mx-btn--primary:hover { background: var(--ink-800); }
+    .mx-btn[disabled] { opacity: .6; cursor: progress; }
+    .mx-get__status { margin: var(--s-3) 0 0; font-size: 13px; color: var(--fg-mid); min-height: 1em; }
+    .mx-get__status.is-error { color: #b42318; }
+    .mx-get__token { margin-top: var(--s-3); }
     .mx-connect { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: var(--s-8) 0 0; }
     @media (max-width: 560px) { .mx-connect { grid-template-columns: 1fr; } }
     .mx-connect__btn {
@@ -109,8 +119,17 @@
     .mx-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
     /* Platform switcher */
-    .mx-tabs { display: flex; gap: 4px; padding: 4px; margin: 0 0 var(--s-8); background: var(--ink-50); border: 1px solid var(--border); border-radius: var(--r-4); width: fit-content; max-width: 100%; overflow-x: auto; }
-    .mx-tab { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font: 500 13px/1.4 var(--font-sans); color: var(--fg-mid); background: transparent; border: 0; border-radius: var(--r-3); cursor: pointer; white-space: nowrap; transition: color var(--dur-1), background var(--dur-1); }
+    /* A grid, not a scrolling row: seven agents don't fit one line of the
+       column, and a scrolled row loses its right padding at the edge. Equal
+       cells, 4px padding on every side, at any width. */
+    .mx-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; margin: 0 0 var(--s-8); background: var(--ink-50); border: 1px solid var(--border); border-radius: var(--r-4); width: 100%; box-sizing: border-box; }
+    @media (max-width: 640px) { .mx-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .mx-tab { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .mx-code .mx-code__note b { color: var(--ink-0, #fff); font-weight: 600; } /* notes under a dark code block */
+    .mx-tokbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); margin: 0 0 var(--s-6); padding: var(--s-3) var(--s-4); font-size: 14px; color: var(--fg-mid); background: var(--ink-50); border: 1px solid var(--border); border-radius: var(--r-3); }
+    .mx-tokbar.is-set { color: var(--fg); }
+    .mx-btn--sm { padding: 5px 12px; font-size: 13px; }
+    .mx-tab { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font: 500 13px/1.4 var(--font-sans); color: var(--fg-mid); background: transparent; border: 0; border-radius: var(--r-3); cursor: pointer; white-space: nowrap; transition: color var(--dur-1), background var(--dur-1); }
     .mx-tab img { width: 16px; height: 16px; border-radius: 3px; }
     .mx-tab:hover:not([aria-selected="true"]) { color: var(--fg); }
     .mx-tab[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-2); }
@@ -192,22 +211,31 @@
 
         <p class="mx__lede">Let your AI assistant search Nucleux patterns, components and tokens for you, straight from a prompt.</p>
         <p class="mx__p">It works through the Nucleux MCP server. <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Model Context Protocol</a> is an open standard that lets AI assistants connect to tools and data.</p>
-        <p class="mx__p">You sign in once with Google. Signed in, your assistant gets the web components in both families (ShadCN and Material 3.0, with each pattern exactly as this site shows it) and Nucleux Mobile for SwiftUI, Jetpack Compose, Flutter and React Native.</p>
+        <p class="mx__p">No account needed. Your assistant gets the web components in both families (ShadCN and Material 3.0, with each pattern exactly as this site shows it) and Nucleux Mobile for SwiftUI, Jetpack Compose, Flutter and React Native. Each connection gets its own token.</p>
 
         <div class="mx-connect">
           <a class="mx-connect__btn" id="connect-claude" href="#" target="_blank" rel="noopener">
             <img src="./assets/logos/claude-mark.svg" alt="" aria-hidden="true">
-            <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with setup steps in the prompt</span></span>
+            <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with your connect prompt</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
           <a class="mx-connect__btn" id="connect-codex" href="#" target="_blank" rel="noopener">
             <img src="./assets/logos/openai.svg" alt="" aria-hidden="true">
-            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Opens Codex with setup steps in the prompt</span></span>
+            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Copies your connect prompt and opens Codex</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
 
-        <p class="mx__p mx-quick">Using another agent, or want it done for you? <a href="https://nucleux.in/mcp/connect">Sign in and copy a one-time connect prompt</a>. Paste it into your coding agent and it sets up every agent on your machine.</p>
+        <div class="mx-get" id="get-token">
+          <p class="mx__p mx-get__lead"><b>Fastest, for any coding agent:</b> copy a connect prompt and paste it into your agent. It sets up every agent on your machine with a token of its own.</p>
+          <div class="mx-get__row">
+            <button class="mx-btn mx-btn--primary" type="button" id="copy-prompt">Copy connect prompt</button>
+            <button class="mx-btn" type="button" id="new-token">Get a token</button>
+          </div>
+          <p class="mx-get__status" id="get-status" role="status" aria-live="polite"></p>
+          <div class="mx-code mx-get__token" id="token-box" hidden><button class="mx-copy" type="button" aria-label="Copy token" data-copy=""></button><pre><code><span class="ln" id="token-text"></span></code></pre>
+            <p class="mx-code__note">Shown once. It's filled into the setup steps below; for any other agent, send it as the header <code>Authorization: Bearer &lt;token&gt;</code>. Keep it private.</p></div>
+        </div>
 
         <h2 class="mx__h2" id="setup">Setup</h2>
         <p class="mx__p">Pick where you work. The steps change to match.</p>
@@ -248,37 +276,50 @@
       var CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 
-      // Each platform: logo + ordered steps. A step may carry a code block (code/lang/note).
+      // Manual setup passes a token. Until one is created on this page the
+      // snippets show a placeholder; "Get a token" fills it in everywhere.
+      var TOKEN = '';
+      function tok() { return TOKEN || '<your-token>'; }
+      var NO_TOKEN = 'Rather not paste a token? Leave out the <code>Authorization</code> line and choose <b>Allow</b> in the browser when your agent asks.';
+
+      // Each platform: logo + ordered steps. A step may carry a code block
+      // (code/lang/note); code may be a function of the token.
       var PLATFORMS = [
         { id: 'claude', name: 'Claude', logo: 'claude-mark.svg', steps: [
           { title: 'Add a custom connector', text: 'In claude.ai or Claude Desktop, open <b>Settings → Connectors</b> and choose <b>Add custom connector</b>.' },
           { title: 'Enter the server URL', text: 'Paste this as the URL, then click <b>Add</b>.', code: URL_MCP, lang: 'url' },
-          { title: 'Connect and sign in', text: 'Click <b>Connect</b> next to Nucleux, sign in with Google and choose <b>Allow</b>. Turn it on from the <b>Search and tools</b> menu in any chat.',
-            note: 'On a Team or Enterprise plan, an owner adds the connector once for the organisation; members only click <b>Connect</b>. Added Nucleux before 23 October 2026? Remove it and add it again so it signs in.' } ] },
+          { title: 'Connect', text: 'Click <b>Connect</b> next to Nucleux and choose <b>Allow</b>. No account needed. Turn it on from the <b>Search and tools</b> menu in any chat.',
+            note: 'On a Team or Enterprise plan, an owner adds the connector once for the organisation; members only click <b>Connect</b>. Added Nucleux before 24 October 2026? Remove it and add it again.' } ] },
         { id: 'claude-code', name: 'Claude Code', logo: 'claude-mark.svg', steps: [
-          { title: 'Add the server', text: 'Run this in your terminal:', code: 'claude mcp add --transport http nucleux ' + URL_MCP, lang: 'sh',
-            note: 'Add <code>--scope project</code> to share it with your team through <code>.mcp.json</code>.' },
-          { title: 'Sign in', text: 'Restart Claude Code, run <code>/mcp</code>, pick <b>nucleux</b> and choose <b>Authenticate</b>. If it doesn\'t show up, <code>/mcp</code> also shows why.' } ] },
+          { title: 'Add the server', text: 'Run this in your terminal:', token: true, lang: 'sh',
+            code: function (t) { return 'claude mcp add --transport http nucleux ' + URL_MCP + ' --header "Authorization: Bearer ' + t + '"'; },
+            note: 'Add <code>--scope user</code> to use it in every project. Without the <code>--header</code> part, run <code>/mcp</code>, pick <b>nucleux</b>, choose <b>Authenticate</b> and click <b>Allow</b> instead.' },
+          { title: 'Restart', text: 'Restart Claude Code. <code>/mcp</code> shows <b>nucleux</b> as connected; if it doesn\'t, it also shows why.' } ] },
         { id: 'codex', name: 'Codex', logo: 'openai.svg', steps: [
-          { title: 'Add the server', text: 'Add this to <code>~/.codex/config.toml</code>:', code: '[mcp_servers.nucleux]\nurl = "' + URL_MCP + '"', lang: 'toml' },
-          { title: 'Sign in', text: 'Run <code>codex mcp login nucleux</code>, finish sign-in in the browser, then restart Codex.',
-            note: 'If your Codex version can\'t sign in to an HTTP server, use the <a href="https://nucleux.in/mcp/connect">one-time connect prompt</a> instead; it adds the server with your token.' } ] },
+          { title: 'Add the server', text: 'Add this to <code>~/.codex/config.toml</code>:', token: true, lang: 'toml',
+            code: function (t) { return '[mcp_servers.nucleux]\nurl = "' + URL_MCP + '"\nhttp_headers = { Authorization = "Bearer ' + t + '" }'; },
+            note: 'Rather not paste a token? Leave out the <code>http_headers</code> line, run <code>codex mcp login nucleux</code> and click <b>Allow</b> in the browser.' },
+          { title: 'Restart', text: 'Restart Codex. <code>codex mcp list</code> shows <b>nucleux</b>.' } ] },
         { id: 'cursor', name: 'Cursor', logo: 'cursor.svg', steps: [
           { title: 'Add the server', text: 'Add this to <code>~/.cursor/mcp.json</code> (or <code>.cursor/mcp.json</code> in your project):',
-            code: '{\n  "mcpServers": {\n    "nucleux": {\n      "url": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
-          { title: 'Enable it', text: 'Open <b>Cursor Settings → MCP</b>, turn on <b>nucleux</b> and click <b>Needs login</b> to sign in.' } ] },
+            token: true, lang: 'json', note: NO_TOKEN,
+            code: function (t) { return '{\n  "mcpServers": {\n    "nucleux": {\n      "url": "' + URL_MCP + '",\n      "headers": { "Authorization": "Bearer ' + t + '" }\n    }\n  }\n}'; } },
+          { title: 'Enable it', text: 'Open <b>Cursor Settings → MCP</b> and turn on <b>nucleux</b>.' } ] },
         { id: 'vscode', name: 'VS Code', logo: 'vscode.svg', steps: [
           { title: 'Add the server', text: 'Add this to <code>.vscode/mcp.json</code> in your project:',
-            code: '{\n  "servers": {\n    "nucleux": {\n      "type": "http",\n      "url": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
-          { title: 'Start it', text: 'Click <b>Start</b> above the nucleux entry in <code>mcp.json</code> and sign in when asked. Use it from Copilot Chat in <b>Agent</b> mode.' } ] },
+            token: true, lang: 'json', note: NO_TOKEN + ' Shared repo? Keep the token out of git: put this in your user <code>mcp.json</code> instead.',
+            code: function (t) { return '{\n  "servers": {\n    "nucleux": {\n      "type": "http",\n      "url": "' + URL_MCP + '",\n      "headers": { "Authorization": "Bearer ' + t + '" }\n    }\n  }\n}'; } },
+          { title: 'Start it', text: 'Click <b>Start</b> above the nucleux entry in <code>mcp.json</code>. Use it from Copilot Chat in <b>Agent</b> mode.' } ] },
         { id: 'any', name: 'Any agent', logo: '../../fav%20icon/Fav%20icon%203.png', steps: [
-          { title: 'Sign in', text: 'Open <a href="https://nucleux.in/mcp/connect">nucleux.in/mcp/connect</a> and continue with Google.' },
-          { title: 'Copy the prompt', text: 'Click <b>Get connect prompt</b>, then <b>Copy prompt</b>. It works once, within 10 minutes.' },
-          { title: 'Paste it into your agent', text: 'Claude Code, Cursor, VS Code, Codex, Windsurf, Gemini CLI or Claude Desktop runs the setup for every agent on your machine, checks it, and tells you to restart.' } ] },
+          { title: 'Copy the prompt', text: 'Click <a href="#get-token">Copy connect prompt</a> above. It works once, within 10 minutes.' },
+          { title: 'Paste it into your agent', text: 'Claude Code, Cursor, VS Code, Codex, Windsurf, Gemini CLI or Claude Desktop runs the setup for every agent on your machine, checks it, and tells you to restart.' },
+          { title: 'Or connect it by hand', text: 'Any MCP client that speaks Streamable HTTP works with the server URL and your token as a header:', token: true, lang: 'url',
+            code: function (t) { return URL_MCP + '\nAuthorization: Bearer ' + t; } } ] },
         { id: 'windsurf', name: 'Windsurf', logo: 'windsurf.svg', steps: [
           { title: 'Add the server', text: 'Add this to <code>~/.codeium/windsurf/mcp_config.json</code>:',
-            code: '{\n  "mcpServers": {\n    "nucleux": {\n      "serverUrl": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
-          { title: 'Refresh', text: 'Open the <b>Cascade</b> MCP panel, click <b>Refresh</b> and sign in when asked.' } ] }
+            token: true, lang: 'json', note: NO_TOKEN,
+            code: function (t) { return '{\n  "mcpServers": {\n    "nucleux": {\n      "serverUrl": "' + URL_MCP + '",\n      "headers": { "Authorization": "Bearer ' + t + '" }\n    }\n  }\n}'; } },
+          { title: 'Refresh', text: 'Open the <b>Cascade</b> MCP panel and click <b>Refresh</b>.' } ] }
       ];
 
       function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -288,12 +329,13 @@
           return colon ? '<span class="t-k">"' + v + '"</span>' + colon : '<span class="t-s">"' + v + '"</span>';
         }).replace(/([{}\[\],])(?![^<]*<\/span>)/g, '<span class="t-p">$1</span>');
         if (lang === 'toml') return /^\[/.test(h) ? '<span class="t-k">' + h + '</span>' : h.replace(/("[^"]*")/g, '<span class="t-s">$1</span>');
-        if (lang === 'url') return '<span class="t-s">' + h + '</span>';
+        if (lang === 'url') return /^Authorization:/.test(line) ? '<span class="t-k">' + h + '</span>' : '<span class="t-s">' + h + '</span>';
         return h.replace(/^(claude mcp add)/, '<span class="t-k">$1</span>');
       }
       function codeBlock(st) {
-        var lines = st.code.split('\n').map(function (l) { return '<span class="ln">' + tint(l, st.lang) + '</span>'; }).join('');
-        return '<div class="mx-code"><button class="mx-copy" type="button" aria-label="Copy" data-copy="' + esc(st.code).replace(/"/g, '&quot;') + '">' + COPY + '</button>' +
+        var code = typeof st.code === 'function' ? st.code(tok()) : st.code;
+        var lines = code.split('\n').map(function (l) { return '<span class="ln">' + tint(l, st.lang) + '</span>'; }).join('');
+        return '<div class="mx-code"><button class="mx-copy" type="button" aria-label="Copy" data-copy="' + esc(code).replace(/"/g, '&quot;') + '"' + (st.token && !TOKEN ? ' data-needs-token' : '') + '>' + COPY + '</button>' +
           '<pre><code>' + lines + '</code></pre>' + (st.note ? '<p class="mx-code__note">' + st.note + '</p>' : '') + '</div>';
       }
 
@@ -305,11 +347,19 @@
       }).join('');
       var tabs = Array.prototype.slice.call(tabsEl.children);
 
+      var current = 'claude';
+      function tokenBar(pl) {
+        if (!pl.steps.some(function (st) { return st.token; })) return '';
+        return TOKEN
+          ? '<p class="mx-tokbar is-set">Your token is filled in below. It\'s shown only on this page, once: copy what you need now.</p>'
+          : '<p class="mx-tokbar">These steps include your token. <button class="mx-btn mx-btn--sm" type="button" data-get-token>Get a token</button> and it\'s filled in below.</p>';
+      }
       function show(id) {
         var pl = PLATFORMS.filter(function (x) { return x.id === id; })[0] || PLATFORMS[0];
+        current = pl.id;
         tabs.forEach(function (t) { var on = t.id === 'tab-' + pl.id; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
         panel.setAttribute('aria-labelledby', 'tab-' + pl.id);
-        panel.innerHTML = '<ol class="mx-steps">' + pl.steps.map(function (st, i) {
+        panel.innerHTML = tokenBar(pl) + '<ol class="mx-steps">' + pl.steps.map(function (st, i) {
           return '<li><span class="mx-steps__n">' + (i + 1) + '</span><h3 class="mx-steps__title">' + st.title + '</h3>' +
             '<p class="mx__p">' + st.text + '</p>' + (st.code ? codeBlock(st) : (st.note ? '<p class="mx-code__note">' + st.note + '</p>' : '')) +
             '</li>';
@@ -329,43 +379,114 @@
       show(saved || 'claude');
 
       document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-get-token]')) { getToken(); return; }
         var b = e.target.closest('[data-copy]');
         if (!b) return;
+        if (b.hasAttribute('data-needs-token')) { say('Get a token first: it\'s filled into the snippet'); }
         navigator.clipboard.writeText(b.dataset.copy).then(function () {
           b.innerHTML = CHECK; b.classList.add('is-done');
           setTimeout(function () { b.innerHTML = COPY; b.classList.remove('is-done'); }, 1600);
         });
       });
 
-      // ── Connect buttons: the whole guide as a prompt ──
-      function setupMd() {
-        var md = ['Read the Nucleux documentation below, then help me apply it. Ask which platform I use, then walk me through its setup.', '',
-          '# MCP Server', '', '> Source: https://nucleux.in/mcp', '',
-          'Let your AI assistant search Nucleux patterns, components and tokens for you, straight from a prompt.', '',
-          'It works through the Nucleux MCP server at `' + URL_MCP + '`. [Model Context Protocol](https://modelcontextprotocol.io/) is an open standard that lets AI assistants connect to tools and data.', '',
-          'You sign in once with Google. Signed in, it covers the web components (ShadCN and Material 3.0) and Nucleux Mobile (SwiftUI, Jetpack Compose, Flutter, React Native). For any agent, a one-time connect prompt from https://nucleux.in/mcp/connect sets everything up.', '',
-          '## Setup', ''];
-        PLATFORMS.forEach(function (pl) {
-          md.push('### ' + pl.name, '');
-          pl.steps.forEach(function (st, i) {
-            var mdText = function (h) { return h.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)').replace(/<\/?b>/g, '**').replace(/<\/?code>/g, '`'); };
-            md.push((i + 1) + '. **' + st.title + '** — ' + mdText(st.text));
-            if (st.code) md.push('', '   ```' + (st.lang === 'url' ? '' : st.lang), st.code.replace(/^/gm, '   '), '   ```');
-            if (st.note) md.push('', '   ' + mdText(st.note));
-          });
-          md.push('');
-        });
-        return md.join('\n').trim();
-      }
       var toast = document.querySelector('.mx-toast');
+      // ── Tokens: no account; the server issues a one-time connect prompt or a token ──
+      // Same origin as the MCP server (nucleux.in/mcp), so no credentials or CORS.
+      var getStatus = document.getElementById('get-status');
+      var tokenBox = document.getElementById('token-box');
+      var tokenCopy = tokenBox.querySelector('.mx-copy');
+      tokenCopy.innerHTML = COPY;
+      function status(msg, isError) { getStatus.textContent = msg; getStatus.classList.toggle('is-error', !!isError); }
+      function issue(path) {
+        return fetch(URL_MCP + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: '{}' })
+          .then(function (r) {
+            if (r.status === 429) throw new Error('Too many requests from your network. Try again in a little while.');
+            if (!r.ok) throw new Error('Couldn\'t get a token right now (' + r.status + '). Try again shortly.');
+            return r.json();
+          });
+      }
+      function busy(btn, on) { btn.disabled = on; btn.setAttribute('aria-busy', on ? 'true' : 'false'); }
+      var promptBtn = document.getElementById('copy-prompt');
+      promptBtn.addEventListener('click', function () {
+        busy(promptBtn, true); status('Getting your connect prompt…');
+        issue('/tokens/prompt').then(function (d) {
+          return navigator.clipboard.writeText(d.prompt).then(function () {
+            status('Copied. Paste it into your coding agent; it works once, within 10 minutes.');
+            say('Connect prompt copied');
+          }, function () {
+            // Clipboard blocked: show it so it can be copied by hand.
+            tokenBox.hidden = false; document.getElementById('token-text').textContent = d.prompt; tokenCopy.dataset.copy = d.prompt;
+            status('Your browser blocked the clipboard. Copy the prompt below.');
+          });
+        }).catch(function (e) { status(e.message, true); }).then(function () { busy(promptBtn, false); });
+      });
+      var tokenBtn = document.getElementById('new-token');
+      function getToken() {
+        if (TOKEN) return;
+        var inline = panel.querySelector('[data-get-token]');
+        busy(tokenBtn, true); if (inline) busy(inline, true); status('Creating a token…');
+        issue('/tokens').then(function (d) {
+          TOKEN = d.token;
+          document.getElementById('token-text').textContent = d.token;
+          tokenCopy.dataset.copy = d.token;
+          tokenBox.hidden = false;
+          status('Your token is below, and filled into the setup steps. It\'s shown once.');
+          show(current);
+          say('Token created');
+        }).catch(function (e) { status(e.message, true); if (inline) busy(inline, false); }).then(function () { busy(tokenBtn, false); });
+      }
+      tokenBtn.addEventListener('click', getToken);
+
       function say(msg) { toast.textContent = msg; toast.classList.add('is-on'); clearTimeout(say.t); say.t = setTimeout(function () { toast.classList.remove('is-on'); }, 2600); }
 
-      // Claude takes the prompt in the URL. Codex has no prefill link, so copy and say so.
-      document.getElementById('connect-claude').href = 'https://claude.ai/new?q=' + encodeURIComponent(setupMd());
-      var codex = document.getElementById('connect-codex');
-      codex.href = 'https://chatgpt.com/codex';
-      codex.addEventListener('click', function () {
-        navigator.clipboard.writeText(setupMd()).then(function () { say('Setup guide copied — paste it into Codex'); });
+      // ── Connect to Claude / Codex: the one-time connect prompt (same one as
+      //    "Copy connect prompt"), with a fresh code each click ──
+      // The tab is opened inside the click so pop-up blockers allow it, then
+      // pointed at its destination once the prompt arrives. The clipboard is
+      // written with a pending ClipboardItem for the same reason (Safari only
+      // lets a click write to it synchronously).
+      function copyPending(promise) {
+        if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+          return navigator.clipboard.write([new ClipboardItem({ 'text/plain': promise.then(function (t) { return new Blob([t], { type: 'text/plain' }); }) })]);
+        }
+        return promise.then(function (t) { return navigator.clipboard.writeText(t); });
+      }
+      function connectVia(btn, open) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (btn.getAttribute('aria-busy') === 'true') return;
+          var win = window.open('about:blank', '_blank');
+          btn.setAttribute('aria-busy', 'true'); status('Getting your connect prompt…');
+          var prompt = issue('/tokens/prompt').then(function (d) { return d.prompt; });
+          open(prompt, win).catch(function (err) {
+            if (win) win.close();
+            status(err && err.message ? err.message : 'Couldn\'t get a connect prompt. Try again shortly.', true);
+          }).then(function () { btn.setAttribute('aria-busy', 'false'); });
+        });
+      }
+      // Claude takes the prompt in the URL; it's also copied in case the chat opens empty.
+      connectVia(document.getElementById('connect-claude'), function (prompt, win) {
+        copyPending(prompt).catch(function () {});
+        return prompt.then(function (t) {
+          var url = 'https://claude.ai/new?q=' + encodeURIComponent(t);
+          if (win) win.location.href = url; else location.href = url;
+          status('Claude opened with your connect prompt (also copied). It works once, within 10 minutes. If Claude can\'t run commands, paste it into Claude Code or Claude Desktop.');
+        });
+      });
+      // Codex has no prefill link, so copy the prompt and open it.
+      connectVia(document.getElementById('connect-codex'), function (prompt, win) {
+        var copied = copyPending(prompt);
+        return prompt.then(function (t) {
+          return copied.then(function () {
+            if (win) win.location.href = 'https://chatgpt.com/codex';
+            status('Connect prompt copied. Paste it into Codex; it works once, within 10 minutes.');
+            say('Connect prompt copied — paste it into Codex');
+          }, function () {
+            if (win) win.close();
+            tokenBox.hidden = false; document.getElementById('token-text').textContent = t; tokenCopy.dataset.copy = t;
+            status('Your browser blocked the clipboard. Copy the prompt below and paste it into Codex.');
+          });
+        });
       });
     })();
   </script>
