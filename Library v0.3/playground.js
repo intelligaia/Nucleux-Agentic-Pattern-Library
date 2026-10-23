@@ -3,7 +3,7 @@
 // Describe a product in plain words; the playground works out which
 // Nucleux patterns it needs, picks the right variant for the surface,
 // and composes a live preview from the mocks in patterns.js.
-// Yantra (Intelligaia's model, through nucleux.in/mcp/playground) picks the
+// An LLM (through nucleux.in/mcp/playground) picks the
 // patterns for a new build and for changes the rules can't place; the
 // rule-based matching here is the fallback whenever it's unreachable or slow.
 // ============================================================
@@ -186,13 +186,13 @@
     });
     return { text, surface, domain, agent: domain.agent, theme: "light", items: sortItems(items) };
   }
-  // Ask Yantra which patterns fit. The server holds the key; this page only
+  // Ask the LLM which patterns fit. The server holds the key; this page only
   // sends the request and the catalog it already has. Resolves to null on any
   // failure (offline, slow, local preview without the server), so callers fall
   // back to the rules.
   const PLANNER = "/mcp/playground";
   const PLANNER_TIMEOUT = 22000;
-  async function askYantra(text, exclude) {
+  async function askAgent(text, exclude) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), PLANNER_TIMEOUT);
     try {
@@ -217,7 +217,7 @@
     }
   }
 
-  // A plan from Yantra's picks: surface and domain still come from the rules,
+  // A plan from the LLM's picks: surface and domain still come from the rules,
   // and any stage it left empty gets the usual baseline pattern.
   function planFrom(text, ai) {
     const base = plan(text);
@@ -548,13 +548,13 @@
 
     if (!state) {
       let next = null;
-      const asking = askYantra(text).then(ai => (next = ai ? planFrom(text, ai) : plan(text), ai));
+      const asking = askAgent(text).then(ai => (next = ai ? planFrom(text, ai) : plan(text), ai));
       const asked = () => next.items.filter(i => i.reason === "asked");
       const live = () => next.items.filter(isBuilt);
       await think([
         `Connected to Nucleux · reading ${PATTERNS.length} patterns and the Md3 component kit`,
-        { label: "Asking Yantra which patterns fit", until: asking,
-          done: ai => ai ? `Yantra picked ${asked().length} patterns: ${asked().map(i => esc(i.x.p.name)).join(", ")}` : "Matching the request against the library" },
+        { label: "Asking the AI agent which patterns fit", until: asking,
+          done: ai => ai ? `The AI agent picked ${asked().length} patterns: ${asked().map(i => esc(i.x.p.name)).join(", ")}` : "Matching the request against the library" },
         () => `Understanding the request — surface: <b>${esc(SURFACES[next.surface].label)}</b>, domain: <b>${esc(next.domain.key)}</b>`,
         () => next.ai ? "" : asked().length ? `Matched ${asked().length} patterns: ${asked().map(i => esc(i.x.p.name)).join(", ")}` : "No strong matches — starting from the essentials",
         "Adding the baseline every AI product needs",
@@ -573,8 +573,8 @@
       await think(["Reading your change", "Finding the matching patterns in Nucleux", "Updating the build"]);
       let changes = refine(state, text);
       if (!changes.length) {
-        // The rules couldn't place it: ask Yantra for patterns this build doesn't have yet.
-        const ai = await askYantra(text, new Set(state.items.map(it => it.id)));
+        // The rules couldn't place it: ask the LLM for patterns this build doesn't have yet.
+        const ai = await askAgent(text, new Set(state.items.map(it => it.id)));
         if (stopped) throw HALT;
         if (ai) {
           ai.picks.slice(0, 3).forEach(x => {
