@@ -86,6 +86,8 @@
     .t-k { color: #c4b5fd; } .t-s { color: #fde68a; } .t-p { color: var(--ink-400); }
 
     /* Quick connect */
+    .mx-quick { margin: var(--s-4) 0 0; font-size: 14px; }
+    .mx-quick a { color: var(--fg); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
     .mx-connect { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: var(--s-8) 0 0; }
     @media (max-width: 560px) { .mx-connect { grid-template-columns: 1fr; } }
     .mx-connect__btn {
@@ -190,6 +192,7 @@
 
         <p class="mx__lede">Let your AI assistant search Nucleux patterns, components and tokens for you, straight from a prompt.</p>
         <p class="mx__p">It works through the Nucleux MCP server. <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Model Context Protocol</a> is an open standard that lets AI assistants connect to tools and data.</p>
+        <p class="mx__p">You sign in once with Google. Signed in, your assistant gets the web components in both families (ShadCN and Material 3.0, with each pattern exactly as this site shows it) and Nucleux Mobile for SwiftUI, Jetpack Compose, Flutter and React Native.</p>
 
         <div class="mx-connect">
           <a class="mx-connect__btn" id="connect-claude" href="#" target="_blank" rel="noopener">
@@ -203,6 +206,8 @@
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
+
+        <p class="mx__p mx-quick">Using another agent, or want it done for you? <a href="https://nucleux.in/mcp/connect">Sign in and copy a one-time connect prompt</a>. Paste it into your coding agent and it sets up every agent on your machine.</p>
 
         <h2 class="mx__h2" id="setup">Setup</h2>
         <p class="mx__p">Pick where you work. The steps change to match.</p>
@@ -248,14 +253,16 @@
         { id: 'claude', name: 'Claude', logo: 'claude-mark.svg', steps: [
           { title: 'Add a custom connector', text: 'In claude.ai or Claude Desktop, open <b>Settings → Connectors</b> and choose <b>Add custom connector</b>.' },
           { title: 'Enter the server URL', text: 'Paste this as the URL, then click <b>Add</b>.', code: URL_MCP, lang: 'url' },
-          { title: 'Connect and sign in', text: 'Click <b>Connect</b> next to Nucleux and sign in with the same Google account. Turn it on from the <b>Search and tools</b> menu in any chat.' } ] },
+          { title: 'Connect and sign in', text: 'Click <b>Connect</b> next to Nucleux, sign in with Google and choose <b>Allow</b>. Turn it on from the <b>Search and tools</b> menu in any chat.',
+            note: 'On a Team or Enterprise plan, an owner adds the connector once for the organisation; members only click <b>Connect</b>. Added Nucleux before 23 October 2026? Remove it and add it again so it signs in.' } ] },
         { id: 'claude-code', name: 'Claude Code', logo: 'claude-mark.svg', steps: [
           { title: 'Add the server', text: 'Run this in your terminal:', code: 'claude mcp add --transport http nucleux ' + URL_MCP, lang: 'sh',
             note: 'Add <code>--scope project</code> to share it with your team through <code>.mcp.json</code>.' },
           { title: 'Sign in', text: 'Restart Claude Code, run <code>/mcp</code>, pick <b>nucleux</b> and choose <b>Authenticate</b>. If it doesn\'t show up, <code>/mcp</code> also shows why.' } ] },
         { id: 'codex', name: 'Codex', logo: 'openai.svg', steps: [
           { title: 'Add the server', text: 'Add this to <code>~/.codex/config.toml</code>:', code: '[mcp_servers.nucleux]\nurl = "' + URL_MCP + '"', lang: 'toml' },
-          { title: 'Sign in', text: 'Run <code>codex mcp login nucleux</code>, finish sign-in in the browser, then restart Codex.' } ] },
+          { title: 'Sign in', text: 'Run <code>codex mcp login nucleux</code>, finish sign-in in the browser, then restart Codex.',
+            note: 'If your Codex version can\'t sign in to an HTTP server, use the <a href="https://nucleux.in/mcp/connect">one-time connect prompt</a> instead; it adds the server with your token.' } ] },
         { id: 'cursor', name: 'Cursor', logo: 'cursor.svg', steps: [
           { title: 'Add the server', text: 'Add this to <code>~/.cursor/mcp.json</code> (or <code>.cursor/mcp.json</code> in your project):',
             code: '{\n  "mcpServers": {\n    "nucleux": {\n      "url": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
@@ -264,6 +271,10 @@
           { title: 'Add the server', text: 'Add this to <code>.vscode/mcp.json</code> in your project:',
             code: '{\n  "servers": {\n    "nucleux": {\n      "type": "http",\n      "url": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
           { title: 'Start it', text: 'Click <b>Start</b> above the nucleux entry in <code>mcp.json</code> and sign in when asked. Use it from Copilot Chat in <b>Agent</b> mode.' } ] },
+        { id: 'any', name: 'Any agent', logo: '../../fav%20icon/Fav%20icon%203.png', steps: [
+          { title: 'Sign in', text: 'Open <a href="https://nucleux.in/mcp/connect">nucleux.in/mcp/connect</a> and continue with Google.' },
+          { title: 'Copy the prompt', text: 'Click <b>Get connect prompt</b>, then <b>Copy prompt</b>. It works once, within 10 minutes.' },
+          { title: 'Paste it into your agent', text: 'Claude Code, Cursor, VS Code, Codex, Windsurf, Gemini CLI or Claude Desktop runs the setup for every agent on your machine, checks it, and tells you to restart.' } ] },
         { id: 'windsurf', name: 'Windsurf', logo: 'windsurf.svg', steps: [
           { title: 'Add the server', text: 'Add this to <code>~/.codeium/windsurf/mcp_config.json</code>:',
             code: '{\n  "mcpServers": {\n    "nucleux": {\n      "serverUrl": "' + URL_MCP + '"\n    }\n  }\n}', lang: 'json' },
@@ -300,7 +311,7 @@
         panel.setAttribute('aria-labelledby', 'tab-' + pl.id);
         panel.innerHTML = '<ol class="mx-steps">' + pl.steps.map(function (st, i) {
           return '<li><span class="mx-steps__n">' + (i + 1) + '</span><h3 class="mx-steps__title">' + st.title + '</h3>' +
-            '<p class="mx__p">' + st.text + '</p>' + (st.code ? codeBlock(st) : '') +
+            '<p class="mx__p">' + st.text + '</p>' + (st.code ? codeBlock(st) : (st.note ? '<p class="mx-code__note">' + st.note + '</p>' : '')) +
             '</li>';
         }).join('') + '</ol>';
         try { localStorage.setItem('nx-mcp-platform', pl.id); } catch (e) {}
@@ -332,13 +343,15 @@
           '# MCP Server', '', '> Source: https://nucleux.in/mcp.html', '',
           'Let your AI assistant search Nucleux patterns, components and tokens for you, straight from a prompt.', '',
           'It works through the Nucleux MCP server at `' + URL_MCP + '`. [Model Context Protocol](https://modelcontextprotocol.io/) is an open standard that lets AI assistants connect to tools and data.', '',
+          'You sign in once with Google. Signed in, it covers the web components (ShadCN and Material 3.0) and Nucleux Mobile (SwiftUI, Jetpack Compose, Flutter, React Native). For any agent, a one-time connect prompt from https://nucleux.in/mcp/connect sets everything up.', '',
           '## Setup', ''];
         PLATFORMS.forEach(function (pl) {
           md.push('### ' + pl.name, '');
           pl.steps.forEach(function (st, i) {
-            md.push((i + 1) + '. **' + st.title + '** — ' + st.text.replace(/<\/?b>/g, '**').replace(/<\/?code>/g, '`'));
+            var mdText = function (h) { return h.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, '[$2]($1)').replace(/<\/?b>/g, '**').replace(/<\/?code>/g, '`'); };
+            md.push((i + 1) + '. **' + st.title + '** — ' + mdText(st.text));
             if (st.code) md.push('', '   ```' + (st.lang === 'url' ? '' : st.lang), st.code.replace(/^/gm, '   '), '   ```');
-            if (st.note) md.push('', '   ' + st.note.replace(/<\/?code>/g, '`'));
+            if (st.note) md.push('', '   ' + mdText(st.note));
           });
           md.push('');
         });
