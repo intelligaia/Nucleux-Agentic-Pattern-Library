@@ -163,3 +163,9 @@
 .pg-chat__head .pg-chat__lib + .pg-btn { margin-left: 0; }
 .pg-btn-tertiary, .pg-btn { white-space: nowrap; flex-shrink: 0; }
 .pg-btn svg, .pg-btn-tertiary svg { flex-shrink: 0; }
+
+/* Embedded on the home page (playground.html?embed=1): no site chrome */
+.pg-embed .gnav, .pg-embed .gnav__mobile, .pg-embed #nx-launcher, .pg-embed footer, .pg-embed .pg-home__lib { display: none !important; }
+.pg-embed { --nav-h: 0px; }
+.pg-embed .pg-home { padding-bottom: var(--s-12); }
+.pg-embed .pg-studio { border-top: 0; }

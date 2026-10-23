@@ -406,7 +406,10 @@
       }
       .contact-section { padding: 60px 0; }
     }
-  </style>
+      .home-pg__frame { margin-top: 40px; height: 760px; border: 1px solid var(--ds-slate-200, #e2e8f0); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .home-pg__frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+    @media (max-width: 720px) { .home-pg__frame { height: 640px; } }
+</style>
 
 
   <!-- ────────────────────────────────────────────────────
@@ -2117,7 +2120,6 @@
         <a class="gnav__link" href="practices.html">Scenarios</a>
         <a class="gnav__link" href="docs.html">Docs</a>
         <a class="gnav__link" href="mcp.html">MCP</a>
-        <a class="gnav__link" href="playground.html">Playground</a>
         <a class="gnav__link" href="labs.html">Labs</a>
         <a class="gnav__link gnav__link--featured" href="design-system.html">Design System</a>
         <a class="gnav__link" href="blog.html">Blog</a>
@@ -2397,7 +2399,7 @@
             <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
-        <a class="btn btn--tertiary" href="playground.html">
+        <a class="btn btn--tertiary" href="#playground">
           Try the Playground
           <svg class="btn__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2456,6 +2458,20 @@
        PRACTICES — where this library applies
        ──────────────────────────────────────────────────── -->
   </div><!-- /scene — the particle field ends with section two -->
+
+  <!-- ── PLAYGROUND — build with the library, live ── -->
+  <section class="practices home-pg" id="playground">
+    <div class="container">
+      <header class="practices__head reveal">
+        <span class="t-eyebrow">Playground</span>
+        <h2 class="practices__title">Describe an AI product.<br/>Watch it <em>build itself</em>.</h2>
+        <p class="practices__sub">Nucleux picks the patterns your product needs and builds a live preview from the library.</p>
+      </header>
+      <div class="home-pg__frame reveal">
+        <iframe src="playground.html?embed=1" title="Nucleux Playground" loading="lazy"></iframe>
+      </div>
+    </div>
+  </section>
 
   <section class="practices" id="practices">
     <div class="container">
