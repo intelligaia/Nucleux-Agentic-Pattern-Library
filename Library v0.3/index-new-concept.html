@@ -40,6 +40,8 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
   <link rel="stylesheet" href="styles.css?v=5" />
+  <!-- the Nucleux Button (@nucleux/button), scoped to .nx-scope: _build/playground-preview/build-button.mjs -->
+  <link rel="stylesheet" href="nx-button.css?v=2" />
   <link rel="stylesheet" href="nav-mega.css" />
 
   <!-- Material 3.0 agentic components — scoped to the "Connect a
@@ -1894,17 +1896,6 @@
     .ln-head--row > div { min-width: 0; max-width: 760px; }
     .ln-dots { background-color: var(--surface); background-image: radial-gradient(rgba(12,12,10,.13) 1px, transparent 1.3px); background-size: 14px 14px; }
 
-    /* outlined pill with an arrow disc — Gaiametry's "pill + disc" */
-    .ln-obtn {
-      display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 18px 0 6px;
-      border: 1.5px solid var(--fg); border-radius: 999px; background: var(--surface); color: var(--fg);
-      font: 600 14.5px/1 var(--font-body); letter-spacing: -0.01em; text-decoration: none; white-space: nowrap;
-      transition: background 260ms var(--ease-out), color 260ms var(--ease-out), border-radius 320ms var(--ease-out);
-    }
-    .ln-obtn__a { box-sizing: content-box; padding: 8px; border-radius: 50%; background: var(--ink-100); color: var(--fg); transition: transform 320ms var(--ease-out), background 260ms var(--ease-out); }
-    .ln-obtn:hover { border-radius: 14px; }
-    .ln-obtn:hover .ln-obtn__a { transform: translateX(2px) rotate(-45deg); background: var(--accent); color: #fff; }
-    .ln-obtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
     /* 02 · Playground */
     .ln-sec--rule { border-top: 1px solid var(--border); }
@@ -1924,6 +1915,16 @@
     .ln-who__col h3 { margin: 0; font-size: clamp(26px, 2.6vw, 34px); font-weight: 600; letter-spacing: -0.03em; }
     .ln-who__col p { margin: 0 0 8px; font-size: 16px; color: var(--fg-mid); }
     .ln-who__meta { font: 11.5px/1.4 var(--font-mono); color: var(--fg-mid); letter-spacing: .02em; }
+    /* The page's outlined buttons are the Nucleux Button (secondary, from
+       nx-button.css). .ln-nxbtn gives them the global nav's move: they rest
+       as pills and, on hover and focus, the corners close in to the Button's
+       own 12px and the button lifts 1px, on the nav's timing (styles.css
+       .gnav__cta, nav-mega.css .gnav__signup). Each pill radius is half the
+       button's height, so the radius animates instead of snapping. */
+    .nx-scope .ln-nxbtn { border-radius: 20px; transition: background-color .15s ease, border-radius 260ms cubic-bezier(.22, 1, .36, 1), transform .18s cubic-bezier(.34, 1.56, .64, 1); }
+    .nx-scope .ln-nxbtn.h-9 { border-radius: 18px; }
+    .nx-scope .ln-nxbtn:hover, .nx-scope .ln-nxbtn:focus-visible { border-radius: 12px; transform: translateY(-1px); }
+    @media (prefers-reduced-motion: reduce) { .nx-scope .ln-nxbtn { transition: none; } }
     .ln-who__meta code { font: inherit; }
 
     /* 04 · Four moments — bento of live tiles */
@@ -1932,13 +1933,15 @@
     .ln-bt--w { grid-column: span 2; }
     .ln-bt__stage { position: relative; flex: 1 1 auto; display: grid; place-items: center; min-height: 260px; padding: 28px 20px;
       background-image: radial-gradient(rgba(12,12,10,.12) 1px, transparent 1.3px); background-size: 14px 14px; border-bottom: 1px solid var(--border); }
-    .ln-bt__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 18px 20px 20px; }
+    /* One footer in every tile: number, heading, a two-line description, then
+       the patterns button on its own row. Each footer is the same height, so
+       the headings and descriptions line up across a row whatever the tile's
+       width; beside the text, a narrow tile wrapped its line to three. */
+    .ln-bt__foot { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 18px 20px 20px; }
     .ln-bt__foot h3 { margin: 2px 0 4px; font-size: 19px; font-weight: 600; letter-spacing: -0.015em; }
-    .ln-bt__foot p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--fg-mid); max-width: 46ch; }
+    .ln-bt__foot p { margin: 0; min-height: 3em; font-size: 14px; line-height: 1.5; color: var(--fg-mid); max-width: 46ch; }   /* 2 lines */
     .ln-bt__n { font: 600 11px/1 var(--font-mono); color: var(--fg-mid); }
-    .ln-bt__go { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 999px; font: 600 13px/1 var(--font-body); color: var(--fg); text-decoration: none; white-space: nowrap; transition: border-color 200ms var(--ease-out), background 200ms var(--ease-out); }
-    .ln-bt__go:hover { border-color: var(--fg); background: var(--ink-50); }
-    .ln-bt__go:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ln-bt__go { flex: 0 0 auto; }   /* the tile's Nucleux Button (.ln-nxbtn) keeps its size beside the text */
 
     /* each tile's stage holds the real component (pg-preview/moments.html), sized to it */
     .ln-bt__live { display: block; width: 100%; height: 300px; border: 0; background: transparent; transition: height .35s cubic-bezier(.22,1,.36,1); }
@@ -2301,6 +2304,28 @@
     .ln-code pre { margin: 0; padding: 20px; overflow-x: auto; font: 13.5px/1.7 var(--font-mono); white-space: pre-wrap; word-break: break-word; }
     .ln-code .k { color: #fbbf77; } .ln-code .s { color: #e7d9b8; } .ln-code .c { color: var(--ink-400); }
     .ln-dev__note { margin: var(--s-4) 0 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
+    /* How the agent builds with Nucleux, beside the prompt it runs on: four
+       steps on one thin line. A gradient fill travels down the line, the step
+       it reaches gets a filled dot with a soft halo and full-strength type;
+       the rest stay quiet. It moves only while on screen, and under reduced
+       motion it rests with every step shown. */
+    .ln-dev__row { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: clamp(32px, 5vw, 72px); align-items: center; width: 100%; max-width: 1080px; text-align: left; }
+    .ln-dev__code { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+    .ln-flowv { --k: 0; position: relative; list-style: none; margin: 0; padding: 0; }
+    .ln-flowv__rail { position: absolute; left: 6px; top: 26px; bottom: 26px; width: 1px; background: var(--border); }
+    .ln-flowv__rail i { position: absolute; inset: 0; background: linear-gradient(180deg, #21A4D7, #8B57C7); transform-origin: 50% 0; transform: scaleY(calc(var(--k) / 3)); transition: transform .9s var(--ease-out); }
+    .ln-flowv li { position: relative; display: grid; grid-template-columns: 13px minmax(0, 1fr); gap: 0 22px; padding: 16px 0; }
+    .ln-flowv__dot { position: relative; z-index: 1; width: 13px; height: 13px; margin-top: 4px; border-radius: 50%; border: 1.5px solid var(--border-strong); background: var(--bg); transition: background-color .4s ease, border-color .4s ease, box-shadow .5s var(--ease-out); }
+    .ln-flowv li.is-done .ln-flowv__dot { border-color: #6a6fd0; background: #6a6fd0; }
+    .ln-flowv li.is-on .ln-flowv__dot { border-color: #6a6fd0; background: var(--bg); box-shadow: 0 0 0 5px rgb(106 111 208 / .14), inset 0 0 0 3px #6a6fd0; }
+    .ln-flowv__k { display: block; font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+    .ln-flowv b { display: block; margin-top: 7px; font-size: 17px; font-weight: 600; line-height: 1.25; letter-spacing: -.015em; color: var(--fg-mid); transition: color .4s ease; }
+    .ln-flowv small { display: block; margin-top: 4px; font-size: 14px; line-height: 1.5; color: var(--fg-muted); transition: color .4s ease; }
+    .ln-flowv code { font: 500 12.5px/1 var(--font-mono); }
+    .ln-flowv li.is-on b, .ln-flowv li.is-done b { color: var(--fg); }
+    .ln-flowv li.is-on small { color: var(--fg-mid); }
+    html.ln-still .ln-flowv b { color: var(--fg); }
+    html.ln-still .ln-flowv__rail i { transform: scaleY(1); }
     .ln-dev__note a { color: var(--fg); font-weight: 600; }
     .ln-panel[hidden] { display: none; }
     ::view-transition-old(ln-code), ::view-transition-new(ln-code) { animation-duration: 360ms; animation-timing-function: cubic-bezier(.16,1,.3,1); }
@@ -2419,11 +2444,11 @@
 
     @media (max-width: 960px) {
       .ln-who__grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+
       .ln-bento { grid-template-columns: minmax(0, 1fr); }
       .ln-bt--w { grid-column: auto; }
     }
     @media (max-width: 720px) {
-      .ln-bt__foot { flex-direction: column; align-items: flex-start; }
       .ln-bt__stage { min-height: 240px; padding: 22px 14px; }
     }
   </style>
@@ -2578,6 +2603,13 @@
     .ln-wrap .ln-dev > div { width: 100%; max-width: 820px; display: flex; flex-direction: column; align-items: center; }
     .ln-wrap .ln-dev .ln-code { width: 100%; text-align: left; }
     .ln-wrap .ln-dev .ln-tabs { margin-inline: auto; }
+    .ln-wrap .ln-dev > .ln-dev__row { display: grid; max-width: 1080px; align-items: center; }
+    .ln-wrap .ln-dev .ln-dev__code .ln-tabs { margin-inline: 0; }
+    @media (max-width: 900px) {
+      .ln-wrap .ln-dev > .ln-dev__row { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+      .ln-flowv li { padding: 11px 0; }
+      .ln-flowv b { font-size: 16px; }
+    }
 
     /* Labs banner centred */
     .ln-wrap .ln-labs { justify-content: center; text-align: center; flex-wrap: wrap; }
@@ -3865,14 +3897,14 @@
         <div class="ln-who__art" data-shape="spark" aria-hidden="true"></div>
         <h3>For founders</h3>
         <p>One prompt. Your agent builds the screens.</p>
-        <a class="ln-obtn" href="#developers" data-tab="agent"><svg class="ln-obtn__a" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Copy the prompt</a>
+        <span class="nx-scope"><a class="ln-who__btn ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-10 rounded-lg px-5 text-sm" href="#developers" data-tab="agent"><span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Copy the prompt</a></span>
         <span class="ln-who__meta">Claude · Cursor · Codex</span>
       </div>
       <div class="ln-who__col ln-rv" style="--d:90ms">
         <div class="ln-who__art" data-shape="code" aria-hidden="true"></div>
         <h3>For developers</h3>
         <p>The same patterns, in React.</p>
-        <a class="ln-obtn" href="docs"><svg class="ln-obtn__a" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Read the quick start</a>
+        <span class="nx-scope"><a class="ln-who__btn ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-10 rounded-lg px-5 text-sm" href="docs"><span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Read the quick start</a></span>
         <span class="ln-who__meta"><code>npm i @nucleux/react</code></span>
       </div>
     </div>
@@ -3887,43 +3919,43 @@
         <h2 class="ln-h2 ln-rv" id="pat-h">Every pattern belongs to one of <em>four moments</em>.</h2>
         <p class="ln-lede ln-rv">The library is organised against this map so the right pattern is always one click away.</p>
       </div>
-      <a class="ln-obtn ln-rv" href="library"><svg class="ln-obtn__a" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>All 84 patterns</a>
+      <span class="nx-scope ln-rv"><a class="ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-10 rounded-lg px-5 text-sm" href="library"><span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>All 84 patterns</a></span>
     </header>
     <div class="ln-bento">
       <article class="ln-bt ln-bt--s ln-rv" aria-labelledby="bt-1">
         <div class="ln-bt__stage" data-demo="onb">
-          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=3&amp;tile=onb" title="Consent, built with the Nucleux npm package" loading="lazy"></iframe>
+          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=4&amp;tile=onb" title="Consent, built with the Nucleux npm package" loading="lazy"></iframe>
         </div>
         <footer class="ln-bt__foot">
           <div><span class="ln-bt__n">01</span><h3 id="bt-1">Onboarding</h3><p>Disclosure, consent and caveats — before anyone types.</p></div>
-          <a class="ln-bt__go" href="library#stage-onboarding"><span data-count="12">12</span> patterns <span class="ln-arrow" aria-hidden="true">→</span></a>
+          <span class="nx-scope ln-bt__go"><a class="ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-9 rounded-lg px-4 text-sm" href="library#stage-onboarding"><span data-count="12">12</span> patterns<span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></span>
         </footer>
       </article>
       <article class="ln-bt ln-bt--w ln-rv" aria-labelledby="bt-2">
         <div class="ln-bt__stage" data-demo="ini">
-          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=3&amp;tile=ini" title="Open input and suggested prompts, built with the Nucleux npm package" loading="lazy"></iframe>
+          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=4&amp;tile=ini" title="Open input and suggested prompts, built with the Nucleux npm package" loading="lazy"></iframe>
         </div>
         <footer class="ln-bt__foot">
           <div><span class="ln-bt__n">02</span><h3 id="bt-2">Initially</h3><p>The first prompt: open input, suggestions, examples and voice.</p></div>
-          <a class="ln-bt__go" href="library#stage-initially"><span data-count="24">24</span> patterns <span class="ln-arrow" aria-hidden="true">→</span></a>
+          <span class="nx-scope ln-bt__go"><a class="ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-9 rounded-lg px-4 text-sm" href="library#stage-initially"><span data-count="24">24</span> patterns<span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></span>
         </footer>
       </article>
       <article class="ln-bt ln-bt--w ln-rv" aria-labelledby="bt-3">
         <div class="ln-bt__stage" data-demo="dur">
-          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=3&amp;tile=dur" title="Agent steps and an action confirmation, built with the Nucleux npm package" loading="lazy"></iframe>
+          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=4&amp;tile=dur" title="Agent steps and an action confirmation, built with the Nucleux npm package" loading="lazy"></iframe>
         </div>
         <footer class="ln-bt__foot">
           <div><span class="ln-bt__n">03</span><h3 id="bt-3">During interaction</h3><p>Progress, sources, approvals and recovery while it works.</p></div>
-          <a class="ln-bt__go" href="library#stage-during"><span data-count="37">37</span> patterns <span class="ln-arrow" aria-hidden="true">→</span></a>
+          <span class="nx-scope ln-bt__go"><a class="ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-9 rounded-lg px-4 text-sm" href="library#stage-during"><span data-count="37">37</span> patterns<span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></span>
         </footer>
       </article>
       <article class="ln-bt ln-bt--s ln-rv" aria-labelledby="bt-4">
         <div class="ln-bt__stage" data-demo="ovr">
-          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=3&amp;tile=ovr" title="Memory controls, built with Nucleux npm components" loading="lazy"></iframe>
+          <iframe class="ln-bt__live" src="pg-preview/moments.html?v=4&amp;tile=ovr" title="Memory controls, built with Nucleux npm components" loading="lazy"></iframe>
         </div>
         <footer class="ln-bt__foot">
           <div><span class="ln-bt__n">04</span><h3 id="bt-4">Over time</h3><p>Memory, history and preferences people stay in control of.</p></div>
-          <a class="ln-bt__go" href="library#stage-overtime"><span data-count="11">11</span> patterns <span class="ln-arrow" aria-hidden="true">→</span></a>
+          <span class="nx-scope ln-bt__go"><a class="ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-9 rounded-lg px-4 text-sm" href="library#stage-overtime"><span data-count="11">11</span> patterns<span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></span>
         </footer>
       </article>
     </div>
@@ -3937,7 +3969,15 @@
       <h2 class="ln-h2 ln-rv" id="dev-h">Your AI agent already <em>knows how to use it</em>.</h2>
       <p class="ln-lede ln-rv">Nucleux runs an MCP server, so Claude, Cursor, Codex and VS Code can ask it which patterns to use and build them for you. Prefer to write the code? It's one package.</p>
     </header>
-    <div class="ln-rv" style="--d:120ms">
+    <div class="ln-dev__row">
+    <ol class="ln-flowv ln-rv" aria-label="How your AI agent builds with Nucleux">
+      <span class="ln-flowv__rail" aria-hidden="true"><i></i></span>
+      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">You</span><b>Describe the screen</b><small>In Claude, Cursor, Codex or VS Code.</small></div></li>
+      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">MCP</span><b>Your agent asks Nucleux</b><small>Which patterns fit, and when not to. <code>nucleux.in/mcp</code></small></div></li>
+      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">Patterns</span><b>It builds with them</b><small>Real <code>@nucleux/react</code> components, on your theme.</small></div></li>
+      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">Ship</span><b>You review the plan</b><small>Nothing changes in your files until you've seen it.</small></div></li>
+    </ol>
+    <div class="ln-dev__code ln-rv" style="--d:120ms">
       <div class="ln-tabs" role="tablist" aria-label="How to use Nucleux">
         <span class="ln-tabs__pill" aria-hidden="true"></span>
         <button class="ln-tab" role="tab" type="button" id="dt-agent" aria-controls="dp-code" aria-selected="true" data-tab="agent">AI agent</button>
@@ -3948,6 +3988,7 @@
         <pre><code data-code></code></pre>
       </div>
       <p class="ln-dev__note" data-note></p>
+    </div>
     </div>
   </div>
 </section>
@@ -5016,8 +5057,22 @@
   fill('agent'); pillTab(tabs[0]);
   addEventListener('resize', function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); });
-  $('.ln-copy').addEventListener('click', function () { nxCopy(this, TABS[curTab].text); });   /* the shared .nx-copy icon button (global.js) */
-  $$('[data-tab="agent"].ln-card, [data-tab="agent"].ln-obtn').forEach(function (a) { a.addEventListener('click', function () { selectTab('agent'); }); });
+  $('.ln-copy').addEventListener('click', function () { nxCopy(this, TABS[curTab].text); });
+  /* the agent flow beside the prompt: the fill walks down the line one step at a
+     time, rests on "You review the plan", then starts again; only while on screen */
+  (function () {
+    var fx = $('.ln-flowv'); if (!fx) return;
+    var steps = $$('li', fx), k = -1, t = null;
+    function show(i) { fx.style.setProperty('--k', Math.max(0, i)); steps.forEach(function (li, j) { li.classList.toggle('is-on', j === i); li.classList.toggle('is-done', j < i); }); }
+    function tick() { k = (k + 1) % (steps.length + 1); show(k === steps.length ? steps.length - 1 : k); }
+    if (still) return;
+    show(0);
+    onView(fx, function (v) {
+      if (v && !t) { k = -1; tick(); t = setInterval(tick, 1700); }
+      else if (!v && t) { clearInterval(t); t = null; }
+    }, { threshold: 0.35 });
+  })();   /* the shared .nx-copy icon button (global.js) */
+  $$('[data-tab="agent"].ln-card, [data-tab="agent"].ln-obtn, [data-tab="agent"].ln-who__btn').forEach(function (a) { a.addEventListener('click', function () { selectTab('agent'); }); });
 })();
 </script>
 

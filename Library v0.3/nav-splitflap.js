@@ -152,8 +152,6 @@
       }, step * STAGGER + (FLIPS_PER_CHAR + 1) * FLIP_DURATION + 30));
     }
 
-<<<<<<< Updated upstream
-=======
     /* The hover label grows (or shrinks) evenly on both sides of the
        label's own centre: equal negative margins cancel the change in
        width, so the tab's footprint — and every other tab — stays put,
@@ -228,7 +226,6 @@
       };
     }
 
->>>>>>> Stashed changes
     /* Each label's box is exactly as wide as the text it shows, so the gaps
        between nav items stay the nav's own gap in every state. */
     function measure() {

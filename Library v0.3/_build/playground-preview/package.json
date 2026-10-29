@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "ENTRY=index vite build && ENTRY=compare vite build && ENTRY=moments vite build && ENTRY=help vite build"
+    "build": "ENTRY=index vite build && ENTRY=compare vite build && ENTRY=moments vite build && ENTRY=help vite build && node build-button.mjs"
   },
   "dependencies": {
     "@nucleux/md3-theme": "^0.12.0",

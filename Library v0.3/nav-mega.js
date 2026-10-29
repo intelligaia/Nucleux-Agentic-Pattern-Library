@@ -54,19 +54,11 @@
       label: 'ShadCN',
       rows: [
         { icon: 'basic',   title: 'Basic Components',
-<<<<<<< Updated upstream
-          desc: 'Buttons, inputs, cards and the other foundational building blocks.',
-          href: 'basic-components.html' },
-        { icon: 'agentic', title: 'Agentic Components',
-          desc: 'Task, reasoning and agent-state components built for AI-native flows.',
-          href: 'library.html' }
-=======
           desc: 'Core UI building blocks for forms, navigation, content, and layout.',
           href: 'basic-components' },
         { icon: 'agentic', title: 'Agentic Components',
           desc: 'Components for agent tasks, reasoning, status, and AI-native interactions.',
           href: 'library' }
->>>>>>> Stashed changes
       ]
     },
     {
@@ -77,13 +69,8 @@
           desc: 'Core UI building blocks built with Material\u00a03 components, tokens, and behaviors.',
           href: null },
         { icon: 'agentic', title: 'Agentic Components',
-<<<<<<< Updated upstream
-          desc: 'Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.',
-          href: 'material-agentic.html' }
-=======
           desc: 'Components for agent tasks, reasoning, and states with Material\u00a03 Expressive experiences.',
           href: 'material-agentic' }
->>>>>>> Stashed changes
       ]
     }
   ];

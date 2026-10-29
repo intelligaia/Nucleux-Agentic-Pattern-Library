@@ -97,13 +97,6 @@
      inside is untouched — shrinking by font-size would relayout the
      component and show a shape the real one never takes. */
   function thumb(p, stage) {
-<<<<<<< Updated upstream
-    var def = PATTERNS[p.id];
-    if (def && def.examples && def.examples.length) {
-      return '<div class="mh-live" aria-hidden="true">' +
-               '<div class="mh-live__scale">' + def.examples[0].code + '</div>' +
-             '</div>';
-=======
     /* An available pattern shows a picture of its own Live Preview in
        its first state — the same component, the same tokens, the same
        ground — taken by _build/thumbs/make.js. Re-run it whenever a
@@ -112,12 +105,9 @@
     if (BUILT.indexOf(p.id) !== -1) {
       return '<img class="pcard__shot" src="thumbs/' + encodeURIComponent(p.id) + '.webp?v=' + THUMB_V + '" alt="" ' +
         'width="1280" height="800" loading="lazy" decoding="async" data-stage="' + stage.id + '">';
->>>>>>> Stashed changes
     }
     return VISUALS[stage.id]();
   }
-<<<<<<< Updated upstream
-=======
   var THUMB_V = 6;
   /* A missing picture falls back to the stage abstract. */
   document.addEventListener('error', function (e) {
@@ -126,7 +116,6 @@
     img.insertAdjacentHTML('afterend', (VISUALS[img.getAttribute('data-stage')] || VISUALS.onboarding)());
     img.remove();
   }, true);
->>>>>>> Stashed changes
 
   /* A built pattern's description comes from its own definition, not
      from the nav tree. Both files carry an `oneline`, and until now

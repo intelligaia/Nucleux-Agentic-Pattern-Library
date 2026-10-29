@@ -176,7 +176,8 @@ function OverTime() {
         {forgotten ? (
           <p className="m-0 text-sm text-muted-foreground" role="status">Nothing remembered. Aria starts fresh from your next chat.</p>
         ) : (
-          <ItemGroup>
+          // ItemGroup stacks its items with no gap; the outlined memories need room between them
+          <ItemGroup className="gap-2">
             {MEMORIES.map((m) => (
               <Item key={m.id} size="sm" variant="outline">
                 <ItemContent>
@@ -184,7 +185,9 @@ function OverTime() {
                   <ItemDescription>{m.from}</ItemDescription>
                 </ItemContent>
                 <ItemActions>
-                  <Switch aria-labelledby={"mem-" + m.id} checked={on[m.id]} onCheckedChange={(v) => setOn((s) => ({ ...s, [m.id]: v }))} />
+                  {/* Switch md moves its thumb 18px into a 16px run, so on it sits flush on the right edge;
+                      14px gives it the same 2px inset it has on the left when off */}
+                  <Switch aria-labelledby={"mem-" + m.id} checked={on[m.id]} onCheckedChange={(v) => setOn((s) => ({ ...s, [m.id]: v }))} className="[&>span[data-state=checked]]:translate-x-[14px]" />
                 </ItemActions>
               </Item>
             ))}

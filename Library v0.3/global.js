@@ -1410,8 +1410,6 @@
   if (document.querySelector(".gnav__inner")) build();
   else document.addEventListener("DOMContentLoaded", build);
 })();
-<<<<<<< Updated upstream
-=======
 
 /* ============================================================
    CODE BLOCKS — the Copy button stays put while code scrolls
@@ -1591,4 +1589,3 @@ window.nxCopy = function (btn, text) {
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { window.nxCopied(btn); }, legacy);
   else legacy();
 };
->>>>>>> Stashed changes
