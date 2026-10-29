@@ -54,21 +54,36 @@
       label: 'ShadCN',
       rows: [
         { icon: 'basic',   title: 'Basic Components',
+<<<<<<< Updated upstream
           desc: 'Buttons, inputs, cards and the other foundational building blocks.',
           href: 'basic-components.html' },
         { icon: 'agentic', title: 'Agentic Components',
           desc: 'Task, reasoning and agent-state components built for AI-native flows.',
           href: 'library.html' }
+=======
+          desc: 'Core UI building blocks for forms, navigation, content, and layout.',
+          href: 'basic-components' },
+        { icon: 'agentic', title: 'Agentic Components',
+          desc: 'Components for agent tasks, reasoning, status, and AI-native interactions.',
+          href: 'library' }
+>>>>>>> Stashed changes
       ]
     },
     {
       id: 'material',
       label: 'Material 3.0',
       rows: [
-        { icon: 'basic',   title: 'Basic Components',   desc: 'Coming soon', href: null },
+        { icon: 'basic',   title: 'Basic Components',
+          desc: 'Core UI building blocks built with Material\u00a03 components, tokens, and behaviors.',
+          href: null },
         { icon: 'agentic', title: 'Agentic Components',
+<<<<<<< Updated upstream
           desc: 'Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.',
           href: 'material-agentic.html' }
+=======
+          desc: 'Components for agent tasks, reasoning, and states with Material\u00a03 Expressive experiences.',
+          href: 'material-agentic' }
+>>>>>>> Stashed changes
       ]
     }
   ];
@@ -80,7 +95,7 @@
        is nothing to navigate to, so it should not be focusable and should
        not advertise itself as a destination. */
     var tag  = row.href ? 'a' : 'span';
-    var cls  = 'gnav__dropdown-link' + (row.href ? '' : ' gnav__dropdown-link--soon');
+    var cls  = 'gnav__dropdown-link gnav__dropdown-link--' + row.icon + (row.href ? '' : ' gnav__dropdown-link--soon');
     var attr = row.href ? ' href="' + row.href + '"' : ' aria-disabled="true"';
     return '<' + tag + ' class="' + cls + '" role="menuitem"' + attr + '>' +
              '<span class="gnav__dropdown-icon" aria-hidden="true">' + ICON[row.icon] + '</span>' +
@@ -501,4 +516,21 @@
   } else {
     document.addEventListener('DOMContentLoaded', boot);
   }
+})();
+
+/* Frosted nav: publish the flyout sheet's height as --gnav-sheet-h on .gnav,
+   so the bar's frost layer can extend over the sheet (nav-mega.css). */
+(function () {
+  function hook() {
+    var g = document.querySelector('.gnav'), i = g && g.querySelector('.gnav__dropdown-inner');
+    if (!g || !i) return false;
+    var set = function () { g.style.setProperty('--gnav-sheet-h', i.offsetHeight + 'px'); };
+    set();
+    if (window.ResizeObserver) new ResizeObserver(set).observe(i);
+    else window.addEventListener('resize', set);
+    return true;
+  }
+  function boot() { if (!hook()) window.addEventListener('load', hook, { once: true }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();

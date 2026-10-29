@@ -1,0 +1,99 @@
+<script>
+/* ── Smooth section-to-section scroll (concept, 27 Oct) ──
+   Replaces CSS mandatory snap, which jumped. One wheel gesture / PageDown
+   glides to the next chapter on an eased curve; trackpad momentum after
+   the glide is absorbed so it can't fire a second jump. A chapter taller
+   than the screen is shown in two steps (top, then its bottom edge).
+   Desktop only; phones, reduced motion and nested scrollers keep native. */
+(function () {
+  var mq = matchMedia('(min-width: 900px) and (min-height: 700px)');
+  var rm = matchMedia('(prefers-reduced-motion: reduce)');
+  var root = document.documentElement;
+  var animating = false, lastWheel = 0, animEnd = 0;
+
+  function navH() { var n = document.querySelector('.gnav'); return n ? n.getBoundingClientRect().height : 72; }
+  function snaps() {
+    var h = navH(), y = scrollY, out = [0];
+    var els = document.querySelectorAll('.ln-wrap > .ln-sec, .ln-labs-wrap, .foot');
+    for (var i = 0; i < els.length; i++) out.push(Math.round(els[i].getBoundingClientRect().top + y - h));
+    var max = root.scrollHeight - innerHeight;
+    out = out.map(function (v) { return Math.min(Math.max(v, 0), max); });
+    out.push(max);
+    return out.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+  }
+  function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function glide(to) {
+    var from = scrollY, d = to - from;
+    if (Math.abs(d) < 2) return;
+    var dur = Math.min(1100, Math.max(650, Math.abs(d) * 0.75)), t0 = performance.now();
+    animating = true; root.style.scrollBehavior = 'auto';
+    (function step(now) {
+      var t = Math.min(1, (now - t0) / dur);
+      scrollTo(0, from + d * ease(t));
+      if (t < 1) requestAnimationFrame(step);
+      else { animating = false; animEnd = performance.now(); root.style.scrollBehavior = ''; }
+    })(t0);
+  }
+  function target(dir) {
+    var s = snaps(), y = scrollY, h = navH(), i;
+    if (dir > 0) {
+      for (i = 0; i < s.length; i++) if (s[i] > y + 2) {
+        var bottomAligned = s[i] + h - innerHeight;      /* show the end of a tall chapter first */
+        return bottomAligned > y + 160 ? bottomAligned : s[i];   /* a few px of overflow isn't worth a stop */
+      }
+      return null;
+    }
+    for (i = s.length - 1; i >= 0; i--) if (s[i] < y - 2) return s[i];
+    return null;
+  }
+  function innerScroller(el, dy) {
+    for (; el && el !== document.body && el.nodeType === 1; el = el.parentElement) {
+      var cs = getComputedStyle(el);
+      if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+        if (dy > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0) return true;
+      }
+    }
+    return false;
+  }
+  function on() { return mq.matches && !rm.matches && !document.body.classList.contains('nav-open'); }
+
+  function onWheel(e, frameDoc) {
+    if (!on() || e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+    if (innerScroller(e.target, e.deltaY)) return;
+    if (frameDoc) {                         /* the embedded playground can scroll itself first */
+      var se = frameDoc.scrollingElement;
+      if (se && (e.deltaY > 0 ? se.scrollTop + se.clientHeight < se.scrollHeight - 1 : se.scrollTop > 0)) return;
+    }
+    var now = performance.now(), gap = now - lastWheel; lastWheel = now;
+    /* during a glide, and for the tail of the same gesture after it, swallow input */
+    if (animating || (now - animEnd < 900 && gap < 140)) { e.preventDefault(); return; }
+    if (Math.abs(e.deltaY) < 3) { e.preventDefault(); return; }
+    var to = target(e.deltaY > 0 ? 1 : -1);
+    if (to == null) return;
+    e.preventDefault(); glide(to);
+  }
+  addEventListener('wheel', function (e) { onWheel(e, null); }, { passive: false });
+  /* same-origin iframes (the Playground) swallow wheel events; forward them */
+  function hookFrame(f) {
+    function attach() { try { var w = f.contentWindow, d = f.contentDocument;
+      if (!w || w.__nxWheel) return; w.__nxWheel = 1;
+      w.addEventListener('wheel', function (e) { onWheel(e, d); }, { passive: false }); } catch (err) {} }
+    f.addEventListener('load', attach); attach();
+  }
+  document.querySelectorAll('.ln-wrap iframe').forEach(hookFrame);
+  /* pause the hero gradient while it is off screen */
+  var hm = document.querySelector('.ln-wrap .ag-hero-media');
+  if (hm && 'IntersectionObserver' in window) new IntersectionObserver(function (es) {
+    hm.classList.toggle('is-off', !es[0].isIntersecting);
+  }).observe(hm);
+
+  addEventListener('keydown', function (e) {
+    if (!on() || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(t.tagName))) return;
+    var dir = (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) ? 1 : (e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) ? -1 : 0;
+    if (!dir) return;
+    e.preventDefault(); if (animating) return;
+    var to = target(dir); if (to != null) glide(to);
+  });
+})();
+</script>

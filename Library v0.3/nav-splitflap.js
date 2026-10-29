@@ -26,7 +26,6 @@
   var FLIP_DURATION  = 75;   // per intermediate glyph
   var STAGGER        = 25;   // per character index
   var FLIPS_PER_CHAR = 3;
-  var HOVER_SIZE     = 13.5; // px — hover label size, capped at the nav's own size
   var CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&';
   var NBSP = ' ';
 
@@ -153,6 +152,83 @@
       }, step * STAGGER + (FLIPS_PER_CHAR + 1) * FLIP_DURATION + 30));
     }
 
+<<<<<<< Updated upstream
+=======
+    /* The hover label grows (or shrinks) evenly on both sides of the
+       label's own centre: equal negative margins cancel the change in
+       width, so the tab's footprint — and every other tab — stays put,
+       and the text stays centre-aligned instead of drifting left. */
+    /* The hover label grows evenly about the label's own centre. Equal
+       negative margins cancel the change in width, so nothing reflows and
+       the row never drifts. If the wider label would crowd a neighbour,
+       the tabs on that side slide away by just that much (a transform,
+       so layout still does not move); against the brand or the actions
+       cluster, which cannot move, the label itself eases inward instead. */
+    function items() {
+      var c = link.closest('.gnav__center');
+      return c ? Array.prototype.filter.call(c.children, function (x) { return x.getBoundingClientRect().width; }) : [];
+    }
+    function mine() { var it = items(); for (var i = 0; i < it.length; i++) if (it[i] === link || it[i].contains(link)) return it[i]; return link; }
+    function slide(node, px) {
+      node.style.transition = 'transform .35s cubic-bezier(.22,1,.36,1)';
+      node.style.transform = px ? 'translateX(' + px.toFixed(2) + 'px)' : '';
+    }
+    /* Even spacing (user, 27 Oct): the label grows by `half` on each side,
+       so every tab on the left slides left by exactly `half` and every tab
+       on the right slides right by exactly `half`. The gaps between the
+       tabs therefore stay the nav's own gap in every state, instead of
+       being squeezed down to a minimum. The brand and the actions cluster
+       cannot move: if the outermost tab on a side would come closer than
+       GAP to them, that side moves only as far as it can and the label
+       itself takes up the rest. */
+    function centre(target, room) {
+      var half = target === HOVER ? (W.hover - W.label) / 2 : 0;
+      var m = (-half).toFixed(2) + 'px';
+      el.style.marginLeft = m; el.style.marginRight = m;
+      link.style.setProperty('--sf-out', half.toFixed(2) + 'px');
+      var me = mine(), it = items(), idx = it.indexOf(me), self = 0;
+      var needL = 0, needR = 0;
+      if (half && room) {
+        needL = room.hasL ? half : 0;
+        needR = room.hasR ? half : 0;
+        if (half > 0) {
+          var capL = room.hasL ? room.edgeL : room.L, capR = room.hasR ? room.edgeR : room.R;
+          if (needL > capL) { self += needL - capL; needL = capL; }
+          else if (!room.hasL && half > room.L) self += half - room.L;
+          if (needR > capR) { self -= needR - capR; needR = capR; }
+          else if (!room.hasR && half > room.R) self -= half - room.R;
+        }
+      }
+      it.forEach(function (node, j) {
+        if (j < idx) slide(node, -needL);
+        else if (j > idx) slide(node, needR);
+      });
+      slide(me, self);
+    }
+    /* Room around this tab at rest. hasL / hasR: is there another tab on
+       that side (those can slide)? edgeL / edgeR: how far the outermost
+       tab on that side can travel before it comes within GAP of the brand
+       or the actions cluster. L / R: free room next to this tab itself
+       when it is the outermost one. */
+    function spare() {
+      var GAP = 16, me = mine(), r0 = me.getBoundingClientRect(), it = items();
+      var inner = link.closest('.gnav__inner') || link.closest('.gnav') || document;
+      var brand = inner.querySelector('.brand'), acts = inner.querySelector('.gnav__actions');
+      var bR = brand ? brand.getBoundingClientRect().right : -Infinity;
+      var aL = acts && acts.getBoundingClientRect().width ? acts.getBoundingClientRect().left : Infinity;
+      var idx = it.indexOf(me);
+      /* measure from the words themselves, not the link's padded box */
+      function txt(n) { var t = n && n.querySelector && n.querySelector('.nav-split-flap'); return (t || n).getBoundingClientRect(); }
+      r0 = txt(me);
+      var first = it[0] ? txt(it[0]) : r0, last = it[it.length - 1] ? it[it.length - 1].getBoundingClientRect() : r0;
+      return {
+        hasL: idx > 0, hasR: idx > -1 && idx < it.length - 1,
+        edgeL: Math.max(0, first.left - bR - GAP), edgeR: Math.max(0, aL - last.right - GAP),
+        L: Math.max(0, r0.left - bR - GAP), R: Math.max(0, aL - r0.right - GAP)
+      };
+    }
+
+>>>>>>> Stashed changes
     /* Each label's box is exactly as wide as the text it shows, so the gaps
        between nav items stay the nav's own gap in every state. */
     function measure() {
@@ -166,7 +242,9 @@
       el.appendChild(probe);
 
       var basePx = parseFloat(cs.fontSize);
-      var hoverPx = Math.min(HOVER_SIZE, basePx);
+      /* The hover label keeps the nav's own type size (user request): only
+         the words change, never the font. */
+      var hoverPx = basePx;
       el.style.setProperty('--nav-sf-hover-size', hoverPx + 'px');
       var linePx = parseFloat(cs.lineHeight);
       if (linePx) el.style.setProperty('--nav-sf-line', linePx + 'px');

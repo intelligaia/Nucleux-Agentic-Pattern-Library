@@ -11,9 +11,12 @@
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
   // ───────────────────────────────────────────────────────
-  // Visual mocks (kept small; library cards use placeholder
-  // for stages 2-4 so the grid reads as documented vs not).
+  // Card pictures: each pattern's Live preview as pattern.html
+  // renders it, taken by _build/thumbs/make.js (shadcn set) and
+  // framed like the Material 3.0 home's. Re-run it whenever a
+  // preview changes; THUMB_V busts the cache.
   // ───────────────────────────────────────────────────────
+<<<<<<< Updated upstream
   const visuals = {
     disclosure: () => `
       <div class="mock">
@@ -1062,7 +1065,16 @@
 
   function visualFor(p) {
     return visuals[p.id] || visuals[p.visual] || visuals.placeholder;
+=======
+  const THUMB_V = 3;
+  function thumb(p) {
+    return `<img class="pcard__shot" src="thumbs/shadcn/${encodeURIComponent(p.id)}.webp?v=${THUMB_V}" alt="" width="1280" height="800" loading="lazy" decoding="async">`;
+>>>>>>> Stashed changes
   }
+  // A missing picture leaves the plain stage.
+  document.addEventListener("error", (e) => {
+    if (e.target.classList && e.target.classList.contains("pcard__shot")) e.target.remove();
+  }, true);
 
   // ───────────────────────────────────────────────────────
   // Sidebar tree
@@ -1164,12 +1176,11 @@
 
   function patternCard(p, stage, sub) {
     const ph = p.placeholder === true;
-    const v = visualFor(p)();
     return `
       <a class="pcard ${ph ? "pcard--placeholder" : ""}"
          href="pattern.html?id=${encodeURIComponent(p.id)}"
          data-pattern="${p.id}">
-        <div class="pcard__visual">${v}</div>
+        <div class="pcard__visual">${thumb(p)}</div>
         <div class="pcard__body">
           <div class="pcard__row">
             <span class="pcard__name">${esc(p.name)}</span>

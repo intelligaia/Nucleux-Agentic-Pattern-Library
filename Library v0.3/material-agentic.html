@@ -39,7 +39,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=4" />
   <link rel="stylesheet" href="nav-mega.css" />
   <link rel="stylesheet" href="material-tokens.css" />
   <link rel="stylesheet" href="material-components.css" />
@@ -90,6 +90,26 @@
     .v-fill-line { fill: var(--md-sys-color-outline-variant); }
     .v-stroke    { fill: none; stroke: var(--md-sys-color-outline-variant); stroke-width: 1.5; }
 
+<<<<<<< Updated upstream
+=======
+    .pcard__status { color: var(--md-sys-color-on-surface-variant); }
+    .pcard__status[data-avail="available"]   { color: var(--mx-color-success); font-weight: 600; }
+    .pcard__status[data-avail="in-progress"] { color: var(--mx-color-agent-active); font-weight: 600; }
+    .pcard__labs {
+      margin-left: 8px; padding: 2px 7px; border-radius: var(--mx-shape-chip);
+      background: var(--mx-color-agent-blocked-bg); color: var(--mx-color-on-agent-blocked);
+      font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    }
+
+    /* A demoted row should read as demoted in the tree too, and
+       not only by being dimmer — dimmer is how every unbuilt row
+       already looks. */
+    .tree__pattern[data-labs="true"] .badge-dot {
+      border-radius: 2px; transform: rotate(45deg); opacity: 1;
+      background: var(--mx-color-agent-blocked);
+    }
+
+>>>>>>> Stashed changes
     /* A card with no page behind it must not look pressable. */
     .pcard--placeholder { cursor: default; }
 
@@ -130,10 +150,16 @@
                 <div class="gnav__item">
           <a class="gnav__link is-current" href="#components">Components</a>
         </div>
+<<<<<<< Updated upstream
         <a class="gnav__link" href="practices.html">Scenarios</a>
         <a class="gnav__link" href="docs.html">Docs</a>
         <a class="gnav__link" href="mcp.html">MCP</a>
         <a class="gnav__link" href="labs.html">Labs</a>
+=======
+        <a class="gnav__link" href="practices">Scenarios</a>
+        <a class="gnav__link" href="docs">Docs</a>
+        <a class="gnav__link" href="mcp">MCP</a>
+>>>>>>> Stashed changes
       </nav>
 
       <div class="gnav__actions">
@@ -181,7 +207,11 @@
   <script src="material-nav.js"></script>
 <script src="material-patterns.js"></script>
 <script>window.MaterialNav.mount(null);</script>
+<<<<<<< Updated upstream
 <script src="material-home.js"></script>
+=======
+<script src="material-home.js?v=9"></script>
+>>>>>>> Stashed changes
 
   <script src="global.js"></script>
 <script src="nav-splitflap.js"></script>

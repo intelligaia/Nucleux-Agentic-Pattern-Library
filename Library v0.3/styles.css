@@ -2575,45 +2575,67 @@ body.has-shell::after {
 @media (max-width: 1200px) { .lib-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 780px) { .lib-grid { grid-template-columns: 1fr; } }
 
+/* Pattern cards on both component homes (shadcn library.js, Material 3
+   material-home.js), drawn like the concept home's "four moments" tiles:
+   a 22px card on a hairline, the pattern on a plain stage, then a
+   numbered footer with a pill to open it. */
+.lib-grid { counter-reset: pcard; }
 .pcard {
+  --pcard-line: rgba(12,12,10,0.10);
+  --pcard-line-strong: rgba(12,12,10,0.20);
+  counter-increment: pcard;
   display: flex; flex-direction: column;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-4);
+  border: 1px solid var(--pcard-line);
+  border-radius: 22px;
   overflow: hidden;
-  transition: transform var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+  transition: border-color 200ms var(--ease);
   text-align: left;
   cursor: pointer;
   padding: 0;
 }
-.pcard:hover {
-  border-color: var(--fg);
-  box-shadow: var(--shadow-3);
-  transform: translateY(-2px);
-}
+.pcard:hover { border-color: var(--pcard-line-strong); }
+.pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .pcard__visual {
   aspect-ratio: 16 / 10;
-  background: var(--ink-25);
-  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  border-bottom: 1px solid var(--pcard-line);
   display: grid; place-items: center;
   position: relative;
   overflow: hidden;
 }
 .pcard__body {
-  padding: var(--s-5);
-  display: flex; flex-direction: column; gap: 8px;
+  padding: 18px 20px 20px;
+  display: flex; flex-direction: column; gap: 4px;
   flex: 1;
 }
-.pcard__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.pcard__name { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; }
-.pcard__line { font-size: 13px; line-height: 1.45; color: var(--fg-mid); }
-.pcard__foot { display: flex; align-items: center; justify-content: space-between; padding-top: 4px; margin-top: auto; }
-.pcard__open { font-size: 12px; color: var(--fg); display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
-.pcard__open svg { transition: transform var(--dur-2) var(--ease); }
-.pcard:hover .pcard__open svg { transform: translateX(2px); }
-.pcard--placeholder { background: var(--ink-25); }
-.pcard--placeholder .pcard__visual {
-  background: repeating-linear-gradient(135deg, transparent 0 12px, rgba(0,0,0,0.025) 12px 13px);
+.pcard__body::before {
+  content: counter(pcard, decimal-leading-zero);
+  font: 600 11px/1 var(--font-mono); color: var(--fg-mid);
+}
+.pcard__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.pcard__name { font-size: 19px; font-weight: 600; letter-spacing: -0.015em; }
+.pcard__line { margin: 0; font-size: 13px; line-height: 1.5; color: var(--fg-mid); }
+.pcard__foot { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; padding-top: 14px; margin-top: auto; }
+.pcard__open {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 0 14px;
+  border: 1px solid var(--pcard-line-strong); border-radius: 999px;
+  font: 600 13px/1 var(--font-body); color: var(--fg); white-space: nowrap;
+  transition: border-color 200ms var(--ease), background 200ms var(--ease);
+}
+.pcard:hover .pcard__open { border-color: var(--fg); background: var(--ink-50); }
+.pcard__open svg { transition: transform 380ms var(--ease); }
+.pcard:hover .pcard__open svg { transform: translateX(4px); }
+/* The pattern's Live preview picture fills the 16:10 window; multiply
+   drops the preview's near-white ground into the card's white stage. */
+.pcard__shot { display: block; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
+.pcard--placeholder { cursor: default; }
+.pcard--placeholder .pcard__visual { background: var(--ink-25); }
+body.landing-dark .pcard {
+  --pcard-line: rgba(255,255,255,0.10);
+  --pcard-line-strong: rgba(255,255,255,0.20);
 }
 
 /* Badges */
@@ -2786,16 +2808,32 @@ body.has-shell::after {
   position: relative;
   border: 1px solid var(--ink-800);
 }
-.code__copy {
-  position: absolute; top: 12px; right: 12px;
-  padding: 4px 10px;
-  font-size: 11px;
-  border-radius: var(--r-2);
-  background: var(--ink-800);
-  color: var(--ink-200);
-  border: 1px solid var(--ink-700);
+/* Copy, everywhere the site offers it: one icon button (the MCP page's),
+   the copy glyph drawn here so the markup is just
+   <button class="nx-copy" aria-label="Copy">; .is-done swaps it for a check
+   for a moment (global.js nxCopy / nxCopied). Pages only place it. */
+.nx-copy {
+  --nx-copy-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='9' y='9' width='12' height='12' rx='2'/%3E%3Cpath d='M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1'/%3E%3C/svg%3E");
+  position: relative;   /* pages that pin it in a corner set absolute */
+  display: inline-grid; place-items: center; flex: none;
+  width: 30px; height: 30px; padding: 0;
+  color: var(--ink-300); background: var(--ink-900);
+  border: 1px solid var(--ink-700); border-radius: var(--r-2);
+  cursor: pointer; transition: color 150ms ease, background 150ms ease;
 }
-.code__copy:hover { background: var(--ink-700); color: var(--ink-0); }
+.nx-copy::before {
+  content: ""; width: 14px; height: 14px; background: currentColor;
+  -webkit-mask: var(--nx-copy-glyph) center / contain no-repeat;
+          mask: var(--nx-copy-glyph) center / contain no-repeat;
+}
+.nx-copy:hover { color: var(--ink-0); background: var(--ink-800); }
+.nx-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nx-copy.is-done {
+  --nx-copy-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5L20 7'/%3E%3C/svg%3E");
+  color: #86efac;
+}
+
+.code__copy { position: absolute; top: 10px; right: 10px; }
 
 .related {
   display: grid;

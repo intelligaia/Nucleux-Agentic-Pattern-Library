@@ -231,7 +231,7 @@ body.landing-dark:not(.landing-light) .gnav {
      1fr/1fr starved the side with the text — at 13px the descriptions
      wrapped to two lines while half the Material column sat empty. The
      ratio follows the content instead. */
-  grid-template-columns: minmax(240px, 0.68fr) minmax(300px, 1.18fr) minmax(260px, 0.82fr);
+  grid-template-columns: minmax(240px, 0.68fr) minmax(280px, 1fr) minmax(280px, 1fr);
   align-items: stretch;
   gap: 0;
 }
@@ -800,3 +800,100 @@ body.landing-dark:not(.landing-light) .gnav .gnav__search.gnav__search--x {
      shadow keeps the list valid. */
   --ds-input-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 }
+
+/* ── Frosted bar (user, 27 Oct) ─────────────────────────────
+   The bar is see-through and blurred, so the page reads as passing
+   BEHIND it while it scrolls — on every page — and it STAYS frosted
+   while the Components flyout is open: the flyout sheet gets the same
+   translucent white + blur, so bar and sheet read as one frosted layer.
+
+   The frost is painted on .gnav::before rather than on .gnav itself. An
+   element with backdrop-filter becomes the backdrop root for everything
+   inside it, so a blurred .gnav would leave the sheet (its descendant)
+   nothing to blur. With the filter on a pseudo-element the sheet samples
+   the real page. The doubled `.gnav.gnav` and the html/body prefixes
+   out-rank the per-page "solid bar" overrides. */
+html body .gnav.gnav,
+html.nav-over-hero body.landing-light .gnav.gnav,
+html body .gnav.gnav:has(.gnav__item:hover),
+html body .gnav.gnav:has(.gnav__item:focus-within) {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+  /* styles.css sets will-change: backdrop-filter, which ALSO makes the bar
+     a backdrop root and blanks the blur for the pseudo-element and sheet.
+     will-change: transform keeps the compositing layer (the anti-flash
+     reason it was there) without that side effect. */
+  will-change: transform;
+}
+html body .gnav.gnav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--surface, #fff) 80%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(24px);
+          backdrop-filter: saturate(140%) blur(24px);
+}
+/* ── Bar + flyout = ONE surface ──
+   Two separately blurred boxes never line up: each blurs only the page
+   under itself, so a seam shows where they meet. Instead the bar's own
+   frost layer (::before) grows down to cover the sheet while the flyout
+   is open (nav-mega.js writes the sheet height to --gnav-sheet-h), and
+   the sheet itself paints nothing. One backdrop, one blur, no seam.
+   The frost is identical to the resting bar, so page colour shows
+   through the open flyout exactly as it does through the bar.
+   On close the layer holds its size and filter for the 340ms fade, then
+   snaps back unseen. */
+html body .gnav.gnav::before {
+  transition: bottom 0s linear 340ms, box-shadow 0s linear 340ms,
+              -webkit-backdrop-filter 0s linear 340ms, backdrop-filter 0s linear 340ms;
+}
+html body .gnav.gnav:has(.gnav__item:hover)::before,
+html body .gnav.gnav:has(.gnav__item:focus-within)::before {
+  bottom: calc(-1 * var(--gnav-sheet-h, 0px));
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.18);
+  /* same frost as the resting bar — hovering changes nothing but size */
+  transition: none;
+}
+html body .gnav.gnav .gnav__dropdown-inner {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+  border-bottom: 0;
+  box-shadow: none;
+}
+/* the mobile sheet stays solid */
+html body.nav-open .gnav.gnav::before { background: var(--surface, #fff); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .gnav.gnav::before,
+  html body .gnav.gnav .gnav__dropdown-inner { background: var(--surface, #fff); }
+}
+
+/* No hairline under the global nav — the frosted bar alone separates it
+   from the content scrolling behind it. */
+html body .gnav.gnav,
+html.nav-over-hero body .gnav.gnav,
+html body.is-scrolled .gnav.gnav,
+html body .gnav.gnav.is-scrolled,
+html body .gnav.gnav.scrolled {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ShadCN + Material 3.0 columns are equal (user, 27 Oct). Descriptions share
+   one measure so both families wrap the same way — two short lines each. */
+.gnav__mega .gnav__dropdown-desc { max-width: 44ch; text-wrap: balance; }
+/* Basic Components descriptions sit on one line in both families; the
+   Material one is a real sentence now, so it drops the "Coming soon"
+   italic but stays muted while the page doesn't exist yet. */
+.gnav__mega .gnav__dropdown-link--basic .gnav__dropdown-desc { white-space: nowrap; max-width: none; }
+.gnav__mega .gnav__dropdown-link--soon .gnav__dropdown-desc { font-style: normal; }
+/* Descriptions are full sentences again (user, 27 Oct): let every one wrap
+   on the same measure, balanced, so both columns read the same width. */
+.gnav__mega .gnav__dropdown-desc,
+.gnav__mega .gnav__dropdown-link--basic .gnav__dropdown-desc { white-space: normal; max-width: 46ch; text-wrap: balance; }
+/* Icons sit at the top of each row, level with the title (user, 27 Oct). */
+.gnav__mega .gnav__dropdown-link { align-items: flex-start; }
+.gnav__mega .gnav__dropdown-icon { align-self: flex-start; margin-top: -2px; }

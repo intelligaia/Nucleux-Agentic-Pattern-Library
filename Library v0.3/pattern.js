@@ -5118,7 +5118,7 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
           <h2 class="section-block__title">Code shape</h2>
           <div class="section-block__lede">A canonical implementation skeleton — adapt to your framework.</div>
         </div>
-        <pre class="code"><button class="code__copy" data-copy>Copy</button>${esc(p.code || "")}</pre>
+        <pre class="code"><button class="code__copy nx-copy" type="button" data-copy aria-label="Copy"></button>${esc(p.code || "")}</pre>
       </section>
     `;
     // Four questions — moved to the bottom; stacked single-column.
@@ -5444,12 +5444,8 @@ Data: Read access to CRM records, shared drive, and #sales-pipeline.</textarea>
       // Copy code
       const copyBtn = e.target.closest("[data-copy]");
       if (copyBtn) {
-        const pre = copyBtn.parentElement;
-        const text = pre.innerText.replace(/^Copy\n?/, "");
-        navigator.clipboard.writeText(text).then(() => {
-          copyBtn.textContent = "Copied";
-          setTimeout(() => copyBtn.textContent = "Copy", 1400);
-        }).catch(() => {});
+        // the button is the shared .nx-copy icon, so the block's text is just the code
+        nxCopy(copyBtn, copyBtn.parentElement.innerText);
       }
       // Inline carousel controls
       if (e.target.closest("[data-incx-prev]")) { navIncx(-1); pauseAutoTemporarily(); return; }

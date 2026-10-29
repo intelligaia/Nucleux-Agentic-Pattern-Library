@@ -39,7 +39,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=5" />
   <link rel="stylesheet" href="nav-mega.css" />
   <!-- Material 3 variables, read out of the Design Kit. Loaded AFTER
        the site sheets so a --md-sys-* token always wins on this page. -->
@@ -167,15 +167,7 @@
     .mp-code .a { color: #7dd3c8; }   /* attribute  */
     .mp-code .v { color: #fbbf77; }   /* value      */
     .mp-code .c { color: #6b6880; }   /* comment    */
-    .mp-copy {
-      position: absolute; top: 12px; right: 12px;
-      padding: 5px 11px; border-radius: var(--md-sys-shape-corner-full);
-      border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06);
-      font-family: var(--md-ref-typeface-plain);
-      font-size: var(--md-sys-typescale-label-medium-size);
-      color: #d7d5e4; cursor: pointer;
-    }
-    .mp-copy:hover { background: rgba(255,255,255,0.13); }
+    .mp-copy { position: absolute; top: 10px; right: 10px; }   /* the button is .nx-copy (styles.css) */
 
     /* ── Installation ─────────────────────────────────────────
        Tabs are underlined rather than filled: they select which of
@@ -4055,10 +4047,16 @@
                 <div class="gnav__item">
           <a class="gnav__link is-current" href="#components">Components</a>
         </div>
+<<<<<<< Updated upstream
         <a class="gnav__link" href="practices.html">Scenarios</a>
         <a class="gnav__link" href="docs.html">Docs</a>
         <a class="gnav__link" href="mcp.html">MCP</a>
         <a class="gnav__link" href="labs.html">Labs</a>
+=======
+        <a class="gnav__link" href="practices">Scenarios</a>
+        <a class="gnav__link" href="docs">Docs</a>
+        <a class="gnav__link" href="mcp">MCP</a>
+>>>>>>> Stashed changes
       </nav>
 
       <div class="gnav__actions">
@@ -4102,11 +4100,20 @@
   <script src="material-mcp.js"></script>
   <script src="material-kb.js"></script>
   <script src="material-model.js"></script>
+<<<<<<< Updated upstream
   <script src="material-sim.js"></script>
   <script src="material-preview.js"></script>
   <script src="material-pattern.js"></script>
   <script src="global.js"></script>
   <script src="nav-splitflap.js"></script>
+=======
+  <script src="material-sim.js?v=31"></script>
+  <script src="material-preview.js?v=32"></script>
+  <script src="material-pattern.js?v=2"></script>
+  <script src="material-device.js?v=1"></script>
+  <script src="global.js?v=2"></script>
+  <script src="nav-splitflap.js?v=2"></script>
+>>>>>>> Stashed changes
   <script src="nav-mega.js"></script>
 </body>
 </html>
