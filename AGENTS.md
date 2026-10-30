@@ -101,3 +101,11 @@ accessibility rules.
 **H. Report.** Summarise the family used, the pages built, the patterns and components used per
 page, design decisions, the checks you ran and their results, anything you built
 custom and why, and the gaps or open issues.
+
+## Project decisions
+
+Nucleux family: Material 3 (the Playground preview in `Library v0.3/_build/playground-preview` renders the `Md3*` components).
+
+Exception, by the user's choice (2026-10-29): the concept home's "four moments" tiles (`src/moments.tsx`, built to `Library v0.3/pg-preview/moments.html`) use the shadcn family (`Consent`, `SuggestedPrompts`, `OpenInput`, `Trace`, `Item`, `Switch`…), from the Nucleux npm package only.
+
+Exception, by the user's choice (2026-10-29): the concept home's support-chat walkthrough ("From one sentence to screens you can ship"; `src/help.tsx`, built to `Library v0.3/pg-preview/help.html`) also uses the shadcn family (`Disclosure`, `SuggestedPrompts`, `Message`, `Caveat`, `Button`, `OpenInput`…), from the Nucleux npm package only.

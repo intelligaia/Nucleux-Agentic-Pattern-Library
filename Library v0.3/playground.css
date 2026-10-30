@@ -60,10 +60,11 @@
 
 /* ── Studio ────────────────────────────────────────────── */
 .pg-studio { position: relative; z-index: 1; height: calc(100dvh - var(--nav-h)); display: grid; grid-template-columns: 400px minmax(0, 1fr); border-top: 1px solid var(--ds-slate-200); }
-@media (max-width: 960px) { .pg-studio { grid-template-columns: 1fr; height: auto; } }
+@media (max-width: 960px) { .pg-studio { grid-template-columns: minmax(0, 1fr); height: auto; } }   /* minmax: the column may shrink below its content on phones */
 
 .pg-chat { display: flex; flex-direction: column; min-height: 0; background: #fff; border-right: 1px solid var(--ds-slate-200); }
 @media (max-width: 960px) { .pg-chat { border-right: 0; border-bottom: 1px solid var(--ds-slate-200); height: 70dvh; } }
+@media (max-width: 480px) { .pg-chat__head { padding: 0 8px 0 14px; gap: 4px; } .pg-chat__head .pg-chat__lib { display: none; } .pg-toolbar { height: auto; min-height: 52px; flex-wrap: wrap; padding: 8px 12px; } .pg-toolbar__end { flex-wrap: wrap; } }   /* the Pattern library link is in the site nav; keeps the head on one line */
 .pg-chat__head { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 12px 0 20px; border-bottom: 1px solid var(--ds-slate-200); }
 .pg-chat__mark { height: 14px; width: auto; }
 .pg-chat__head .pg-btn { margin-left: auto; }

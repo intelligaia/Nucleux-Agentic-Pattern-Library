@@ -113,16 +113,16 @@
        preview changes; THUMB_V busts the cache. If a picture is
        missing, the stage abstract stands in. */
     if (BUILT.indexOf(p.id) !== -1) {
-      return '<img class="mh-shot" src="thumbs/' + encodeURIComponent(p.id) + '.webp?v=' + THUMB_V + '" alt="" ' +
+      return '<img class="pcard__shot" src="thumbs/' + encodeURIComponent(p.id) + '.webp?v=' + THUMB_V + '" alt="" ' +
         'width="1280" height="800" loading="lazy" decoding="async" data-stage="' + stage.id + '">';
     }
     return (VISUALS[stage.id] || VISUALS.onboarding)();
   }
-  var THUMB_V = 1;
+  var THUMB_V = 6;
   /* A missing picture falls back to the stage abstract. */
   document.addEventListener('error', function (e) {
     var img = e.target;
-    if (!img || !img.classList || !img.classList.contains('mh-shot')) return;
+    if (!img || !img.classList || !img.classList.contains('pcard__shot')) return;
     img.insertAdjacentHTML('afterend', (VISUALS[img.getAttribute('data-stage')] || VISUALS.onboarding)());
     img.remove();
   }, true);

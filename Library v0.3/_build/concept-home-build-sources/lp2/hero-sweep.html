@@ -1,0 +1,62 @@
+  <style>
+    /* Hero gradient (concept): four soft colour fields that wander the hero
+       at random (JS picks a new spot every 7–12s), drifting through and
+       over each other while they breathe in opacity. Each side is
+       two blurred ellipses that drift, turn and swell on their own clocks
+       and cross-fade, so shape and colour keep shifting.
+       Performance: no CSS blur at all — each blob is a soft radial gradient
+       that already fades to nothing, and only transform/opacity animate,
+       so the compositor just moves pre-painted layers. The old 64–72px
+       blur filters were re-applied every frame and made scrolling past
+       the hero stutter. Paused when off screen. */
+    .ln-wrap .ag-hero-media__aurora { opacity: 1; filter: none !important; }
+    .ln-wrap .ag-hero-media__aurora span {
+      top: 0; left: 0 !important; bottom: auto; right: auto;
+      width: 52vw; height: 40vw; border-radius: 50%;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+    .ln-wrap .ag-hero-media__aurora span:nth-child(1) {   /* left: lavender */
+      left: 6%; display: block;
+      background: radial-gradient(closest-side, rgb(161 129 255 / 0.62), rgb(161 129 255 / 0.34) 40%, rgb(161 129 255 / 0.11) 70%, transparent);
+      animation: ln-op-a 13s ease-in-out infinite alternate;
+    }
+    .ln-wrap .ag-hero-media__aurora span:nth-child(2) {   /* left: blue */
+      display: block;
+      background: radial-gradient(closest-side, rgb(127 176 255 / 0.62), rgb(127 176 255 / 0.34) 40%, rgb(127 176 255 / 0.11) 70%, transparent);
+      animation: ln-op-b 13s ease-in-out infinite alternate;
+    }
+    .ln-wrap .ag-hero-media__aurora span:nth-child(3) {   /* right: pink */
+      left: 62%; display: block;
+      background: radial-gradient(closest-side, rgb(255 138 180 / 0.58), rgb(255 138 180 / 0.32) 40%, rgb(255 138 180 / 0.1) 70%, transparent);
+      animation: ln-op-a 15s ease-in-out infinite alternate;
+    }
+    .ln-wrap .ag-hero-media__aurora span:nth-child(4) {   /* right: peach */
+      display: block;
+      background: radial-gradient(closest-side, rgb(255 178 140 / 0.55), rgb(255 178 140 / 0.3) 40%, rgb(255 178 140 / 0.1) 70%, transparent);
+      animation: ln-op-b 15s ease-in-out infinite alternate;
+    }
+    @keyframes ln-fl-a { 0% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+                         50% { transform: translate3d(6%,-8%,0) rotate(28deg) scale(1.14); }
+                         100% { transform: translate3d(-4%,6%,0) rotate(-12deg) scale(.96); } }
+    @keyframes ln-fl-b { 0% { transform: translate3d(2%,4%,0) rotate(20deg) scale(1.05); }
+                         50% { transform: translate3d(-5%,-4%,0) rotate(-24deg) scale(.92); }
+                         100% { transform: translate3d(5%,7%,0) rotate(40deg) scale(1.12); } }
+    @keyframes ln-fl-c { 0% { transform: translate3d(0,0,0) rotate(0deg) scale(1.04); }
+                         50% { transform: translate3d(-7%,7%,0) rotate(-26deg) scale(.95); }
+                         100% { transform: translate3d(4%,-6%,0) rotate(14deg) scale(1.16); } }
+    @keyframes ln-fl-d { 0% { transform: translate3d(-2%,-3%,0) rotate(-18deg) scale(.96); }
+                         50% { transform: translate3d(6%,5%,0) rotate(22deg) scale(1.12); }
+                         100% { transform: translate3d(-5%,-2%,0) rotate(-36deg) scale(1); } }
+    @keyframes ln-op-a { from { opacity: 1; }   to { opacity: .35; } }
+    @keyframes ln-op-b { from { opacity: .3; }  to { opacity: 1; } }
+    /* Random wander: the "Hero gradient wander" script moves each blob
+       to a new random spot and size every 7–12s, crossing the others. */
+    .ln-wrap .ag-hero-media.is-off .ag-hero-media__aurora span { animation-play-state: paused; }
+    @media (max-width: 720px) {
+      .ln-wrap .ag-hero-media__aurora span { width: 70vw; height: 54vw; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ln-wrap .ag-hero-media__aurora span { animation: none; transition: none; }
+    }
+  </style>

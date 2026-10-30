@@ -1,0 +1,47 @@
+  <style>
+    /* ── Sleek strip (27 Oct): slim single line, subtle Nucleux gradient,
+       plain underlined link — replaces the dark→grey pill version. ── */
+    .nx-ann, .nx-ann.is-compact {
+      --nx-ann-fg: #1d1b20;
+      --nx-ann-mid: rgb(29 27 32 / .74);
+      background:
+        radial-gradient(42% 260% at 6% 50%,  rgb(208 188 255 / .60), transparent 72%),
+        radial-gradient(40% 300% at 38% 120%, rgb(190 212 255 / .50), transparent 72%),
+        radial-gradient(40% 300% at 66% -20%, rgb(232 200 255 / .45), transparent 72%),
+        radial-gradient(42% 260% at 95% 50%, rgb(255 198 224 / .55), transparent 72%),
+        #f8f5fc;
+      box-shadow: none;
+    }
+    .nx-ann .nx-ann__inner {
+      min-height: 40px; padding-block: 8px; gap: 12px;
+    }
+    .nx-ann .nx-ann__text { font-size: 14px; line-height: 1.4; letter-spacing: -0.006em; }
+    .nx-ann .nx-ann__text strong { font-weight: 600; }
+    .nx-ann .nx-ann__link,
+    .nx-ann.is-compact .nx-ann__link {
+      min-height: 0; padding: 2px 0; border: 0; border-radius: 0; background: none;
+      font-size: 14px; font-weight: 500; color: var(--nx-ann-fg);
+      text-decoration: underline; text-decoration-thickness: 1px;
+      text-underline-offset: 3px; text-decoration-color: rgb(29 27 32 / .45);
+      transition: text-decoration-color var(--dur-2) var(--ease);
+    }
+    .nx-ann .nx-ann__link:hover, .nx-ann .nx-ann__link:focus-visible,
+    .nx-ann.is-compact .nx-ann__link:hover, .nx-ann.is-compact .nx-ann__link:focus-visible {
+      background: none; border-radius: 4px; transform: none;
+      text-decoration-color: currentColor;
+    }
+    .nx-ann .nx-ann__nb { gap: 4px; }
+    .nx-ann .nx-ann__close, .nx-ann.is-compact .nx-ann__close {
+      width: 32px; height: 32px; color: rgb(29 27 32 / .7);
+    }
+    .nx-ann .nx-ann__close:hover { background: rgb(29 27 32 / .07); color: var(--nx-ann-fg); }
+    .nx-ann .nx-ann__link:focus-visible, .nx-ann .nx-ann__close:focus-visible { outline-color: var(--nx-ann-fg); }
+    @container nxann (max-width: 819px) {
+      .nx-ann .nx-ann__inner { gap: 10px; }
+      .nx-ann .nx-ann__text, .nx-ann .nx-ann__link { font-size: 13px; }
+    }
+    @container nxann (max-width: 599px) {
+      .nx-ann .nx-ann__inner { row-gap: 2px; padding-block: 9px; }
+      .nx-ann .nx-ann__close { top: 4px; }
+    }
+  </style>

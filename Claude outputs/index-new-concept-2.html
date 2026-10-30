@@ -1,0 +1,1404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Nucleux — You built the AI. We give it a face people trust.</title>
+  <meta name="description" content="Nucleux is an agentic UX pattern library: the screens, states and controls that turn an AI capability into a product people trust. Free and open source." />
+  <link rel="canonical" href="https://nucleux.in/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleux" />
+  <meta property="og:url" content="https://nucleux.in/" />
+  <meta property="og:title" content="Nucleux — You built the AI. We give it a face people trust." />
+  <meta property="og:description" content="The experience layer for AI products: patterns for showing progress, sources, approvals and recovery." />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png?v=2" />
+  <meta property="og:image:width" content="2400" />
+  <meta property="og:image:height" content="1260" />
+  <meta property="og:image:alt" content="Nucleux — Agentic UX patterns. Ready to build." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nucleux — You built the AI. We give it a face people trust." />
+  <meta name="twitter:description" content="The experience layer for AI products: patterns for showing progress, sources, approvals and recovery." />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png?v=2" />
+  <meta name="twitter:image:alt" content="Nucleux — Agentic UX patterns. Ready to build." />
+  <!--
+    Homepage Concept 2 — an evolution of index-new-concept.html (Concept 1),
+    same story, new visual expression. Self-contained: it does not load the
+    shared styles.css or global.js, and every class is c2- so nothing here can
+    reach Concept 1 or any other page. It is served from the site root like
+    Concept 1, so its links (library, docs, scenario?id=…) and assets
+    (pg-preview/, patterns.js, images) resolve the same way. Opened straight
+    from "Claude outputs" as a file, the script below points it at the site
+    folder instead.
+  -->
+  <script>
+    (function () {
+      var d = document.documentElement;
+      d.classList.add('c2-js');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('c2-still');
+      if (location.protocol === 'file:' && /\/Claude%20outputs\//.test(location.pathname)) {
+        document.write('<base href="../Library%20v0.3/">');
+        d.classList.add('c2-file');
+      }
+    })();
+  </script>
+  <link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=7">
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- The live library data: pattern counts, stages and names come from here, never from this page. -->
+  <script src="patterns.js" defer></script>
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       TOKENS — neutral paper and ink; the only colour is the Nucleux
+       wordmark's own sky → violet, used for focus, progress and one
+       word per heading. Editorial serif italics carry the emphasis.
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --paper: #FAFAF8;
+      --surface: #FFFFFF;
+      --sunk: #F3F3EF;
+      --ink: #0B0B0A;
+      --ink-2: #2B2B27;
+      --mute: #62625B;
+      --faint: #8C8C84;
+      --line: rgba(11, 11, 10, .08);
+      --line-2: rgba(11, 11, 10, .15);
+      --sky: #21A4D7;
+      --violet: #8B57C7;
+      --brand: linear-gradient(100deg, #21A4D7 0%, #5B7FD0 48%, #8B57C7 100%);
+      --ok: #1E7F46;
+      --warn: #9A5700;
+      --err: #B42318;
+      --sans: "Inter", "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --r-s: 10px; --r-m: 16px; --r-l: 24px; --r-xl: 32px;
+      --ease: cubic-bezier(.22, 1, .36, 1);
+      --spring: cubic-bezier(.34, 1.56, .64, 1);
+      --gut: clamp(16px, 4vw, 40px);
+      --max: 1240px;
+      --nav-h: 64px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 16px); }
+    .c2-still { scroll-behavior: auto; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--sans); font-feature-settings: "cv11", "ss01", "ss03"; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; }
+    img { display: block; max-width: 100%; height: auto; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; }
+    code, pre { font-family: var(--mono); }
+    :focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; border-radius: 6px; }
+    .c2-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .c2-skip { position: absolute; left: 16px; top: -60px; z-index: 100; padding: 10px 16px; border-radius: var(--r-s); background: var(--ink); color: #fff; font-weight: 600; }
+    .c2-skip:focus { top: 12px; }
+    .c2-wrap { width: 100%; max-width: calc(var(--max) + var(--gut) * 2); margin: 0 auto; padding: 0 var(--gut); }
+
+    /* ── type ── */
+    .c2-eyebrow { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 20px; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+    .c2-eyebrow b { font-weight: 500; color: var(--ink); }
+    .c2-eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; opacity: .5; }
+    .c2-h2 { margin: 0; font-size: clamp(34px, 4.6vw, 64px); font-weight: 600; line-height: 1.02; letter-spacing: -0.042em; text-wrap: balance; }
+    .c2-h2 em, .c2-display em, .c2-cta h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.015em; }
+    .c2-grad { background: var(--brand); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .08em; margin-right: -.08em; }   /* room for the italic's overhang, without a gap before the full stop */
+    .c2-lede { margin: 20px 0 0; max-width: 56ch; font-size: clamp(16px, 1.25vw, 18px); line-height: 1.6; color: var(--mute); text-wrap: pretty; }
+    .c2-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 24px 64px; align-items: end; margin-bottom: clamp(36px, 5vw, 64px); }
+    .c2-head .c2-lede { margin: 0; justify-self: end; }
+    .c2-sec { position: relative; padding: clamp(80px, 11vw, 160px) 0; }
+    .c2-sec + .c2-sec { border-top: 1px solid var(--line); }
+
+    /* ── buttons: pills that close to a 12px corner and lift on hover (the site's nav move) ── */
+    .c2-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 22px; border: 1px solid transparent; border-radius: 23px; font: 600 15px/1 var(--sans); letter-spacing: -0.01em; white-space: nowrap; cursor: pointer; transition: border-radius 260ms var(--ease), transform 180ms var(--spring), background-color .2s ease, border-color .2s ease, color .2s ease; }
+    .c2-btn:hover, .c2-btn:focus-visible { border-radius: 12px; transform: translateY(-1px); }
+    .c2-btn--ink { background: var(--ink); color: #fff; }
+    .c2-btn--ink:hover { background: var(--ink-2); }
+    .c2-btn--line { background: var(--surface); border-color: var(--line-2); color: var(--ink); }
+    .c2-btn--line:hover { border-color: var(--ink); }
+    .c2-btn--sm { min-height: 36px; padding: 0 16px; border-radius: 18px; font-size: 14px; }
+    .c2-btn svg { transition: transform 260ms var(--ease); }
+    .c2-btn:hover svg.c2-arr { transform: translateX(3px); }
+    .c2-link { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14.5px; color: var(--ink); border-bottom: 1px solid var(--line-2); padding-bottom: 2px; transition: border-color .2s ease, gap .25s var(--ease); }
+    .c2-link:hover { border-color: var(--ink); gap: 9px; }
+
+    /* ── reveal: a short rise, once ── */
+    .c2-js:not(.c2-still) .c2-rv { opacity: 0; transform: translateY(16px); transition: opacity .8s var(--ease), transform .9s var(--ease); transition-delay: var(--d, 0ms); }
+    .c2-js:not(.c2-still) .c2-rv.is-in { opacity: 1; transform: none; }
+
+    /* ═══════════════ NAV ═══════════════ */
+    .c2-nav { position: sticky; top: 0; z-index: 50; height: var(--nav-h); transition: background-color .3s ease, box-shadow .3s ease, backdrop-filter .3s ease; }
+    .c2-nav.is-stuck { background: rgba(250, 250, 248, .82); -webkit-backdrop-filter: saturate(1.6) blur(16px); backdrop-filter: saturate(1.6) blur(16px); box-shadow: 0 1px 0 var(--line); }
+    .c2-nav__bar { height: 100%; display: flex; align-items: center; gap: 28px; }
+    .c2-brand { display: inline-flex; align-items: center; height: 40px; flex: none; }
+    .c2-brand svg { width: 112px; height: auto; }
+    .c2-nav__links { display: flex; gap: 2px; margin: 0 auto 0 8px; padding: 0; list-style: none; }
+    .c2-nav__links a { position: relative; display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 18px; font-size: 14px; font-weight: 500; color: var(--mute); transition: color .2s ease, background-color .2s ease; }
+    .c2-nav__links a::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 6px; height: 1.5px; border-radius: 2px; background: var(--brand); transform: scaleX(0); transition: transform .35s var(--ease); }
+    .c2-nav__links a:hover { color: var(--ink); }
+    .c2-nav__links a:hover::after, .c2-nav__links a[aria-current]::after { transform: scaleX(1); }
+    .c2-nav__links a[aria-current] { color: var(--ink); }
+    .c2-nav__end { display: flex; align-items: center; gap: 8px; }
+    .c2-icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line-2); border-radius: 20px; background: transparent; color: var(--ink); cursor: pointer; transition: border-radius 260ms var(--ease), border-color .2s ease, background-color .2s ease, transform 180ms var(--spring); }
+    .c2-icon-btn:hover { border-radius: 12px; border-color: var(--ink); transform: translateY(-1px); }
+    .c2-menu { display: none; }
+    .c2-sheet { display: none; }
+    .c2-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; background: var(--brand); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none; }
+
+    /* ═══════════════ HERO ═══════════════ */
+    .c2-hero { position: relative; padding: clamp(40px, 6vw, 88px) 0 clamp(72px, 9vw, 128px); overflow: hidden; }
+    .c2-hero::before { /* a quiet ruled ground, not an aurora */
+      content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 64px 64px; background-position: center top;
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 30%, #000 0%, transparent 70%); mask-image: radial-gradient(ellipse 70% 60% at 70% 30%, #000 0%, transparent 70%);
+      opacity: .7;
+    }
+    .c2-hero__grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: clamp(40px, 5vw, 80px); align-items: start; }
+    .c2-badge { display: inline-flex; align-items: center; gap: 10px; height: 34px; padding: 0 14px 0 6px; border: 1px solid var(--line-2); border-radius: 17px; background: var(--surface); font-size: 13.5px; color: var(--ink-2); transition: border-color .2s ease, border-radius 260ms var(--ease); }
+    .c2-badge b { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 11px; background: var(--ink); color: #fff; font: 500 11px/1 var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+    .c2-badge:hover { border-color: var(--ink); border-radius: 10px; }
+    .c2-display { margin: 28px 0 0; font-size: clamp(46px, 6.2vw, 88px); font-weight: 600; line-height: .98; letter-spacing: -0.052em; }
+    .c2-display .w { display: inline-block; }
+    .c2-js:not(.c2-still) .c2-display .w { opacity: 0; transform: translateY(.4em); filter: blur(6px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s var(--ease); transition-delay: calc(var(--i) * 55ms + 80ms); }
+    .c2-js:not(.c2-still) .c2-display.is-in .w { opacity: 1; transform: none; filter: none; }
+    .c2-display em { margin-right: -0.04em; }   /* the gradient sits on an inner span: clipped text ignores an opacity on its own element, so the em fades it */
+    .c2-hero__sub { margin: 28px 0 0; max-width: 46ch; font-size: clamp(17px, 1.35vw, 19px); line-height: 1.55; color: var(--mute); }
+    .c2-ask { position: relative; display: flex; align-items: flex-end; gap: 10px; margin-top: 36px; max-width: 580px; padding: 8px 8px 8px 20px; border: 1px solid var(--line-2); border-radius: 20px; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px -16px rgba(0,0,0,.18); transition: border-color .2s ease, box-shadow .3s ease; }
+    .c2-ask:focus-within { border-color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 16px 40px -18px rgba(0,0,0,.28); }
+    .c2-ask::after { /* the brand line under the composer: the one place colour moves */
+      content: ""; position: absolute; left: 20px; right: 20px; bottom: -1px; height: 1.5px; border-radius: 2px; background: var(--brand); transform: scaleX(0); transform-origin: 0 50%; transition: transform .6s var(--ease); }
+    .c2-ask:focus-within::after { transform: scaleX(1); }
+    .c2-ask textarea { flex: 1; min-width: 0; height: 24px; min-height: 24px; max-height: 120px; margin: 11px 0; padding: 0; border: 0; outline: 0; resize: none; overflow: hidden; background: transparent; font: 400 16px/1.5 var(--sans); color: var(--ink); }
+    .c2-ask textarea::placeholder { color: var(--faint); }
+    .c2-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+    .c2-chips__lab { margin-right: 4px; font: 500 12px/1 var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+    .c2-chip { height: 32px; padding: 0 13px; border: 1px solid var(--line-2); border-radius: 16px; background: transparent; font-size: 13.5px; color: var(--ink-2); cursor: pointer; transition: border-color .2s ease, background-color .2s ease, border-radius 260ms var(--ease); }
+    .c2-chip:hover { border-color: var(--ink); background: var(--surface); border-radius: 10px; }
+    .c2-hero__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 36px; }
+    .c2-hero__note { font: 400 13px/1.4 var(--sans); color: var(--faint); }
+
+    /* the live stage: a real Nucleux support chat (pg-preview/help.html) assembling pattern by pattern */
+    .c2-stage { position: relative; }
+    .c2-stage__frame { position: relative; padding: clamp(14px, 2vw, 22px); border: 1px solid var(--line); border-radius: var(--r-xl); background: var(--sunk); }
+    .c2-stage__frame::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background-image: radial-gradient(rgba(11,11,10,.11) 1px, transparent 1.3px); background-size: 14px 14px; -webkit-mask-image: linear-gradient(#000, transparent 70%); mask-image: linear-gradient(#000, transparent 70%); }
+    .c2-stage__top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 4px 14px; font: 500 12px/1 var(--mono); color: var(--mute); letter-spacing: .02em; }
+    .c2-live { display: inline-flex; align-items: center; gap: 7px; }
+    .c2-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(30,127,70,.4); }
+    .c2-js:not(.c2-still) .c2-live i { animation: c2-ping 2.4s var(--ease) infinite; }
+    @keyframes c2-ping { 0% { box-shadow: 0 0 0 0 rgba(30,127,70,.35); } 70%, 100% { box-shadow: 0 0 0 7px rgba(30,127,70,0); } }
+    .c2-replay { display: inline-grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line-2); border-radius: 15px; background: var(--surface); color: var(--mute); cursor: pointer; transition: color .2s ease, border-color .2s ease, border-radius 260ms var(--ease); }
+    .c2-replay:hover { color: var(--ink); border-color: var(--ink); border-radius: 9px; }
+    .c2-card { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 30px 60px -32px rgba(20,20,40,.32); height: 560px; transition: height .35s var(--ease); }
+    .c2-card iframe { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
+    .c2-rail { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .c2-rail button { position: relative; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 10px 10px 12px; border: 1px solid transparent; border-radius: 12px; background: transparent; text-align: left; cursor: pointer; transition: background-color .25s ease, border-color .25s ease; }
+    .c2-rail button:hover, .c2-rail button[aria-pressed="true"] { background: var(--surface); border-color: var(--line); }
+    .c2-rail .n { font: 500 11px/1 var(--mono); color: var(--faint); }
+    .c2-rail .t { font-size: 13px; font-weight: 600; line-height: 1.2; color: var(--mute); transition: color .25s ease; }
+    .c2-rail .b { position: absolute; left: 10px; right: 10px; bottom: 6px; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+    .c2-rail .b i { display: block; height: 100%; background: var(--brand); transform: scaleX(0); transform-origin: 0 50%; }
+    .c2-rail li.is-done .t, .c2-rail li.is-on .t, .c2-rail button[aria-pressed="true"] .t { color: var(--ink); }
+    .c2-rail li.is-done .b i { transform: scaleX(1); }
+
+    /* ═══════════════ HOW IT WORKS ═══════════════ */
+    .c2-how { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+    .c2-steps { position: sticky; top: calc(var(--nav-h) + 32px); margin: 0; padding: 0; list-style: none; counter-reset: s; }
+    .c2-step { position: relative; padding: 22px 0 22px 64px; border-top: 1px solid var(--line); }
+    .c2-step:last-child { border-bottom: 1px solid var(--line); }
+    .c2-step__n { position: absolute; left: 0; top: 18px; font: italic 400 34px/1 var(--serif); color: var(--faint); transition: color .4s ease; }
+    .c2-step h3 { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -0.02em; color: var(--mute); transition: color .4s ease; }
+    .c2-step p { margin: 8px 0 0; max-width: 40ch; font-size: 15px; line-height: 1.55; color: var(--faint); transition: color .4s ease; }
+    .c2-step__bar { position: absolute; left: 64px; right: 0; bottom: -1px; height: 1.5px; overflow: hidden; }
+    .c2-step__bar i { display: block; height: 100%; background: var(--brand); transform: scaleX(0); transform-origin: 0 50%; }
+    .c2-step.is-on .c2-step__n, .c2-step.is-on h3 { color: var(--ink); }
+    .c2-step.is-on .c2-step__n { color: transparent; background: var(--brand); -webkit-background-clip: text; background-clip: text; }
+    .c2-step.is-on p { color: var(--mute); }
+    .c2-scn { display: flex; gap: 4px; margin: 0 0 14px; padding: 4px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); overflow-x: auto; scrollbar-width: none; width: fit-content; max-width: 100%; }
+    .c2-scn::-webkit-scrollbar { display: none; }
+    .c2-scn button { flex: none; height: 34px; padding: 0 14px; border: 0; border-radius: 17px; background: transparent; font-size: 13.5px; font-weight: 500; color: var(--mute); cursor: pointer; transition: background-color .25s ease, color .25s ease; }
+    .c2-scn button:hover { color: var(--ink); }
+    .c2-scn button[aria-selected="true"] { background: var(--ink); color: #fff; }
+
+    /* the agent window (scenarios and build steps are Concept 1's) */
+    .c2-ag { overflow: hidden; border: 1px solid var(--line-2); border-radius: var(--r-l); background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 40px 80px -48px rgba(20,20,40,.35); }
+    .ln-ag__bar { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--paper); font: 500 12px/1 var(--mono); color: var(--mute); }
+    .ln-ag__dots { display: flex; gap: 6px; }
+    .ln-ag__dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
+    .ln-ag__mcp { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; height: 24px; padding: 0 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink-2); }
+    .ln-ag__mcp i { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+    .ln-ag__body { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); min-height: 452px; }
+    .ln-ag__chat { padding: 20px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+    .ln-ag__ask { display: flex; gap: 8px; align-items: flex-start; min-height: 66px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); font-size: 14px; line-height: 1.5; color: var(--ink); }
+    .ln-ag__ask > svg { flex: none; margin-top: 4px; color: var(--violet); }
+    .ln-ag__caret { display: inline-block; width: 1.5px; height: 1.1em; margin-left: 1px; vertical-align: -2px; background: var(--ink); opacity: 0; }
+    .is-typing .ln-ag__caret { opacity: 1; animation: c2-blink 1s steps(1) infinite; }
+    @keyframes c2-blink { 50% { opacity: 0; } }
+    .ln-ag__steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .ln-ag__steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.45; color: var(--mute); opacity: 0; transform: translateY(6px); transition: opacity .45s var(--ease), transform .55s var(--ease); }
+    .ln-ag__steps li.is-in { opacity: 1; transform: none; }
+    .ln-ag__steps b { color: var(--ink); font-weight: 600; }
+    .ln-ag__ic { flex: none; position: relative; width: 16px; height: 16px; margin-top: 1px; border-radius: 50%; border: 1.5px solid var(--line-2); }
+    .is-run > .ln-ag__ic { border-color: var(--violet) transparent var(--violet) var(--violet); animation: c2-spin .8s linear infinite; }
+    .is-ok > .ln-ag__ic { border-color: var(--ink); background: var(--ink); }
+    .is-ok > .ln-ag__ic::after { content: ""; position: absolute; left: 4px; top: 2px; width: 4px; height: 7px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+    @keyframes c2-spin { to { transform: rotate(360deg); } }
+    .ln-ag__pat { display: inline-block; padding: 1px 7px; border-radius: 6px; background: var(--sunk); color: var(--ink); font: 500 12px/1.6 var(--mono); }
+    .ln-ag__done { margin-top: auto; display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--ink); color: #fff; font-size: 13px; opacity: 0; transform: translateY(6px); transition: opacity .5s var(--ease), transform .6s var(--ease); }
+    .ln-ag__done.is-in { opacity: 1; transform: none; }
+    .ln-ag__done code { font-size: 12px; color: #c9d7ff; }
+    .ln-ag__canvas { position: relative; padding: 20px; background: var(--paper); display: flex; flex-direction: column; }
+    .ln-ag__url { align-self: center; margin-bottom: 12px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: 500 11px/1.3 var(--mono); color: var(--faint); }
+    .ln-ag__app { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); font-size: 12.5px; line-height: 1.45; }
+    .ln-ag__app.is-swap { animation: c2-swap .5s var(--ease); }
+    @keyframes c2-swap { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .ln-ag__hd { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 600; }
+    .ln-ag__hd i { width: 16px; height: 16px; border-radius: 5px; background: var(--brand); }
+    .ln-ag__hd span { margin-left: auto; font: 400 11px/1 var(--mono); color: var(--faint); }
+    .ln-ag__grow { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .ln-ag__foot { display: flex; flex-direction: column; gap: 8px; }
+    .ln-ag__p { opacity: .14; filter: grayscale(1); transition: opacity .5s var(--ease), filter .5s var(--ease), box-shadow .5s var(--ease); }
+    .ln-ag__p.is-in { opacity: 1; filter: none; }
+    .ln-ag__p.is-new { box-shadow: 0 0 0 2px rgba(139, 87, 199, .35); border-radius: 10px; }
+    .ln-ag__box { padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; }
+    .ln-ag__box--soft { background: var(--paper); }
+    .ln-ag__box--ac { border-color: var(--line-2); }
+    .ln-ag__row { display: flex; align-items: center; gap: 7px; }
+    .ln-ag__row + .ln-ag__row { margin-top: 5px; }
+    .ln-ag__row b { font-weight: 500; }
+    .ln-ag__tick { width: 12px; height: 12px; border-radius: 50%; background: var(--ok); position: relative; flex: none; }
+    .ln-ag__tick::after { content: ""; position: absolute; left: 4px; top: 2px; width: 3px; height: 6px; border: solid #fff; border-width: 0 1.4px 1.4px 0; transform: rotate(45deg); }
+    .ln-ag__lbl { display: block; margin-bottom: 5px; font: 500 10.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+    .ln-ag__ul { margin: 0; padding-left: 16px; }
+    .ln-ag__ul li + li { margin-top: 3px; }
+    .ln-ag__cite { display: inline-flex; align-items: center; height: 18px; margin-left: 3px; padding: 0 6px; border-radius: 5px; background: rgba(33, 164, 215, .1); color: #13708f; font: 500 10.5px/1 var(--mono); vertical-align: 1px; }
+    .ln-ag__note { color: var(--mute); font-size: 12px; }
+    .ln-ag__acts, .ln-ag__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+    .ln-ag__chips { margin-top: 0; }
+    .ln-ag__btn, .ln-ag__chip { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border: 1px solid var(--line-2); border-radius: 13px; background: var(--surface); font-size: 11.5px; font-weight: 500; }
+    .ln-ag__btn--p { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .ln-ag__in { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 6px 0 12px; border: 1px solid var(--line-2); border-radius: 12px; color: var(--faint); }
+    .ln-ag__in em { flex: 1; font-style: normal; }
+    .ln-ag__file { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; background: var(--sunk); color: var(--ink-2); font: 500 10.5px/1.5 var(--mono); }
+    .ln-ag__send { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: var(--ink); color: #fff; }
+    .ln-ag__msg { align-self: flex-end; padding: 7px 11px; border-radius: 12px 12px 4px 12px; background: var(--sunk); }
+    .ln-ag__ans { color: var(--ink-2); }
+    .ln-ag__badge { align-self: flex-start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 12px; background: #FFF4E2; color: var(--warn); font-size: 11.5px; font-weight: 500; }
+    .ln-ag__badge--ok { background: #E8F5EE; color: var(--ok); }
+    .ln-ag__bar2 { height: 4px; margin-top: 6px; border-radius: 2px; background: var(--line); overflow: hidden; }
+    .ln-ag__bar2 i { display: block; height: 100%; background: var(--ink); }
+    .ln-ag__risk { margin-left: auto; padding: 1px 7px; border-radius: 6px; font: 500 10.5px/1.6 var(--mono); }
+    .ln-ag__risk--h { background: #FDECEA; color: var(--err); }
+    .ln-ag__risk--m { background: #FFF4E2; color: var(--warn); }
+    .ln-ag__tog { margin-left: auto; width: 26px; height: 15px; border-radius: 8px; background: var(--ink); position: relative; flex: none; }
+    .ln-ag__tog::after { content: ""; position: absolute; right: 2px; top: 2px; width: 11px; height: 11px; border-radius: 50%; background: #fff; }
+
+    /* ═══════════════ START HERE — three editorial rows ═══════════════ */
+    .c2-paths { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line-2); }
+    .c2-path { border-bottom: 1px solid var(--line-2); }
+    .c2-path a { position: relative; display: grid; grid-template-columns: 120px minmax(0, 1.1fr) minmax(0, 1fr) 44px; gap: 24px; align-items: center; padding: clamp(24px, 3vw, 40px) 8px; transition: background-color .4s var(--ease), padding .5s var(--ease); }
+    .c2-path a::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--surface); opacity: 0; transition: opacity .4s var(--ease); }
+    .c2-path a:hover::before, .c2-path a:focus-visible::before { opacity: 1; }
+    .c2-path a:hover, .c2-path a:focus-visible { padding-left: 24px; padding-right: 24px; }
+    .c2-path__who { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+    .c2-path h3 { margin: 0; font-size: clamp(24px, 2.8vw, 40px); font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; }
+    .c2-path h3 em { font-family: var(--serif); font-style: italic; font-weight: 400; }
+    .c2-path p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--mute); }
+    .c2-path p code { padding: 1px 6px; border-radius: 6px; background: var(--sunk); font-size: 13px; color: var(--ink); }
+    .c2-path__go { display: block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--ink); }
+    .c2-path__arrow { justify-self: end; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line-2); border-radius: 22px; transition: border-radius 260ms var(--ease), background-color .3s ease, color .3s ease, border-color .3s ease, transform .4s var(--ease); }
+    .c2-path a:hover .c2-path__arrow, .c2-path a:focus-visible .c2-path__arrow { border-radius: 12px; background: var(--ink); border-color: var(--ink); color: #fff; transform: rotate(-45deg); }
+
+    /* ═══════════════ A CHAT BOX ISN'T A PRODUCT ═══════════════ */
+    .c2-trust { background: var(--surface); }
+    .c2-trust__grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 80px); align-items: center; }
+    .c2-needs { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .c2-need { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 14px; align-items: start; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--r-m); background: var(--paper); transition: border-color .3s ease, background-color .3s ease; }
+    .c2-need.is-on { border-color: var(--line-2); background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .c2-need h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.015em; }
+    .c2-need p { grid-column: 2; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--mute); }
+    .c2-need a { grid-column: 2; justify-self: start; margin-top: 6px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+    .c2-need a:hover { border-color: var(--ink); }
+    .c2-sw { grid-row: span 3; position: relative; width: 40px; height: 24px; margin-top: 1px; border: 0; border-radius: 12px; background: var(--line-2); cursor: pointer; transition: background-color .3s var(--ease); }
+    .c2-sw::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .35s var(--spring); }
+    .c2-sw[aria-checked="true"] { background: var(--ink); }
+    .c2-sw[aria-checked="true"]::after { transform: translateX(16px); }
+    .c2-need__head { display: flex; align-items: center; gap: 10px; }
+    .c2-need__head span { font: 500 11px/1 var(--mono); color: var(--faint); }
+    .c2-demo { position: relative; border: 1px solid var(--line-2); border-radius: var(--r-xl); background: var(--paper); padding: clamp(14px, 2vw, 22px); }
+    .c2-demo__top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 2px 6px 14px; }
+    .c2-demo__title { position: relative; height: 1.2em; overflow: hidden; font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; }
+    .c2-demo__title span { display: block; transition: transform .6s var(--ease), opacity .4s ease; }
+    .c2-demo__title span + span { position: absolute; left: 0; top: 0; transform: translateY(110%); opacity: 0; }
+    .c2-demo.is-product .c2-demo__title span:first-child { transform: translateY(-110%); opacity: 0; }
+    .c2-demo.is-product .c2-demo__title span + span { transform: none; opacity: 1; }
+    .c2-demo__title em { font-family: var(--serif); font-style: italic; font-weight: 400; }
+    .c2-demo__count { font: 500 12px/1 var(--mono); color: var(--mute); white-space: nowrap; }
+    .c2-chat { display: flex; flex-direction: column; gap: 12px; min-height: 470px; padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: 0 30px 60px -40px rgba(20,20,40,.35); font-size: 14px; line-height: 1.55; }
+    .c2-chat__hd { display: flex; align-items: center; gap: 9px; padding-bottom: 12px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+    .c2-chat__hd i { width: 20px; height: 20px; border-radius: 6px; background: var(--brand); }
+    .c2-chat__hd span { margin-left: auto; font: 400 11.5px/1 var(--mono); color: var(--faint); }
+    .c2-msg { align-self: flex-end; max-width: 82%; padding: 9px 13px; border-radius: 16px 16px 5px 16px; background: var(--sunk); }
+    .c2-bot { display: flex; gap: 10px; align-items: flex-start; }
+    .c2-bot > i { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--brand); }
+    .c2-bot > div { display: flex; flex-direction: column; gap: 10px; min-width: 0; flex: 1; }
+    .c2-bot p { margin: 0; color: var(--ink-2); }
+    /* each pattern folds in: height, then fade — so the conversation reflows, it doesn't jump */
+    .c2-fold { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .55s var(--ease), opacity .45s var(--ease), margin .55s var(--ease); }
+    .c2-fold > * { min-height: 0; overflow: hidden; }
+    .c2-chat[data-working] .c2-f-working, .c2-chat[data-sources] .c2-f-sources, .c2-chat[data-ask] .c2-f-ask, .c2-chat[data-recover] .c2-f-recover { grid-template-rows: 1fr; opacity: 1; }
+    .c2-proc { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 13px; }
+    .c2-proc div { display: flex; align-items: center; gap: 8px; }
+    .c2-proc div + div { margin-top: 5px; }
+    .c2-proc .ok { width: 13px; height: 13px; border-radius: 50%; background: var(--ok); position: relative; flex: none; }
+    .c2-proc .ok::after { content: ""; position: absolute; left: 4px; top: 2px; width: 3px; height: 6px; border: solid #fff; border-width: 0 1.4px 1.4px 0; transform: rotate(45deg); }
+    .c2-proc .run { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--violet); border-right-color: transparent; flex: none; }
+    .c2-js:not(.c2-still) .c2-proc .run { animation: c2-spin .9s linear infinite; }
+    .c2-src { display: inline-flex; align-items: center; height: 20px; margin-left: 4px; padding: 0 7px; border-radius: 6px; background: rgba(33, 164, 215, .1); color: #13708f; font: 500 11px/1 var(--mono); vertical-align: 1px; transition: opacity .4s ease, max-width .5s var(--ease); white-space: nowrap; overflow: hidden; max-width: 0; opacity: 0; padding: 0; margin: 0; }
+    .c2-chat[data-sources] .c2-src { max-width: 160px; opacity: 1; padding: 0 7px; margin-left: 4px; }
+    .c2-ok-card { padding: 12px 14px; border: 1px solid var(--line-2); border-radius: 14px; }
+    .c2-ok-card b { display: block; font-weight: 600; }
+    .c2-ok-card small { display: block; color: var(--mute); font-size: 12.5px; }
+    .c2-ok-card div { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+    .c2-mini { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 15px; background: var(--surface); font-size: 12.5px; font-weight: 600; }
+    .c2-mini--ink { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .c2-err { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid rgba(180, 35, 24, .2); border-radius: 12px; background: #FEF6F5; font-size: 13px; color: var(--ink-2); }
+    .c2-err > i { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--err); color: #fff; display: grid; place-items: center; font: 700 11px/1 var(--sans); font-style: normal; }
+    .c2-err > span:not(.c2-mini) { flex: 1; }
+    .c2-err b { font-weight: 600; }
+    .c2-chat__in { margin-top: auto; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 6px 0 14px; border: 1px solid var(--line-2); border-radius: 14px; color: var(--faint); font-size: 13.5px; }
+    .c2-chat__in span { flex: 1; }
+    .c2-chat__in i { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: var(--ink); color: #fff; }
+
+    /* ═══════════════ TEMPLATES ═══════════════ */
+    .c2-tpl-feat { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; }
+    .c2-tf { position: relative; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-l); background: var(--surface); transition: border-color .3s ease, box-shadow .4s var(--ease), transform .5s var(--ease); }
+    .c2-tf:hover { border-color: var(--line-2); box-shadow: 0 30px 60px -40px rgba(20,20,40,.35); }
+    .c2-tf__img { position: relative; overflow: hidden; aspect-ratio: 16 / 10; background: var(--sunk); border-bottom: 1px solid var(--line); }
+    .c2-tf__img img { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 1.1s var(--ease); }
+    .c2-tf:hover .c2-tf__img img { transform: scale(1.035); }
+    .c2-tf__body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .c2-tag { font: 500 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+    .c2-tf h3 { margin: 0; font-size: clamp(22px, 2.2vw, 28px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+    .c2-tf p { margin: 0; color: var(--mute); font-size: 15px; line-height: 1.55; max-width: 52ch; }
+    .c2-tf__links { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: auto; padding-top: 8px; }
+    .c2-tlist { margin: 20px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line-2); }
+    .c2-tl a { display: grid; grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1.1fr) 28px; gap: 20px; align-items: center; padding: 20px 8px; border-bottom: 1px solid var(--line-2); transition: padding .45s var(--ease), background-color .3s ease; }
+    .c2-tl a:hover, .c2-tl a:focus-visible { padding-left: 18px; padding-right: 18px; background: var(--surface); }
+    .c2-tl h3 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+    .c2-tl p { margin: 3px 0 0; font-size: 14px; line-height: 1.5; color: var(--mute); }
+    .c2-pats { display: flex; flex-wrap: wrap; gap: 6px; }
+    .c2-pats span { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border: 1px solid var(--line); border-radius: 13px; font-size: 12.5px; color: var(--ink-2); background: var(--paper); transition: border-color .3s ease, background-color .3s ease; }
+    .c2-tl a:hover .c2-pats span { border-color: var(--line-2); background: var(--surface); }
+    .c2-tl__arrow { justify-self: end; color: var(--faint); transition: transform .4s var(--ease), color .3s ease; }
+    .c2-tl a:hover .c2-tl__arrow { color: var(--ink); transform: translateX(4px); }
+    .c2-tl--all h3 em { font-family: var(--serif); font-style: italic; font-weight: 400; }
+
+    /* ═══════════════ PATTERN LIFECYCLE ═══════════════ */
+    .c2-life { --p: 0; }
+    .c2-track { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+    .c2-track::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 1px; background: var(--line-2); }
+    .c2-track__fill { position: absolute; left: 0; top: 13px; height: 1.5px; width: 100%; background: var(--brand); transform-origin: 0 50%; transform: scaleX(calc((var(--p) + .5) / 4)); transition: transform .7s var(--ease); pointer-events: none; }
+    .c2-stage-btn { position: relative; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 0 16px 20px 0; border: 0; background: transparent; text-align: left; cursor: pointer; }
+    .c2-stage-btn .dot { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); background: var(--paper); font: 500 11px/1 var(--mono); color: var(--mute); transition: background-color .4s ease, color .4s ease, border-color .4s ease, transform .4s var(--spring); }
+    .c2-stage-btn .nm { margin-top: 10px; font-size: clamp(18px, 1.8vw, 24px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; color: var(--faint); transition: color .3s ease; }
+    .c2-stage-btn .ct { font: 500 12.5px/1 var(--mono); color: var(--faint); }
+    .c2-stage-btn:hover .nm { color: var(--ink-2); }
+    .c2-stage-btn[aria-selected="true"] .dot { background: var(--ink); border-color: var(--ink); color: #fff; transform: scale(1.1); }
+    .c2-stage-btn[aria-selected="true"] .nm { color: var(--ink); }
+    .c2-stage-btn[aria-selected="true"] .ct { color: var(--mute); }
+    .c2-life__panel { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 64px); align-items: center; margin-top: clamp(28px, 4vw, 48px); padding: clamp(20px, 3vw, 40px); border: 1px solid var(--line); border-radius: var(--r-xl); background: var(--surface); }
+    .c2-life__text { min-width: 0; }
+    .c2-life__count { display: flex; align-items: baseline; gap: 10px; }
+    .c2-life__count b { font-size: clamp(56px, 7vw, 96px); font-weight: 600; line-height: .9; letter-spacing: -0.06em; font-variant-numeric: tabular-nums; }
+    .c2-life__count span { font: 500 13px/1 var(--mono); color: var(--mute); }
+    .c2-life__text h3 { margin: 18px 0 0; font-size: clamp(24px, 2.4vw, 32px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+    .c2-life__text p { margin: 10px 0 0; color: var(--mute); max-width: 44ch; }
+    .c2-life__groups { margin: 18px 0 0; font: 500 12px/1.6 var(--mono); color: var(--faint); }
+    .c2-life__names { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 22px; padding: 0; list-style: none; }
+    .c2-life__names li { display: inline-flex; align-items: center; height: 28px; padding: 0 11px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); font-size: 13px; color: var(--ink-2); }
+    .c2-js:not(.c2-still) .c2-life__swap { animation: c2-swap .55s var(--ease); }
+    .c2-life__view { position: relative; display: grid; place-items: center; min-height: 360px; padding: clamp(16px, 2.4vw, 32px); border: 1px solid var(--line); border-radius: var(--r-l); background: var(--paper); overflow: hidden; }
+    .c2-life__view::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(11,11,10,.11) 1px, transparent 1.3px); background-size: 14px 14px; pointer-events: none; }
+    .c2-life__view iframe { position: relative; display: block; width: 100%; max-width: 560px; height: 300px; border: 0; background: transparent; }
+    .c2-life__view iframe[hidden] { display: none; }
+    .c2-life__real { position: absolute; left: 14px; bottom: 12px; font: 500 11px/1 var(--mono); color: var(--faint); }
+    .c2-promise { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: clamp(28px, 4vw, 48px); border-top: 1px solid var(--line-2); }
+    .c2-promise div { padding: 22px 24px 0 0; font-size: 15px; line-height: 1.55; color: var(--mute); }
+    .c2-promise div + div { padding-left: 24px; border-left: 1px solid var(--line); }
+    .c2-promise b { display: block; margin-bottom: 4px; font-size: 16px; color: var(--ink); font-weight: 600; }
+
+    /* ═══════════════ DEVELOPERS — the dark band ═══════════════ */
+    .c2-dev { background: var(--ink); color: #F2F2EE; }
+    .c2-sec.c2-dev + .c2-sec, .c2-sec + .c2-sec.c2-dev { border-top: 0; }
+    .c2-dev .c2-eyebrow { color: #9B9B93; }
+    .c2-dev .c2-eyebrow b { color: #fff; }
+    .c2-dev .c2-lede { color: #A8A8A0; }
+    .c2-dev .c2-h2 em .c2-grad, .c2-dev .c2-grad { background: linear-gradient(100deg, #6CCBF0, #B48BEA); -webkit-background-clip: text; background-clip: text; }
+    .c2-flow { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0 0 clamp(36px, 5vw, 56px); padding: 0; list-style: none; }
+    .c2-node { position: relative; padding: 0 20px 0 0; }
+    .c2-node__box { position: relative; z-index: 1; padding: 18px; border: 1px solid rgba(255,255,255,.12); border-radius: var(--r-m); background: #141413; min-height: 138px; transition: border-color .4s ease, background-color .4s ease; }
+    .c2-node.is-on .c2-node__box { border-color: rgba(180, 139, 234, .55); background: #18171C; }
+    .c2-node__k { font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #8F8F87; }
+    .c2-node h3 { margin: 10px 0 6px; font-size: 17px; font-weight: 600; letter-spacing: -0.015em; color: #fff; }
+    .c2-node p { margin: 0; font-size: 13.5px; line-height: 1.5; color: #A8A8A0; }
+    .c2-node code { font-size: 12px; color: #C9D7FF; }
+    .c2-node:not(:last-child)::after { /* the wire to the next node */
+      content: ""; position: absolute; z-index: 0; top: 50%; right: 0; width: 20px; height: 1px;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,.4) 0 4px, transparent 4px 8px); background-size: 8px 1px; }
+    .c2-js:not(.c2-still) .c2-dev.is-live .c2-node:not(:last-child)::after { animation: c2-wire 1s linear infinite; }
+    @keyframes c2-wire { to { background-position: 8px 0; } }
+    .c2-dev__grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+    .c2-dev__agents { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+    .c2-dev__agents span { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border: 1px solid rgba(255,255,255,.14); border-radius: 15px; font-size: 13px; color: #D8D8D2; }
+    .c2-dev__links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .c2-dev .c2-btn--line { background: transparent; color: #fff; border-color: rgba(255,255,255,.25); }
+    .c2-dev .c2-btn--line:hover { border-color: #fff; }
+    .c2-dev .c2-btn--ink { background: #fff; color: var(--ink); }
+    .c2-dev .c2-btn--ink:hover { background: #E8E8E3; }
+    .c2-tabs { position: relative; display: flex; gap: 4px; width: fit-content; max-width: 100%; margin-bottom: 12px; padding: 4px; border: 1px solid rgba(255,255,255,.12); border-radius: 22px; }
+    .c2-tabs button { height: 34px; padding: 0 16px; border: 0; border-radius: 17px; background: transparent; color: #A8A8A0; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background-color .25s ease, color .25s ease; }
+    .c2-tabs button:hover { color: #fff; }
+    .c2-tabs button[aria-selected="true"] { background: #fff; color: var(--ink); }
+    .c2-code { overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: var(--r-l); background: #121211; }
+    .c2-code__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 48px; padding: 0 10px 0 18px; border-bottom: 1px solid rgba(255,255,255,.08); font: 500 12px/1 var(--mono); color: #8F8F87; }
+    .c2-copy { position: relative; display: inline-grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; background: transparent; color: #CFCFC8; cursor: pointer; transition: color .2s ease, border-color .2s ease, background-color .2s ease; }
+    .c2-copy:hover { color: #fff; border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.06); }
+    .c2-copy .ck { display: none; }
+    .c2-copy.is-done { color: #86efac; }
+    .c2-copy.is-done .cp { display: none; }
+    .c2-copy.is-done .ck { display: block; }
+    .c2-code pre { margin: 0; padding: 20px 22px 24px; min-height: 280px; overflow-x: auto; font: 400 13.5px/1.75 var(--mono); color: #E6E6E1; white-space: pre-wrap; word-break: break-word; }
+    .c2-code .k { color: #9FD8F2; } .c2-code .s { color: #E9D6A8; } .c2-code .c { color: #7C7C75; }
+    .c2-dev__note { margin: 14px 4px 0; font-size: 13.5px; line-height: 1.6; color: #9B9B93; }
+    .c2-dev__note a { color: #fff; border-bottom: 1px solid rgba(255,255,255,.3); }
+    .c2-dev__note code { padding: 1px 6px; border-radius: 6px; background: rgba(255,255,255,.08); font-size: 12px; color: #E6E6E1; overflow-wrap: anywhere; }
+    .c2-js:not(.c2-still) .c2-code pre.is-swap { animation: c2-swap .45s var(--ease); }
+
+    /* ═══════════════ GUIDES — a short reading list ═══════════════ */
+    .c2-reads { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
+    .c2-reads .c2-head { display: block; margin: 0; position: sticky; top: calc(var(--nav-h) + 32px); }
+    .c2-reads .c2-head .c2-lede { margin-top: 20px; }
+    .c2-guides { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line-2); }
+    .c2-guide { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 20px; align-items: baseline; padding: 26px 0; border-bottom: 1px solid var(--line-2); transition: padding .45s var(--ease); }
+    .c2-guide:hover, .c2-guide:focus-visible { padding-left: 12px; }
+    .c2-guide__n { font: italic 400 32px/1 var(--serif); color: var(--faint); transition: color .3s ease; }
+    .c2-guide:hover .c2-guide__n { color: var(--violet); }
+    .c2-guide h3 { margin: 0; font-size: clamp(19px, 1.8vw, 23px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+    .c2-guide p { margin: 6px 0 0; color: var(--mute); font-size: 15px; line-height: 1.55; }
+    .c2-guide__t { font: 500 12px/1 var(--mono); color: var(--faint); white-space: nowrap; }
+    .c2-labs { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-top: 28px; padding: 18px 22px; border: 1px dashed var(--line-2); border-radius: var(--r-m); font-size: 15px; color: var(--mute); }
+    .c2-labs b { color: var(--ink); font-weight: 600; }
+
+    /* ═══════════════ CTA + FOOTER ═══════════════ */
+    .c2-cta { position: relative; padding: clamp(96px, 13vw, 180px) 0 clamp(80px, 10vw, 140px); text-align: center; border-top: 1px solid var(--line); overflow: hidden; }
+    .c2-cta::before { content: ""; position: absolute; left: 50%; top: 0; width: min(560px, 70%); height: 1.5px; transform: translateX(-50%); background: var(--brand); }
+    .c2-cta h2 { margin: 0 auto; max-width: 14ch; font-size: clamp(44px, 7vw, 104px); font-weight: 600; line-height: .98; letter-spacing: -0.052em; text-wrap: balance; }
+    .c2-cta p { margin: 28px auto 0; max-width: 44ch; color: var(--mute); font-size: clamp(16px, 1.3vw, 18px); }
+    .c2-cta__acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 40px; }
+    .c2-foot { border-top: 1px solid var(--line); padding: 36px 0 44px; }
+    .c2-foot__in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px; }
+    .c2-foot__l { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+    .c2-foot small { font-size: 13.5px; color: var(--mute); }
+    .c2-foot small a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+    .c2-foot nav { display: flex; flex-wrap: wrap; gap: 4px 2px; }
+    .c2-foot nav a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 10px; border-radius: 18px; font-size: 14px; color: var(--mute); transition: color .2s ease, background-color .2s ease; }
+    .c2-foot nav a:hover { color: var(--ink); background: var(--sunk); }
+
+    /* ═══════════════ RESPONSIVE ═══════════════ */
+    @media (max-width: 1100px) {
+      .c2-hero__grid { grid-template-columns: minmax(0, 1fr); }
+      .c2-stage { max-width: 620px; }
+      .c2-how { grid-template-columns: minmax(0, 1fr); }
+      .c2-steps { position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
+      .c2-step { padding: 18px 0 20px; border-bottom: 1px solid var(--line); }
+      .c2-step__n { position: static; display: block; margin-bottom: 10px; }
+      .c2-step__bar { left: 0; }
+      .c2-path a { grid-template-columns: 96px minmax(0, 1fr) 44px; }
+      .c2-path a > p { grid-column: 2; }
+      .c2-path__arrow { grid-column: 3; grid-row: 1 / span 2; }
+      .c2-trust__grid { grid-template-columns: minmax(0, 1fr); }
+      .c2-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 0; }
+      .c2-node:nth-child(2)::after { display: none; }
+      .c2-dev__grid, .c2-reads { grid-template-columns: minmax(0, 1fr); }
+      .c2-reads .c2-head { position: static; }
+      .c2-tl a { grid-template-columns: minmax(0, 1fr) 28px; }
+      .c2-tl .c2-tag { grid-column: 1 / -1; }
+      .c2-tl .c2-pats { grid-column: 1; }
+      .c2-tl__arrow { grid-column: 2; grid-row: 2 / span 2; }
+    }
+    @media (max-width: 960px) {
+      .c2-nav__links, .c2-nav__end .c2-gh, .c2-nav__end .c2-btn { display: none; }
+      .c2-nav__end { margin-left: auto; }
+      .c2-menu { display: inline-grid; }
+      .c2-sheet { position: absolute; left: 0; right: 0; top: var(--nav-h); display: grid; gap: 2px; padding: 8px var(--gut) 20px; background: rgba(250, 250, 248, .97); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); opacity: 0; visibility: hidden; transform: translateY(-6px); transition: opacity .25s ease, transform .35s var(--ease), visibility 0s linear .35s; }
+      .c2-sheet.is-open { opacity: 1; visibility: visible; transform: none; transition: opacity .25s ease, transform .35s var(--ease), visibility 0s; }
+      .c2-sheet a:not(.c2-btn) { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 4px; border-bottom: 1px solid var(--line); font-size: 17px; font-weight: 500; }
+      .c2-sheet .c2-btn { margin-top: 14px; }
+      .c2-head { grid-template-columns: minmax(0, 1fr); }
+      .c2-head .c2-lede { justify-self: start; }
+      .c2-tpl-feat { grid-template-columns: minmax(0, 1fr); }
+      .c2-life__panel { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 720px) {
+      :root { --nav-h: 58px; }
+      .c2-display { font-size: clamp(40px, 11vw, 60px); }
+      .c2-ask { flex-direction: column; align-items: stretch; padding: 14px; }
+      .c2-ask textarea { flex: none; margin: 4px 0 10px; }
+      .c2-ask .c2-btn { width: 100%; }
+      .c2-rail { grid-template-columns: repeat(5, minmax(56px, 1fr)); overflow-x: auto; scrollbar-width: none; }
+      .c2-rail .t { font-size: 12px; }
+      .c2-card { height: 600px; }
+      .c2-steps { grid-template-columns: minmax(0, 1fr); }
+      .c2-step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 8px; }
+      .c2-step__n { grid-row: span 2; font-size: 28px; margin: 0; }
+      .c2-step__bar { left: 52px; }
+      .ln-ag__body { grid-template-columns: minmax(0, 1fr); }
+      .ln-ag__chat { border-right: 0; border-bottom: 1px solid var(--line); min-height: 300px; }
+      .ln-ag__canvas { min-height: 420px; }
+      .c2-path a { grid-template-columns: minmax(0, 1fr) 44px; gap: 10px 16px; }
+      .c2-path__who { grid-column: 1; }
+      .c2-path a > div, .c2-path a > p { grid-column: 1; }
+      .c2-path__arrow { grid-column: 2; grid-row: 1 / span 3; align-self: start; }
+      .c2-path a:hover, .c2-path a:focus-visible { padding-left: 8px; padding-right: 8px; }
+      .c2-chat { min-height: 440px; }
+      .c2-track { grid-template-columns: repeat(4, minmax(110px, 1fr)); overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+      .c2-track::-webkit-scrollbar { display: none; }
+      .c2-life__view { min-height: 300px; }
+      .c2-promise { grid-template-columns: minmax(0, 1fr); }
+      .c2-promise div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); margin-top: 18px; }
+      .c2-flow { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .c2-node { padding: 0; }
+      .c2-node::after { display: none; }
+      .c2-node__box { min-height: 0; }
+      .c2-guide { grid-template-columns: 44px minmax(0, 1fr); }
+      .c2-guide__t { grid-column: 2; }
+      .c2-foot__in { flex-direction: column; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="c2-progress" aria-hidden="true"></div>
+<a class="c2-skip" href="#main">Skip to content</a>
+
+<!-- ══ NAV ══ -->
+<header class="c2-nav" id="top">
+  <div class="c2-wrap c2-nav__bar">
+    <a class="c2-brand" href="/" aria-label="Nucleux home"><svg aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="#0B0B0A"/>
+<path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="#0B0B0A"/>
+<path d="M38.0781 11.5382C38.0781 5.9997 40.5397 3.23047 45.4627 3.23047H51.9243V6.92278H46.155C43.5397 6.92278 42.232 8.46124 42.232 11.5382C42.232 14.6151 43.5397 16.1535 46.155 16.1535H51.9243V19.8459H45.4627C40.5397 19.8459 38.0781 17.0766 38.0781 11.5382Z" fill="#0B0B0A"/>
+<path d="M54.2344 3.23047V19.8459H65.7728V16.1535H58.3882V3.23047H54.2344Z" fill="#0B0B0A"/>
+<path d="M68.0781 3.23047V19.8459H80.7704V16.1535H72.232V13.1535H79.8474V9.92278H72.232V6.92278H80.7704V3.23047H68.0781Z" fill="#0B0B0A"/>
+<path d="M83.5391 3V14.0769C83.5391 18.0769 85.8468 20.0769 90.4621 20.0769C95.0775 20.0769 97.3852 18.0769 97.3852 14.0769V3H93.2314V13.6154C93.2314 15.4615 92.3083 16.3846 90.4621 16.3846C88.616 16.3846 87.6929 15.4615 87.6929 13.6154V3H83.5391Z" fill="url(#c2g0)"/>
+<path d="M99.6959 3H104.773L108.465 8.53846L112.157 3H117.696L112.157 11.3077L117.696 19.6154H112.157L108.465 14.0769L104.773 19.6154H99.2344L105.234 11.3077L99.6959 3Z" fill="url(#c2g1)"/>
+<defs>
+<linearGradient id="c2g0" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse"><stop stop-color="#21A4D7"/><stop offset="0.976" stop-color="#8B57C7"/></linearGradient>
+<linearGradient id="c2g1" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse"><stop stop-color="#21A4D7"/><stop offset="0.976" stop-color="#8B57C7"/></linearGradient>
+</defs>
+</svg></a>
+    <nav aria-label="Primary">
+      <ul class="c2-nav__links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#start">Start here</a></li>
+        <li><a href="#templates">Templates</a></li>
+        <li><a href="#patterns">Patterns</a></li>
+        <li><a href="#developers">Developers</a></li>
+        <li><a href="labs">Labs</a></li>
+      </ul>
+    </nav>
+    <div class="c2-nav__end">
+      <a class="c2-icon-btn c2-gh" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener" aria-label="Nucleux on GitHub">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+      </a>
+      <a class="c2-btn c2-btn--ink c2-btn--sm" href="playground">Try it free</a>
+      <button class="c2-icon-btn c2-menu" type="button" aria-expanded="false" aria-controls="c2-sheet" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="c2-sheet" id="c2-sheet">
+    <a href="#how">How it works <span aria-hidden="true">→</span></a>
+    <a href="#start">Start here <span aria-hidden="true">→</span></a>
+    <a href="#templates">Templates <span aria-hidden="true">→</span></a>
+    <a href="#patterns">Patterns <span aria-hidden="true">→</span></a>
+    <a href="#developers">Developers <span aria-hidden="true">→</span></a>
+    <a href="labs">Labs <span aria-hidden="true">→</span></a>
+    <a href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+    <a class="c2-btn c2-btn--ink" href="playground">Try it free</a>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ══ HERO — the headline, and a real Nucleux chat assembling itself pattern by pattern ══ -->
+<section class="c2-hero" aria-labelledby="c2-h1">
+  <div class="c2-wrap c2-hero__grid">
+    <div>
+      <a class="c2-badge c2-rv" href="material-pattern?id=disclosure&amp;device=mobile"><b>New</b> Nucleux for iPhone Duo <span aria-hidden="true">→</span></a>
+      <h1 class="c2-display" id="c2-h1">You built the AI.<br> We give it a face people <em><span class="c2-grad">trust</span></em>.</h1>
+      <p class="c2-hero__sub c2-rv" style="--d:420ms">Nucleux is the experience layer for AI products: the screens, states and controls that show it's working, where answers come from, and when it asks before acting.</p>
+
+      <form class="c2-ask c2-rv" style="--d:520ms" action="playground" method="get" role="search" aria-label="Describe your AI">
+        <label class="c2-sr" for="c2-q">Describe your AI</label>
+        <textarea id="c2-q" name="q" rows="1" placeholder="An assistant that summarises meetings and drafts follow-ups…" autocomplete="off"></textarea>
+        <button class="c2-btn c2-btn--ink" type="submit">Build it <svg class="c2-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </form>
+      <div class="c2-chips c2-rv" style="--d:600ms" role="group" aria-label="Try an example">
+        <span class="c2-chips__lab">Try</span>
+        <button class="c2-chip" type="button" data-q="A meeting summariser that turns recordings into a recap with action items and owners">Meeting summariser</button>
+        <button class="c2-chip" type="button" data-q="A support chatbot that answers from our help centre and hands off to a person when it isn't sure">Support chatbot</button>
+        <button class="c2-chip" type="button" data-q="A contract reviewer that flags risky clauses, cites the policy they break and suggests edits for a lawyer to approve">Contract reviewer</button>
+        <button class="c2-chip" type="button" data-q="A research agent that reads sources, cites every claim and asks before it shares anything">Research agent</button>
+      </div>
+      <div class="c2-hero__acts c2-rv" style="--d:680ms">
+        <a class="c2-link" href="library">Browse the <span data-total>89</span> patterns <span aria-hidden="true">→</span></a>
+        <span class="c2-hero__note">No design or coding knowledge needed · Free and open source</span>
+      </div>
+    </div>
+
+    <div class="c2-stage c2-rv" style="--d:260ms">
+      <div class="c2-stage__frame">
+        <div class="c2-stage__top">
+          <span class="c2-live"><i aria-hidden="true"></i>Live · real Nucleux components</span>
+          <button class="c2-replay" type="button" aria-label="Replay the build" title="Replay"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="c2-card"><iframe data-src="pg-preview/help.html?v=2" title="A support chat built from five Nucleux patterns" loading="lazy"></iframe></div>
+        <ol class="c2-rail" aria-label="The patterns in this chat">
+          <li><button type="button" data-k="0" aria-pressed="false"><span class="n">01</span><span class="t">Disclosure</span><span class="b"><i></i></span></button></li>
+          <li><button type="button" data-k="1" aria-pressed="false"><span class="n">02</span><span class="t">Suggested prompts</span><span class="b"><i></i></span></button></li>
+          <li><button type="button" data-k="2" aria-pressed="false"><span class="n">03</span><span class="t">Citations</span><span class="b"><i></i></span></button></li>
+          <li><button type="button" data-k="3" aria-pressed="false"><span class="n">04</span><span class="t">Caveat</span><span class="b"><i></i></span></button></li>
+          <li><button type="button" data-k="4" aria-pressed="false"><span class="n">05</span><span class="t">Hand-off</span><span class="b"><i></i></span></button></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS — three steps, one continuous build ══ -->
+<section class="c2-sec" id="how" aria-labelledby="how-h">
+  <div class="c2-wrap">
+    <header class="c2-head">
+      <div>
+        <p class="c2-eyebrow c2-rv"><b>01</b> How it works</p>
+        <h2 class="c2-h2 c2-rv" id="how-h">From one sentence to <em>screens you can ship</em>.</h2>
+      </div>
+      <p class="c2-lede c2-rv">Describe your AI in plain words. Your agent connects to Nucleux, picks the patterns it needs and builds the screen with them — progress, sources and approvals included.</p>
+    </header>
+    <div class="c2-how">
+      <ol class="c2-steps c2-rv">
+        <li class="c2-step" data-flow="0"><span class="c2-step__n" aria-hidden="true">01</span><h3>Describe your AI</h3><p>Say what it does in your own words. No templates to fill in, no jargon.</p><span class="c2-step__bar" aria-hidden="true"><i></i></span></li>
+        <li class="c2-step" data-flow="1"><span class="c2-step__n" aria-hidden="true">02</span><h3>Get the right patterns</h3><p>Nucleux picks the screens and states your product needs, and tells you why each one is there.</p><span class="c2-step__bar" aria-hidden="true"><i></i></span></li>
+        <li class="c2-step" data-flow="2"><span class="c2-step__n" aria-hidden="true">03</span><h3>Ship it your way</h3><p>Hand it to your AI agent, build it in React, or design it in the kit. Same patterns either way.</p><span class="c2-step__bar" aria-hidden="true"><i></i></span></li>
+      </ol>
+      <div class="c2-rv" style="--d:120ms">
+        <div class="c2-scn" role="tablist" aria-label="Example requests">
+          <button role="tab" type="button" aria-selected="true" aria-controls="ag-win" data-sc="0">Meeting summariser</button>
+          <button role="tab" type="button" aria-selected="false" aria-controls="ag-win" tabindex="-1" data-sc="1">Support chatbot</button>
+          <button role="tab" type="button" aria-selected="false" aria-controls="ag-win" tabindex="-1" data-sc="2">Contract reviewer</button>
+          <button role="tab" type="button" aria-selected="false" aria-controls="ag-win" tabindex="-1" data-sc="3">Research agent</button>
+        </div>
+        <div class="c2-ag" id="ag-win" role="tabpanel" aria-label="An agent building with Nucleux">
+          <div class="ln-ag__bar"><span class="ln-ag__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>~/my-ai-app</span><span class="ln-ag__mcp"><i aria-hidden="true"></i>Nucleux MCP</span></div>
+          <div class="ln-ag__body">
+            <div class="ln-ag__chat">
+              <div class="ln-ag__ask"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span data-ag-q></span><span class="ln-ag__caret" aria-hidden="true"></span></span></div>
+              <ol class="ln-ag__steps" data-ag-steps></ol>
+              <div class="ln-ag__done" data-ag-done><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span data-ag-file></span></div>
+            </div>
+            <div class="ln-ag__canvas">
+              <span class="ln-ag__url">localhost:3000</span>
+              <div class="ln-ag__app" data-ag-app></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ START HERE — three ways in ══ -->
+<section class="c2-sec" id="start" aria-labelledby="start-h">
+  <div class="c2-wrap">
+    <header class="c2-head">
+      <div>
+        <p class="c2-eyebrow c2-rv"><b>02</b> Start here</p>
+        <h2 class="c2-h2 c2-rv" id="start-h">Pick what sounds <em>like you</em>.</h2>
+      </div>
+      <p class="c2-lede c2-rv">Three ways in. Each one takes a few minutes, and none of them needs the others.</p>
+    </header>
+    <ul class="c2-paths">
+      <li class="c2-path c2-rv"><a href="#developers" data-tab="agent">
+        <span class="c2-path__who">Founder</span>
+        <div><h3>I'm building with an <em>AI agent</em></h3><span class="c2-path__go">Copy the prompt</span></div>
+        <p>Copy one prompt into Claude, Cursor or Codex. Your agent connects to Nucleux and builds the right screens for you.</p>
+        <span class="c2-path__arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a></li>
+      <li class="c2-path c2-rv" style="--d:80ms"><a href="design-system">
+        <span class="c2-path__who">Designer</span>
+        <div><h3>I design <em>the product</em></h3><span class="c2-path__go">Open the design kit</span></div>
+        <p>Start from the design kit: every state of every pattern, with the tokens and components behind them.</p>
+        <span class="c2-path__arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a></li>
+      <li class="c2-path c2-rv" style="--d:160ms"><a href="docs">
+        <span class="c2-path__who">Developer</span>
+        <div><h3>I write <em>the code</em></h3><span class="c2-path__go">Read the quick start</span></div>
+        <p>Run <code>npm install @nucleux/react</code> and drop in a working agent chat in five minutes. TypeScript and Tailwind throughout.</p>
+        <span class="c2-path__arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ A CHAT BOX ISN'T A PRODUCT — switch the four needs on, watch the same chat become one ══ -->
+<section class="c2-sec c2-trust" id="why" aria-labelledby="trust-h">
+  <div class="c2-wrap">
+    <header class="c2-head">
+      <div>
+        <p class="c2-eyebrow c2-rv"><b>03</b> Why it matters</p>
+        <h2 class="c2-h2 c2-rv" id="trust-h">A chat box isn't <em>a product</em>.</h2>
+      </div>
+      <p class="c2-lede c2-rv">People trust AI when it shows its work. Every AI product has to answer the same four needs — switch them on and watch the same conversation turn into a product.</p>
+    </header>
+    <div class="c2-trust__grid">
+      <ul class="c2-needs c2-rv" aria-label="Four needs">
+        <li class="c2-need" data-need="working">
+          <button class="c2-sw" type="button" role="switch" aria-checked="false" aria-labelledby="nd1"></button>
+          <div class="c2-need__head"><h3 id="nd1">Show it's working</h3><span>Processing steps</span></div>
+          <p>A blank screen feels broken. Show progress and what the AI is doing right now.</p>
+          <a href="pattern?id=processing-steps">See the pattern</a>
+        </li>
+        <li class="c2-need" data-need="sources">
+          <button class="c2-sw" type="button" role="switch" aria-checked="false" aria-labelledby="nd2"></button>
+          <div class="c2-need__head"><h3 id="nd2">Show your sources</h3><span>Citations</span></div>
+          <p>Every answer points back to where it came from, so people can check it.</p>
+          <a href="pattern?id=citations">See the pattern</a>
+        </li>
+        <li class="c2-need" data-need="ask">
+          <button class="c2-sw" type="button" role="switch" aria-checked="false" aria-labelledby="nd3"></button>
+          <div class="c2-need__head"><h3 id="nd3">Ask before acting</h3><span>Consent</span></div>
+          <p>Before it sends, deletes or spends, the AI asks — and says exactly what will happen.</p>
+          <a href="material-pattern?id=consent">See the pattern</a>
+        </li>
+        <li class="c2-need" data-need="recover">
+          <button class="c2-sw" type="button" role="switch" aria-checked="false" aria-labelledby="nd4"></button>
+          <div class="c2-need__head"><h3 id="nd4">Recover gracefully</h3><span>Recovery</span></div>
+          <p>When something fails, keep the person's work and offer one clear way forward.</p>
+          <a href="pattern?id=recovery">See the pattern</a>
+        </li>
+      </ul>
+      <div class="c2-demo c2-rv" style="--d:120ms">
+        <div class="c2-demo__top">
+          <div class="c2-demo__title" aria-live="polite"><span>A chat box.</span><span>A <em>product</em>.</span></div>
+          <span class="c2-demo__count"><span data-on>0</span> of 4 patterns</span>
+        </div>
+        <div class="c2-chat" role="img" aria-label="An example assistant conversation that gains each pattern as it is switched on">
+          <div class="c2-chat__hd"><i aria-hidden="true"></i>Finance assistant<span>Q3 close</span></div>
+          <div class="c2-msg">Summarise the Q3 report and send it to the finance team.</div>
+          <div class="c2-bot"><i aria-hidden="true"></i><div>
+            <div class="c2-fold c2-f-working"><div><div class="c2-proc">
+              <div><i class="ok"></i>Read the Q3 report · 24 pages</div>
+              <div><i class="ok"></i>Pulled revenue, margin and churn</div>
+              <div><i class="run"></i>Drafting a five-line summary…</div>
+            </div></div></div>
+            <p>Revenue grew 18% to $4.2M<span class="c2-src">Q3 report · p.4</span>, gross margin held at 71%<span class="c2-src">p.9</span>, and churn fell to 2.1%<span class="c2-src">Board deck · s.12</span>.</p>
+            <div class="c2-fold c2-f-recover"><div><div class="c2-err"><i>!</i><span><b>Couldn't reach Drive.</b> Your summary is saved.</span><span class="c2-mini">Retry</span></div></div></div>
+            <div class="c2-fold c2-f-ask"><div><div class="c2-ok-card">
+              <b>Send this summary to #finance?</b><small>8 people will see it. Nothing is sent until you say so.</small>
+              <div><span class="c2-mini">Not now</span><span class="c2-mini c2-mini--ink">Send</span></div>
+            </div></div></div>
+          </div></div>
+          <div class="c2-chat__in"><span>Ask a follow-up…</span><i aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TEMPLATES — two products up front, the rest as a reading list ══ -->
+<section class="c2-sec" id="templates" aria-labelledby="tpl-h">
+  <div class="c2-wrap">
+    <header class="c2-head">
+      <div>
+        <p class="c2-eyebrow c2-rv"><b>04</b> Templates</p>
+        <h2 class="c2-h2 c2-rv" id="tpl-h">Start from <em>a product like yours</em>.</h2>
+      </div>
+      <p class="c2-lede c2-rv">Real AI products, built end to end with Nucleux. Open one, see which patterns it uses, and copy what fits.</p>
+    </header>
+    <div class="c2-tpl-feat">
+      <article class="c2-tf c2-rv">
+        <div class="c2-tf__img"><img src="Meeting%20summariser-landing%20page.png" alt="The meeting summariser template" width="760" height="475" loading="lazy" decoding="async" /></div>
+        <div class="c2-tf__body">
+          <span class="c2-tag">Internal ops · live demo</span>
+          <h3>Meeting summariser</h3>
+          <p>Turns an hour-long meeting into a verified five-bullet recap with action items, owners and dates.</p>
+          <div class="c2-tf__links"><a class="c2-btn c2-btn--ink c2-btn--sm" href="https://saransh.intelligaia.com/" target="_blank" rel="noopener">Try the live demo <span aria-hidden="true">↗</span></a><a class="c2-link" href="scenario?id=meeting-summariser">See how it's built <span aria-hidden="true">→</span></a></div>
+        </div>
+      </article>
+      <article class="c2-tf c2-rv" style="--d:100ms">
+        <div class="c2-tf__img"><img src="Medha%20thumbnail.png" alt="The Medha private AI workspace" width="760" height="475" loading="lazy" decoding="async" /></div>
+        <div class="c2-tf__body">
+          <span class="c2-tag">Private AI workspace</span>
+          <h3>Medha</h3>
+          <p>Chat across models, ground answers in your own documents, and keep every conversation inside your environment.</p>
+          <div class="c2-tf__links"><a class="c2-link" href="scenario?id=medha">See how it's built <span aria-hidden="true">→</span></a></div>
+        </div>
+      </article>
+    </div>
+    <ul class="c2-tlist" aria-label="More templates">
+      <li class="c2-tl c2-rv"><a href="scenario?id=sales-discovery-copilot"><span class="c2-tag">Sales</span><div><h3>Sales discovery copilot</h3><p>Turns a sales call into a structured account brief in the CRM, with next steps ready for review.</p></div><span class="c2-pats"><span>Voice input</span><span>Templates</span><span>Action plan</span><span>Connectors</span></span><svg class="c2-tl__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+      <li class="c2-tl c2-rv"><a href="scenario?id=customer-support-triage"><span class="c2-tag">Customer ops</span><div><h3>Customer support triage</h3><p>Drafts replies from your knowledge base and flags the moment a person should take over.</p></div><span class="c2-pats"><span>Suggested prompts</span><span>Summary</span><span>Confidence</span><span>Citations</span></span><svg class="c2-tl__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+      <li class="c2-tl c2-rv"><a href="scenario?id=compliance-reviewer"><span class="c2-tag">Regulated industries</span><div><h3>Compliance reviewer</h3><p>Flags risky clauses with the exact rule they break, and proposes edits for a person to approve.</p></div><span class="c2-pats"><span>Citations</span><span>Confidence</span><span>Verification</span><span>Data ownership</span></span><svg class="c2-tl__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+      <li class="c2-tl c2-rv"><a href="scenario?id=onboarding-companion"><span class="c2-tag">Workforce ops</span><div><h3>Onboarding companion</h3><p>Walks a new hire through their first two weeks, surfacing docs, people and tasks when they need them.</p></div><span class="c2-pats"><span>Example gallery</span><span>Templates</span><span>Memory</span><span>Personalization</span></span><svg class="c2-tl__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+      <li class="c2-tl c2-rv"><a href="scenario?id=knowledge-librarian"><span class="c2-tag">Internal ops</span><div><h3>Knowledge librarian</h3><p>Keeps a private knowledge base current — linking, updating and retiring documents as the team's work changes.</p></div><span class="c2-pats"><span>Connectors</span><span>Knowledge base</span><span>Synthesis</span><span>Memory</span></span><svg class="c2-tl__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+      <li class="c2-tl c2-tl--all c2-rv"><a href="practices"><span class="c2-tag">And more</span><div><h3>Every template, <em>13 products</em></h3><p>Healthcare, education, security, government and more.</p></div><span></span><svg class="c2-tl__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ PATTERN LIBRARY — the experience lifecycle, one stage at a time, with a real tile per stage ══ -->
+<section class="c2-sec c2-life" id="patterns" aria-labelledby="pat-h">
+  <div class="c2-wrap">
+    <header class="c2-head">
+      <div>
+        <p class="c2-eyebrow c2-rv"><b>05</b> Pattern library</p>
+        <h2 class="c2-h2 c2-rv" id="pat-h"><span data-total>89</span> patterns, sorted by <em>when people meet them</em>.</h2>
+      </div>
+      <p class="c2-lede c2-rv">Every AI product goes through the same four moments. Find yours, and you'll find the patterns for it.</p>
+    </header>
+    <div class="c2-rv">
+      <ol class="c2-track" role="tablist" aria-label="The four moments">
+        <span class="c2-track__fill" aria-hidden="true"></span>
+        <li><button class="c2-stage-btn" role="tab" type="button" id="st-0" aria-selected="true" aria-controls="st-panel" data-st="0"><span class="dot">01</span><span class="nm">Before first use</span><span class="ct"><span data-stage-count="0">12</span> patterns</span></button></li>
+        <li><button class="c2-stage-btn" role="tab" type="button" id="st-1" aria-selected="false" aria-controls="st-panel" tabindex="-1" data-st="1"><span class="dot">02</span><span class="nm">First prompt</span><span class="ct"><span data-stage-count="1">24</span> patterns</span></button></li>
+        <li><button class="c2-stage-btn" role="tab" type="button" id="st-2" aria-selected="false" aria-controls="st-panel" tabindex="-1" data-st="2"><span class="dot">03</span><span class="nm">While it works</span><span class="ct"><span data-stage-count="2">42</span> patterns</span></button></li>
+        <li><button class="c2-stage-btn" role="tab" type="button" id="st-3" aria-selected="false" aria-controls="st-panel" tabindex="-1" data-st="3"><span class="dot">04</span><span class="nm">Over time</span><span class="ct"><span data-stage-count="3">11</span> patterns</span></button></li>
+      </ol>
+      <div class="c2-life__panel" id="st-panel" role="tabpanel" aria-labelledby="st-0">
+        <div class="c2-life__text" data-life-text></div>
+        <div class="c2-life__view">
+          <iframe data-tile="onb" title="Consent, a Nucleux component for this moment" loading="lazy"></iframe>
+          <iframe data-tile="ini" title="Suggested prompts and open input, Nucleux components for this moment" loading="lazy" hidden></iframe>
+          <iframe data-tile="dur" title="Processing steps and an approval, Nucleux components for this moment" loading="lazy" hidden></iframe>
+          <iframe data-tile="ovr" title="Memory controls built from Nucleux components for this moment" loading="lazy" hidden></iframe>
+          <span class="c2-life__real">Real @nucleux/react components</span>
+        </div>
+      </div>
+    </div>
+    <div class="c2-promise c2-rv">
+      <div><b>What it solves</b>Every pattern starts with the problem a person has, in plain words.</div>
+      <div><b>When to use it</b>The moments it fits, with real products that do it well.</div>
+      <div><b>When not to</b>Where it gets in the way — so you don't add what you don't need.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DEVELOPERS & AI AGENTS — the dark band ══ -->
+<section class="c2-sec c2-dev" id="developers" aria-labelledby="dev-h">
+  <div class="c2-wrap">
+    <header class="c2-head">
+      <div>
+        <p class="c2-eyebrow c2-rv"><b>06</b> Developers &amp; AI agents</p>
+        <h2 class="c2-h2 c2-rv" id="dev-h">Your AI agent already <em><span class="c2-grad">knows how to use it</span></em>.</h2>
+      </div>
+      <p class="c2-lede c2-rv">Nucleux runs an MCP server, so Claude, Cursor, Codex and VS Code can ask it which patterns to use and build them for you. Prefer to write the code? It's one package.</p>
+    </header>
+    <ol class="c2-flow c2-rv" aria-label="How your agent builds with Nucleux">
+      <li class="c2-node"><div class="c2-node__box"><span class="c2-node__k">You</span><h3>Describe the screen</h3><p>In your coding agent: Claude, Cursor, Codex or VS Code.</p></div></li>
+      <li class="c2-node"><div class="c2-node__box"><span class="c2-node__k">MCP</span><h3>Your agent asks Nucleux</h3><p>Which patterns fit, and when not to use them. <code>nucleux.in/mcp</code></p></div></li>
+      <li class="c2-node"><div class="c2-node__box"><span class="c2-node__k">Patterns</span><h3>It builds with them</h3><p>Real components from <code>@nucleux/react</code>, on your theme.</p></div></li>
+      <li class="c2-node"><div class="c2-node__box"><span class="c2-node__k">Ship</span><h3>You review the plan</h3><p>Nothing changes in your files until you've seen it.</p></div></li>
+    </ol>
+    <div class="c2-dev__grid">
+      <div class="c2-rv">
+        <p class="c2-lede" style="margin:0">Paste one prompt and your agent does the rest. Or install the package and compose the same patterns yourself — TypeScript and Tailwind throughout.</p>
+        <div class="c2-dev__agents" aria-label="Works with"><span>Claude</span><span>Claude Code</span><span>Cursor</span><span>Codex</span><span>VS Code</span></div>
+        <div class="c2-dev__links"><a class="c2-btn c2-btn--ink c2-btn--sm" href="mcp">MCP setup</a><a class="c2-btn c2-btn--line c2-btn--sm" href="docs">Read the Docs</a></div>
+      </div>
+      <div class="c2-rv" style="--d:120ms">
+        <div class="c2-tabs" role="tablist" aria-label="How to use Nucleux">
+          <button role="tab" type="button" id="dt-agent" aria-controls="dp-code" aria-selected="true" data-tab="agent">AI agent</button>
+          <button role="tab" type="button" id="dt-react" aria-controls="dp-code" aria-selected="false" tabindex="-1" data-tab="react">React</button>
+          <button role="tab" type="button" id="dt-figma" aria-controls="dp-code" aria-selected="false" tabindex="-1" data-tab="figma">Figma</button>
+        </div>
+        <div class="c2-code" id="dp-code" role="tabpanel" aria-labelledby="dt-agent">
+          <div class="c2-code__bar"><span data-file>Paste into your AI agent</span><button class="c2-copy" type="button" aria-label="Copy"><svg class="cp" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="ck" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          <pre><code data-code></code></pre>
+        </div>
+        <p class="c2-dev__note" data-note></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ GUIDES — four short reads, in order ══ -->
+<section class="c2-sec" id="guides" aria-labelledby="guide-h">
+  <div class="c2-wrap c2-reads">
+    <header class="c2-head">
+      <p class="c2-eyebrow c2-rv"><b>07</b> Guides</p>
+      <h2 class="c2-h2 c2-rv" id="guide-h">Read these, <em>in this order</em>.</h2>
+      <p class="c2-lede c2-rv">Four short reads that take you from “what's different about AI products” to a screen that looks like your brand.</p>
+    </header>
+    <div>
+      <ol class="c2-guides">
+        <li class="c2-rv"><a class="c2-guide" href="docs#guide-1"><span class="c2-guide__n">01</span><span><h3>What makes AI products different</h3><p>Why a chat box alone loses people's trust, and the four things that win it back.</p></span><span class="c2-guide__t">2 min read</span></a></li>
+        <li class="c2-rv" style="--d:60ms"><a class="c2-guide" href="docs#guide-2"><span class="c2-guide__n">02</span><span><h3>Your first AI screen</h3><p>The input, the first suggestions and the empty state — the screen people see first.</p></span><span class="c2-guide__t">2 min read</span></a></li>
+        <li class="c2-rv" style="--d:120ms"><a class="c2-guide" href="docs#guide-3"><span class="c2-guide__n">03</span><span><h3>Building trust: sources and approvals</h3><p>Show where answers come from, and ask before the AI acts on someone's behalf.</p></span><span class="c2-guide__t">2 min read</span></a></li>
+        <li class="c2-rv" style="--d:180ms"><a class="c2-guide" href="docs#guide-4"><span class="c2-guide__n">04</span><span><h3>Make it look like your brand</h3><p>Swap the tokens for your colours, type and corners — every pattern follows.</p></span><span class="c2-guide__t">1 min read</span></a></li>
+      </ol>
+      <div class="c2-labs c2-rv"><span><b>Curious about the motion and type behind Nucleux?</b> The Labs are where we try them out.</span><a class="c2-link" href="labs">Visit the Labs <span aria-hidden="true">→</span></a></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══ CTA + FOOTER ══ -->
+<section class="c2-cta" aria-labelledby="cta-h">
+  <div class="c2-wrap">
+    <h2 class="c2-rv" id="cta-h">Give your AI a face people <em><span class="c2-grad">trust</span></em>.</h2>
+    <p class="c2-rv">Describe it in a sentence. Nucleux does the rest — free and open source.</p>
+    <div class="c2-cta__acts c2-rv">
+      <a class="c2-btn c2-btn--ink" href="playground">Try it free <svg class="c2-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a class="c2-btn c2-btn--line" href="library">Browse the patterns</a>
+    </div>
+  </div>
+</section>
+<footer class="c2-foot">
+  <div class="c2-wrap c2-foot__in">
+    <div class="c2-foot__l">
+      <a class="c2-brand" href="/" aria-label="Nucleux home"><svg aria-hidden="true" width="96" height="20" viewBox="0 0 120 24" fill="none"><path d="M2.3 3.23v16.62h4.16V9.69l7.84 10.16h4.16V3.23h-4.16v10.15L6.46 3.23z" fill="#0B0B0A"/><path d="M20.77 3.23v11.08c0 4 2.3 6 6.92 6s6.92-2 6.92-6V3.23h-4.15v10.62c0 1.84-.93 2.77-2.77 2.77s-2.77-.93-2.77-2.77V3.23z" fill="#0B0B0A"/><path d="M38.08 11.54c0-5.54 2.46-8.31 7.38-8.31h6.46v3.69h-5.77c-2.61 0-3.92 1.54-3.92 4.62s1.31 4.61 3.92 4.61h5.77v3.7h-6.46c-4.92 0-7.38-2.77-7.38-8.31z" fill="#0B0B0A"/><path d="M54.23 3.23v16.62h11.54v-3.7h-7.38V3.23z" fill="#0B0B0A"/><path d="M68.08 3.23v16.62h12.69v-3.7h-8.54v-3h7.62V9.92h-7.62v-3h8.54V3.23z" fill="#0B0B0A"/><path d="M83.54 3v11.08c0 4 2.3 6 6.92 6s6.92-2 6.92-6V3h-4.15v10.62c0 1.84-.93 2.77-2.77 2.77s-2.77-.93-2.77-2.77V3z" fill="url(#c2g0)"/><path d="M99.7 3h5.07l3.7 5.54L112.16 3h5.54l-5.54 8.31 5.54 8.31h-5.54l-3.69-5.54-3.69 5.54h-5.54l6-8.31z" fill="url(#c2g1)"/></svg></a>
+      <small>© 2026 Nucleux · by <a href="https://www.intelligaia.com/" target="_blank" rel="noopener">Intelligaia</a> · Free and open source</small>
+    </div>
+    <nav aria-label="Footer">
+      <a href="library">Patterns</a>
+      <a href="practices">Templates</a>
+      <a href="docs">Docs</a>
+      <a href="mcp">MCP</a>
+      <a href="labs">Labs</a>
+      <a href="contact">Contact</a>
+      <a href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var still = root.classList.contains('c2-still');
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function onView(el, fn, opts) {
+    if (!('IntersectionObserver' in window)) { fn(true); return; }
+    new IntersectionObserver(function (es) { es.forEach(function (e) { fn(e.isIntersecting, e); }); }, opts || { threshold: 0.25 }).observe(el);
+  }
+  function afterLoad(fn, wait) {
+    var go = function () { setTimeout(fn, wait || 0); };
+    if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+  }
+
+  /* ── Opened as a file from "Claude outputs": the <base> points at the site
+     folder, so in-page anchors are pinned back to this page, and clean URLs
+     get their ".html" (what serve.py and nucleux.in do for them). ── */
+  if (root.classList.contains('c2-file')) {
+    var here = location.href.split('#')[0];
+    $$('a[href]').forEach(function (a) {
+      var h = a.getAttribute('href');
+      if (h.charAt(0) === '#') { a.setAttribute('href', here + h); return; }
+      if (/^(https?:|mailto:|\/)/.test(h)) { if (h === '/') a.setAttribute('href', 'index-v2.html'); return; }
+      var m = h.match(/^([^?#]+)(.*)$/);
+      if (m && !/\.[a-z0-9]+$/i.test(m[1])) a.setAttribute('href', m[1] + '.html' + m[2]);
+    });
+    var f = $('.c2-ask'); if (f) f.setAttribute('action', 'playground.html');
+  }
+
+  /* ── Reveals: a short rise, once ── */
+  var rv = $$('.c2-rv');
+  if (still || !('IntersectionObserver' in window)) rv.forEach(function (el) { el.classList.add('is-in'); });
+  else {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ── Headline: word by word ── */
+  var h1 = $('.c2-display'), wi = 0;
+  (function split(node) {
+    Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+      if (n.nodeType === 3) {
+        var frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          var w = document.createElement('span'); w.className = 'w'; w.style.setProperty('--i', wi++); w.textContent = part; frag.appendChild(w);
+        });
+        node.replaceChild(frag, n);
+      } else if (n.nodeType === 1 && n.tagName !== 'BR') { n.classList.add('w'); n.style.setProperty('--i', wi++); }
+    });
+  })(h1);
+  requestAnimationFrame(function () { requestAnimationFrame(function () { h1.classList.add('is-in'); }); });
+
+  /* ── Nav: glass once scrolled, reading progress, scroll-spy, mobile sheet ── */
+  var nav = $('.c2-nav'), bar = $('.c2-progress'), ticking = false;
+  function onScroll() {
+    ticking = false;
+    var y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    nav.classList.toggle('is-stuck', y > 8);
+    bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0).toFixed(4) + ')';
+  }
+  addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+  var links = $$('.c2-nav__links a');
+  var spy = links.map(function (a) { var h = a.getAttribute('href'), id = h.split('#')[1]; return id && h.indexOf('#') !== -1 ? [a, document.getElementById(id)] : null; }).filter(function (p) { return p && p[1]; });
+  if ('IntersectionObserver' in window) {
+    var vis = {};
+    var sio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { vis[e.target.id] = e.isIntersecting; });
+      var hit = null; spy.forEach(function (p) { if (!hit && vis[p[1].id]) hit = p[0]; });
+      links.forEach(function (a) { if (a === hit) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    spy.forEach(function (p) { sio.observe(p[1]); });
+  }
+  var mb = $('.c2-menu'), sheet = $('#c2-sheet');
+  function sheetOpen(on) { sheet.classList.toggle('is-open', on); mb.setAttribute('aria-expanded', String(on)); mb.setAttribute('aria-label', on ? 'Close menu' : 'Open menu'); }
+  mb.addEventListener('click', function () { sheetOpen(!sheet.classList.contains('is-open')); });
+  sheet.addEventListener('click', function (e) { if (e.target.closest('a')) sheetOpen(false); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('is-open')) { sheetOpen(false); mb.focus(); } });
+
+  /* ── Hero composer: example chips, Enter to send, rotating placeholder ── */
+  var q = $('#c2-q');
+  $$('.c2-chip').forEach(function (c) { c.addEventListener('click', function () { q.value = c.getAttribute('data-q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); grow(); }); });
+  function grow() { if (!q.value) { q.style.height = ''; q.style.overflowY = ''; return; } q.style.height = 'auto'; q.style.height = Math.min(120, q.scrollHeight) + 'px'; q.style.overflowY = q.scrollHeight > 120 ? 'auto' : 'hidden'; }
+  q.addEventListener('input', grow);
+  q.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); q.form.requestSubmit ? q.form.requestSubmit() : q.form.submit(); } });
+  q.form.addEventListener('submit', function (e) { if (!q.value.trim()) { e.preventDefault(); q.value = q.getAttribute('placeholder').replace(/…$/, ''); q.form.submit(); } });
+  if (!still) {
+    var ideas = ['An assistant that summarises meetings and drafts follow-ups…', 'A chatbot that answers from our help centre…', 'An agent that reviews contracts and flags risky clauses…', 'A research agent that cites every source…'];
+    var ii = 0, ci = ideas[0].length, del = true;
+    afterLoad(function type() {
+      if (document.activeElement === q || q.value) { setTimeout(type, 1200); return; }
+      var t = ideas[ii];
+      if (!del) { ci++; q.setAttribute('placeholder', t.slice(0, ci)); if (ci >= t.length) { del = true; setTimeout(type, 2400); return; } setTimeout(type, 46); }
+      else { ci -= 3; if (ci <= 0) { ci = 0; del = false; ii = (ii + 1) % ideas.length; } q.setAttribute('placeholder', t.slice(0, Math.max(ci, 0)) || ' '); setTimeout(type, 22); }
+    }, 3200);
+  }
+
+  /* ── Hero stage: drive the real Nucleux chat (pg-preview/help.html) through
+     its five patterns, once, then rest. Its message protocol is the one
+     Concept 1's walkthrough uses: we post { type: 'hw', st }, it posts back
+     its height and the part a pointer is on. ── */
+  (function () {
+    var card = $('.c2-card'), frame = $('iframe', card), items = $$('.c2-rail li'), btns = $$('.c2-rail button');
+    var WORDS = 'Your refund was approved on 21 Oct. Card refunds usually arrive within 5–10 business days.'.split(' ').length;
+    var S = { in: [], on: -1, hl: -1, focus: false, fin: false, typed: false, words: 0, src: false, tap: false }, sent = '';
+    var TAP = 700, WORD = 70, DUR = [2600, 2600, TAP + 450 + WORDS * WORD + 300 + 1400, 2600, 2800];
+    var step = 0, t = 0, last = 0, playing = false, finished = false, visible = false, spot = -1, ready = false;
+    function send(force) { var j = JSON.stringify(S); if (!ready || (j === sent && !force)) return; sent = j; frame.contentWindow && frame.contentWindow.postMessage({ type: 'hw', st: S }, '*'); }
+    function upTo(i) { var a = []; for (var k = 0; k <= i; k++) a.push(k); return a; }
+    function bars(i, p) { items.forEach(function (li, k) { li.classList.toggle('is-done', k < i); li.classList.toggle('is-on', k === i); var b = $('.b i', li); b.style.transform = 'scaleX(' + (k < i ? 1 : k === i ? p : 0) + ')'; }); }
+    function chat(on) { S.typed = on; S.words = on ? WORDS : 0; S.src = on; S.tap = false; }
+    function setStep(i) { step = i; t = 0; S.in = upTo(i); S.on = i; S.focus = true; S.fin = false; chat(i > 2); bars(i, 0); send(); }
+    function finish() { playing = false; finished = true; spot = -1; S.in = upTo(4); S.on = -1; S.focus = false; S.fin = true; chat(true); send(); items.forEach(function (li) { li.classList.add('is-done'); li.classList.remove('is-on'); $('.b i', li).style.transform = 'scaleX(1)'; }); btns.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); }
+    function spotlight(k) {
+      if (!finished) { finish(); }
+      if (spot === k) k = -1; spot = k;
+      btns.forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === k)); });
+      if (k < 0) { S.on = -1; S.focus = false; } else { S.on = k; S.focus = true; }
+      send();
+    }
+    function play() { finished = false; spot = -1; playing = true; btns.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); setStep(0); }
+    function frameTick(now) {
+      requestAnimationFrame(frameTick);
+      var dt = last ? now - last : 0; last = now;
+      if (!playing || !visible || document.hidden) return;
+      t += dt;
+      var d = DUR[step]; bars(step, Math.min(1, t / d));
+      if (step === 2) {
+        var pressing = t < TAP; S.tap = pressing; if (!pressing) S.typed = true;
+        var tw = t - TAP - 450; S.words = tw > 0 ? Math.min(WORDS, Math.floor(tw / WORD) + 1) : 0;
+        if (tw > WORDS * WORD + 300) S.src = true;
+        send();
+      }
+      if (t >= d) { if (step === 4) finish(); else setStep(step + 1); }
+    }
+    addEventListener('message', function (e) {
+      if (e.source !== frame.contentWindow || !e.data) return;
+      var d = e.data;
+      if (d.type === 'hw-ready') { ready = true; if (still) finish(); else if (!playing && !finished) { setStep(0); } send(true); }
+      else if (d.type === 'hw-height') card.style.height = Math.max(420, d.h + 2) + 'px';
+      else if (d.type === 'hw-hover' && finished) btns.forEach(function (b, j) { b.style.borderColor = j === d.s ? 'var(--line-2)' : ''; });
+      else if (d.type === 'hw-click' && finished) spotlight(d.s);
+    });
+    btns.forEach(function (b, k) { b.addEventListener('click', function () { spotlight(k); }); });
+    $('.c2-replay').addEventListener('click', function () { if (still) { finish(); return; } play(); });
+    /* the frame loads after the page's own first paint */
+    afterLoad(function () { frame.src = frame.getAttribute('data-src'); }, 150);
+    onView(card, function (v) { visible = v; if (v && ready && !finished && !playing) playing = true; }, { threshold: 0.3 });
+    if (!still) { var go = setInterval(function () { if (ready && visible) { playing = true; clearInterval(go); } }, 200); }
+    requestAnimationFrame(frameTick);
+  })();
+
+  /* ── How it works: the agent builds a screen from Nucleux patterns, and the
+     three steps keep time with it (scenarios carried over from Concept 1) ── */
+  (function () {
+    var win = $('#ag-win');
+    var SEND = '<span class="ln-ag__send" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    var CLIP = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    function P(n, name, cls, html, tag) { return '<' + (tag || 'div') + ' class="ln-ag__p ' + (cls || '') + '" data-p="' + n + '"' + (name ? ' data-name="' + name + '"' : '') + '>' + html + '</' + (tag || 'div') + '>'; }
+    function hd(t, sub) { return '<div class="ln-ag__hd"><i aria-hidden="true"></i>' + t + '<span>' + sub + '</span></div>'; }
+    var SC = [
+      { q: 'Summarise our team meetings and send the action items — but ask before messaging anyone.', file: 'app/meetings/page.tsx',
+        steps: [['Open input', 'drop a recording or paste notes'], ['Processing steps', 'shows it’s working while it listens'], ['Summary', 'decisions first, then action items'], ['Citations', 'each point links to the moment it was said'], ['Action confirmation', 'asks before it messages anyone']],
+        app: hd('Meetings', 'Launch sync') + '<div class="ln-ag__grow">' +
+          P(2, 'Processing steps', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Transcribed 52 minutes</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Found 3 decisions</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Drafted the summary</b></div>') +
+          P(3, 'Summary', 'ln-ag__box', '<span class="ln-ag__lbl">Summary</span><ul class="ln-ag__ul"><li>Launch moves to 14 Nov ' + P(4, 'Citations', 'ln-ag__cite', '12:04', 'span') + '</li><li>Android build blocked on older devices ' + P(4, '', 'ln-ag__cite', '27:41', 'span') + '</li><li>Legal to sign off the checklist ' + P(4, '', 'ln-ag__cite', '44:10', 'span') + '</li></ul>') +
+          P(5, 'Action confirmation', 'ln-ag__box ln-ag__box--ac', '<b style="font-weight:600">Send 3 action items to #launch?</b><div class="ln-ag__note">Priya, Dev and Sam will be notified.</div><div class="ln-ag__acts"><span class="ln-ag__btn">Not now</span><span class="ln-ag__btn ln-ag__btn--p">Send</span></div>') +
+          '</div><div class="ln-ag__foot">' + P(1, 'Open input', '', '<div class="ln-ag__in"><span class="ln-ag__file">' + CLIP + 'Launch sync.m4a</span><em>Ask about this meeting…</em>' + SEND + '</div>') + '</div>' },
+      { q: 'A support chatbot that answers from our help centre and hands off to a person when it isn’t sure.', file: 'app/support/page.tsx',
+        steps: [['Disclosure', 'says up front that it’s an AI'], ['Suggested prompts', 'the questions people ask most'], ['Citations', 'every answer points to a help article'], ['Confidence', 'says when it isn’t sure'], ['Recovery', 'a clear way to reach a person']],
+        app: hd('Help', 'Acme support') +
+          P(1, 'Disclosure', 'ln-ag__box ln-ag__box--soft', '<span class="ln-ag__note">You’re chatting with an <b style="color:var(--ink);font-weight:600">AI assistant</b>. A person can take over anytime.</span>') +
+          '<div class="ln-ag__grow">' +
+          P(3, 'Citations', '', '<div style="display:flex;flex-direction:column;gap:8px"><div class="ln-ag__msg">Can I get a refund after 30 days?</div><div class="ln-ag__ans">Refunds are usually available within 30 days of purchase. After that, it depends on your plan’s terms. <span class="ln-ag__cite">Help centre · Refunds</span></div></div>') +
+          P(4, 'Confidence', 'ln-ag__badge', '● Not fully sure — your plan has custom terms', 'span') +
+          P(5, 'Recovery', '', '<div class="ln-ag__chips"><span class="ln-ag__btn ln-ag__btn--p">Talk to a person</span><span class="ln-ag__btn">Ask another way</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(2, 'Suggested prompts', 'ln-ag__chips', '<span class="ln-ag__chip">Reset my password</span><span class="ln-ag__chip">Change my plan</span><span class="ln-ag__chip">Where’s my refund?</span>') +
+          '<div class="ln-ag__in"><em>Ask anything…</em>' + SEND + '</div></div>' },
+      { q: 'Review vendor contracts, flag risky clauses and let legal approve every change.', file: 'app/contracts/review.tsx',
+        steps: [['Open input', 'upload a contract to review'], ['Processing steps', 'reads every page before it answers'], ['Citations', 'each flag points to the clause and page'], ['Caveat', 'a first pass, not legal advice'], ['Action confirmation', 'legal approves every change']],
+        app: hd('Contracts', 'Northwind MSA') + '<div class="ln-ag__grow">' +
+          P(2, 'Processing steps', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Read 18 of 18 pages</b><span style="margin-left:auto;font:11px var(--mono)">100%</span></div><div class="ln-ag__bar2"><i style="width:100%"></i></div>') +
+          P(3, 'Citations', 'ln-ag__box', '<span class="ln-ag__lbl">2 clauses flagged</span><div class="ln-ag__row"><b>Auto-renews every 12 months</b><span class="ln-ag__cite">§7.2 · p.6</span><span class="ln-ag__risk ln-ag__risk--h">High</span></div><div class="ln-ag__row"><b>Liability capped at 1× fees</b><span class="ln-ag__cite">§11 · p.9</span><span class="ln-ag__risk ln-ag__risk--m">Med</span></div>') +
+          P(4, 'Caveat', 'ln-ag__note', 'ⓘ Flags are a first pass, not legal advice.') +
+          P(5, 'Action confirmation', 'ln-ag__box ln-ag__box--ac', '<b style="font-weight:600">Apply 2 redlines?</b><div class="ln-ag__note">Nothing changes until legal approves.</div><div class="ln-ag__acts"><span class="ln-ag__btn">Review</span><span class="ln-ag__btn ln-ag__btn--p">Send to legal</span></div>') +
+          '</div><div class="ln-ag__foot">' + P(1, 'Open input', '', '<div class="ln-ag__in"><span class="ln-ag__file">' + CLIP + 'MSA-Northwind.pdf</span><em>Review this contract</em>' + SEND + '</div>') + '</div>' },
+      { q: 'A research agent that compares sources and remembers what I’ve already read.', file: 'app/research/page.tsx',
+        steps: [['Stream of thought', 'shows its plan before it searches'], ['Citations', 'numbered sources on every claim'], ['Confidence', 'where sources agree and where they don’t'], ['Memory', 'skips what you’ve already read'], ['Suggested prompts', 'good next questions']],
+        app: hd('Research', 'AI pricing') + '<div class="ln-ag__grow">' +
+          P(1, 'Stream of thought', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Search 12 sources</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Compare pricing models</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Draft a short brief</b></div>') +
+          P(2, 'Citations', 'ln-ag__ans', 'Most teams price AI features per seat <span class="ln-ag__cite">1</span><span class="ln-ag__cite">2</span>, but usage-based pricing is growing fast <span class="ln-ag__cite">3</span>.') +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">' + P(3, 'Confidence', 'ln-ag__badge ln-ag__badge--ok', '3 sources agree · 1 disagrees', 'span') + '</div>' +
+          P(4, 'Memory', 'ln-ag__box', '<div class="ln-ag__row"><b>Skipped 4 sources you’ve read</b><span class="ln-ag__tog" aria-hidden="true"></span></div>') +
+          '</div><div class="ln-ag__foot">' + P(5, 'Suggested prompts', 'ln-ag__chips', '<span class="ln-ag__chip">Go deeper on usage pricing</span><span class="ln-ag__chip">Compare with last quarter</span>') +
+          '<div class="ln-ag__in"><em>Ask a follow-up…</em>' + SEND + '</div></div>' }
+    ];
+    var btns = $$('.c2-scn button'), tabsEl = $('.c2-scn');
+    var qEl = $('[data-ag-q]', win), stepsEl = $('[data-ag-steps]', win), done = $('[data-ag-done]', win), fileEl = $('[data-ag-file]', win), app = $('[data-ag-app]', win);
+    var flows = $$('.c2-step');
+    var cur = 0, timers = [], visible = false, hover = false, started = false;
+    function clear() { timers.forEach(clearTimeout); timers = []; }
+    function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+    function flow(ph, ms) {
+      flows.forEach(function (li, k) {
+        var b = $('.c2-step__bar i', li);
+        li.classList.toggle('is-on', k === ph);
+        b.style.transition = 'none'; b.style.transform = 'scaleX(' + (k < ph ? 1 : 0) + ')';
+        if (k === ph) { void b.offsetWidth; b.style.transition = 'transform ' + ms + 'ms linear'; b.style.transform = 'scaleX(1)'; }
+      });
+    }
+    function render(i, final) {
+      var s = SC[i];
+      app.innerHTML = s.app;
+      stepsEl.innerHTML = '<li><i class="ln-ag__ic"></i><span>Connected to <b>Nucleux MCP</b> · reading the pattern library</span></li>' +
+        s.steps.map(function (st) { return '<li><i class="ln-ag__ic"></i><span>Picked <span class="ln-ag__pat">' + st[0] + '</span> — ' + st[1] + '</span></li>'; }).join('');
+      fileEl.innerHTML = 'Built <code>' + s.file + '</code> with ' + s.steps.length + ' Nucleux patterns';
+      if (final) {
+        qEl.textContent = s.q;
+        $$('li', stepsEl).forEach(function (li) { li.classList.add('is-in', 'is-ok'); });
+        $$('.ln-ag__p', app).forEach(function (p) { p.classList.add('is-in'); });
+        done.classList.add('is-in');
+      } else { qEl.textContent = ''; done.classList.remove('is-in'); }
+    }
+    function select(i, focus) {
+      cur = i;
+      btns.forEach(function (b, k) { var on = k === i; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+      if (focus) btns[i].focus();
+      var b = btns[i]; if (tabsEl && b) { var l = b.offsetLeft - 16, r = b.offsetLeft + b.offsetWidth + 16; if (l < tabsEl.scrollLeft || r > tabsEl.scrollLeft + tabsEl.clientWidth) tabsEl.scrollTo({ left: l, behavior: still ? 'auto' : 'smooth' }); }
+    }
+    function play(i) {
+      clear(); select(i);
+      if (still) { render(i, true); flows.forEach(function (li) { $('.c2-step__bar i', li).style.transform = 'scaleX(1)'; li.classList.add('is-on'); }); return; }
+      render(i, false);
+      app.classList.remove('is-swap'); void app.offsetWidth; app.classList.add('is-swap');
+      var s = SC[i], lis = $$('li', stepsEl), t = 350, k = 0;
+      win.classList.add('is-typing');
+      var typeMs = Math.ceil(s.q.length / 2) * 26 + 650;
+      flow(0, typeMs);
+      (function type() { if (k <= s.q.length) { qEl.textContent = s.q.slice(0, k); k += 2; at(26, type); } })();
+      t += Math.ceil(s.q.length / 2) * 26 + 300;
+      at(t, function () { win.classList.remove('is-typing'); });
+      var pickMs = 900 + (lis.length - 1) * 1150 + lis.length * 120 + 500;
+      at(t, function () { flow(1, pickMs); });
+      lis.forEach(function (li, n) {
+        at(t, function () { li.classList.add('is-in', 'is-run'); });
+        t += n === 0 ? 900 : 1150;
+        at(t, function () {
+          li.classList.remove('is-run'); li.classList.add('is-ok');
+          if (n === 0) return;
+          var ps = $$('[data-p="' + n + '"]', app);
+          ps.forEach(function (p, j) { setTimeout(function () { p.classList.add('is-in', 'is-new'); }, j * 120); });
+          setTimeout(function () { ps.forEach(function (p) { p.classList.remove('is-new'); }); }, 1500);
+        });
+        t += 120;
+      });
+      t += 500;
+      at(t, function () { done.classList.add('is-in'); flow(2, 3600); });
+      t += 3600;
+      at(t, function () { next(); });
+    }
+    function next() { if (!visible || hover) { at(800, next); return; } play((cur + 1) % SC.length); }
+    btns.forEach(function (b, k) {
+      b.addEventListener('click', function () { play(k); });
+      b.addEventListener('keydown', function (e) { var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); var n = (k + d + btns.length) % btns.length; play(n); btns[n].focus(); } });
+    });
+    win.addEventListener('pointerenter', function () { hover = true; });
+    win.addEventListener('pointerleave', function () { hover = false; });
+    render(0, true); select(0);
+    if (still) flows.forEach(function (li) { $('.c2-step__bar i', li).style.transform = 'scaleX(1)'; li.classList.add('is-on'); });
+    else onView(win, function (v) { visible = v; if (v && !started) { started = true; play(0); } }, { threshold: 0.35 });
+  })();
+
+  /* ── A chat box isn't a product: each switch folds its pattern into the same chat ── */
+  (function () {
+    var chat = $('.c2-chat'), demo = $('.c2-demo'), needs = $$('.c2-need'), cnt = $('[data-on]'), touched = false;
+    function set(need, on) {
+      var li = $('[data-need="' + need + '"]'), sw = $('.c2-sw', li);
+      sw.setAttribute('aria-checked', String(on)); li.classList.toggle('is-on', on);
+      if (on) chat.setAttribute('data-' + need, ''); else chat.removeAttribute('data-' + need);
+      var n = needs.filter(function (l) { return l.classList.contains('is-on'); }).length;
+      cnt.textContent = n; demo.classList.toggle('is-product', n === 4);
+    }
+    needs.forEach(function (li) {
+      var sw = $('.c2-sw', li);
+      sw.addEventListener('click', function () { touched = true; set(li.getAttribute('data-need'), sw.getAttribute('aria-checked') !== 'true'); });
+    });
+    var order = ['working', 'sources', 'ask', 'recover'];
+    if (still) { order.forEach(function (n) { set(n, true); }); return; }
+    var played = false;
+    onView(demo, function (v) {
+      if (!v || played) return; played = true;
+      order.forEach(function (n, i) { setTimeout(function () { if (!touched) set(n, true); }, 900 + i * 1300); });
+    }, { threshold: 0.45 });
+  })();
+
+  /* ── Pattern lifecycle: four moments; counts and names from the live library data ── */
+  (function () {
+    var STAGES = [
+      { id: 'onboarding', tile: 'onb', name: 'Before first use', line: 'Say it\'s AI, what it can and can\'t do, and ask for consent before it starts.', n: 12 },
+      { id: 'initially', tile: 'ini', name: 'First prompt', line: 'Help people know what to ask: the input, suggestions, examples and voice.', n: 24 },
+      { id: 'during', tile: 'dur', name: 'While it works', line: 'Progress, answers with sources, approvals, and what happens when it slips.', n: 42 },
+      { id: 'overtime', tile: 'ovr', name: 'Over time', line: 'What it remembers, what changed, and how people stay in control of it.', n: 11 }
+    ];
+    var sec = $('#patterns'), tabs = $$('.c2-stage-btn'), panel = $('#st-panel'), text = $('[data-life-text]'), frames = $$('.c2-life__view iframe'), cur = 0;
+    function lib(i) {
+      var L = window.LIBRARY; if (!L || !L.stages) return null;
+      var st = L.stages.filter(function (s) { return s.id === STAGES[i].id; })[0]; if (!st) return null;
+      var names = [], n = 0; st.subcats.forEach(function (c) { n += c.patterns.length; c.patterns.forEach(function (p) { names.push(p.name); }); });
+      return { n: n, groups: st.subcats.map(function (c) { return c.title; }), names: names };
+    }
+    function counts() {
+      var total = 0, any = false;
+      STAGES.forEach(function (s, i) { var d = lib(i); if (d) { s.n = d.n; any = true; } total += s.n; var el = $('[data-stage-count="' + i + '"]'); if (el) el.textContent = s.n; });
+      $$('[data-total]').forEach(function (el) { el.textContent = total; });
+      return any;
+    }
+    function paint(i) {
+      var s = STAGES[i], d = lib(i);
+      var names = d ? d.names.slice(0, 8) : [];
+      text.innerHTML = '<div class="c2-life__swap"><div class="c2-life__count"><b>' + (d ? d.n : s.n) + '</b><span>patterns · moment 0' + (i + 1) + '</span></div>' +
+        '<h3>' + s.name + '</h3><p>' + s.line + '</p>' +
+        (d ? '<p class="c2-life__groups">' + d.groups.join(' · ') + '</p>' : '') +
+        (names.length ? '<ul class="c2-life__names">' + names.map(function (n) { return '<li>' + n + '</li>'; }).join('') + '</ul>' : '<div style="height:18px"></div>') +
+        '<a class="c2-link" href="library#stage-' + s.id + '">See all ' + (d ? d.n : s.n) + ' patterns <span aria-hidden="true">→</span></a></div>';
+      frames.forEach(function (f, k) {
+        if (k === i) { if (!f.getAttribute('src')) f.src = 'pg-preview/moments.html?v=4&tile=' + f.getAttribute('data-tile'); f.hidden = false; }
+        else f.hidden = true;
+      });
+    }
+    function select(i, focus) {
+      cur = i;
+      tabs.forEach(function (b, k) { var on = k === i; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+      panel.setAttribute('aria-labelledby', 'st-' + i);
+      sec.style.setProperty('--p', i);
+      if (focus) tabs[i].focus();
+      paint(i);
+    }
+    tabs.forEach(function (b, k) {
+      b.addEventListener('click', function () { select(k); });
+      b.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { e.preventDefault(); select((k + d + tabs.length) % tabs.length, true); }
+      });
+    });
+    addEventListener('message', function (e) {
+      if (!e.data || e.data.type !== 'mo-height') return;
+      frames.forEach(function (f) { if (f.contentWindow === e.source) f.style.height = Math.max(160, e.data.h) + 'px'; });
+    });
+    /* patterns.js is deferred: paint once with the fallback numbers, again when the data arrives */
+    select(0);
+    function withData() { if (counts()) paint(cur); }
+    if (window.LIBRARY) withData(); else addEventListener('DOMContentLoaded', withData);
+  })();
+
+  /* ── Developers: wires light up in view, tabs, copy ── */
+  (function () {
+    var dev = $('#developers');
+    onView(dev, function (v) { dev.classList.toggle('is-live', v); }, { threshold: 0.15 });
+    var nodes = $$('.c2-node'), ni = 0;
+    if (!still) setInterval(function () { if (!dev.classList.contains('is-live')) return; nodes.forEach(function (n, k) { n.classList.toggle('is-on', k === ni); }); ni = (ni + 1) % nodes.length; }, 1400);
+    var esc = function (t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+    var MCP = 'https://nucleux.in/mcp';
+    var TABS = {
+      agent: { file: 'Paste into your AI agent',
+        text: 'Use Nucleux for the AI screens in this project.\n\n1. Connect the Nucleux MCP server: ' + MCP + '\n2. Before you build any AI screen, ask Nucleux which patterns fit it,\n   and follow each pattern\'s "when not to use" guidance.\n3. Build with @nucleux/react components and our existing theme.\n4. Show me the plan before you change any files.',
+        note: 'Using Claude Code? Add the server first: <code>claude mcp add --transport http nucleux ' + MCP + '</code>. Cursor, Codex, VS Code and others: <a href="mcp">MCP setup →</a>' },
+      react: { file: 'Chat.tsx',
+        text: "npm install @nucleux/react\n\nimport { Thread, Message, AgentComposer } from '@nucleux/react'\n\nfunction Chat({ messages, input, setInput, onSend, busy }) {\n  return (\n    <Thread autoScrollKey={messages.length}>\n      {messages.map((m) => (\n        <Message key={m.id} role={m.role} content={m.text} streaming={m.streaming} />\n      ))}\n      <AgentComposer value={input} onValueChange={setInput}\n        onSubmit={onSend} loading={busy} placeholder=\"Ask anything…\" />\n    </Thread>\n  )\n}",
+        note: 'Theming with Tailwind and all ~50 packages: <a href="docs">Read the Docs →</a>' },
+      figma: { file: 'Design kit',
+        text: '1. Open the Nucleux design kit\n2. Pick a moment: Before first use, First prompt, While it works, Over time\n3. Every pattern comes with all its states, tokens and specs\n4. Swap the tokens for your brand — every pattern follows',
+        note: 'The kit lives in the Design System: <a href="design-system">Open the design kit →</a>' }
+    };
+    function paint(text, kind) {
+      var h = esc(text);
+      if (kind === 'react') h = h.replace(/(\bimport\b|\bfrom\b|\bfunction\b|\breturn\b)/g, '<span class="k">$1</span>').replace(/('[^']*'|"[^"]*")/g, '<span class="s">$1</span>').replace(/^(npm install .*)$/m, '<span class="c">$1</span>');
+      if (kind === 'agent') h = h.replace(/(https:\/\/nucleux\.in\/mcp|@nucleux\/react)/g, '<span class="k">$1</span>');
+      return h;
+    }
+    var tabs = $$('.c2-tabs button'), code = $('[data-code]'), pre = code.parentNode, file = $('[data-file]'), note = $('[data-note]'), panel = $('#dp-code'), curTab = 'agent';
+    function fill(id) {
+      var t = TABS[id]; code.innerHTML = paint(t.text, id); file.textContent = t.file; note.innerHTML = t.note; panel.setAttribute('aria-labelledby', 'dt-' + id);
+      if (root.classList.contains('c2-file')) $$('a', note).forEach(function (a) { var h = a.getAttribute('href'); if (!/\./.test(h)) a.setAttribute('href', h + '.html'); });
+      pre.classList.remove('is-swap'); void pre.offsetWidth; pre.classList.add('is-swap');
+    }
+    function selectTab(id, focus) {
+      curTab = id;
+      var b = tabs.filter(function (x) { return x.getAttribute('data-tab') === id; })[0];
+      tabs.forEach(function (x) { var on = x === b; x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; });
+      if (focus) b.focus(); fill(id);
+    }
+    tabs.forEach(function (b, k) {
+      b.addEventListener('click', function () { selectTab(b.getAttribute('data-tab')); });
+      b.addEventListener('keydown', function (e) { var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); selectTab(tabs[(k + d + tabs.length) % tabs.length].getAttribute('data-tab'), true); } });
+    });
+    fill('agent');
+    var cp = $('.c2-copy');
+    cp.addEventListener('click', function () {
+      var text = TABS[curTab].text;
+      function ok() { cp.classList.add('is-done'); cp.setAttribute('aria-label', 'Copied'); setTimeout(function () { cp.classList.remove('is-done'); cp.setAttribute('aria-label', 'Copy'); }, 1600); }
+      function legacy() { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); ok(); }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, legacy); else legacy();
+    });
+    /* "I'm building with an AI agent" lands on the agent prompt */
+    $$('[data-tab="agent"]').forEach(function (a) { if (a.tagName === 'A') a.addEventListener('click', function () { selectTab('agent'); }); });
+  })();
+})();
+</script>
+</body>
+</html>

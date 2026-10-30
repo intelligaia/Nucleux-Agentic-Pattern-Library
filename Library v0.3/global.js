@@ -628,7 +628,7 @@
   }
   function openActiveSearch() {
     const row = $$(".nx-search__row")[searchActiveIdx];
-    if (row) location.href = row.getAttribute("href");
+    if (row) location.href = (window.nxFileURL ? window.nxFileURL(row.getAttribute("href")) : null) || row.getAttribute("href");
   }
 
   // ───────────────────────────────────────────────────────
@@ -1360,7 +1360,7 @@
   }
   /* pages that live under another destination in the menu */
   var SECTION_OF = { "scenario": "practices", "sandbox": "practices" };
-  /* "library", "library.html", "/library" and "https://nucleux.in/library"
+  /* "library", "library", "/library" and "https://nucleux.in/library"
      all name the same page; "", "/" and "index-v2" are home. */
   function pageName(url) {
     var p = String(url).split(/[?#]/)[0].toLowerCase().split("/").pop().replace(/\.html$/, "");
@@ -1436,7 +1436,7 @@
           { title: "Basic Components", desc: "Buttons, inputs, cards and the other foundational building blocks.", href: "basic-components" },
           { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for AI-native flows.", href: "library" } ] },
         { id: "material", label: "Material 3.0", rows: [
-          { title: "Basic Components", desc: "Coming soon", href: null },
+          { title: "Basic Components", desc: "Buttons, chips, fields and navigation on Material 3 system tokens.", href: "material-basic" },
           { title: "Agentic Components", desc: "Task, reasoning and agent-state components built for agentic flows, with M3 Expressive experiences.", href: "material-agentic" } ] }
       ];
       var intent = intents[l.label] || "";
@@ -1620,3 +1620,150 @@
   if (document.readyState !== "loading") wrapCodeBlocks();
   else document.addEventListener("DOMContentLoaded", wrapCodeBlocks);
 })();
+
+
+/* ── Clean URLs when the site is opened as files ───────────────
+   Links are written the way nucleux.in serves them: /library,
+   /material-pattern?id=…, / for home. A web server (or serve.py)
+   maps those to the .html files; a page opened straight from the
+   folder (file://) cannot, so every internal link would point at a
+   file that does not exist. Only on file://, this sends those links
+   (and the address the pattern pages push into the history) to the
+   real file. Over http nothing here runs. */
+(function () {
+  if (location.protocol !== "file:") return;
+  var me = document.currentScript && document.currentScript.src;
+  var SITE = me ? me.replace(/[^/]*$/, "") : location.href.replace(/[?#].*$/, "").replace(/[^/]*$/, "");
+  function fix(href) {
+    if (href == null) return null;
+    var raw = String(href).trim();
+    if (!raw || raw.charAt(0) === "#" || /^(mailto|tel|javascript|data|blob):/i.test(raw)) return null;
+    var u; try { u = new URL(raw, document.baseURI); } catch (e) { return null; }
+    if (u.protocol !== "file:") return null;
+    var path = u.pathname;
+    if (path === "/" || path === "") path = new URL(SITE).pathname + "index-v2.html";      /* "/" = home */
+    else if (path.charAt(path.length - 1) === "/") return null;                             /* a folder */
+    else {
+      var seg = path.slice(path.lastIndexOf("/") + 1);
+      if (seg.indexOf(".") !== -1) return null;                                             /* already a file */
+      path += ".html";
+    }
+    var out = "file://" + path + u.search + u.hash;
+    return out === u.href ? null : out;
+  }
+  window.nxFileURL = fix;
+  function link(e) { var a = e.target && e.target.closest && e.target.closest("a[href]"); return a && !a.hasAttribute("download") ? a : null; }
+  /* Plain clicks: after the page's own routers have had their turn. */
+  window.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = link(e); if (!a) return;
+    var to = fix(a.getAttribute("href")); if (!to) return;
+    e.preventDefault();
+    if (a.target && a.target !== "_self") window.open(to, a.target); else location.href = to;
+  });
+  /* New tab / new window / copy link: correct the href itself first. */
+  function fixAttr(e) {
+    var a = link(e); if (!a) return;
+    var to = fix(a.getAttribute("href")); if (to) a.setAttribute("href", to);
+  }
+  document.addEventListener("auxclick", fixAttr, true);
+  document.addEventListener("contextmenu", fixAttr, true);
+  document.addEventListener("mousedown", function (e) { if (e.button === 1 || e.metaKey || e.ctrlKey || e.shiftKey) fixAttr(e); }, true);
+  /* Pattern pages write clean addresses into the history; keep them reloadable. */
+  ["pushState", "replaceState"].forEach(function (m) {
+    var orig = history[m];
+    history[m] = function (state, title, url) {
+      if (url != null) { var to = fix(url); if (to) url = to; }
+      return orig.call(history, state, title, url);
+    };
+  });
+  /* An address that arrived clean (a bookmark, or a reload before this ran). */
+  var here = fix(location.href);
+  if (here) location.replace(here);
+})();
+
+
+/* ── Concept home: keep visitors on the new home page ──────────
+   index-new-concept.html is a concept of the home page. Once someone
+   opens it, every link back to home ("/", index, index-v2 — the logo,
+   footer and any other home link on every page) takes them to the
+   concept instead, for the rest of that browser tab's visit, so they
+   can move between Components, Scenarios, Docs, MCP and Labs and come
+   back to the same home. Opening index-v2 (or "/") directly ends it.
+   Nothing changes for anyone who never opens the concept page. */
+(function () {
+  var KEY = "nx-home", CONCEPT = "index-new-concept";
+  var ss; try { ss = window.sessionStorage; ss.getItem(KEY); } catch (e) { ss = null; }
+  if (!ss) return;
+  function page(p) { return (p || "").replace(/\/+$/, "/").replace(/^.*\//, "").replace(/\.html$/, ""); }
+  var here = page(location.pathname);
+  if (here === CONCEPT) ss.setItem(KEY, CONCEPT);
+  else if (here === "" || here === "index" || here === "index-v2") ss.removeItem(KEY);
+  if (ss.getItem(KEY) !== CONCEPT) return;
+  function isHome(href) {
+    if (href == null) return false;
+    var raw = String(href).trim();
+    if (!raw || raw.charAt(0) === "#" || /^(mailto|tel|javascript|data|blob):/i.test(raw)) return false;
+    var u; try { u = new URL(raw, document.baseURI); } catch (e) { return false; }
+    if (u.origin !== location.origin && u.protocol !== "file:") return false;
+    if (u.protocol === "file:" && location.protocol !== "file:") return false;
+    var p = page(u.pathname);
+    if (u.protocol === "file:" && /\/$/.test(u.pathname) && u.pathname !== "/") return false;
+    return p === "" || p === "index" || p === "index-v2";
+  }
+  function to(href) {
+    var u = new URL(String(href).trim(), document.baseURI);
+    if (location.protocol === "file:") {
+      var dir = (document.currentScript && document.currentScript.src || location.href).replace(/[?#].*$/, "").replace(/[^/]*$/, "");
+      return dir + CONCEPT + ".html" + u.hash;
+    }
+    return "/" + CONCEPT + u.hash;
+  }
+  var me = document.currentScript && document.currentScript.src;
+  function fixAll(root) {
+    (root || document).querySelectorAll("a[href]").forEach(function (a) {
+      if (a.hasAttribute("data-nx-home")) return;
+      var h = a.getAttribute("href");
+      if (isHome(h)) { a.setAttribute("data-nx-home", h); a.setAttribute("href", to(h)); }
+    });
+  }
+  function start() {
+    fixAll();
+    if ("MutationObserver" in window) new MutationObserver(function (ms) {
+      ms.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) { if (n.matches && n.matches("a[href]")) fixAll(n.parentNode); else fixAll(n); } }); });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  /* belt and braces: a home link the scan missed is caught on click */
+  window.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest && e.target.closest("a[href]"); if (!a) return;
+    if (!isHome(a.getAttribute("href"))) return;
+    e.preventDefault(); location.href = to(a.getAttribute("href"));
+  }, true);
+})();
+
+
+/* ── Copy buttons ─────────────────────────────────────────────
+   Every copy control is the same .nx-copy icon button (styles.css).
+   nxCopied(btn) shows the check for a moment; nxCopy(btn, text) puts
+   the text on the clipboard first, with a fallback for the plain-http
+   review server, where navigator.clipboard is missing.
+   ============================================================ */
+window.nxCopied = function (btn) {
+  btn.classList.add("is-done");
+  btn.setAttribute("aria-label", "Copied");
+  clearTimeout(btn._nxCopyT);
+  btn._nxCopyT = setTimeout(function () { btn.classList.remove("is-done"); btn.setAttribute("aria-label", "Copy"); }, 1600);
+};
+window.nxCopy = function (btn, text) {
+  function legacy() {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta); window.nxCopied(btn);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { window.nxCopied(btn); }, legacy);
+  else legacy();
+};

@@ -1,0 +1,4038 @@
+[
+  {
+    "stage": "Onboarding",
+    "category": "Trust & Disclosure",
+    "id": "disclosure",
+    "name": "Disclosure",
+    "oneline": "Makes it clear where AI is involved — an AI action, an agent at work, or content AI produced — at the point it matters.",
+    "built": true,
+    "initial": "resting",
+    "states": [
+      {
+        "key": "resting",
+        "label": "Resting",
+        "trigger": "Nothing has been chosen for AI to act on yet.",
+        "behaviour": "The AI action control: the AI action mark and its verb. Nothing is labelled — AI has not done anything yet.",
+        "meaning": "Nothing here came from AI. The one control that would use it is recognisable.",
+        "action": "Press Rewrite to choose what it applies to.",
+        "next": "AI action available",
+        "roles": null
+      },
+      {
+        "key": "action",
+        "label": "AI action available",
+        "trigger": "Something is selected, so Rewrite now applies to it.",
+        "behaviour": "Rewrite becomes available and says, in words, what it will do and that nothing is replaced until they review it.",
+        "meaning": "Pressing Rewrite asks AI to change the selection — before anything has happened.",
+        "action": "Press Rewrite, or keep editing by hand.",
+        "next": "AI working",
+        "roles": null
+      },
+      {
+        "key": "working",
+        "label": "AI working",
+        "trigger": "Rewrite was pressed.",
+        "behaviour": "The action mark becomes the working mark and the button reads “Rewriting…”. Progress and Stop sit with it, and a screen reader hears “Agent working”. Nothing changes until the result arrives.",
+        "meaning": "The agent is doing it now. This is not the result yet.",
+        "action": "Wait, or Stop.",
+        "next": "AI-generated content",
+        "roles": null
+      },
+      {
+        "key": "generated",
+        "label": "AI-generated content",
+        "trigger": "The rewrite came back.",
+        "behaviour": "The “Generated with AI” label, attached to the content it describes, with Undo.",
+        "meaning": "This content was written by AI — and it has not been checked.",
+        "action": "Open the label for details, keep editing, or Undo.",
+        "next": "Additional details",
+        "roles": null
+      },
+      {
+        "key": "details",
+        "label": "Additional details",
+        "trigger": "The label was pressed.",
+        "behaviour": "The label opens a panel in place: what Aria did, what it used, what it did not check, and that the original is kept. No model names or pipeline detail.",
+        "meaning": "What the agent did, in terms they can judge without technical knowledge.",
+        "action": "Show the original, close the details, or Undo.",
+        "next": "AI-generated content",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A release note three people wrote. Ask Aria to rewrite your paragraph and watch the three meanings stay apart: the <b>action</b> says what it will do, the <b>working</b> state says it is doing it, and the <b>result</b> says it came from AI — then open the document as the reviewer and check the label is still there.",
+    "api": "AiDisclosure",
+    "intent": "Answers “where is AI involved here?” at the moment it matters: the action that will use AI says so before it runs, the agent’s work is visibly in progress, and what it produced is labelled where it sits — so people can judge it.",
+    "when": "Wherever AI acts on something a person owns or will rely on: a rewrite in an editor, a drafted reply, a generated summary, a filled field. Mark the action before it runs, the work while it runs, and the result for as long as it is on the page — including for the colleague who opens it later.",
+    "whenNot": "",
+    "dir": "01-onboarding/01-trust-disclosure/01-disclosure",
+    "packages": [
+      "@nucleux/ai-disclosure",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-icon-button",
+      "@nucleux/md3-progress",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        4624,
+        4910
+      ],
+      "sim": [
+        1000,
+        1162
+      ],
+      "docs": [
+        25,
+        205
+      ]
+    },
+    "shots": {
+      "resting": "states/01-resting.webp",
+      "action": "states/02-ai-action-available.webp",
+      "working": "states/03-ai-working.webp",
+      "generated": "states/04-ai-generated-content.webp",
+      "details": "states/05-additional-details.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Trust & Disclosure",
+    "id": "consent",
+    "name": "Consent",
+    "oneline": "Asks before the agent accesses something sensitive or takes an important action — what, why, the scope, and two real choices.",
+    "built": true,
+    "initial": "required",
+    "states": [
+      {
+        "key": "required",
+        "label": "Consent required",
+        "trigger": "The agent reached something it may not do without permission.",
+        "behaviour": "Work pauses at that step. The request names what is asked, why this task needs it, the scope, and what happens next — with two choices of equal size. Nothing is preselected.",
+        "meaning": "Nothing has been accessed or done. It is waiting for them.",
+        "action": "Continue, Not now, or review the details first.",
+        "next": "Approved, Denied, or Reviewing access",
+        "roles": null
+      },
+      {
+        "key": "reviewing",
+        "label": "Reviewing access",
+        "trigger": "Review details was pressed.",
+        "behaviour": "The request opens in place: the account, where activity is shown, and how to turn it off later. The choices stay where they were.",
+        "meaning": "Exactly what they are agreeing to, before they agree.",
+        "action": "Decide.",
+        "next": "Approved or Denied",
+        "roles": null
+      },
+      {
+        "key": "approved",
+        "label": "Approved",
+        "trigger": "They chose to allow it.",
+        "behaviour": "A short confirmation replaces the request: what was allowed, for how long, and where to take it back. The task continues.",
+        "meaning": "Permission was given — only what was shown.",
+        "action": "Carry on, review it, or turn it off.",
+        "next": "The task continues · Revoked · Expired",
+        "roles": null
+      },
+      {
+        "key": "denied",
+        "label": "Denied",
+        "trigger": "They chose Not now.",
+        "behaviour": "Nothing is accessed or done. Their request and the conversation are kept, and the product offers another way to continue.",
+        "meaning": "No was a real answer, and the rest of the product still works.",
+        "action": "Continue without it, use another source, or allow it after all.",
+        "next": "The task continues without it",
+        "roles": null
+      },
+      {
+        "key": "expired",
+        "label": "Expired",
+        "trigger": "Permission given earlier no longer applies.",
+        "behaviour": "The request comes back with the reason it is being asked again — time, or what changed — rather than as if it were the first time.",
+        "meaning": "Why they are being asked again, so the repeat is not noise.",
+        "action": "Allow again, or not.",
+        "next": "Approved or Denied",
+        "roles": null
+      },
+      {
+        "key": "revoked",
+        "label": "Revoked",
+        "trigger": "They turned the permission off.",
+        "behaviour": "Access stops at once. What was already read or done is stated plainly; nothing new happens until they allow it again.",
+        "meaning": "They are back in control, and they can see where things stand.",
+        "action": "Allow again later, if they want to.",
+        "next": "Consent required, the next time it is needed",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "The request is ordinary; the permission is a consequence of it. Send it, and the agent stops at the one step it is not allowed to take. <b>Continue</b> and <b>Not now</b> both lead somewhere useful.",
+    "api": "Md3ActionConfirmation",
+    "intent": "Answers “do I want to allow the agent to do this?” at the moment access or an action is needed — with what is asked, why this task needs it, exactly what it covers, and two real choices. Nothing happens before the answer, and no answer costs the person their work.",
+    "when": "Before the agent reads data it was not given, before an action others will see or that is hard to undo, and before a permission outlives the conversation. Ask again only when something changed — it expired, or the thing being approved is different — and say why.",
+    "whenNot": "",
+    "dir": "01-onboarding/01-trust-disclosure/02-consent",
+    "packages": [
+      "@nucleux/md3-action-confirmation",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-checkbox",
+      "@nucleux/md3-list",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        4928,
+        5202
+      ],
+      "sim": [
+        585,
+        798
+      ],
+      "docs": [
+        210,
+        312
+      ]
+    },
+    "shots": {
+      "required": "states/01-consent-required.webp",
+      "reviewing": "states/02-reviewing-access.webp",
+      "approved": "states/03-approved.webp",
+      "denied": "states/04-denied.webp",
+      "expired": "states/05-expired.webp",
+      "revoked": "states/06-revoked.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Trust & Disclosure",
+    "id": "caveat",
+    "name": "Caveat",
+    "oneline": "Says what is incomplete, uncertain or out of date about this result — attached to it, with a next step.",
+    "built": true,
+    "initial": "visible",
+    "states": [
+      {
+        "key": "none",
+        "label": "No caveat needed",
+        "trigger": "Every source was read and nothing about the result is in doubt.",
+        "behaviour": "The result on its own. No empty notice, no standing “AI can make mistakes” line.",
+        "meaning": "There is nothing specific to be careful about.",
+        "action": "Use the result.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "visible",
+        "label": "Caveat visible",
+        "trigger": "Two of the eight interviews could not be opened.",
+        "behaviour": "One note at the foot of the summary it qualifies: what is missing, why it matters, and what to do. Calm tokens, not the error colour. The summary stays — nothing was removed because it is incomplete.",
+        "meaning": "This summary reflects 6 of 8 interviews and may miss something.",
+        "action": "Review sources, or reconnect the missing ones.",
+        "next": "Details expanded, or Resolved",
+        "roles": null
+      },
+      {
+        "key": "expanded",
+        "label": "Details expanded",
+        "trigger": "Review sources was pressed.",
+        "behaviour": "The note opens in place to list what was read and what was not, each with its reason.",
+        "meaning": "Exactly which inputs are behind the result, and which are not.",
+        "action": "Reconnect, or close.",
+        "next": "Resolved",
+        "roles": null
+      },
+      {
+        "key": "resolved",
+        "label": "User resolves the issue",
+        "trigger": "They reconnected the folder and Aria re-read the missing interviews.",
+        "behaviour": "The note becomes a short confirmation of what changed — all 8 read, one theme added — and the new line is marked in the summary.",
+        "meaning": "The gap is closed, and they can see what it changed.",
+        "action": "Read the update, then dismiss it.",
+        "next": "No longer relevant",
+        "roles": null
+      },
+      {
+        "key": "gone",
+        "label": "Caveat no longer relevant",
+        "trigger": "The reason for the caveat is gone.",
+        "behaviour": "The caveat leaves with its reason. The summary stands on its own, now from all eight.",
+        "meaning": "Nothing about this result needs special care any more.",
+        "action": "Use the result.",
+        "next": "—",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Limitation → explanation → recovery → resolution. Ask for the summary; two interviews will not open, and the caveat says exactly that — then reconnect them and watch it go. Compare it with the generic line.",
+    "api": "AiCaveat",
+    "intent": "Answers “what should I be careful about with this result?” — specifically, attached to the result it qualifies, with why it matters and what to do next. It appears only when there is a real limitation and leaves when the reason for it is gone.",
+    "when": "When something about this result is meaningfully incomplete, uncertain, out of date or limited, and that changes how far it can be relied on. Not on results the product can stand behind, and never as a standing disclaimer.",
+    "whenNot": "",
+    "dir": "01-onboarding/01-trust-disclosure/03-caveat",
+    "packages": [
+      "@nucleux/ai-disclosure",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-list",
+      "@nucleux/md3-progress",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        5217,
+        5459
+      ],
+      "sim": [
+        1176,
+        1350
+      ],
+      "docs": [
+        317,
+        393
+      ]
+    },
+    "shots": {
+      "none": "states/01-no-caveat-needed.webp",
+      "visible": "states/02-caveat-visible.webp",
+      "expanded": "states/03-details-expanded.webp",
+      "resolved": "states/04-user-resolves-the-issue.webp",
+      "gone": "states/05-caveat-no-longer-relevant.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Identity",
+    "id": "avatar",
+    "name": "Avatar",
+    "oneline": "One mark for the agent on every surface — never mistakable for a person, with its working state on the mark itself.",
+    "built": true,
+    "initial": "resting",
+    "states": [
+      {
+        "key": "resting",
+        "label": "Resting",
+        "trigger": "The agent is present and idle.",
+        "behaviour": "The agent avatar (rounded square, agent role), its name and “AI agent”. No ring, no motion.",
+        "meaning": "The agent is here and available.",
+        "action": "—",
+        "next": "Active, or Working",
+        "roles": null
+      },
+      {
+        "key": "active",
+        "label": "Active",
+        "trigger": "The agent is engaged — listening, or assigned.",
+        "behaviour": "A still outline ring in md-primary around the same avatar, and the words “Active now”.",
+        "meaning": "The agent is engaged right now.",
+        "action": "—",
+        "next": "Working",
+        "roles": null
+      },
+      {
+        "key": "working",
+        "label": "Working",
+        "trigger": "The agent is doing something.",
+        "behaviour": "Md3CircularProgress turns around the same avatar, with “Working…” beside it. The mark itself does not change.",
+        "meaning": "The agent is working now.",
+        "action": "—",
+        "next": "Active",
+        "roles": null
+      },
+      {
+        "key": "compact",
+        "label": "Compact",
+        "trigger": "Space is tight: a list row, a chip, a notification.",
+        "behaviour": "The same mark at 24 — same shape, same container — with the name beside it.",
+        "meaning": "The same agent, in less space.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "fallback",
+        "label": "Fallback",
+        "trigger": "The approved image did not load.",
+        "behaviour": "The package fallback: the agent glyph on muted (or initials on brand). Shape and accessible label stay.",
+        "meaning": "Still the agent — only the picture is missing.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A meeting with two people and an agent. Ask Aria for a summary and watch its mark: it rings while it works, and it never looks like Maya or Jordan. Then break the image, or draw Aria like a person, and compare.",
+    "api": "Avatar",
+    "intent": "Answers “is that the agent, and is it doing something?” at a glance — in a meeting, a message, a list or a chip — without relying on colour, motion or a face.",
+    "when": "Anywhere the agent appears or acts next to people: meeting participants, messages, notifications, activity, mentions and the composer chip that addresses it.",
+    "whenNot": "",
+    "dir": "01-onboarding/02-identity/01-avatar",
+    "packages": [
+      "@nucleux/ai-disclosure",
+      "@nucleux/avatar",
+      "@nucleux/md3-button",
+      "@nucleux/md3-list",
+      "@nucleux/md3-message",
+      "@nucleux/md3-progress",
+      "@nucleux/md3-theme",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        5462,
+        5629
+      ],
+      "sim": [
+        1363,
+        1449
+      ],
+      "docs": [
+        397,
+        537
+      ]
+    },
+    "shots": {
+      "resting": "states/01-resting.webp",
+      "active": "states/02-active.webp",
+      "working": "states/03-working.webp",
+      "compact": "states/04-compact.webp",
+      "fallback": "states/05-fallback.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Identity",
+    "id": "name",
+    "name": "Name",
+    "oneline": "A short, consistent name and role for the agent — the same on every surface, never a real person’s name.",
+    "built": true,
+    "initial": "introduced",
+    "states": [
+      {
+        "key": "introduced",
+        "label": "Introduced",
+        "trigger": "The agent appears for the first time.",
+        "behaviour": "Avatar, name, role and “AI agent”, then one sentence: who runs it, what it does, and that it is not a person.",
+        "meaning": "This is Aria, an AI agent, and this is what it is for.",
+        "action": "—",
+        "next": "Standard",
+        "roles": null
+      },
+      {
+        "key": "standard",
+        "label": "Standard",
+        "trigger": "Anywhere the agent is named with room to spare.",
+        "behaviour": "The avatar with the name and the role beside it, in the same words as the introduction.",
+        "meaning": "This is Aria.",
+        "action": "—",
+        "next": "Compact, or Name updated",
+        "roles": null
+      },
+      {
+        "key": "compact",
+        "label": "Compact",
+        "trigger": "A chip, a notification, an activity line.",
+        "behaviour": "The name alone (or name · role) at 24 with the mark. The accessible name still includes the role.",
+        "meaning": "The same agent, briefly.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "multiple",
+        "label": "Multiple agents",
+        "trigger": "More than one agent in the same product.",
+        "behaviour": "Each has its own name, role and glyph, so they are told apart by more than colour.",
+        "meaning": "Which agent is which.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "updated",
+        "label": "Name updated",
+        "trigger": "An admin renamed the agent.",
+        "behaviour": "The new name with “formerly Aria” beside it, and an Md3Snackbar saying the role and permissions did not change — with Undo.",
+        "meaning": "Same agent, new name. Nothing else changed.",
+        "action": "Keep it, or undo.",
+        "next": "Standard",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "The same agent in the chat, the activity log and the email it sends. Ask a question, then rename it as an admin — or switch on inconsistent naming and see three products where there is one agent.",
+    "api": "AgentIdentity",
+    "intent": "Answers “who am I talking to, and what is it for?” — with a name people can say and refer to, a role that says what it does, and an introduction that says it is AI and who runs it.",
+    "when": "Whenever the agent is a participant people address or refer to — not for a single feature button.",
+    "whenNot": "",
+    "dir": "01-onboarding/02-identity/02-name",
+    "packages": [
+      "@nucleux/ai-disclosure",
+      "@nucleux/avatar",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-list",
+      "@nucleux/md3-message",
+      "@nucleux/md3-snackbar",
+      "@nucleux/md3-text-field",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        5632,
+        5825
+      ],
+      "sim": [
+        1463,
+        1534
+      ],
+      "docs": [
+        542,
+        629
+      ]
+    },
+    "shots": {
+      "introduced": "states/01-introduced.webp",
+      "standard": "states/02-standard.webp",
+      "compact": "states/03-compact.webp",
+      "multiple": "states/04-multiple-agents.webp",
+      "updated": "states/05-name-updated.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Identity",
+    "id": "personality",
+    "name": "Personality",
+    "oneline": "Lets people choose how the agent writes — with a preview — while permissions, facts and safety language stay exactly the same.",
+    "built": true,
+    "initial": "default",
+    "states": [
+      {
+        "key": "default",
+        "label": "Default",
+        "trigger": "The personality setting, first visit.",
+        "behaviour": "The recommended option, Calm &amp; precise, selected. Each option says how it writes; one line says permissions, facts and safety stay the same.",
+        "meaning": "This changes how the agent writes — nothing else.",
+        "action": "Choose another option.",
+        "next": "Preview",
+        "roles": null
+      },
+      {
+        "key": "preview",
+        "label": "Preview",
+        "trigger": "They chose Warm.",
+        "behaviour": "A sample reply in Warm. Nothing is applied until Apply.",
+        "meaning": "This is what Warm would sound like.",
+        "action": "Apply, or cancel.",
+        "next": "Applied",
+        "roles": null
+      },
+      {
+        "key": "applied",
+        "label": "Applied",
+        "trigger": "They pressed Apply.",
+        "behaviour": "Warm is selected and an Md3Snackbar confirms it, with Undo.",
+        "meaning": "The agent writes warmly from now on.",
+        "action": "Keep it, or undo.",
+        "next": "Changed",
+        "roles": null
+      },
+      {
+        "key": "changed",
+        "label": "Changed",
+        "trigger": "They are back in the conversation.",
+        "behaviour": "One quiet notice — “Personality changed to Warm. Facts, permissions and safety are unchanged.” — with Reset.",
+        "meaning": "The style changed; the rules did not.",
+        "action": "Carry on, or reset.",
+        "next": "Reset",
+        "roles": null
+      },
+      {
+        "key": "reset",
+        "label": "Reset",
+        "trigger": "They chose Reset to recommended.",
+        "behaviour": "Calm &amp; precise is selected again, with a snackbar that says so.",
+        "meaning": "Back to the recommended style.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Switch Aria between three personalities and read the same conversation each time. The reply changes; the permission request and the caveat do not. Then let a playful personality override them, and see what breaks.",
+    "api": "PersonalitySetting",
+    "intent": "Answers “how will this sound, and what will it not change?” — a small set of writing styles, previewed on the same messages before applying, with the trust language fixed in every one.",
+    "when": "When people spend long stretches with the agent and its default voice may not suit them. Not as a persona or a character that claims to be a person, and not in regulated output where tone reads as opinion.",
+    "whenNot": "",
+    "dir": "01-onboarding/02-identity/03-personality",
+    "packages": [
+      "@nucleux/ai-disclosure",
+      "@nucleux/md3-action-confirmation",
+      "@nucleux/md3-button",
+      "@nucleux/md3-list",
+      "@nucleux/md3-message",
+      "@nucleux/md3-radio",
+      "@nucleux/md3-segmented-button",
+      "@nucleux/md3-snackbar",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        5828,
+        6030
+      ],
+      "sim": [
+        1548,
+        1598
+      ],
+      "docs": [
+        634,
+        728
+      ]
+    },
+    "shots": {
+      "default": "states/01-default.webp",
+      "preview": "states/02-preview.webp",
+      "applied": "states/03-applied.webp",
+      "changed": "states/04-changed.webp",
+      "reset": "states/05-reset.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Identity",
+    "id": "iconography",
+    "name": "Iconography",
+    "oneline": "One Material Symbol per AI meaning — action, working, tool use, generated — always with words, never one sparkle for everything.",
+    "built": true,
+    "initial": "resting",
+    "states": [
+      {
+        "key": "resting",
+        "label": "Resting",
+        "trigger": "The control is available.",
+        "behaviour": "The role glyph and its verb. Nothing glows or moves.",
+        "meaning": "Pressing this runs AI on something specific.",
+        "action": "Hover, focus or press it.",
+        "next": "Hover",
+        "roles": null
+      },
+      {
+        "key": "hover",
+        "label": "Hover",
+        "trigger": "The pointer is over it.",
+        "behaviour": "The Md3 state layer at 8% and the Md3Tooltip: what will happen, in words.",
+        "meaning": "What the control will do.",
+        "action": "Press it.",
+        "next": "Pressed",
+        "roles": null
+      },
+      {
+        "key": "focus",
+        "label": "Focus",
+        "trigger": "Keyboard focus reached it.",
+        "behaviour": "The focus ring (md-primary) and the same tooltip.",
+        "meaning": "The same, without a pointer.",
+        "action": "Enter or Space.",
+        "next": "Pressed",
+        "roles": null
+      },
+      {
+        "key": "pressed",
+        "label": "Pressed",
+        "trigger": "It is being pressed.",
+        "behaviour": "The 12% state layer. The glyph does not change yet.",
+        "meaning": "Your press was received.",
+        "action": "Release.",
+        "next": "Working",
+        "roles": null
+      },
+      {
+        "key": "working",
+        "label": "Working",
+        "trigger": "The AI action is running.",
+        "behaviour": "The action glyph becomes the working glyph (progress_activity) and the label becomes “Rewriting…”.",
+        "meaning": "The agent is doing it now.",
+        "action": "—",
+        "next": "Resting",
+        "roles": null
+      },
+      {
+        "key": "disabled",
+        "label": "Disabled",
+        "trigger": "There is nothing to act on.",
+        "behaviour": "The control at 38% with its reason as supporting text — never an unexplained grey icon.",
+        "meaning": "Why it is unavailable, and what to do.",
+        "action": "Do what the reason says.",
+        "next": "Resting",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A support reply. Press Rewrite and watch four different marks appear for four different meanings — action, working, tool use, generated. Then switch on “one sparkle for everything” and try to tell them apart.",
+    "api": "Md3Button",
+    "intent": "Answers “what does this AI mark mean here?” — will run AI, is running, used a tool, or was written by AI — consistently across the product, with a label or tooltip so the icon is never the only explanation.",
+    "when": "On controls that run AI, on the working state, on tool-use steps and on AI-generated content. Not on features without AI, and not as decoration, branding or “premium”.",
+    "whenNot": "",
+    "dir": "01-onboarding/02-identity/04-iconography",
+    "packages": [
+      "@nucleux/md3-button",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-icon-button",
+      "@nucleux/md3-list",
+      "@nucleux/md3-tooltip",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        6033,
+        6235
+      ],
+      "sim": [
+        1612,
+        1688
+      ],
+      "docs": [
+        733,
+        826
+      ]
+    },
+    "shots": {
+      "resting": "states/01-resting.webp",
+      "hover": "states/02-hover.webp",
+      "focus": "states/03-focus.webp",
+      "pressed": "states/04-pressed.webp",
+      "working": "states/05-working.webp",
+      "disabled": "states/06-disabled.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Identity",
+    "id": "color",
+    "name": "Color",
+    "oneline": "Semantic colour roles from Nucleux tokens for the agent, attention, evidence and status — always paired with an icon and words.",
+    "built": true,
+    "initial": "default",
+    "states": [
+      {
+        "key": "default",
+        "label": "Default",
+        "trigger": "The agent is available.",
+        "behaviour": "A neutral surface with an outline, the agent glyph and “Available”.",
+        "meaning": "Nothing needs attention.",
+        "action": "—",
+        "next": "Active, or Working",
+        "roles": null
+      },
+      {
+        "key": "active",
+        "label": "Active",
+        "trigger": "The task is assigned to the agent.",
+        "behaviour": "The agent role (md-primary-container), the agent glyph and “Assigned to Aria”.",
+        "meaning": "The agent owns this.",
+        "action": "—",
+        "next": "Working",
+        "roles": null
+      },
+      {
+        "key": "working",
+        "label": "Working",
+        "trigger": "The agent is doing it.",
+        "behaviour": "The agent role, the working glyph and what it is doing.",
+        "meaning": "The agent is working now.",
+        "action": "—",
+        "next": "Attention, Success, Warning or Error",
+        "roles": null
+      },
+      {
+        "key": "attention",
+        "label": "Attention",
+        "trigger": "The agent needs a decision.",
+        "behaviour": "The attention role (md-tertiary-container), a help glyph and “Needs your approval”.",
+        "meaning": "You need to decide something.",
+        "action": "—",
+        "next": "Success",
+        "roles": null
+      },
+      {
+        "key": "success",
+        "label": "Success",
+        "trigger": "It finished and passed.",
+        "behaviour": "A check glyph in the success colour on a neutral surface, so the text keeps its contrast, and “Complete”.",
+        "meaning": "Done.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "warning",
+        "label": "Warning",
+        "trigger": "Something may go wrong soon.",
+        "behaviour": "The warning role with its foreground, a warning glyph and the specific reason.",
+        "meaning": "Look at this soon.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "error",
+        "label": "Error",
+        "trigger": "It failed.",
+        "behaviour": "The error role (md-error-container), an error glyph and what failed. Never used for anything else.",
+        "meaning": "It failed.",
+        "action": "—",
+        "next": "Working",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A launch board. Assign the checklist to Aria and follow it from available to working, approval, source used and done — every state a token role with its own glyph and words. Turn on greyscale: nothing is lost. Turn on colour only: everything is.",
+    "api": "AgentStatus",
+    "intent": "Answers “what needs me, what is the agent doing, and what went wrong?” with colour that means something — agent, attention, evidence, success, warning, error — and that still reads in greyscale, dark theme and to a screen reader.",
+    "when": "For the agent’s presence and work, for states that need a decision, for sources it used, and for outcomes. Not for decoration, gradients or glows, and never by remapping error or warning to brand colours.",
+    "whenNot": "",
+    "dir": "01-onboarding/02-identity/05-color",
+    "packages": [
+      "@nucleux/avatar",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-list",
+      "@nucleux/md3-progress",
+      "@nucleux/md3-theme",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        6238,
+        6389
+      ],
+      "sim": [
+        901,
+        985
+      ],
+      "docs": [
+        831,
+        908
+      ]
+    },
+    "shots": {
+      "default": "states/01-default.webp",
+      "active": "states/02-active.webp",
+      "working": "states/03-working.webp",
+      "attention": "states/04-attention.webp",
+      "success": "states/05-success.webp",
+      "warning": "states/06-warning.webp",
+      "error": "states/07-error.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Capability Discovery",
+    "id": "example-gallery",
+    "name": "Example Gallery",
+    "oneline": "A small set of real, product-specific tasks the agent does well — choosing one places an editable request in the composer.",
+    "built": true,
+    "initial": "available",
+    "states": [
+      {
+        "key": "available",
+        "label": "Examples available",
+        "trigger": "The person has not started yet.",
+        "behaviour": "A few real tasks, grouped by kind, each with one line on what it does and what it needs. The composer is right below for their own words.",
+        "meaning": "This is the kind of thing the agent is good at.",
+        "action": "Choose an example, or type.",
+        "next": "Example selected",
+        "roles": null
+      },
+      {
+        "key": "selected",
+        "label": "Example selected",
+        "trigger": "They chose an example.",
+        "behaviour": "The example opens to show the exact request it will place, and what it uses. Nothing is filled yet.",
+        "meaning": "What choosing this would do.",
+        "action": "Use it, or go back.",
+        "next": "Placed into workflow",
+        "roles": null
+      },
+      {
+        "key": "placed",
+        "label": "Placed into workflow",
+        "trigger": "They pressed Use example.",
+        "behaviour": "The request is in the composer, editable and unsent. The example is marked “In composer”.",
+        "meaning": "It is their request now.",
+        "action": "Edit it, send it, or clear it.",
+        "next": "Edited, or Active",
+        "roles": null
+      },
+      {
+        "key": "edited",
+        "label": "Example edited",
+        "trigger": "They changed the words.",
+        "behaviour": "Their version is what will be sent. The example no longer claims it.",
+        "meaning": "The example was a starting point.",
+        "action": "Send, or clear.",
+        "next": "Active interaction",
+        "roles": null
+      },
+      {
+        "key": "active",
+        "label": "Active interaction",
+        "trigger": "They sent a request.",
+        "behaviour": "The agent is working. The gallery steps back to a “Show examples” button (or a row of chips), so the work is the focus.",
+        "meaning": "Normal work has started.",
+        "action": "Wait, stop, or show examples again.",
+        "next": "Examples available",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A new conversation in a meeting workspace. Pick an example — it lands in the composer, unsent. Edit it (type, or use “Edit the request”), send it, and watch the gallery step back.",
+    "api": "ExampleGallery",
+    "intent": "Answers “what can I do with this agent?” with a few real tasks from this product — grouped, each saying what it uses — so people start from something that works instead of guessing what to ask.",
+    "when": "On an empty or new conversation, and on demand afterwards. Not as a standing panel that competes with the work once it has started.",
+    "whenNot": "",
+    "dir": "01-onboarding/03-capability-discovery/01-example-gallery",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-list",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        3667,
+        3931
+      ],
+      "sim": [
+        2345,
+        2430
+      ],
+      "docs": [
+        913,
+        994
+      ]
+    },
+    "shots": {
+      "available": "states/01-examples-available.webp",
+      "selected": "states/02-example-selected.webp",
+      "placed": "states/03-placed-into-workflow.webp",
+      "edited": "states/04-example-edited.webp",
+      "active": "states/05-active-interaction.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Capability Discovery",
+    "id": "templates",
+    "name": "Templates",
+    "oneline": "A reusable setup for a repeatable workflow — previewed first, applied as editable fields, never run on its own.",
+    "built": true,
+    "initial": "available",
+    "states": [
+      {
+        "key": "available",
+        "label": "Template available",
+        "trigger": "The person is starting a recurring piece of work.",
+        "behaviour": "A short list of workflow templates, each saying what it produces and what it uses.",
+        "meaning": "There is a ready-made setup for this.",
+        "action": "Open a template.",
+        "next": "Preview",
+        "roles": null
+      },
+      {
+        "key": "preview",
+        "label": "Preview",
+        "trigger": "They opened a template.",
+        "behaviour": "What it asks for, what it produces, the tools it uses and anything it needs — before anything is applied.",
+        "meaning": "Exactly what this template will set up.",
+        "action": "Use template, or go back.",
+        "next": "Applied, or Missing requirement",
+        "roles": null
+      },
+      {
+        "key": "applied",
+        "label": "Applied",
+        "trigger": "They chose Use template.",
+        "behaviour": "The fields are in place and editable. A value Aria suggested is marked until they keep or change it. Nothing has run.",
+        "meaning": "The setup is ready; they decide what goes in it.",
+        "action": "Fill the fields, then Run.",
+        "next": "Edited",
+        "roles": null
+      },
+      {
+        "key": "edited",
+        "label": "Edited",
+        "trigger": "They changed a field.",
+        "behaviour": "Their values are confirmed; Run becomes available once required fields are filled. Replacing the template asks first.",
+        "meaning": "It is their request now.",
+        "action": "Run, replace, or remove.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "missing",
+        "label": "Missing requirement",
+        "trigger": "The template needs Google Drive, and it isn’t connected.",
+        "behaviour": "What is missing, why it is needed and what they can do — Connect Drive or Use without Drive. Their values stay.",
+        "meaning": "One thing is needed before it can do all of this.",
+        "action": "Connect, or continue without it.",
+        "next": "Applied",
+        "roles": null
+      },
+      {
+        "key": "removed",
+        "label": "Removed / reset",
+        "trigger": "They removed the template.",
+        "behaviour": "The template is gone and what was there before is back, with Undo.",
+        "meaning": "Nothing was lost.",
+        "action": "Undo, or choose another.",
+        "next": "Template available",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A research workspace. Preview the Competitive analysis template, apply it, and hit the one thing it needs — web access. Turn it on and see your values still there. Nothing runs until you press Run.",
+    "api": "WorkflowTemplate",
+    "intent": "Answers “how do I start this workflow I do every week?” with a structure they can see before applying: what it asks for, what it produces, what it uses — and what it needs that isn’t connected yet.",
+    "when": "For workflows people repeat with the same shape — weekly updates, analyses, reviews. Not for one-off prompts (use Suggested Prompts or Example Gallery).",
+    "whenNot": "",
+    "dir": "01-onboarding/03-capability-discovery/02-templates",
+    "packages": [
+      "@nucleux/md3-action-confirmation",
+      "@nucleux/md3-banner",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-list",
+      "@nucleux/md3-snackbar",
+      "@nucleux/md3-text-field",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        3934,
+        4221
+      ],
+      "sim": [
+        2444,
+        2540
+      ],
+      "docs": [
+        999,
+        1076
+      ]
+    },
+    "shots": {
+      "available": "states/01-template-available.webp",
+      "preview": "states/02-preview.webp",
+      "applied": "states/03-applied.webp",
+      "edited": "states/04-edited.webp",
+      "missing": "states/05-missing-requirement.webp",
+      "removed": "states/06-removed-reset.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Capability Discovery",
+    "id": "nudges",
+    "name": "Nudges",
+    "oneline": "A quiet, dismissible tip about a capability that would help right now — with a reason, and it doesn’t come back once dismissed.",
+    "built": true,
+    "initial": "shown",
+    "states": [
+      {
+        "key": "dormant",
+        "label": "Dormant",
+        "trigger": "Nothing about what they are doing makes a capability useful right now.",
+        "behaviour": "Nothing is shown.",
+        "meaning": "—",
+        "action": "—",
+        "next": "Nudge shown",
+        "roles": null
+      },
+      {
+        "key": "shown",
+        "label": "Nudge shown",
+        "trigger": "They selected transcript text again — something Aria can work with.",
+        "behaviour": "One line in the flow: what they can do, why it appeared (on request), Try it, Not now and Dismiss. It never blocks the work.",
+        "meaning": "There is a capability that would help with what they are doing.",
+        "action": "Try it, not now, dismiss — or ignore it.",
+        "next": "Accepted, Dismissed, Snoozed or No longer relevant",
+        "roles": null
+      },
+      {
+        "key": "accepted",
+        "label": "Accepted",
+        "trigger": "They chose Try it.",
+        "behaviour": "The nudge leaves and the capability opens where they are working. It will not promote this again.",
+        "meaning": "They know about it now.",
+        "action": "—",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "dismissed",
+        "label": "Dismissed",
+        "trigger": "They chose Dismiss.",
+        "behaviour": "The nudge leaves, with an Undo. It does not come back for this capability.",
+        "meaning": "Their choice is remembered.",
+        "action": "Undo, or carry on.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "snoozed",
+        "label": "Snoozed",
+        "trigger": "They chose Not now.",
+        "behaviour": "The nudge leaves for a week, with an Undo.",
+        "meaning": "It may come back later — not today.",
+        "action": "Undo, or carry on.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "irrelevant",
+        "label": "No longer relevant",
+        "trigger": "They cleared the selection.",
+        "behaviour": "The nudge withdraws on its own, quietly — the reason for it is gone.",
+        "meaning": "—",
+        "action": "—",
+        "next": "Dormant",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Reviewing a transcript by hand. Select a second passage and a quiet tip appears — not a dialog. Try it and the selection goes into the composer as context; dismiss it and it stays gone.",
+    "api": "Nudge",
+    "intent": "Answers “is there something here I might have missed?” at the moment it is useful, without interrupting: one line in the flow, why it appeared, and an easy way to try it, snooze it or dismiss it.",
+    "when": "When the person is doing something a capability would make easier — and only once. Not on page load, not as an advert, and not again after it was used or dismissed.",
+    "whenNot": "",
+    "dir": "01-onboarding/03-capability-discovery/03-nudges",
+    "packages": [
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-icon-button",
+      "@nucleux/md3-snackbar",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        4224,
+        4413
+      ],
+      "sim": [
+        2554,
+        2634
+      ],
+      "docs": [
+        1081,
+        1132
+      ]
+    },
+    "shots": {
+      "dormant": "states/01-dormant.webp",
+      "shown": "states/02-nudge-shown.webp",
+      "accepted": "states/03-accepted.webp",
+      "dismissed": "states/04-dismissed.webp",
+      "snoozed": "states/05-snoozed.webp",
+      "irrelevant": "states/06-no-longer-relevant.webp"
+    }
+  },
+  {
+    "stage": "Onboarding",
+    "category": "Capability Discovery",
+    "id": "disclaimer",
+    "name": "Disclaimer / Agent Limits",
+    "oneline": "States what the agent can’t reliably do — briefly in general, specifically where it matters, and with a way forward when it hits a limit.",
+    "built": true,
+    "initial": "general",
+    "states": [
+      {
+        "key": "general",
+        "label": "General limits available",
+        "trigger": "Where the agent is introduced, or from its menu.",
+        "behaviour": "One or two sentences on the limits that matter most, with “See what Aria can and can’t do”.",
+        "meaning": "The boundaries worth knowing before relying on it.",
+        "action": "Read more, or carry on.",
+        "next": "Details expanded",
+        "roles": null
+      },
+      {
+        "key": "expanded",
+        "label": "Details expanded",
+        "trigger": "They chose to see more.",
+        "behaviour": "Four short groups: what it can do, can’t do, needs approval for, and may get wrong — and where to review.",
+        "meaning": "When to rely on it, and when to check or take over.",
+        "action": "Close.",
+        "next": "General limits available",
+        "roles": null
+      },
+      {
+        "key": "contextual",
+        "label": "Contextual limit shown",
+        "trigger": "They are about to ask for something that needs Jira.",
+        "behaviour": "The relevant limit, at the point it matters, with what they can do instead.",
+        "meaning": "Before asking: this part needs Jira.",
+        "action": "Connect Jira, or continue without creating tasks.",
+        "next": "Recovery",
+        "roles": null
+      },
+      {
+        "key": "encountered",
+        "label": "Limit encountered",
+        "trigger": "Aria reached the boundary during the task.",
+        "behaviour": "An Md3Banner says what happened, that their work is kept, and the next steps. Not the error colour.",
+        "meaning": "It stopped at a limit — nothing was lost.",
+        "action": "Connect Jira, or review the drafts.",
+        "next": "Recovery / next step",
+        "roles": null
+      },
+      {
+        "key": "recovery",
+        "label": "Recovery / next step",
+        "trigger": "They chose Review drafts.",
+        "behaviour": "They continue with the drafts. The limit stays one line away, with Connect Jira when they are ready.",
+        "meaning": "The work carries on without the missing part.",
+        "action": "Review the drafts.",
+        "next": "—",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Ask Aria to create Jira tasks from a meeting. The general limits are one line at the top; the specific one appears when the request needs it, and again when Aria reaches it — with your drafts kept and two ways on.",
+    "api": "AgentLimits",
+    "intent": "Answers “what can’t this agent do, and when should I check its work?” in plain words: a short general statement, the specific limit at the point it applies, and — when the agent reaches it — what happened, that the work is kept, and what to do next.",
+    "when": "Where the agent is introduced (general), before an action it can’t complete (contextual), and when it reaches a boundary during a task. Not as a standing warning on every message.",
+    "whenNot": "",
+    "dir": "01-onboarding/03-capability-discovery/04-disclaimer",
+    "packages": [
+      "@nucleux/md3-banner",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/md3-list",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        4416,
+        4602
+      ],
+      "sim": [
+        811,
+        887
+      ],
+      "docs": [
+        1137,
+        1202
+      ]
+    },
+    "shots": {
+      "general": "states/01-general-limits-available.webp",
+      "expanded": "states/02-details-expanded.webp",
+      "contextual": "states/03-contextual-limit-shown.webp",
+      "encountered": "states/04-limit-encountered.webp",
+      "recovery": "states/05-recovery-next-step.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "initial-cta",
+    "name": "Initial CTA",
+    "oneline": "The large, inviting input that anchors the empty state.",
+    "built": true,
+    "initial": "resting",
+    "states": [
+      {
+        "key": "resting",
+        "label": "Resting",
+        "trigger": "The workspace has no conversation, task or history yet.",
+        "behaviour": "The large composer is the focal point, with its placeholder suggesting what to do. Send is unavailable because there is nothing to send. Secondary actions stay quiet around it.",
+        "meaning": "",
+        "action": "Click or tab into the field.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "focused",
+        "label": "Focused",
+        "trigger": "The field receives focus — a click, a tap, or Tab.",
+        "behaviour": "The outline takes the primary colour and the corner squares up a step. The placeholder stays until the first keystroke and the send key is named underneath. The layout does not move.",
+        "meaning": "",
+        "action": "Start typing.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "typing",
+        "label": "Typing",
+        "trigger": "Text is being entered.",
+        "behaviour": "The placeholder is gone and the field grows line by line up to its ceiling. Send is available at a secondary emphasis while keys are moving; nothing else competes with the text.",
+        "meaning": "",
+        "action": "Pause, or keep writing.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "ready",
+        "label": "Ready to submit",
+        "trigger": "A request is in the field and the person has paused.",
+        "behaviour": "Send takes the primary fill. The request is still fully editable, and nothing is sent until the person sends it.",
+        "meaning": "",
+        "action": "Send it — Enter, or the send button.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "working",
+        "label": "Active conversation",
+        "trigger": "The first request is sent.",
+        "behaviour": "The request enters the workspace as the first turn, the agent starts, and the SAME composer shrinks and moves to its working place at the bottom. From here on it is the normal composer.",
+        "meaning": "",
+        "action": "Keep going in the working composer, or pick Resting to start over.",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "An empty planning workspace. The large composer is the only thing to do here &mdash; type a request and send it, and watch the same composer move into its working place.",
+    "api": "PromptComposer",
+    "intent": "Answer \"where do I start?\" with a field, not a button — and let that field become the working composer the moment work begins.",
+    "when": "Whenever the main agent workspace has no conversation, task or history to show — a new conversation, a fresh project, a cleared thread. For people who already know agentic products as much as for anyone: this is not a tutorial, it is the empty state of the work surface.",
+    "whenNot": "Once there is meaningful activity. Leaving the oversized input in place beside a conversation turns an invitation into furniture competing with the work. Not as a marketing CTA, a sign-up prompt or a first-run explainer, and not as a replacement for Suggested Prompts — those are separate patterns and they stay visually secondary if they appear at all.",
+    "dir": "02-initially/01-entry-points/01-initial-cta",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        6424,
+        6726
+      ],
+      "sim": [
+        2938,
+        3051
+      ],
+      "docs": [
+        1227,
+        1346
+      ]
+    },
+    "shots": {
+      "resting": "states/01-resting.webp",
+      "focused": "states/02-focused.webp",
+      "typing": "states/03-typing.webp",
+      "ready": "states/04-ready-to-submit.webp",
+      "working": "states/05-active-conversation.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "open-input",
+    "name": "Open Input",
+    "oneline": "Free-form text box for any natural-language ask.",
+    "built": true,
+    "initial": "empty",
+    "states": [
+      {
+        "key": "empty",
+        "label": "Empty",
+        "trigger": "The conversation is running and nothing is typed.",
+        "behaviour": "The working composer at its compact size, docked under the conversation, placeholder showing. Send is unavailable. Not an invitation — the conversation is the focus.",
+        "meaning": "",
+        "action": "Click or tab into the field. Next: Focused.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "focused",
+        "label": "Focused",
+        "trigger": "The field receives focus.",
+        "behaviour": "Primary outline, the corner squares up a step, the caret is there. The placeholder stays until the first keystroke. Nothing moves.",
+        "meaning": "",
+        "action": "Start typing. Next: Typing.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "typing",
+        "label": "Typing",
+        "trigger": "Text is entered.",
+        "behaviour": "The placeholder goes and the text is the focus. Send is available at a secondary emphasis while keys are moving; the other controls still work and leave the text alone.",
+        "meaning": "",
+        "action": "Keep typing or edit. Next: Multi-line, or Ready to send.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "multiline",
+        "label": "Multi-line",
+        "trigger": "The request wraps, or Shift + Enter adds a line.",
+        "behaviour": "The composer eases taller a line at a time, controls anchored to the bottom row, up to its maximum — then the field scrolls inside itself.",
+        "meaning": "",
+        "action": "Continue typing, edit, or send. Next: Ready to send, or Empty.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "ready",
+        "label": "Ready to send",
+        "trigger": "Valid content is in the field and the person has paused.",
+        "behaviour": "Send takes the primary fill. The request is still fully editable; nothing sends until the host’s send key or the button.",
+        "meaning": "",
+        "action": "Send. Next: Submitted — or Error, if it fails.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "submitted",
+        "label": "Submitted",
+        "trigger": "The send went through.",
+        "behaviour": "The request is the newest turn; only now is the field cleared. The composer stays where it is, empty and focused. While Aria answers, Send is Stop and the field is still live.",
+        "meaning": "",
+        "action": "Write the next request. Next: Focused, Typing.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "error",
+        "label": "Error / unavailable",
+        "trigger": "The send did not go through.",
+        "behaviour": "One sentence in human words, inside the composer, with Retry. The request is exactly as it was and still editable. No code, no cleared field.",
+        "meaning": "",
+        "action": "Edit, then Retry or send. Next: Submitted.",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A conversation already under way, with the working composer where it always is. Type a follow-up, change the model or add context mid-sentence, send it — and try a failed send: the text stays.",
+    "api": "PromptComposer",
+    "intent": "The default way to talk to the agent once work is under way — free-form, always there, and never careless with what someone has typed.",
+    "when": "Wherever a person can make a request in words during ongoing work — conversational agents, task and coding agents, research tools, support agents, project workspaces, side panels — as the default entry point after the first request. Before any activity, the same composer is drawn at its larger Initial CTA size.",
+    "whenNot": "Not as the empty-state invitation (that is Initial CTA, the same composer at another size), not as a structured form when the request genuinely has fixed fields, and not as a command-only or search-only box. If the set of things a person can ask for is small and known, buttons beat a blank field.",
+    "dir": "02-initially/01-entry-points/02-open-input",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        6735,
+        7039
+      ],
+      "sim": [
+        3072,
+        3253
+      ],
+      "docs": [
+        1351,
+        1472
+      ]
+    },
+    "shots": {
+      "empty": "states/01-empty.webp",
+      "focused": "states/02-focused.webp",
+      "typing": "states/03-typing.webp",
+      "multiline": "states/04-multi-line.webp",
+      "ready": "states/05-ready-to-send.webp",
+      "submitted": "states/06-submitted.webp",
+      "error": "states/07-error-unavailable.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "suggested-prompts",
+    "name": "Suggested Prompts",
+    "oneline": "Smart, context-aware preset actions to jumpstart engagement.",
+    "built": true,
+    "initial": "available",
+    "states": [
+      {
+        "key": "available",
+        "label": "Suggestions available",
+        "trigger": "The workspace has context worth asking about and nothing is typed.",
+        "behaviour": "Three suggestions just below the composer, each an action named from what is on screen. The composer is level one and works on its own; the set is level two.",
+        "meaning": "",
+        "action": "Choose one, or ignore them and type. Next: Suggestion selected — or Prompt edited.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "selected",
+        "label": "Suggestion selected",
+        "trigger": "The person activates a suggestion (click, tap, Enter or Space).",
+        "behaviour": "The suggestion takes the secondary-container fill and its text travels into the composer. Nothing is sent. Focus moves to the field, and the placement is announced.",
+        "meaning": "",
+        "action": "Let it land. Next: Prompt placed in composer.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "placed",
+        "label": "Prompt placed in composer",
+        "trigger": "The chosen prompt has landed in the field.",
+        "behaviour": "Ordinary composer text with the caret at the end — not a chip, not locked. Send is ready. The set stays, the chosen one marked, so another can be chosen instead: it replaces the untouched text.",
+        "meaning": "",
+        "action": "Edit, choose another, add context, change the model, or send. Next: Prompt edited, Suggestion selected, or the conversation.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "edited",
+        "label": "Prompt edited",
+        "trigger": "The person changes the placed text — or writes their own instead.",
+        "behaviour": "It is simply their request now. No preset styling, no lock; the set steps aside, so no suggestion can overwrite their words. Clear the field and the suggestions come back.",
+        "meaning": "",
+        "action": "Send. Next: Conversation started.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "conversation",
+        "label": "Conversation started",
+        "trigger": "The request was sent.",
+        "behaviour": "The request is the first turn and Aria answers. The suggestions do not come back: they are an entry aid, not navigation. The composer stays, empty and ready.",
+        "meaning": "",
+        "action": "Continue in the composer. Reset from the state list.",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "A planning workspace with the September release open. Three suggestions sit above the composer, each drawn from what the workspace shows. Choose one, change it, send it &mdash; or switch workspace in the sidebar and watch the suggestions follow.",
+    "api": "SuggestedPrompts",
+    "intent": "Answer \"what should I ask?\" with three or four real actions from this workspace — and hand the chosen one to the composer as the person's own, editable text.",
+    "when": "On an empty or new conversation in a workspace with visible context worth asking about — a release plan, a research study, a design file, a ticket, a document — and in side panels opened next to that context. Wherever people hesitate over the first request.",
+    "whenNot": "Not as autocomplete (that completes what someone is already typing), not as proactive suggestions (the agent raising a next step because of something that happened), not as templates (structured scaffolds with fields), and not as a prompt library, marketplace or command menu. Not throughout a conversation: once it has started, the suggestions have done their job.",
+    "dir": "02-initially/01-entry-points/03-suggested-prompts",
+    "packages": [
+      "@nucleux/material",
+      "@nucleux/md3-chip",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        7047,
+        7422
+      ],
+      "sim": [
+        3267,
+        3464
+      ],
+      "docs": [
+        1477,
+        1617
+      ]
+    },
+    "shots": {
+      "available": "states/01-suggestions-available.webp",
+      "selected": "states/02-suggestion-selected.webp",
+      "placed": "states/03-prompt-placed-in-composer.webp",
+      "edited": "states/04-prompt-edited.webp",
+      "conversation": "states/05-conversation-started.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "ai-icons",
+    "name": "Icons",
+    "oneline": "One stable mark per AI meaning: action, generated content, agent working, tool use.",
+    "built": true,
+    "initial": "rest",
+    "states": [
+      {
+        "key": "rest",
+        "label": "Resting",
+        "trigger": "The editor is open with a draft in it.",
+        "behaviour": "Rewrite carries the AI-action mark beside its word; Link and Attach carry ordinary icons.",
+        "meaning": "“AI will do something specific when I press this.”",
+        "action": "Point at, tab to, or press Rewrite. Clear the draft to see Disabled.",
+        "next": "Hover, Focus or Pressed.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "hover",
+        "label": "Hover",
+        "trigger": "A pointer rests on Rewrite.",
+        "behaviour": "The 8% Material state layer, and the tooltip “Rewrite with AI”.",
+        "meaning": "The same AI action, offered.",
+        "action": "Press, or move away.",
+        "next": "Pressed, or Resting.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "focus",
+        "label": "Focus",
+        "trigger": "Rewrite receives keyboard focus.",
+        "behaviour": "The visible focus ring and the 12% layer; the tooltip shows on focus too, and Escape hides it.",
+        "meaning": "The same AI action, ready for Enter or Space.",
+        "action": "Enter or Space presses it; Tab moves on.",
+        "next": "Pressed, or Resting.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "pressed",
+        "label": "Pressed",
+        "trigger": "Rewrite is being pressed.",
+        "behaviour": "The 12% pressed layer. Releasing it starts the work.",
+        "meaning": "“I asked AI to do this.”",
+        "action": "Release.",
+        "next": "Working.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "working",
+        "label": "Working",
+        "trigger": "Rewrite was released.",
+        "behaviour": "The button’s mark changes from the AI-action mark to the turning working mark, and its word to “Rewriting…”. It is unavailable until the work ends; the draft stays readable.",
+        "meaning": "The requested AI operation is running now.",
+        "action": "Wait, or Stop where the product supports cancelling.",
+        "next": "Complete — or Resting if stopped.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "complete",
+        "label": "Complete",
+        "trigger": "The rewrite finished.",
+        "behaviour": "Rewrite returns to its AI-action mark, and a short line confirms the result with Undo.",
+        "meaning": "The AI action is done, and can be run again.",
+        "action": "Keep it, Undo, or press Rewrite again.",
+        "next": "Resting.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "disabled",
+        "label": "Disabled",
+        "trigger": "There is nothing for the AI to act on — the draft is empty.",
+        "behaviour": "Rewrite dims to 38% but keeps its AI-action mark and stays focusable; its tooltip says why: “Write something first”.",
+        "meaning": "This is still an AI action, unavailable for now.",
+        "action": "Write in the draft.",
+        "next": "Resting.",
+        "roles": [
+          "ai-action"
+        ]
+      },
+      {
+        "key": "gen",
+        "label": "Disclosed",
+        "trigger": "The release note holds text Aria wrote.",
+        "behaviour": "One “Generated with AI” label, with the generated-content mark, sits under the text it describes — once, not on every line.",
+        "meaning": "“This content came from AI.” Disclosure, not an action.",
+        "action": "Point at or tab to the label; press it for details.",
+        "next": "Hover or focus, or Details.",
+        "roles": [
+          "generated-content"
+        ]
+      },
+      {
+        "key": "gen-hover",
+        "label": "Hover or focus",
+        "trigger": "A pointer rests on the label, or it receives keyboard focus.",
+        "behaviour": "The state layer, the focus ring on focus, and a tooltip saying who wrote it and from what.",
+        "meaning": "The same provenance, explained in a sentence.",
+        "action": "Press for details, or move on.",
+        "next": "Details, or Disclosed.",
+        "roles": [
+          "generated-content"
+        ]
+      },
+      {
+        "key": "gen-open",
+        "label": "Details",
+        "trigger": "The label was pressed.",
+        "behaviour": "A rich tooltip says what Aria did and from what, and offers the original back.",
+        "meaning": "What AI changed, and how to reverse it.",
+        "action": "Show the original, or close (Escape).",
+        "next": "Disclosed.",
+        "roles": [
+          "generated-content"
+        ]
+      },
+      {
+        "key": "work",
+        "label": "Working",
+        "trigger": "An AI action started — here, Rewrite.",
+        "behaviour": "The working mark turns steadily beside “Rewriting release note…”, with Stop. Screen readers hear “Agent working: rewriting release note”, not the animation.",
+        "meaning": "The agent is doing something right now.",
+        "action": "Wait, or Stop.",
+        "next": "Complete, or Stopped.",
+        "roles": [
+          "agent-working"
+        ]
+      },
+      {
+        "key": "work-done",
+        "label": "Complete",
+        "trigger": "The agent finished.",
+        "behaviour": "The turning mark is gone the moment the work ends; a still line says what was done.",
+        "meaning": "Nothing is running any more.",
+        "action": "Read the result, or run it again.",
+        "next": "Working (Run again).",
+        "roles": [
+          "agent-working"
+        ]
+      },
+      {
+        "key": "work-stopped",
+        "label": "Stopped",
+        "trigger": "Stop was pressed while the agent worked.",
+        "behaviour": "The mark stops and goes; the line says the draft is unchanged.",
+        "meaning": "The work was cancelled; nothing changed.",
+        "action": "Run it again, or carry on.",
+        "next": "Working (Run again).",
+        "roles": [
+          "agent-working"
+        ]
+      },
+      {
+        "key": "tool",
+        "label": "Tool used",
+        "trigger": "Aria checked the draft against the team’s style guide before suggesting changes.",
+        "behaviour": "An activity line led by the tool-use mark names the tool and the act: “Style guide checked”.",
+        "meaning": "“The agent used another capability to do this work.”",
+        "action": "Point at or tab to it; press it for what was checked.",
+        "next": "Hover or focus, or Details.",
+        "roles": [
+          "tool-use"
+        ]
+      },
+      {
+        "key": "tool-hover",
+        "label": "Hover or focus",
+        "trigger": "A pointer rests on the activity line, or it receives keyboard focus.",
+        "behaviour": "The state layer, the focus ring on focus, and a tooltip naming the system.",
+        "meaning": "The same tool use, named in full.",
+        "action": "Press for details.",
+        "next": "Details, or Tool used.",
+        "roles": [
+          "tool-use"
+        ]
+      },
+      {
+        "key": "tool-open",
+        "label": "Details",
+        "trigger": "The activity line was pressed.",
+        "behaviour": "It expands in place to list what the tool found and what changed because of it.",
+        "meaning": "What the tool contributed, inspectable.",
+        "action": "Collapse it (press again or Escape).",
+        "next": "Tool used.",
+        "roles": [
+          "tool-use"
+        ]
+      }
+    ],
+    "hasSim": true,
+    "simNote": "One AI interaction, four meanings. Press Rewrite and watch each stage keep its own mark: the action, the work, the tool and the result never borrow each other’s.",
+    "api": "AiIcon",
+    "intent": "Give each AI meaning its own mark — run AI, made by AI, the agent is working, the agent used a tool — and keep each mark for that meaning only, everywhere in the product.",
+    "when": "Wherever a product mixes AI capability with ordinary controls and content: toolbars and menus with AI actions, fields the agent can fill, documents and records holding AI-written text, and any surface where the agent works in the background or reaches into other systems.",
+    "whenNot": "Not for \"new\", \"premium\" or \"beta\" — those get words. Not as decoration on a feature that happens to be recent. Not as the agent's identity (that is the avatar and name), and not as a substitute for a label where a mistaken press matters.",
+    "dir": "02-initially/01-entry-points/04-ai-icons",
+    "packages": [],
+    "source": {
+      "preview": [
+        7433,
+        7952
+      ],
+      "sim": [
+        2777,
+        2925
+      ],
+      "docs": [
+        1622,
+        1758
+      ]
+    },
+    "shots": {
+      "rest": "states/01-resting.webp",
+      "gen": "states/08-disclosed.webp",
+      "work": "states/11-working.webp",
+      "tool": "states/14-tool-used.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "autocomplete",
+    "name": "Autocomplete",
+    "oneline": "Ghost text that anticipates and completes user actions.",
+    "built": true,
+    "initial": "empty",
+    "states": [
+      {
+        "key": "empty",
+        "label": "Empty / no suggestion",
+        "trigger": "Nothing typed.",
+        "behaviour": "The composer as usual. Nothing is suggested before the person starts — that would be Suggested Prompts, not autocomplete.",
+        "meaning": "",
+        "action": "Start typing. Next: Typing.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "typing",
+        "label": "Typing",
+        "trigger": "Text is entered, but not enough to finish usefully — or nothing matches.",
+        "behaviour": "No suggestion. The composer behaves exactly as without autocomplete.",
+        "meaning": "",
+        "action": "Keep typing. Next: Suggestion available.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "available",
+        "label": "Suggestion available",
+        "trigger": "What is typed is the start of a known request.",
+        "behaviour": "The rest appears after the caret in a lighter colour with its key (Tab) at the end. It is not in the field: a screen reader hears “Suggestion: …”, separately from the text.",
+        "meaning": "",
+        "action": "Tab (or tap it) to accept, Escape to dismiss, or keep typing. Next: Accepted, Ignored, Dismissed, No longer relevant.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "accepted",
+        "label": "Suggestion accepted",
+        "trigger": "Tab, →, or a tap on the suggestion.",
+        "behaviour": "It becomes ordinary editable text with the caret at the end. Nothing is sent; Send is ready for when the person is.",
+        "meaning": "",
+        "action": "Edit it, or send. Next: Typing, or the conversation.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "ignored",
+        "label": "Suggestion ignored",
+        "trigger": "The person keeps typing the same words instead of accepting.",
+        "behaviour": "The suggestion follows along, shortening as they type — never overwriting a character they wrote.",
+        "meaning": "",
+        "action": "Keep typing, or accept the rest. Next: Accepted, No longer relevant.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "dismissed",
+        "label": "Suggestion dismissed",
+        "trigger": "Escape.",
+        "behaviour": "It goes, and does not come back for this request while the person keeps writing the same words.",
+        "meaning": "",
+        "action": "Keep typing. Next: Typing.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "irrelevant",
+        "label": "No longer relevant",
+        "trigger": "What is typed stops matching the suggestion.",
+        "behaviour": "It disappears at once. The person’s words are untouched.",
+        "meaning": "",
+        "action": "Keep typing. Next: Typing, or a new suggestion.",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Start a request in the composer. When what you type is the start of one people here often send, the rest appears after the caret. Tab takes it; it is never sent for you.",
+    "api": "Autocomplete",
+    "intent": "Save typing on requests people make often, without taking any of the final instruction out of their hands.",
+    "when": "In a composer or field where people repeat requests, refer to commands, people, files or tools by name, and where a completion can be predicted from what they have typed so far.",
+    "whenNot": "Not before anything is typed (that is Suggested Prompts). Not for the agent raising something on its own (that is Proactive Suggestions). Not for structured scaffolds with fields (Templates). Not where a wrong completion is costly and hard to spot — legal, financial or medical wording.",
+    "dir": "02-initially/01-entry-points/05-autocomplete",
+    "packages": [],
+    "source": {
+      "preview": [
+        8299,
+        8464
+      ],
+      "sim": [
+        3478,
+        3569
+      ],
+      "docs": [
+        1763,
+        1877
+      ]
+    },
+    "shots": {
+      "empty": "states/01-empty-no-suggestion.webp",
+      "typing": "states/02-typing.webp",
+      "available": "states/03-suggestion-available.webp",
+      "accepted": "states/04-suggestion-accepted.webp",
+      "ignored": "states/05-suggestion-ignored.webp",
+      "dismissed": "states/06-suggestion-dismissed.webp",
+      "irrelevant": "states/07-no-longer-relevant.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "proactive",
+    "name": "Proactive Suggestions",
+    "oneline": "Invisible AI moments that arrive exactly when needed.",
+    "built": true,
+    "initial": "dormant",
+    "states": [
+      {
+        "key": "dormant",
+        "label": "Dormant",
+        "trigger": "Nothing worth raising — or the reason has been dealt with.",
+        "behaviour": "Nothing is shown. The agent watches the work, silently.",
+        "meaning": "",
+        "action": "Simulate “Sam Ortiz moves to Payments”. Next: Suggested.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "suggested",
+        "label": "Suggested",
+        "trigger": "The agent noticed something: two release blockers lost their owner.",
+        "behaviour": "A compact card where the work is: who suggests it, why it appeared, what it recommends — as a question — and Review, Remind me tomorrow, Dismiss. Nothing has changed; the list is fully usable.",
+        "meaning": "",
+        "action": "Review, snooze, dismiss — or fix it yourself. Next: Action preparing, Snoozed, Dismissed, No longer relevant.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "preparing",
+        "label": "Action preparing",
+        "trigger": "The person pressed Review.",
+        "behaviour": "The working mark and “Preparing a review — nothing has changed yet.”",
+        "meaning": "",
+        "action": "Wait a moment. Next: Accepted.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "accepted",
+        "label": "Accepted",
+        "trigger": "The review is ready.",
+        "behaviour": "The proposed owners, each changeable, and one confirming action. Nothing is assigned until the person confirms.",
+        "meaning": "",
+        "action": "Change, confirm (Undo stays available) or cancel. Next: Dormant.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "dismissed",
+        "label": "Dismissed",
+        "trigger": "The person pressed Dismiss.",
+        "behaviour": "It goes, with Undo. It is remembered for these issues: the same evidence never brings it back — only something new does.",
+        "meaning": "",
+        "action": "Carry on. Next: Dormant — or Suggested on new evidence.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "snoozed",
+        "label": "Snoozed",
+        "trigger": "The person chose Remind me tomorrow.",
+        "behaviour": "It goes until tomorrow, 9:00, with Undo. It returns then only if the reason is still true.",
+        "meaning": "",
+        "action": "Simulate “A day passes”. Next: Suggested, or Dormant if resolved.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "irrelevant",
+        "label": "No longer relevant",
+        "trigger": "The reason stopped being true — the person assigned the owners themselves.",
+        "behaviour": "It says so briefly and withdraws on its own.",
+        "meaning": "",
+        "action": "Nothing. Next: Dormant.",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Work through release readiness. When Aria notices something worth raising, it offers one next step — with the reason, and nothing done until you confirm.",
+    "api": "ProactiveSuggestion",
+    "intent": "Surface an opportunity or a problem the person would otherwise have to go looking for, as a recommendation they can review, snooze or dismiss — never as an action already taken.",
+    "when": "During ongoing work, when a specific, checkable condition becomes true and there is a clear next step: unowned blockers before a release, an unanswered email, a duplicate issue, a missed deadline, a step left out of a checklist.",
+    "whenNot": "Not to start a conversation (that is Suggested Prompts) or to finish what someone is typing (Autocomplete). Not for low-value or speculative tips, not on a timer with no new evidence, and not as a modal that interrupts the task. Never as a disguised action: if it would change something, it is a review first.",
+    "dir": "02-initially/01-entry-points/06-proactive",
+    "packages": [],
+    "source": {
+      "preview": [
+        7961,
+        8141
+      ],
+      "sim": [
+        2652,
+        2760
+      ],
+      "docs": [
+        1882,
+        1992
+      ]
+    },
+    "shots": {
+      "dormant": "states/01-dormant.webp",
+      "suggested": "states/02-suggested.webp",
+      "preparing": "states/03-action-preparing.webp",
+      "accepted": "states/04-accepted.webp",
+      "dismissed": "states/05-dismissed.webp",
+      "snoozed": "states/06-snoozed.webp",
+      "irrelevant": "states/07-no-longer-relevant.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Entry Points",
+    "id": "randomize",
+    "name": "Randomize",
+    "oneline": "A 'dice' that kickstarts the experience with a fun result.",
+    "built": true,
+    "initial": "ready",
+    "states": [
+      {
+        "key": "ready",
+        "label": "Ready",
+        "trigger": "An exploratory workspace — campaign concepts for the Planboard 3.0 launch.",
+        "behaviour": "One optional control above the composer, saying what it gives: a random starting direction. The composer works on its own.",
+        "meaning": "",
+        "action": "Press Try a direction — or just type. Next: Generating.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "generating",
+        "label": "Generating",
+        "trigger": "Try a direction (or Generate another) was pressed.",
+        "behaviour": "The working mark and “Finding a different direction…”. Nothing else changes.",
+        "meaning": "",
+        "action": "Wait a moment. Next: New suggestion.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "suggestion",
+        "label": "New suggestion",
+        "trigger": "A direction came back.",
+        "behaviour": "One direction — a title and a line — marked as generated, with Use this and Generate another. Nothing is placed or run yet.",
+        "meaning": "",
+        "action": "Use it, or generate another. Next: Applied, Generate another.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "another",
+        "label": "Generate another",
+        "trigger": "The person asked for another.",
+        "behaviour": "A different direction — never a repeat this round — with “2 of 2” and a way back to the previous one.",
+        "meaning": "",
+        "action": "Keep going, step back, or use one. Next: Applied.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "confirm",
+        "label": "Replace confirmation",
+        "trigger": "Use this, while the composer holds the person’s own words.",
+        "behaviour": "It asks: replace the draft, add the direction below it, or cancel. Their words are never silently replaced.",
+        "meaning": "",
+        "action": "Choose. Next: Applied, or back to the suggestion.",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "applied",
+        "label": "Applied to composer",
+        "trigger": "The direction was placed.",
+        "behaviour": "An editable prompt in the shared composer, focus and caret there. Nothing is sent.",
+        "meaning": "",
+        "action": "Edit it, then send — or try another direction. Next: the conversation.",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Exploring campaign directions for a launch. Try a direction for a random starting point, generate another until one is worth pursuing, then put it in the composer and make it yours.",
+    "api": "Randomize",
+    "intent": "Help people explore alternatives — campaign angles, ideas, styles, presets — without inventing every one themselves, while the composer stays theirs.",
+    "when": "Creative and exploratory work where variety is the point and nothing is at stake: campaign directions, naming, ideas, visual styles, presets, prompt inspiration, starting configurations for generative tools.",
+    "whenNot": "Not in finance, legal, medical, safety, destructive or otherwise deterministic workflows, where a random \"direction\" has no value and may mislead. Not as a replacement for open input, and not as a disguised way to run something.",
+    "dir": "02-initially/01-entry-points/07-randomize",
+    "packages": [],
+    "source": {
+      "preview": [
+        8148,
+        8290
+      ],
+      "sim": [
+        3583,
+        3678
+      ],
+      "docs": [
+        1997,
+        2099
+      ]
+    },
+    "shots": {
+      "ready": "states/01-ready.webp",
+      "generating": "states/02-generating.webp",
+      "suggestion": "states/03-new-suggestion.webp",
+      "another": "states/04-generate-another.webp",
+      "confirm": "states/05-replace-confirmation.webp",
+      "applied": "states/06-applied-to-composer.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Expressive Input",
+    "id": "voice-input",
+    "name": "Voice Input",
+    "oneline": "Speak into the composer; review the words, then send.",
+    "built": true,
+    "initial": "ready",
+    "states": [
+      {
+        "key": "ready",
+        "label": "Ready",
+        "trigger": "The composer at rest — here with a few words already typed.",
+        "behaviour": "The ordinary composer with a microphone in it. No gradient, no capture.",
+        "meaning": "You can type, or speak instead. Voice is optional.",
+        "action": "Press the microphone (the first time, the browser asks for it).",
+        "next": "Permission required, or Listening.",
+        "roles": null
+      },
+      {
+        "key": "permission",
+        "label": "Permission required",
+        "trigger": "The microphone was pressed and access has not been given yet.",
+        "behaviour": "A panel above the bar says what is needed, why, when it is on and how to stop. The composer stays usable under it.",
+        "meaning": "Nothing is recording yet.",
+        "action": "Allow microphone, or Not now (keep typing).",
+        "next": "Listening, or Ready.",
+        "roles": null
+      },
+      {
+        "key": "listening",
+        "label": "Listening",
+        "trigger": "Capture started.",
+        "behaviour": "The bar keeps its place and becomes the voice session: a lit microphone with a dot, “Listening · 0:04”, the words as they are heard after anything already typed, and Pause, Stop, Cancel. The gradient behind it swells a little with each word and settles in silence.",
+        "meaning": "The microphone is on. Nothing is sent.",
+        "action": "Pause, Stop (keep the words) or Cancel (discard this recording).",
+        "next": "Paused, Processing, or Ready.",
+        "roles": null
+      },
+      {
+        "key": "paused",
+        "label": "Paused",
+        "trigger": "Pause was pressed.",
+        "behaviour": "The microphone turns off (“Paused · microphone off”), the dot goes, the gradient settles. What was heard stays.",
+        "meaning": "Not listening; your progress is kept.",
+        "action": "Resume, Stop or Cancel.",
+        "next": "Listening, Processing, or Ready.",
+        "roles": null
+      },
+      {
+        "key": "processing",
+        "label": "Processing",
+        "trigger": "Stop was pressed, silence ended it, or the time limit was reached.",
+        "behaviour": "The microphone is off. “Transcribing…”, with the gradient drifting slowly. Only Cancel is offered.",
+        "meaning": "Turning speech into text. Still nothing sent.",
+        "action": "Wait, or Cancel.",
+        "next": "Transcribed, or Couldn’t understand.",
+        "roles": null
+      },
+      {
+        "key": "transcribed",
+        "label": "Transcribed",
+        "trigger": "Transcription finished.",
+        "behaviour": "The bar is a text composer again. The words join what was typed, marked “From voice — check it before you send”, with Undo. The caret is in the field.",
+        "meaning": "This is what was understood. It has not been sent.",
+        "action": "Edit it, Undo it, or Send.",
+        "next": "Editing transcript, Ready (Undo), or sent.",
+        "roles": null
+      },
+      {
+        "key": "editing",
+        "label": "Editing transcript",
+        "trigger": "The person changes the transcribed text.",
+        "behaviour": "The marker reads “From voice · edited”; Undo still returns to what was typed before voice.",
+        "meaning": "Your correction wins. Voice only drafted it.",
+        "action": "Send, or keep editing.",
+        "next": "Sent → Ready.",
+        "roles": null
+      },
+      {
+        "key": "nounderstand",
+        "label": "Couldn’t understand",
+        "trigger": "Too little could be made out to trust.",
+        "behaviour": "A panel says what happened and keeps what was heard; the typed text is untouched. No guess is put in the field.",
+        "meaning": "Nothing was lost, and nothing was guessed.",
+        "action": "Retry, Edit captured text, or Type instead.",
+        "next": "Listening, Editing transcript, or Ready.",
+        "roles": null
+      },
+      {
+        "key": "unavailable",
+        "label": "Unavailable",
+        "trigger": "No microphone was found, or the device blocks it.",
+        "behaviour": "The microphone button is unavailable with its reason; a note says so. Typing works exactly as before.",
+        "meaning": "Voice is off for now; the composer is not.",
+        "action": "Type instead.",
+        "next": "Ready.",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Voice is a way of writing the request, not a different product. Speak, see exactly what was heard, fix it, and send it yourself.",
+    "api": "AgentComposer",
+    "intent": "Speech as an INPUT method into the shared composer: speech → transcript → editable text → the person sends. Not a separate voice assistant.",
+    "when": "Wherever a request is quicker said than typed, and the product already has a composer to say it into. Not as a novelty alternative to a keyboard that is there and working, and not at all where the request commits something that a misheard word would commit wrongly — there, hold the text for correction first.",
+    "whenNot": "",
+    "dir": "02-initially/02-expressive-input/01-voice-input",
+    "packages": [],
+    "source": {
+      "preview": [
+        10806,
+        11006
+      ],
+      "sim": [
+        5676,
+        5822
+      ],
+      "docs": [
+        2802,
+        2925
+      ]
+    },
+    "shots": {
+      "ready": "states/01-ready.webp",
+      "permission": "states/02-permission-required.webp",
+      "listening": "states/03-listening.webp",
+      "paused": "states/04-paused.webp",
+      "processing": "states/05-processing.webp",
+      "transcribed": "states/06-transcribed.webp",
+      "editing": "states/07-editing-transcript.webp",
+      "nounderstand": "states/08-couldnt-understand.webp",
+      "unavailable": "states/09-unavailable.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Expressive Input",
+    "id": "visual-input",
+    "name": "Visual Input",
+    "oneline": "Show an image, a photo or a window — as context you control.",
+    "built": true,
+    "initial": "none",
+    "states": [
+      {
+        "key": "none",
+        "label": "No visual",
+        "trigger": "The composer, with words typed and nothing shown yet.",
+        "behaviour": "An ordinary composer. Visual context is offered under +.",
+        "meaning": "Aria only has your words.",
+        "action": "Press + to add an image, a photo, a screenshot or a window.",
+        "next": "Selecting.",
+        "roles": null
+      },
+      {
+        "key": "selecting",
+        "label": "Selecting",
+        "trigger": "+ was pressed.",
+        "behaviour": "A menu lists only the sources this product allows: Upload image, Take photo, Choose a recent screenshot, Share screen.",
+        "meaning": "Nothing is shared yet.",
+        "action": "Choose a source, or close the menu.",
+        "next": "Visual attached, Permission required, Unsupported.",
+        "roles": null
+      },
+      {
+        "key": "attached",
+        "label": "Visual attached",
+        "trigger": "An image was chosen.",
+        "behaviour": "A card with a real preview joins the composer above the words, with its name, “Aria will see this when you send”, Replace and Remove. The words are untouched.",
+        "meaning": "This is exactly what Aria will see — and only when you send.",
+        "action": "Add words, Replace, Remove, or Send.",
+        "next": "Processing, No visual (Remove), Selecting (Replace).",
+        "roles": null
+      },
+      {
+        "key": "sharing",
+        "label": "Sharing",
+        "trigger": "A window was chosen to share.",
+        "behaviour": "A persistent bar — red dot, “Sharing ‘Q3 metrics dashboard’”, Stop sharing — sits above the composer, and the card says it is live.",
+        "meaning": "Aria can see this window, and only this window, until you stop.",
+        "action": "Ask about it, or Stop sharing at any time.",
+        "next": "Processing, or No visual (Stop sharing).",
+        "roles": null
+      },
+      {
+        "key": "processing",
+        "label": "Processing",
+        "trigger": "The request was sent with a visual.",
+        "behaviour": "The card says “Aria is reading this image…” with a slow sheen across the preview; Replace and Remove step aside.",
+        "meaning": "Aria is using the visual now. Nothing else happens because of it.",
+        "action": "Wait.",
+        "next": "Ready, or Failed.",
+        "roles": null
+      },
+      {
+        "key": "ready",
+        "label": "Ready",
+        "trigger": "Aria finished reading it.",
+        "behaviour": "Your message shows the visual it carried; the answer says which visual it used. The composer is clear for the next request.",
+        "meaning": "You can see what Aria used to answer.",
+        "action": "Ask a follow-up, or add another visual.",
+        "next": "No visual, or Selecting.",
+        "roles": null
+      },
+      {
+        "key": "permission",
+        "label": "Permission required",
+        "trigger": "Take photo or Share screen was chosen.",
+        "behaviour": "A panel above the composer says what is needed, why, when it is on and how to stop — and, for sharing, lets you choose the one window.",
+        "meaning": "Nothing is captured or shared yet.",
+        "action": "Choose the window (or Allow camera), or Cancel.",
+        "next": "Sharing / Visual attached, or No visual.",
+        "roles": null
+      },
+      {
+        "key": "unsupported",
+        "label": "Unsupported",
+        "trigger": "A file that cannot be used was chosen (here, a video).",
+        "behaviour": "A panel says what cannot be used and what can; the words stay.",
+        "meaning": "Nothing was added.",
+        "action": "Choose an image, or continue without it.",
+        "next": "Selecting, or No visual.",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Failed",
+        "trigger": "Aria could not read the image (too blurry).",
+        "behaviour": "The card is marked, a panel says why, and the message is kept — nothing was sent without the image.",
+        "meaning": "Nothing is lost; the request waits for you.",
+        "action": "Retry, Replace, or Continue without it.",
+        "next": "Processing, Selecting, or No visual.",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Show Aria what you are looking at, and stop showing it whenever you like. Sharing is a state you can always see, and stopping it never ends the conversation.",
+    "api": "AgentComposer",
+    "intent": "Visual context joins the request in the shared composer: recognisable, removable, combined with words — and screen sharing is a visible, stoppable state.",
+    "when": "Where the evidence is visual and describing it in words is slower or less accurate: error screens and stack traces, damage and defects, whiteboards, receipts, labels, charts in somebody else's document, field and medical photographs.",
+    "whenNot": "",
+    "dir": "02-initially/02-expressive-input/02-visual-input",
+    "packages": [],
+    "source": {
+      "preview": [
+        11015,
+        11180
+      ],
+      "sim": [
+        5833,
+        5946
+      ],
+      "docs": [
+        2930,
+        3044
+      ]
+    },
+    "shots": {
+      "none": "states/01-no-visual.webp",
+      "selecting": "states/02-selecting.webp",
+      "attached": "states/03-visual-attached.webp",
+      "sharing": "states/04-sharing.webp",
+      "processing": "states/05-processing.webp",
+      "ready": "states/06-ready.webp",
+      "permission": "states/07-permission-required.webp",
+      "unsupported": "states/08-unsupported.webp",
+      "failed": "states/09-failed.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Expressive Input",
+    "id": "handwriting",
+    "name": "Handwriting Input",
+    "oneline": "Write by hand; review what was recognized before it joins your message.",
+    "built": true,
+    "initial": "ready",
+    "states": [
+      {
+        "key": "ready",
+        "label": "Ready",
+        "trigger": "The pen in the composer was pressed.",
+        "behaviour": "A writing pad opens above the composer, which stays where it was and keeps what was typed (“Next sprint:”). Undo, Clear and Close sit on the pad.",
+        "meaning": "Nothing is written or recognized yet.",
+        "action": "Write with a stylus, a finger or the mouse — or Close.",
+        "next": "Writing.",
+        "roles": null
+      },
+      {
+        "key": "writing",
+        "label": "Writing",
+        "trigger": "Ink is on the pad.",
+        "behaviour": "Strokes appear as they are drawn. Undo removes the last stroke; Clear removes all of it. Recognize is offered; nothing is read yet.",
+        "meaning": "This ink is the original. It is yours, not text yet.",
+        "action": "Keep writing, Undo, Clear, or Recognize.",
+        "next": "Recognizing.",
+        "roles": null
+      },
+      {
+        "key": "recognizing",
+        "label": "Recognizing",
+        "trigger": "Recognize was pressed (or, in automatic mode, the pen paused).",
+        "behaviour": "The status says “Recognizing your writing…”; a slow sheen crosses the ink, which stays in view. Undo and Clear step aside.",
+        "meaning": "The ink is being read. Nothing joins the message because of it.",
+        "action": "Wait.",
+        "next": "Recognized, or Couldn’t recognize.",
+        "roles": null
+      },
+      {
+        "key": "recognized",
+        "label": "Recognized",
+        "trigger": "Recognition finished.",
+        "behaviour": "Under the ink: “Recognized: Review onboarding flaw?”. The uncertain word is a button marked “?”, and Add to message is disabled until it is settled.",
+        "meaning": "This is what was read — not yet what you said.",
+        "action": "Tap the uncertain word and choose, or Edit text.",
+        "next": "Editing recognition, or Added to message.",
+        "roles": null
+      },
+      {
+        "key": "editing",
+        "label": "Editing recognition",
+        "trigger": "A word was corrected.",
+        "behaviour": "The corrected word (“flow”) is marked as yours; nothing is uncertain any more, so Add to message is enabled.",
+        "meaning": "The text reads right. It is still not in the message.",
+        "action": "Add to message, or Edit text in the composer.",
+        "next": "Added to message.",
+        "roles": null
+      },
+      {
+        "key": "added",
+        "label": "Added to message",
+        "trigger": "Add to message was pressed.",
+        "behaviour": "The words join what was typed — never replacing it — marked “From handwriting” with Undo. The ink is attached as “Handwritten note”, removable.",
+        "meaning": "Accepted text. Nothing is sent until you send.",
+        "action": "Edit, Undo, remove the original, or Send.",
+        "next": "Ready (after sending), or back to what was typed (Undo).",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Couldn’t recognize",
+        "trigger": "Too little of the ink could be read to trust.",
+        "behaviour": "A message says so; the ink stays on the pad. Rewrite, Retry, Keep original (send the ink as an image) and Switch to typing are offered. Nothing is guessed into the message.",
+        "meaning": "Nothing is lost, and nothing was added.",
+        "action": "Rewrite, Retry, Keep original, or Switch to typing.",
+        "next": "Ready, Recognizing, or Added to message (original only).",
+        "roles": null
+      },
+      {
+        "key": "unavailable",
+        "label": "Unavailable",
+        "trigger": "The device has no pen or touch input (or handwriting is turned off).",
+        "behaviour": "The pen is shown disabled; pressing it explains why, in a panel above the composer. The field works as always.",
+        "meaning": "Handwriting is optional; typing never depends on it.",
+        "action": "Type instead.",
+        "next": "—",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Handwriting is a way of writing the request, not a different product. Write, see what was recognized, settle anything uncertain, and add it to your message yourself.",
+    "api": "AgentComposer",
+    "intent": "A pen in the shared composer. Handwriting, recognized text and accepted text stay distinct, and nothing uncertain is ever accepted silently.",
+    "when": "On pen- and touch-capable surfaces, for short requests, notes and annotations where writing is quicker or more natural than typing. Not as the only way in: the field always works, and on a device without pen or touch the pen is shown unavailable and typing carries on.",
+    "whenNot": "",
+    "dir": "02-initially/02-expressive-input/03-handwriting",
+    "packages": [],
+    "source": {
+      "preview": [
+        11186,
+        11342
+      ],
+      "sim": [
+        5966,
+        6095
+      ],
+      "docs": [
+        3049,
+        3145
+      ]
+    },
+    "shots": {
+      "ready": "states/01-ready.webp",
+      "writing": "states/02-writing.webp",
+      "recognizing": "states/03-recognizing.webp",
+      "recognized": "states/04-recognized.webp",
+      "editing": "states/05-editing-recognition.webp",
+      "added": "states/06-added-to-message.webp",
+      "failed": "states/07-couldnt-recognize.webp",
+      "unavailable": "states/08-unavailable.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Expressive Input",
+    "id": "gesture",
+    "name": "Gesture Input",
+    "oneline": "Circle or tap what's on screen; it joins your request by name.",
+    "built": true,
+    "initial": "ready",
+    "states": [
+      {
+        "key": "ready",
+        "label": "Ready",
+        "trigger": "A dashboard on screen and the composer below it.",
+        "behaviour": "An ordinary composer with a Select on screen button.",
+        "meaning": "Aria only has your words.",
+        "action": "Press Select on screen.",
+        "next": "Selecting.",
+        "roles": null
+      },
+      {
+        "key": "selecting",
+        "label": "Selecting",
+        "trigger": "Select on screen was pressed.",
+        "behaviour": "A toolbar on the dashboard — “Circle what you mean — or Tab to it” — with Circle, Highlight, Tap and Region, and Cancel. Every item on the dashboard becomes a button.",
+        "meaning": "Nothing is selected or shared yet. A gesture here only points.",
+        "action": "Circle, highlight, tap or drag a box — or Tab to an item and press Enter. Escape cancels.",
+        "next": "Selection made, or Couldn’t identify selection.",
+        "roles": null
+      },
+      {
+        "key": "made",
+        "label": "Selection made",
+        "trigger": "A gesture landed on one thing.",
+        "behaviour": "That thing gets a boundary, and a bar on it names it — “Conversion chart” — with Adjust, Clear and Add to message.",
+        "meaning": "This is what you pointed at. It is not in the message yet.",
+        "action": "Add to message, Adjust, or Clear.",
+        "next": "Context added, Selecting (Adjust), or Ready (Clear).",
+        "roles": null
+      },
+      {
+        "key": "added",
+        "label": "Context added",
+        "trigger": "Add to message (or automatic adding).",
+        "behaviour": "A chip in the composer — “Selected: Conversion chart” — with ✕; the chart keeps a quiet “Selected” tag. The words are yours to write.",
+        "meaning": "Aria will use the chart with your words, when you send.",
+        "action": "Ask, remove the selection, or select something else.",
+        "next": "Agent using selection, or Selection cleared.",
+        "roles": null
+      },
+      {
+        "key": "using",
+        "label": "Agent using selection",
+        "trigger": "The message was sent with a selection.",
+        "behaviour": "The chart says “Aria is looking at this” under a slow sheen; the chip is outlined. The answer names the chart it used.",
+        "meaning": "Aria is using the chart — and only the chart. Nothing is changed.",
+        "action": "Wait.",
+        "next": "Context added (the selection stays for follow-ups).",
+        "roles": null
+      },
+      {
+        "key": "cleared",
+        "label": "Selection cleared",
+        "trigger": "The selection was removed.",
+        "behaviour": "The chip and the boundary are gone; a note says Aria won’t use the chart, with Select something else.",
+        "meaning": "The conversation continues without it.",
+        "action": "Select something else, or keep typing.",
+        "next": "Selecting, or Ready.",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Couldn’t identify selection",
+        "trigger": "A gesture covered two things (or nothing).",
+        "behaviour": "Both candidates are marked and a panel asks “Which did you mean?” with a button for each, Try again, Describe it instead and Clear. Nothing is guessed.",
+        "meaning": "Nothing is selected until you say.",
+        "action": "Choose one, try again, describe it in words, or clear.",
+        "next": "Selection made, Selecting, or Ready.",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Point at what you mean, and it joins your request by name. A gesture only points — it never changes anything — and when it could mean two things, Aria asks.",
+    "api": "AgentComposer",
+    "intent": "Contextual screen selection on the shared composer: point at the thing, see it named, add it to the request — and an ambiguous selection asks rather than guesses.",
+    "when": "Wherever a request is about something already on screen: a chart, a row, a region of a design, a paragraph. Not as the only way to refer to things — words always work — and never as a way to trigger actions.",
+    "whenNot": "",
+    "dir": "02-initially/02-expressive-input/04-gesture",
+    "packages": [],
+    "source": {
+      "preview": [
+        11348,
+        11507
+      ],
+      "sim": [
+        6109,
+        6227
+      ],
+      "docs": [
+        3150,
+        3254
+      ]
+    },
+    "shots": {
+      "ready": "states/01-ready.webp",
+      "selecting": "states/02-selecting.webp",
+      "made": "states/03-selection-made.webp",
+      "added": "states/04-context-added.webp",
+      "using": "states/05-agent-using-selection.webp",
+      "cleared": "states/06-selection-cleared.webp",
+      "failed": "states/07-couldnt-identify-selection.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Expressive Input",
+    "id": "structured-input",
+    "name": "Structured Input",
+    "oneline": "A compact form for exact values — suggestions marked, actions confirmed.",
+    "built": true,
+    "initial": "complete",
+    "states": [
+      {
+        "key": "empty",
+        "label": "Empty",
+        "trigger": "Aria needs exact values and has none yet.",
+        "behaviour": "A compact form under the request: Task, Owner, Due date, Priority — labels, helper text, required marks — and “Suggest values”.",
+        "meaning": "Nothing will happen until the form is complete and you confirm.",
+        "action": "Fill it in, or ask for suggestions.",
+        "next": "Partially completed.",
+        "roles": null
+      },
+      {
+        "key": "partial",
+        "label": "Partially completed",
+        "trigger": "Some fields are filled.",
+        "behaviour": "A count (“1 of 4 filled”); required fields still empty are marked by their label, not yet by an error.",
+        "meaning": "You can carry on in any order.",
+        "action": "Fill the rest, or Cancel.",
+        "next": "Complete.",
+        "roles": null
+      },
+      {
+        "key": "complete",
+        "label": "Complete",
+        "trigger": "Every required field has a value.",
+        "behaviour": "Owner, Due date and Priority were filled in by Aria from the blocker — Aria’s message says so — and stay editable. A value you change is marked “Edited by you”. Review is ready.",
+        "meaning": "Suggestions are offers. Nothing you set is changed for you.",
+        "action": "Edit anything, then Review.",
+        "next": "Ready to submit, or Validation error.",
+        "roles": null
+      },
+      {
+        "key": "invalid",
+        "label": "Validation error",
+        "trigger": "Review found a problem.",
+        "behaviour": "The message sits under its field (“Pick a date after today”), the field is marked invalid, a summary counts what needs a look, and focus moves to the first one.",
+        "meaning": "Nothing was sent. Your values are untouched.",
+        "action": "Fix the field — the error clears as soon as it is right.",
+        "next": "Complete.",
+        "roles": null
+      },
+      {
+        "key": "ready",
+        "label": "Ready to submit",
+        "trigger": "Review passed.",
+        "behaviour": "A summary of the values, which were suggested and which you edited, “What Aria will receive” (the exact payload), Back to edit and Create task.",
+        "meaning": "Creating a task changes another system, so it waits for you.",
+        "action": "Create task, or Back to edit.",
+        "next": "Submitted, or Couldn’t submit.",
+        "roles": null
+      },
+      {
+        "key": "submitted",
+        "label": "Submitted",
+        "trigger": "Create task succeeded.",
+        "behaviour": "“Task created — EXP-214”, the values, “What Aria received”, Undo and Open task.",
+        "meaning": "The outcome is visible, and reversible.",
+        "action": "Open the task, or Undo.",
+        "next": "Complete (Undo).",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Couldn’t submit",
+        "trigger": "Creating the task failed.",
+        "behaviour": "An alert says what happened; every value is kept; Retry and Cancel.",
+        "meaning": "Nothing was created, and nothing is lost.",
+        "action": "Retry, edit, or Cancel.",
+        "next": "Ready to submit / Submitted, or Complete.",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Open input for the request, a small form for the exact values. Suggestions are offers you can see and change; creating the task waits for you.",
+    "api": "AgentForm",
+    "intent": "A small form that complements open input: the request starts in words; the exact values are set in fields, checked next to each field, reviewed, and only then acted on.",
+    "when": "When an action needs specific, validated values (create a task, book a slot, file an expense), or when a request is ambiguous in ways a few fields settle faster than questions. Not for open questions, and not instead of the composer — the person can always say it in words.",
+    "whenNot": "",
+    "dir": "02-initially/02-expressive-input/05-structured-input",
+    "packages": [],
+    "source": {
+      "preview": [
+        11512,
+        12631
+      ],
+      "sim": [
+        6240,
+        6342
+      ],
+      "docs": [
+        3259,
+        3353
+      ]
+    },
+    "shots": {
+      "empty": "states/01-empty.webp",
+      "partial": "states/02-partially-completed.webp",
+      "complete": "states/03-complete.webp",
+      "invalid": "states/04-validation-error.webp",
+      "ready": "states/05-ready-to-submit.webp",
+      "submitted": "states/06-submitted.webp",
+      "failed": "states/07-couldnt-submit.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Prompt Scaffolds",
+    "id": "suggestions",
+    "name": "Suggestions",
+    "oneline": "Aria suggests one detail to add to the request you’re writing — marked as its suggestion, added only if you choose, never sent for you.",
+    "built": true,
+    "initial": "available",
+    "states": [
+      {
+        "key": "none",
+        "label": "No suggestion",
+        "trigger": "They are typing, or nothing would make the request better.",
+        "behaviour": "The composer on its own. Nothing appears while keys are moving.",
+        "meaning": "Carry on writing.",
+        "action": "Type a request.",
+        "next": "Suggestion available",
+        "roles": null
+      },
+      {
+        "key": "available",
+        "label": "Suggestion available",
+        "trigger": "They paused on “Summarize the September release.”",
+        "behaviour": "A short row of suggestion chips just above the composer, marked as Aria’s: what each would add, why (on request), and Dismiss. Their text is untouched.",
+        "meaning": "Aria thinks this would make the request better.",
+        "action": "Add it, dismiss it, or keep typing.",
+        "next": "Accepted, Dismissed or No longer relevant",
+        "roles": null
+      },
+      {
+        "key": "accepted",
+        "label": "Suggestion accepted",
+        "trigger": "They pressed Add to prompt.",
+        "behaviour": "The words are added after theirs — never replacing them — and a line names what was added, with Undo. Nothing is sent.",
+        "meaning": "The request now includes it, and it is still theirs to edit.",
+        "action": "Edit, undo, or send.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "dismissed",
+        "label": "Suggestion dismissed",
+        "trigger": "They pressed Dismiss.",
+        "behaviour": "The suggestion goes and does not come back for this request.",
+        "meaning": "Their request stays exactly as written.",
+        "action": "Keep writing.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "irrelevant",
+        "label": "No longer relevant",
+        "trigger": "They rewrote the request so the suggestion no longer fits.",
+        "behaviour": "The suggestion withdraws on its own, quietly.",
+        "meaning": "Nothing to add right now.",
+        "action": "Keep writing.",
+        "next": "Suggestion available",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Write the request — or press “Type the request” — and pause. Suggestions appear just above the composer. Add one, edit what you have, then send. Nothing is sent or rewritten for you.",
+    "api": "PromptSuggestion",
+    "intent": "Helps someone improve a request they are already writing: after a pause, Aria offers a few relevant details — context, a constraint, an expected outcome — as chips they can add, ignore or dismiss. Their words are never replaced.",
+    "when": "When a request in progress is missing a detail the product can reliably infer from context — a time range, an audience, a constraint. Not while someone is still typing, and not to propose a different request.",
+    "whenNot": "",
+    "dir": "02-initially/03-prompt-scaffolds/01-suggestions",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-button",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-icon-button",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        2333,
+        2525
+      ],
+      "sim": [
+        1702,
+        1789
+      ],
+      "docs": [
+        3354,
+        3373
+      ]
+    },
+    "shots": {
+      "none": "states/01-no-suggestion.webp",
+      "available": "states/02-suggestion-available.webp",
+      "accepted": "states/03-suggestion-accepted.webp",
+      "dismissed": "states/04-suggestion-dismissed.webp",
+      "irrelevant": "states/05-no-longer-relevant.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Prompt Scaffolds",
+    "id": "madlibs",
+    "name": "Madlibs",
+    "oneline": "A request written as a sentence with a few labelled blanks — fill them, read the result, then edit it in the composer before sending.",
+    "built": true,
+    "initial": "partial",
+    "states": [
+      {
+        "key": "empty",
+        "label": "Empty scaffold",
+        "trigger": "A request that needs a few specific details.",
+        "behaviour": "A sentence with labelled blanks. Required and optional blanks are marked; the assembled request shows what is still missing.",
+        "meaning": "Fill these in and the request is written.",
+        "action": "Fill a blank.",
+        "next": "Partially completed",
+        "roles": null
+      },
+      {
+        "key": "partial",
+        "label": "Partially completed",
+        "trigger": "They filled one blank.",
+        "behaviour": "Filled blanks read as part of the sentence; the rest are still marked.",
+        "meaning": "What is done, and what is left.",
+        "action": "Fill the rest.",
+        "next": "AI suggestion available, or Complete",
+        "roles": null
+      },
+      {
+        "key": "suggestion",
+        "label": "AI suggestion available",
+        "trigger": "Aria can infer a value from what they chose.",
+        "behaviour": "The blank shows Aria’s value, marked “Suggested”, with Keep and Clear. It is not part of the request until kept.",
+        "meaning": "A likely value — theirs to accept.",
+        "action": "Keep, clear, or type another.",
+        "next": "Complete",
+        "roles": null
+      },
+      {
+        "key": "complete",
+        "label": "Complete",
+        "trigger": "Every required blank has a value they chose.",
+        "behaviour": "The assembled sentence reads cleanly; Use prompt is available.",
+        "meaning": "The request is written.",
+        "action": "Use prompt.",
+        "next": "Ready to use",
+        "roles": null
+      },
+      {
+        "key": "validation",
+        "label": "Validation needed",
+        "trigger": "They pressed Use prompt with a required blank empty.",
+        "behaviour": "That blank is flagged with words, focus moves to it, and everything else they entered stays.",
+        "meaning": "One detail is missing.",
+        "action": "Fill it.",
+        "next": "Complete",
+        "roles": null
+      },
+      {
+        "key": "ready",
+        "label": "Ready to use",
+        "trigger": "They pressed Use prompt.",
+        "behaviour": "The sentence is in the composer — editable, unsent.",
+        "meaning": "It is an ordinary request now.",
+        "action": "Edit, then send.",
+        "next": "—",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Aria offers a guided sentence for a stakeholder summary. Fill the blanks — the request assembles as you go — then Use prompt puts it in the composer to edit and send.",
+    "api": "PromptMadlib",
+    "intent": "Helps someone write a request that needs a few specific details: a sentence with labelled blanks, required and optional marked, the assembled request visible as they go, and the result placed in the composer to edit — not sent.",
+    "when": "For common requests with two to four variable details — summaries, briefs, comparisons. Not for open-ended requests, and not as a substitute for a form with many fields.",
+    "whenNot": "",
+    "dir": "02-initially/03-prompt-scaffolds/02-madlibs",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-button",
+      "@nucleux/prompt-template",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        2528,
+        2755
+      ],
+      "sim": [
+        1802,
+        1890
+      ],
+      "docs": [
+        3374,
+        3393
+      ]
+    },
+    "shots": {
+      "empty": "states/01-empty-scaffold.webp",
+      "partial": "states/02-partially-completed.webp",
+      "suggestion": "states/03-ai-suggestion-available.webp",
+      "complete": "states/04-complete.webp",
+      "validation": "states/05-validation-needed.webp",
+      "ready": "states/06-ready-to-use.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Prompt Scaffolds",
+    "id": "prompt-enhancer",
+    "name": "Prompt Enhancer",
+    "oneline": "Proposes a clearer version of the request you wrote — every addition marked and explained, the original kept until you choose.",
+    "built": true,
+    "initial": "enhanced",
+    "states": [
+      {
+        "key": "original",
+        "label": "Original",
+        "trigger": "They have written a short request.",
+        "behaviour": "Their prompt in the composer, with Improve beside the model chip.",
+        "meaning": "They can ask for a clearer version — or just send.",
+        "action": "Improve, or send.",
+        "next": "Enhancing",
+        "roles": null
+      },
+      {
+        "key": "enhancing",
+        "label": "Enhancing",
+        "trigger": "They pressed Improve.",
+        "behaviour": "Improve says “Improving…”; the original stays in the composer, readable and untouched.",
+        "meaning": "Aria is working on a suggestion. Nothing has changed yet.",
+        "action": "Wait, or cancel.",
+        "next": "Enhanced, or Enhancement failed",
+        "roles": null
+      },
+      {
+        "key": "enhanced",
+        "label": "Enhanced",
+        "trigger": "Aria proposed an improvement.",
+        "behaviour": "A review above the composer: their words, plus each addition marked and explained. An assumption is labelled. The composer still holds the original.",
+        "meaning": "What would change, and why.",
+        "action": "Use it, edit it, remove a change, or keep the original.",
+        "next": "Reviewing, Edited, Accepted",
+        "roles": null
+      },
+      {
+        "key": "reviewing",
+        "label": "Reviewing changes",
+        "trigger": "They removed one change.",
+        "behaviour": "The removed addition is struck from the suggestion; the rest stay.",
+        "meaning": "They are choosing which improvements to keep.",
+        "action": "Use the rest, or restore it.",
+        "next": "Accepted",
+        "roles": null
+      },
+      {
+        "key": "edited",
+        "label": "Edited",
+        "trigger": "They chose Edit.",
+        "behaviour": "The suggested prompt in a text field they can change freely.",
+        "meaning": "The suggestion is a starting point.",
+        "action": "Use this, or cancel.",
+        "next": "Accepted",
+        "roles": null
+      },
+      {
+        "key": "accepted",
+        "label": "Accepted",
+        "trigger": "They chose Use improved.",
+        "behaviour": "The composer now holds the improved prompt — editable, unsent — with Undo.",
+        "meaning": "Their request was updated; nothing was sent.",
+        "action": "Edit, undo, or send.",
+        "next": "Reverted",
+        "roles": null
+      },
+      {
+        "key": "reverted",
+        "label": "Reverted",
+        "trigger": "They pressed Undo.",
+        "behaviour": "The original prompt is back exactly as written.",
+        "meaning": "Nothing was lost.",
+        "action": "Send, or improve again.",
+        "next": "Original",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Enhancement failed",
+        "trigger": "Aria couldn’t produce a suggestion.",
+        "behaviour": "One line says so; the original is untouched. Try again, or keep the original.",
+        "meaning": "Nothing changed.",
+        "action": "Try again, or carry on.",
+        "next": "Enhancing, or Original",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Press Improve on a short request. Aria proposes a clearer one with every addition marked and explained — remove the one you don’t need, use the rest, and send. Your original stays until you choose.",
+    "api": "PromptEnhancer",
+    "intent": "Helps someone improve a request they have already written: Aria proposes a clearer version, shows exactly what it added and why, flags assumptions, and leaves the original in the composer until they use, edit or reject the suggestion.",
+    "when": "When a request is short or vague and the product can make it more specific without guessing the intent. Not for already-specific requests, and not to make every prompt longer.",
+    "whenNot": "",
+    "dir": "02-initially/03-prompt-scaffolds/03-prompt-enhancer",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-button",
+      "@nucleux/md3-card",
+      "@nucleux/prompt-enhancer",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        2758,
+        2995
+      ],
+      "sim": [
+        1903,
+        1997
+      ],
+      "docs": [
+        3394,
+        3413
+      ]
+    },
+    "shots": {
+      "original": "states/01-original.webp",
+      "enhancing": "states/02-enhancing.webp",
+      "enhanced": "states/03-enhanced.webp",
+      "reviewing": "states/04-reviewing-changes.webp",
+      "edited": "states/05-edited.webp",
+      "accepted": "states/06-accepted.webp",
+      "reverted": "states/07-reverted.webp",
+      "failed": "states/08-enhancement-failed.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Prompt Scaffolds",
+    "id": "modes",
+    "name": "Modes",
+    "oneline": "Choose how the agent approaches the task — Brainstorm, Draft, Review, Plan — shown in the composer, separate from the model.",
+    "built": true,
+    "initial": "selected",
+    "states": [
+      {
+        "key": "none",
+        "label": "No mode selected",
+        "trigger": "They are writing a request.",
+        "behaviour": "A Mode control beside the model chip. Aria works the general way until a mode is chosen.",
+        "meaning": "They can choose how Aria should approach this.",
+        "action": "Open Mode, or just send.",
+        "next": "Mode picker open",
+        "roles": null
+      },
+      {
+        "key": "open",
+        "label": "Mode picker open",
+        "trigger": "They opened Mode.",
+        "behaviour": "A short list of modes, each with one line on what changes. An unavailable mode says why.",
+        "meaning": "What each mode would do with this request.",
+        "action": "Choose one, or close.",
+        "next": "Mode selected",
+        "roles": null
+      },
+      {
+        "key": "selected",
+        "label": "Mode selected",
+        "trigger": "They chose Plan.",
+        "behaviour": "The Mode chip in the composer now reads “Plan”, with a way to change or remove it. The text and the model are untouched.",
+        "meaning": "Aria will approach this as a planning task.",
+        "action": "Send, change, or clear.",
+        "next": "Mode changed",
+        "roles": null
+      },
+      {
+        "key": "changed",
+        "label": "Mode changed",
+        "trigger": "They switched Plan to Review.",
+        "behaviour": "The chip updates and one line says what changed — and that their text is the same.",
+        "meaning": "The next request will be a review.",
+        "action": "Send.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "unavailable",
+        "label": "Mode unavailable",
+        "trigger": "They chose a mode this workspace can’t support.",
+        "behaviour": "The mode isn’t applied; the picker says why and offers the others.",
+        "meaning": "That approach isn’t possible here.",
+        "action": "Choose another.",
+        "next": "Mode selected",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Open Mode in the composer and choose Plan, then send: Aria answers with steps. Switch to Review and ask again — same model, same context, a different way of working.",
+    "api": "ModePicker",
+    "intent": "Lets someone choose how the agent should work on a request — explore, draft, review, plan — without describing the working style every time. The mode is visible in the composer, changes nothing they wrote, and is separate from which model answers.",
+    "when": "When the product genuinely works differently per approach — different steps, tools or output. Not as labels over the same behaviour, and not to stand in for model selection or reasoning effort.",
+    "whenNot": "",
+    "dir": "02-initially/03-prompt-scaffolds/04-modes",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-button",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-menu",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        2998,
+        3164
+      ],
+      "sim": [
+        2010,
+        2093
+      ],
+      "docs": [
+        3414,
+        3433
+      ]
+    },
+    "shots": {
+      "none": "states/01-no-mode-selected.webp",
+      "open": "states/02-mode-picker-open.webp",
+      "selected": "states/03-mode-selected.webp",
+      "changed": "states/04-mode-changed.webp",
+      "unavailable": "states/05-mode-unavailable.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Prompt Scaffolds",
+    "id": "voice-tone",
+    "name": "Voice & Tone",
+    "oneline": "Say how the reply should sound — Professional, Friendly, Concise, or your own words — visible in the composer, never changing what it says.",
+    "built": true,
+    "initial": "selected",
+    "states": [
+      {
+        "key": "default",
+        "label": "Default",
+        "trigger": "No tone chosen.",
+        "behaviour": "A Tone control beside the model chip. Aria uses its default voice.",
+        "meaning": "They can say how the reply should sound.",
+        "action": "Open Tone, or send.",
+        "next": "Tone picker open",
+        "roles": null
+      },
+      {
+        "key": "open",
+        "label": "Tone picker open",
+        "trigger": "They opened Tone.",
+        "behaviour": "Tones with one line each showing how it sounds; Aria’s recommendation is marked, not selected; a field for their own description.",
+        "meaning": "How the reply would sound in each.",
+        "action": "Choose one, describe one, or close.",
+        "next": "Tone selected, or Custom tone",
+        "roles": null
+      },
+      {
+        "key": "selected",
+        "label": "Tone selected",
+        "trigger": "They chose Professional.",
+        "behaviour": "The Tone chip in the composer now reads “Professional”, with a way to change or remove it. Their text is untouched.",
+        "meaning": "The reply will sound professional — saying the same things.",
+        "action": "Send, change, or remove.",
+        "next": "Tone changed, or Tone removed",
+        "roles": null
+      },
+      {
+        "key": "custom",
+        "label": "Custom tone",
+        "trigger": "They described their own tone.",
+        "behaviour": "Their words become the tone chip, with a note that Aria will match it as closely as it can.",
+        "meaning": "Their description guides how it sounds.",
+        "action": "Send, edit, or remove.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "changed",
+        "label": "Tone changed",
+        "trigger": "They switched to Conversational.",
+        "behaviour": "The chip updates; one line says the facts stay the same.",
+        "meaning": "Same content, different voice.",
+        "action": "Send, or ask for a new version.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "removed",
+        "label": "Tone removed",
+        "trigger": "They removed the tone.",
+        "behaviour": "The chip goes; Aria uses its default voice. Undo is offered.",
+        "meaning": "Back to the default.",
+        "action": "Undo, or carry on.",
+        "next": "Default",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Choose Professional and send. Then switch to Conversational and ask for another version — the wording changes, the facts don’t. Aria’s recommendation is marked and never applied for you.",
+    "api": "TonePicker",
+    "intent": "Lets someone set how a reply should sound for this audience — choosing a tone, or describing one — previewed in a line, visible in the composer, and changeable or removable before they send. Tone changes wording, never facts.",
+    "when": "For writing tasks where the audience changes the voice — updates, replies, announcements. Not for analysis or factual lookups, and not as the agent’s standing personality (that is Personality).",
+    "whenNot": "",
+    "dir": "02-initially/03-prompt-scaffolds/05-voice-tone",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-radio",
+      "@nucleux/md3-segmented-button",
+      "@nucleux/md3-text-field",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        3167,
+        3375
+      ],
+      "sim": [
+        2106,
+        2176
+      ],
+      "docs": [
+        3434,
+        3453
+      ]
+    },
+    "shots": {
+      "default": "states/01-default.webp",
+      "open": "states/02-tone-picker-open.webp",
+      "selected": "states/03-tone-selected.webp",
+      "custom": "states/04-custom-tone.webp",
+      "changed": "states/05-tone-changed.webp",
+      "removed": "states/06-tone-removed.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Prompt Scaffolds",
+    "id": "preset-styles",
+    "name": "Preset Styles",
+    "oneline": "Named styles for how replies are written — Normal, Concise, Formal, Explanatory, or one made from your own writing — previewed, switchable mid-conversation.",
+    "built": true,
+    "initial": "selected",
+    "states": [
+      {
+        "key": "none",
+        "label": "Normal",
+        "trigger": "They are writing a request.",
+        "behaviour": "No style chip: Aria writes the way it usually does. A Style control sits with the composer’s tools.",
+        "meaning": "Replies use the default style.",
+        "action": "Open Style, or send.",
+        "next": "Style menu open",
+        "roles": null
+      },
+      {
+        "key": "available",
+        "label": "Style menu open",
+        "trigger": "They opened Style.",
+        "behaviour": "“Use style”: Normal, Concise, Formal and Explanatory, each with one line on what changes, their own styles below, and Create & edit styles. The current style is checked.",
+        "meaning": "How Aria could write the reply.",
+        "action": "Point at a style to preview it, or choose one.",
+        "next": "Previewing a style",
+        "roles": null
+      },
+      {
+        "key": "selected",
+        "label": "Previewing a style",
+        "trigger": "They pointed at (or focused) Concise.",
+        "behaviour": "A sample reply in that style appears beside the list. Nothing changes until they choose it.",
+        "meaning": "What replies would read like.",
+        "action": "Choose it, or look at another.",
+        "next": "Style applied",
+        "roles": null
+      },
+      {
+        "key": "applied",
+        "label": "Style applied",
+        "trigger": "They chose Concise.",
+        "behaviour": "The menu closes and the Style chip in the composer reads “Concise”, with × to go back to Normal. One line says where it applies. Their request is untouched.",
+        "meaning": "Replies from now on will be shorter and more direct.",
+        "action": "Send, switch, or go back to Normal.",
+        "next": "Style switched, or Back to Normal",
+        "roles": null
+      },
+      {
+        "key": "changed",
+        "label": "Style switched",
+        "trigger": "Mid-conversation, they switched Concise to Formal.",
+        "behaviour": "The chip updates and one line says the new style applies from here — earlier replies keep theirs.",
+        "meaning": "The next reply will be formal.",
+        "action": "Send.",
+        "next": "—",
+        "roles": null
+      },
+      {
+        "key": "removed",
+        "label": "Back to Normal",
+        "trigger": "They pressed × on the chip (or chose Normal).",
+        "behaviour": "The chip goes; one line confirms Normal, with Undo.",
+        "meaning": "Replies go back to the default style.",
+        "action": "Undo, or carry on.",
+        "next": "Normal",
+        "roles": null
+      },
+      {
+        "key": "create",
+        "label": "Create a style",
+        "trigger": "They chose Create & edit styles.",
+        "behaviour": "A card above the composer: start from writing they like (paste or upload) or describe the style instead. Generate style is the only AI step; the example is used only to make the style.",
+        "meaning": "Aria can learn how they want replies to read.",
+        "action": "Add an example or a description, then generate.",
+        "next": "Style generated",
+        "roles": null
+      },
+      {
+        "key": "generated",
+        "label": "Style generated",
+        "trigger": "Aria made a style from their example.",
+        "behaviour": "A name and one line on what it changes, both editable and marked as Aria’s; the instructions behind it, on request; and a preview. Save keeps it in Your styles; Save and use applies it.",
+        "meaning": "Their own style — reviewed before it is used.",
+        "action": "Rename, adjust, preview, then save.",
+        "next": "Style applied",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Aria has answered in its Normal style. Open Style, point at a style to preview it, choose Concise and ask again. Then Create & edit styles: Aria makes a style from your own release notes. Switching never rewrites what you typed, and earlier replies keep the style they were written in.",
+    "api": "StylePicker",
+    "intent": "Lets someone set how the agent writes — shorter, more formal, more explanatory, or in their own house voice — without repeating it in every request, and change it at any point in a conversation.",
+    "when": "When people return to the same kind of reply — summaries, customer emails, explanations for newcomers — and want it to read a consistent way. Not for a single-request instruction, and not for what the agent knows or which model answers.",
+    "whenNot": "",
+    "dir": "02-initially/03-prompt-scaffolds/06-preset-styles",
+    "packages": [
+      "@nucleux/md3-agent-composer",
+      "@nucleux/md3-button",
+      "@nucleux/md3-chip",
+      "@nucleux/md3-menu",
+      "@nucleux/md3-segmented-button",
+      "@nucleux/md3-text-field",
+      "@nucleux/tokens"
+    ],
+    "source": {
+      "preview": [
+        3385,
+        3664
+      ],
+      "sim": [
+        2189,
+        2332
+      ],
+      "docs": [
+        3454,
+        3473
+      ]
+    },
+    "shots": {
+      "none": "states/01-normal.webp",
+      "available": "states/02-style-menu-open.webp",
+      "selected": "states/03-previewing-a-style.webp",
+      "applied": "states/04-style-applied.webp",
+      "changed": "states/05-style-switched.webp",
+      "removed": "states/06-back-to-normal.webp",
+      "create": "states/07-create-a-style.webp",
+      "generated": "states/08-style-generated.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Context Expansion",
+    "id": "attachments",
+    "name": "Attachments",
+    "oneline": "Upload files, photos, docs for the AI to read.",
+    "built": true,
+    "initial": "empty",
+    "states": [
+      {
+        "key": "empty",
+        "label": "Nothing attached",
+        "trigger": "The product at rest.",
+        "behaviour": "The ordinary composer. Attaching is one control away and it does not go anywhere else — the row appears above the input, inside the same bar.",
+        "meaning": "",
+        "action": "Attach one",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "uploading",
+        "label": "Uploading",
+        "trigger": "A file is chosen.",
+        "behaviour": "The object joins the composer immediately, carrying a determinate bar because there is a real number to show.",
+        "meaning": "",
+        "action": "Finish the upload",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "processing",
+        "label": "Reading",
+        "trigger": "The bytes have arrived.",
+        "behaviour": "Uploaded is not readable. The bar stops claiming a percentage it no longer has, and the word changes.",
+        "meaning": "",
+        "action": "Finish reading",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "one",
+        "label": "Ready",
+        "trigger": "The agent can read it.",
+        "behaviour": "Name, type, and the word Ready. The composer has grown by exactly one row and nothing else has moved.",
+        "meaning": "",
+        "action": "Attach a second",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "several",
+        "label": "Several",
+        "trigger": "More context is added.",
+        "behaviour": "They wrap within the row. Each keeps its own state, because one failing has nothing to do with the others.",
+        "meaning": "",
+        "action": "See one refused",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "toobig",
+        "label": "Too large",
+        "trigger": "The file is over the limit.",
+        "behaviour": "Refused before a byte moves, with the limit in the message, and still listed so it can be swapped rather than hunted for.",
+        "meaning": "",
+        "action": "See an upload fail",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Failed",
+        "trigger": "The upload does not complete.",
+        "behaviour": "A retry control on the object itself, so recovering costs one press rather than finding the file again.",
+        "meaning": "",
+        "action": "See an image",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "image",
+        "label": "Image",
+        "trigger": "The attachment is a picture.",
+        "behaviour": "A real thumbnail, because for an image it identifies the file faster than the filename does.",
+        "meaning": "",
+        "action": "Back to empty",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Attach a file from the + in the composer and watch the states it passes through. The one worth reading is the last: removing a file takes it out of what comes next, and cannot unwrite an answer it already shaped.",
+    "api": "",
+    "intent": "Temporary context — a file that belongs to this conversation and dies with it.",
+    "when": "Whenever the material is specific to one question — this contract, this screenshot, this export. It is the right default for anything a person would not want to keep: the cost of attaching is one press and the cost of it being wrong is nothing, because it goes away with the conversation.",
+    "whenNot": "",
+    "dir": "02-initially/04-context-expansion/01-attachments",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        10635,
+        10794
+      ],
+      "sim": [
+        3699,
+        3885
+      ],
+      "docs": [
+        2679,
+        2800
+      ]
+    },
+    "shots": {
+      "empty": "states/01-nothing-attached.webp",
+      "uploading": "states/02-uploading.webp",
+      "processing": "states/03-reading.webp",
+      "one": "states/04-ready.webp",
+      "several": "states/05-several.webp",
+      "toobig": "states/06-too-large.webp",
+      "failed": "states/07-failed.webp",
+      "image": "states/08-image.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Context Expansion",
+    "id": "connectors",
+    "name": "Connect Data Source",
+    "oneline": "Sign in to GitHub, Drive, Slack or Notion for live, bounded grounding.",
+    "built": true,
+    "initial": "zero",
+    "states": [
+      {
+        "key": "zero",
+        "label": "No sources connected",
+        "trigger": "A fresh agent, before anything has been granted.",
+        "behaviour": "Names the benefit in one line and lists what can be connected as a compact list &mdash; not a gallery of logos nobody browses.",
+        "meaning": "",
+        "action": "Choose GitHub",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "access",
+        "label": "Why access is needed",
+        "trigger": "Connect is pressed.",
+        "behaviour": "Says what the agent cannot reach and why, then what connecting would allow &mdash; in the product&rsquo;s own verbs, before any handoff, and bounded rather than absolute.",
+        "meaning": "",
+        "action": "Allow it",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "connecting",
+        "label": "Connecting",
+        "trigger": "Allow is pressed.",
+        "behaviour": "The product does not impersonate the sign-in. It waits, says it is waiting, and leaves a way out.",
+        "meaning": "",
+        "action": "See it connected",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "connected",
+        "label": "Connected",
+        "trigger": "The service confirms.",
+        "behaviour": "The word and a dot, in that order, plus a plain statement of what the agent can now reach &mdash; bounded, never &ldquo;all of GitHub.&rdquo;",
+        "meaning": "",
+        "action": "Ask something that needs it",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "active",
+        "label": "Being used",
+        "trigger": "A request the source can answer arrives.",
+        "behaviour": "A quiet line while the agent draws on the source, settling into a small, checkable receipt &mdash; never a progress percentage, because there is no honest one for &ldquo;reading issues.&rdquo;",
+        "meaning": "",
+        "action": "See it settle",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "multi",
+        "label": "Several sources",
+        "trigger": "More than one connection exists.",
+        "behaviour": "One surface, grouped by the only thing that decides where a source belongs: connected sources first, each with a switch for whether the agent may draw on it right now, then what can still be added, divided by a single hairline. Neither group is captioned &mdash; a switch and a Connect say which half a row is in. The switch is availability, not the grant: off keeps the connection and the account, and ending one is a separate, confirmed decision on the connection itself.",
+        "meaning": "",
+        "action": "Connect Slack",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "problem",
+        "label": "Connection problem",
+        "trigger": "The handoff does not complete, or a sign-in that was working expires or is revoked upstream.",
+        "behaviour": "One state for both, because the product owes the same three things either way: never show it as still connected, say what happened in a sentence a person can act on, and keep the way back to one press. What it must NOT merge is the sentence. A handoff that failed changed nothing and has no account to name; a sign-in that expired was working until it wasn&rsquo;t, and saying &ldquo;nothing was changed&rdquo; to that person is simply false. Same state, same shape, one line and one verb chosen by the cause &mdash; which is what the control beside this switches between.",
+        "meaning": "",
+        "action": "Put it right",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "manage",
+        "label": "Manage connection",
+        "trigger": "Manage is pressed on a live connection.",
+        "behaviour": "A compact surface over the connection it manages: the account, what the agent can do with it, reconnect if it needs it, and a way to end it &mdash; nothing else.",
+        "meaning": "",
+        "action": "Disconnect",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "confirm",
+        "label": "Disconnect confirmation",
+        "trigger": "Disconnect is pressed.",
+        "behaviour": "One press should not be enough to drop a standing grant. The sentence says what changes &mdash; new requests only &mdash; never a claim about deleting anything already said.",
+        "meaning": "",
+        "action": "Confirm disconnect",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "disconnected",
+        "label": "Disconnected",
+        "trigger": "Disconnect is confirmed.",
+        "behaviour": "Back to the row it started as. Earlier turns that used the source are not rewritten or removed &mdash; only new requests lose access.",
+        "meaning": "",
+        "action": "Connect again",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Two ways in, and they meet in the same component. Open the composer&rsquo;s <b>+</b> to go looking for a source, or just send the question and let the agent run into the wall. Afterwards the + is how you add a second source, manage one, or take one away.",
+    "api": "ConnectDataSource",
+    "intent": "An account, not a file — access that outlives the conversation and can be withdrawn.",
+    "when": "When the answer depends on a live system the person already has an account for, and the access is worth keeping — a tracker, a calendar, a drive, a code host. It is worth offering contextually the first time a request needs it, and worth surfacing in settings afterwards so that what was granted can be re-read months later.",
+    "whenNot": "",
+    "dir": "02-initially/04-context-expansion/02-connectors",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        10059,
+        10621
+      ],
+      "sim": [
+        3926,
+        4503
+      ],
+      "docs": [
+        2550,
+        2677
+      ]
+    },
+    "shots": {
+      "zero": "states/01-no-sources-connected.webp",
+      "access": "states/02-why-access-is-needed.webp",
+      "connecting": "states/03-connecting.webp",
+      "connected": "states/04-connected.webp",
+      "active": "states/05-being-used.webp",
+      "multi": "states/06-several-sources.webp",
+      "problem": "states/07-connection-problem.webp",
+      "manage": "states/08-manage-connection.webp",
+      "confirm": "states/09-disconnect-confirmation.webp",
+      "disconnected": "states/10-disconnected.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Context Expansion",
+    "id": "mcp",
+    "name": "MCP Server Connection",
+    "oneline": "Connect a server, discover what it can do, and decide before the agent uses it.",
+    "built": true,
+    "initial": "zero",
+    "states": [
+      {
+        "key": "zero",
+        "label": "Not connected",
+        "trigger": "The agent needs a tool the product does not have.",
+        "behaviour": "One line saying what a server would give it, and one action. Add MCP server opens a name and an address on the same surface — not a settings page, because this happens in the middle of trying to get something done.",
+        "meaning": "",
+        "action": "Add a server",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "connecting",
+        "label": "Connecting",
+        "trigger": "The address is submitted.",
+        "behaviour": "Reaching, validating, discovering — three named steps that resolve one at a time. They fail for different reasons and are fixed in different places, so a spinner cannot do this job. No percentage: nothing here knows one.",
+        "meaning": "",
+        "action": "Watch it land on Ready",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "ready",
+        "label": "Ready",
+        "trigger": "Discovery returns.",
+        "behaviour": "Connected is not Ready. Ready is the tool count and the tool list: what the server turned out to offer, grouped by what each one can do, with the schema one press behind the row for whoever wants it.",
+        "meaning": "",
+        "action": "Inspect a tool, or let the agent use one",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "approval",
+        "label": "Needs approval",
+        "trigger": "The agent calls a tool that changes something.",
+        "behaviour": "At call time, with the arguments visible. Allow runs it here and the result settles in place. Always allow is offered on a tool that writes and withheld on one that destroys.",
+        "meaning": "",
+        "action": "Allow it, or deny",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "failed",
+        "label": "Tool failed",
+        "trigger": "One call comes back an error.",
+        "behaviour": "The server badge does not move. One tool broke; the other three still work, and the actions are about the call. Retry once and it escalates to the SERVER — which is a different failure with a different fix.",
+        "meaning": "",
+        "action": "Retry, and watch the failure change scope",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "Ask for something the agent cannot do yet, and watch the connection be built for it &mdash; reached, validated, then <em>discovered</em>, which is the step most products skip. Then break one call, and watch the failure change scope from the tool to the connection.",
+    "api": "MCPServer",
+    "intent": "A connection whose capabilities have to be discovered, inspected and approved rather than assumed.",
+    "when": "Where an agent needs to act in a system through a standard interface rather than a bespoke integration — internal tooling, developer workflows, anything a team runs itself. It is the right pattern when the set of capabilities is genuinely not knowable in advance. It is the wrong pattern when it is: if the integration is fixed and reviewed, use a connector and spare people a capability audit they did not ask for.",
+    "whenNot": "",
+    "dir": "02-initially/04-context-expansion/03-mcp",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        9673,
+        10041
+      ],
+      "sim": [
+        4528,
+        4863
+      ],
+      "docs": [
+        2406,
+        2548
+      ]
+    },
+    "shots": {
+      "zero": "states/01-not-connected.webp",
+      "connecting": "states/02-connecting.webp",
+      "ready": "states/03-ready.webp",
+      "approval": "states/04-needs-approval.webp",
+      "failed": "states/05-tool-failed.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Context Expansion",
+    "id": "knowledge-base",
+    "name": "Knowledge Base",
+    "oneline": "Persistent, named material the agent can draw on across a project.",
+    "built": true,
+    "initial": "active",
+    "states": [
+      {
+        "key": "empty",
+        "label": "Empty",
+        "trigger": "A project exists and nothing has been trusted to it yet.",
+        "behaviour": "One sentence saying what a source buys that an attachment does not — it outlives the conversation — and one action. Not an empty dashboard: there is nothing to dash.",
+        "meaning": "",
+        "action": "Add knowledge",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "preparing",
+        "label": "Preparing",
+        "trigger": "Sources have been added and cannot be read yet.",
+        "behaviour": "The half of the lifecycle products skip. A file that has finished uploading is not a file the agent can read, and one status for both sends somebody to ask a question thirty seconds too early. One honest word, and no pipeline.",
+        "meaning": "",
+        "action": "Wait, or ask from what is already available",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "available",
+        "label": "Available",
+        "trigger": "The base is healthy and this project is not using it.",
+        "behaviour": "The resting state products lose. Available is a fact about the base; active is a fact about this project. A base can be available in five projects and in play in one, and only the second changes what an answer is made of.",
+        "meaning": "",
+        "action": "Use it in this project",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "active",
+        "label": "Active",
+        "trigger": "The base is in play here.",
+        "behaviour": "Compact: the count, where it applies, a way into the list. Active means the agent MAY draw on it — not that it is doing so, which is the next state and a different fact.",
+        "meaning": "",
+        "action": "Open the sources, or ask a question",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "using",
+        "label": "Being used",
+        "trigger": "A question arrives that this material can answer.",
+        "behaviour": "Searching, then reading a named number of sources, then the provenance the answer carries. Three moments of one state, because that is how it happens — and no percentage, because nothing in the client knows an honest one.",
+        "meaning": "",
+        "action": "Open any source it read",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "multiple",
+        "label": "Multiple knowledge bases",
+        "trigger": "The project could draw on more than one collection.",
+        "behaviour": "A short list saying which is in play and which merely could be, with the count on every row — because a name alone does not say whether choosing it gives the agent six documents or six hundred. A list, not a dashboard.",
+        "meaning": "",
+        "action": "Switch one on or off",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "manage",
+        "label": "Manage sources",
+        "trigger": "Somebody came to see what is actually in it.",
+        "behaviour": "Every source with its kind, its freshness written for that kind, its own readiness as a word, and its own action. This is the state that has to stay a knowledge base rather than becoming a file manager.",
+        "meaning": "",
+        "action": "Remove a source, or add more",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "partial",
+        "label": "Partially available",
+        "trigger": "One source stopped working and the rest did not.",
+        "behaviour": "\"11 available · 1 unavailable\" — counted apart, because \"12 sources\" beside an amber badge reads as twelve broken ones. The base still answers, and Review goes straight to the row that is the reason for the word.",
+        "meaning": "",
+        "action": "Review the one that needs a person",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "unavailable",
+        "label": "Source unavailable",
+        "trigger": "Sources cannot be read, for two different reasons.",
+        "behaviour": "Two kinds of stop with two different ways out: a file that would not parse offers Retry and Replace; a file you are no longer allowed to open offers Reconnect, because nothing about trying again fixes permission.",
+        "meaning": "",
+        "action": "Retry, reconnect, replace or remove",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "none",
+        "label": "No relevant knowledge",
+        "trigger": "The question falls outside the material.",
+        "behaviour": "It looked and found nothing, and says so. Not an error and not a broken base — the base worked. A base that always has an answer is a base that is inventing them, and this is the state that proves it is not.",
+        "meaning": "",
+        "action": "Add sources, or ask without it",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "confirm",
+        "label": "Remove source confirmation",
+        "trigger": "Somebody pressed Remove on one source.",
+        "behaviour": "Names the source, says what the agent will stop doing, and says what is NOT happening — the base and its other eleven sources are untouched. Removing one source and deleting a knowledge base must never read alike.",
+        "meaning": "",
+        "action": "Remove it, or cancel",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "inactive",
+        "label": "Inactive",
+        "trigger": "The base has been switched off here.",
+        "behaviour": "Everything is still in it. Switching a base off, removing it from this project and destroying it are three different acts — one is a primary button, one is reversible in a press, and the third asks again before it happens.",
+        "meaning": "",
+        "action": "Use it here again, or delete it",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "The project already has a knowledge base, and it was here before this conversation. Ask the question it was built for and watch Active become in use &mdash; then ask something it does not cover, break a source, or switch the base off, and see that all three are different things.",
+    "api": "KnowledgeBase",
+    "intent": "Standing context — sources that were here before the conversation and will outlive it.",
+    "when": "Where the same material informs many conversations — a research corpus, a policy set, a product's own documentation, a team's accumulated notes. The test is lifetime. If somebody would be annoyed to re-upload it tomorrow, it wants to be a knowledge base. If they would be alarmed to find it still there tomorrow, it wants to be an attachment, and the moment a file crosses that line somebody should have agreed to it.",
+    "whenNot": "",
+    "dir": "02-initially/04-context-expansion/04-knowledge-base",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        9001,
+        9646
+      ],
+      "sim": [
+        4889,
+        5352
+      ],
+      "docs": [
+        2260,
+        2404
+      ]
+    },
+    "shots": {
+      "empty": "states/01-empty.webp",
+      "preparing": "states/02-preparing.webp",
+      "available": "states/03-available.webp",
+      "active": "states/04-active.webp",
+      "using": "states/05-being-used.webp",
+      "multiple": "states/06-multiple-knowledge-bases.webp",
+      "manage": "states/07-manage-sources.webp",
+      "partial": "states/08-partially-available.webp",
+      "unavailable": "states/09-source-unavailable.webp",
+      "none": "states/10-no-relevant-knowledge.webp",
+      "confirm": "states/11-remove-source-confirmation.webp",
+      "inactive": "states/12-inactive.webp"
+    }
+  },
+  {
+    "stage": "Initially",
+    "category": "Context Expansion",
+    "id": "model-selection",
+    "name": "Model Selection",
+    "oneline": "Choose the capability that answers, or let the product choose per request.",
+    "built": true,
+    "initial": "resting",
+    "states": [
+      {
+        "key": "resting",
+        "label": "Resting",
+        "trigger": "The product at rest, before anybody has chosen anything.",
+        "behaviour": "One small chip carrying two values: which model, and how hard to think. It is the composer&rsquo;s own mode slot rather than a control added beside it, and a strong default is already in it &mdash; nobody is asked to choose before their first request.",
+        "meaning": "",
+        "action": "Open it",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "open",
+        "label": "Picker open",
+        "trigger": "The chip is pressed.",
+        "behaviour": "A list, not a catalogue. Auto sits in its own group above the models because it is a different kind of thing, every row says what it is FOR, and picking one moves the flyout on to the effort screen for that model. The prompt text is untouched throughout.",
+        "meaning": "",
+        "action": "Choose a model",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "selected",
+        "label": "Specific model selected",
+        "trigger": "Somebody deliberately chose one capability.",
+        "behaviour": "No router mark: what runs is exactly what the chip says. This is the state Auto must never be mistaken for, because here the person has taken responsibility for the choice.",
+        "meaning": "",
+        "action": "Switch to Auto",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "auto",
+        "label": "Auto selected",
+        "trigger": "The router is selected.",
+        "behaviour": "The switch is on, the model list has eased shut, and the chip takes a router mark. Auto says what it weighs &mdash; quality and speed &mdash; in its own line, on or off, so nobody has to switch it on to find out what it does.",
+        "meaning": "",
+        "action": "Change the model",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "changed",
+        "label": "Model changed",
+        "trigger": "A different option has just been chosen.",
+        "behaviour": "The chip updates and one line says when it starts mattering, in the scope the host actually supports. No toast, no dialog, no success screen &mdash; and the conversation is untouched.",
+        "meaning": "",
+        "action": "See one that is down",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "unavailable",
+        "label": "Model unavailable",
+        "trigger": "A model is temporarily out of service.",
+        "behaviour": "Listed, not selectable, and it says what to use in the meantime. Temporary, so it may come back &mdash; and no provider error text, because a status code is not a thing anybody can act on.",
+        "meaning": "",
+        "action": "See one the organisation blocks",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "restricted",
+        "label": "Organization restricted",
+        "trigger": "An organisation has narrowed what may be used.",
+        "behaviour": "Reads differently from unavailable on purpose: somebody decided this, and no amount of waiting will change it. The recovery is a person, and it is only offered where the host genuinely has that flow.",
+        "meaning": "",
+        "action": "Lose the model you were using",
+        "next": "",
+        "roles": null
+      },
+      {
+        "key": "fallback",
+        "label": "Fallback required",
+        "trigger": "The model already selected can no longer be used.",
+        "behaviour": "The one state that interrupts, because until it is answered the chip is lying about what will happen next. Both ways out are offered &mdash; the router, or the list &mdash; and it says what is not affected, because the fear at this moment is the thread.",
+        "meaning": "",
+        "action": "Recover, either way",
+        "next": "",
+        "roles": null
+      }
+    ],
+    "hasSim": true,
+    "simNote": "The selector is the composer&rsquo;s own chip &mdash; there is no second control. Change the model and watch what the menu promises about the conversation, then let the allowance run out and see what you get instead.",
+    "api": "ModelSelector",
+    "intent": "Capability as a deliberate choice — or a router that is honest about what it optimises for.",
+    "when": "Where models differ in ways a person can act on — speed, depth, what the request costs them — and where the person, not the product, owns the prompt. It belongs in professional and enterprise tools where explicit control is a requirement, and it belongs wherever somebody is choosing to wait longer for a better answer.",
+    "whenNot": "Where the product owns the prompt. If the prompt has been engineered against one model, letting people change it silently degrades a thing they cannot debug. And where routing is genuinely better than choosing, the honest move is a router that names its objective rather than a picker nobody understands. Note the cautionary history: removing a picker people have bonded to is its own failure — one major product pulled its legacy models and reversed within days.",
+    "dir": "02-initially/04-context-expansion/05-model-selection",
+    "packages": [
+      "@nucleux/material"
+    ],
+    "source": {
+      "preview": [
+        8478,
+        8942
+      ],
+      "sim": [
+        5374,
+        5659
+      ],
+      "docs": [
+        2125,
+        2258
+      ]
+    },
+    "shots": {
+      "resting": "states/01-resting.webp",
+      "open": "states/02-picker-open.webp",
+      "selected": "states/03-specific-model-selected.webp",
+      "auto": "states/04-auto-selected.webp",
+      "changed": "states/05-model-changed.webp",
+      "unavailable": "states/06-model-unavailable.webp",
+      "restricted": "states/07-organization-restricted.webp",
+      "fallback": "states/08-fallback-required.webp"
+    }
+  }
+]

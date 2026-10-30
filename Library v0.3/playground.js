@@ -10,6 +10,8 @@
 (function () {
   const ready = (fn) => document.readyState !== "loading" ? fn() : document.addEventListener("DOMContentLoaded", fn);
   const $ = (s, r = document) => r.querySelector(s);
+  // Embedded (e.g. on the home page), focusing the composer must not scroll the host page to it.
+  const focusInput = (el) => el.focus(document.documentElement.classList.contains("pg-embed") ? { preventScroll: true } : undefined);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -36,6 +38,9 @@
     })));
   }
   const byId = (id) => PATTERNS.find(x => x.p.id === id);
+  // Builds draw only on patterns with a Material 3 build, so every screen has a live preview
+  // (desktop and phone). Until the kit list has loaded, the whole library is the pool.
+  const pool = () => BUILT.size ? PATTERNS.filter(x => BUILT.has(x.p.id)) : PATTERNS;
 
   // Everyday words → pattern ids. Catches what users say rather than what the library calls it.
   const SYNONYMS = {
@@ -120,7 +125,7 @@
     const raw = String(text).toLowerCase();
     // "tone of voice" is about Voice & Tone, not speaking to it.
     const toks = words(raw.replace(/tone of voice|voice and tone/g, "tone"));
-    return PATTERNS.map(x => {
+    return pool().map(x => {
       let score = 0; const hits = new Set();
       toks.forEach(t => {
         const owner = SYN_OWNER[t];
@@ -182,7 +187,7 @@
     Object.entries(BASELINE).forEach(([stage, id]) => {
       if (perStage[stage]) return;
       const x = byId(id);
-      if (x) items.push(makeItem(x, [], surface, text, "baseline"));
+      if (x && (!BUILT.size || BUILT.has(id))) items.push(makeItem(x, [], surface, text, "baseline"));
     });
     return { text, surface, domain, agent: domain.agent, theme: "light", items: sortItems(items) };
   }
@@ -201,14 +206,14 @@
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
           prompt: text,
-          patterns: PATTERNS.filter(x => !(exclude && exclude.has(x.p.id)))
+          patterns: pool().filter(x => !(exclude && exclude.has(x.p.id)))
             .map(x => ({ id: x.p.id, name: x.p.name, summary: x.p.oneline || x.sub })),
         }),
         signal: ctrl.signal,
       });
       if (!r.ok) return null;
       const d = await r.json();
-      const picks = (d.picks || []).map(pk => byId(pk.id)).filter(Boolean);
+      const picks = (d.picks || []).map(pk => byId(pk.id)).filter(x => x && (!BUILT.size || BUILT.has(x.p.id)));   // only what has a preview
       return picks.length ? { picks, reply: String(d.reply || "") } : null;
     } catch (e) {
       return null;
@@ -225,7 +230,7 @@
     Object.entries(BASELINE).forEach(([stage, id]) => {
       if (items.some(it => it.x.stage === stage)) return;
       const x = byId(id);
-      if (x) items.push(makeItem(x, [], base.surface, text, "baseline"));
+      if (x && (!BUILT.size || BUILT.has(id))) items.push(makeItem(x, [], base.surface, text, "baseline"));
     });
     return { ...base, items: sortItems(items), ai: ai.reply };
   }
@@ -341,20 +346,21 @@
   };
   let device = "desktop", screen = null;
 
-  // On a phone, patterns that have a mobile layout show it (the mobile bench,
-  // Mobile patterns material 3.0); the rest fall back to the desktop scene.
-  const PHONES = new Set(["android", "iphone"]);
+  // The 35 Material 3 patterns: each has a @nucleux/react Md3 component (and a mobile layout).
   const MOBILE = new Set(["disclosure", "consent", "caveat", "avatar", "name", "personality", "iconography", "color",
     "example-gallery", "templates", "nudges", "disclaimer", "suggestions", "madlibs", "prompt-enhancer",
     "modes", "voice-tone", "preset-styles", "initial-cta", "open-input", "suggested-prompts", "ai-icons",
     "autocomplete", "proactive", "randomize", "attachments", "model-selection", "connectors", "mcp",
     "knowledge-base", "voice-input", "visual-input", "handwriting", "gesture", "structured-input"]);
-  const MOBILE_SRC = "../Mobile%20patterns%20material%203.0/material-mobile.html";
-  const isMobileScene = (id) => PHONES.has(device) && MOBILE.has(id);
+  // The preview is the real @nucleux/react Material 3 component for the pattern, in a small
+  // app frame named after the user's product (built from _build/playground-preview into
+  // pg-preview/). One page serves every device: the frame around it sets the width.
+  const PREVIEW_PAGE = "pg-preview/index.html", PREVIEW_V = "8";   // bump when pg-preview is rebuilt
   function sceneUrl(id) {
-    return isMobileScene(id)
-      ? MOBILE_SRC + "?embed=sim&id=" + encodeURIComponent(id) + "&device=" + device
-      : "material-pattern?id=" + encodeURIComponent(id) + "&embed=sim";
+    const q = new URLSearchParams({ v: PREVIEW_V, id, device, theme: (state && state.theme) || "light",
+      agent: (state && state.agent) || "Aria", product: (state && state.domain && state.domain.product) || "Your product",
+      surface: (state && SURFACES[state.surface] && SURFACES[state.surface].label) || "Chat app" });
+    return PREVIEW_PAGE + "?" + q.toString();
   }
 
   function renderScreens() {
@@ -406,6 +412,8 @@
   function brandScene() {
     let doc; try { doc = $("#pg-iframe").contentDocument; } catch (e) { return; }
     if (!doc || !doc.body) return;
+    // The npm-built preview draws its own app (and dark theme): it only needs the names.
+    if (/\/pg-preview\//.test(doc.location.pathname)) { renameIn(doc); return; }
     const bench = doc.getElementById("mm-bench");
     if (bench) {
       addStyle(doc, "pg-brand", "#mm-bench { height: 100vh !important; } html, body { background: #fff !important; }");
@@ -425,6 +433,7 @@
   }
   // The user's product and agent name in place of the kit's demo ones.
   function renameIn(doc) {
+    if (!state) return;   // New clears the build while the last screen may still be loading
     const product = state.domain.product, agent = state.agent;
     const swap = () => {
       const w = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
@@ -506,13 +515,16 @@
   // Stop: every pause checks it, so the run ends where it is — like a real model.
   const HALT = new Error("stopped");
   let stopped = false;
+  // Pacing of the "Thinking…" box and the streamed reply (ms). Brisk on purpose: a first
+  // build reads in about 4–5s; the AI call, when it is slower, still holds its own step open.
+  const PACE = { start: 300, step: 350, stepJitter: 250, until: 300, end: 200, word: 12, wordJitter: 16 };
   async function tick(ms) { await wait(ms); if (stopped) throw HALT; }
 
   async function think(steps) {
     const box = say(`<details class="pg-think" open><summary><span class="pg-think__spin" aria-hidden="true"></span><span class="pg-think__label">Thinking…</span></summary><ol></ol></details>`, "pg-msg-row--ai");
     const ol = box.querySelector("ol"), t0 = performance.now();
     thinking = box;
-    await tick(900);
+    await tick(PACE.start);
     for (const step of steps) {
       // A step is HTML, a function returning HTML (worked out when it's reached,
       // or skipped if it returns nothing), or { label, until } that runs until a
@@ -525,15 +537,15 @@
       if (s.until) {
         let settled = false, value;
         s.until.then(v => { settled = true; value = v; });
-        await tick(700);
-        while (!settled) await tick(200);
+        await tick(PACE.until);
+        while (!settled) await tick(100);
         if (s.done) li.innerHTML = s.done(value);
       } else {
-        await tick(1100 + Math.random() * 900);
+        await tick(PACE.step + Math.random() * PACE.stepJitter);
       }
       li.className = "is-done";
     }
-    await tick(500);
+    await tick(PACE.end);
     thinking = null;
     const d = box.querySelector("details");
     d.classList.add("is-done");
@@ -549,7 +561,7 @@
       if (part.startsWith("<")) { out += part; continue; }
       for (const w of part.split(/(\s+)/)) {
         out += w; el.innerHTML = out + '<span class="pg-caret"></span>';
-        if (w.trim()) { scrollLog(); try { await tick(28 + Math.random() * 40); } catch (e) { el.innerHTML = out; throw e; } }
+        if (w.trim()) { scrollLog(); try { await tick(PACE.word + Math.random() * PACE.wordJitter); } catch (e) { el.innerHTML = out; throw e; } }
       }
     }
     el.innerHTML = out;
@@ -647,7 +659,7 @@
       say(`<p class="pg-ai pg-ai--muted">You stopped this response.</p>`, "pg-msg-row--ai");
     }
     setBusy(false);
-    $("#pg-input").focus();
+    focusInput($("#pg-input"));
   }
 
   // ───────────────────────────────────────────────────────
@@ -675,12 +687,12 @@
     const row = say(`<p class="pg-ai pg-welcome"><b class="pg-welcome__title">What will you build?</b>Describe an AI product and Nucleux picks the patterns it needs and builds a live preview.<span class="pg-welcome__or"> Or start from one of these:</span></p>
       <div class="pg-chips" aria-label="Suggestions">${EXAMPLES.map((e, i) => md3Chip(e.label, `data-i="${i}"`, "spark")).join("")}</div>`, "pg-msg-row--ai pg-msg-row--welcome");
     // A suggestion fills the prompt bar, the way it does in a real assistant; you send it.
-    row.querySelector(".pg-chips").addEventListener("click", async (e) => {
+    // It fills at once: typed in letter by letter, an early Enter sent half a prompt.
+    row.querySelector(".pg-chips").addEventListener("click", (e) => {
       const c = e.target.closest("[data-i]"); if (!c || busy) return;
-      const input = $("#pg-input"), q = EXAMPLES[+c.dataset.i].q;
-      input.value = ""; input.focus();
-      for (let i = 1; i <= q.length; i += 3) { input.value = q.slice(0, i); input.dispatchEvent(new Event("input")); await wait(8); }
-      input.value = q; input.dispatchEvent(new Event("input"));
+      const input = $("#pg-input");
+      input.value = EXAMPLES[+c.dataset.i].q; input.dispatchEvent(new Event("input"));
+      focusInput(input);
     });
     prompt(true);
   }
@@ -692,12 +704,12 @@
     renderVersions();
     loadScreen();
     welcome();
-    $("#pg-input").focus();
+    focusInput($("#pg-input"));
   }
 
   function wireComposer(form, input, onSend) {
     const grow = () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 200) + "px"; };
-    form.addEventListener("submit", (e) => { e.preventDefault(); if (busy) return stop(); const v = input.value.trim(); if (!v) return input.focus(); input.value = ""; grow(); onSend(v); });
+    form.addEventListener("submit", (e) => { e.preventDefault(); if (busy) return stop(); const v = input.value.trim(); if (!v) return focusInput(input); input.value = ""; grow(); onSend(v); });
     input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
     const send = form.querySelector(".nx-ib__send");
     const sync = () => { send.disabled = busy || !input.value.trim(); };
@@ -711,7 +723,8 @@
       const cat = await (await fetch("catalog/catalog.json")).json();
       BUILT = new Set(cat.filter(c => c.built).map(c => c.id));
     } catch (e) {
-      BUILT = new Set(Object.keys(window.MaterialPatterns || {}));
+      const mp = Object.keys(window.MaterialPatterns || {});
+      BUILT = new Set(mp.length ? mp : MOBILE);   // opened as a file the catalog can't be fetched: the Material 3 kit (every pattern with a mobile layout)
     }
   }
 
@@ -750,6 +763,6 @@
 
     requestAnimationFrame(fitDevice);
     const q = new URLSearchParams(location.search).get("q");
-    if (q) submit(q); else if (!document.documentElement.classList.contains("pg-embed")) $("#pg-input").focus();
+    if (q) submit(q); else if (!document.documentElement.classList.contains("pg-embed")) focusInput($("#pg-input"));
   });
 })();

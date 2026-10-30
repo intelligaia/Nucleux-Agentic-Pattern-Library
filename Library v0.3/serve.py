@@ -10,14 +10,28 @@ The site links to /library, /material-pattern?id=... and so on, without
 """
 import http.server
 import os
+import posixpath
 import sys
+import urllib.parse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(ROOT)
+# Folders beside this one that pages reach with "../": the mobile pattern page
+# (the Playground's and the pattern pages' phone previews) and this folder by
+# its own name (the mobile page's <base href="../Library%20v0.3/">).
+SIBLINGS = ("Mobile patterns material 3.0", os.path.basename(ROOT))
 
 
 class CleanURLs(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
+
+    def translate_path(self, path):
+        rel = posixpath.normpath(urllib.parse.unquote(path.split("?", 1)[0].split("#", 1)[0])).lstrip("/")
+        for name in SIBLINGS:
+            if rel == name or rel.startswith(name + "/"):
+                return os.path.join(REPO, *rel.split("/"))
+        return super().translate_path(path)
 
     def send_head(self):
         path, sep, query = self.path.partition("?")

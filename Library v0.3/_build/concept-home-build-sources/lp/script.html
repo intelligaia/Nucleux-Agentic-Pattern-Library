@@ -1,0 +1,511 @@
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var still = root.classList.contains('ln-still');
+  var fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  /* Decorative loops start only after the page has loaded and settled, so the
+     first paint and the load itself get the main thread to themselves. */
+  function afterLoad(fn, wait) {
+    var go = function () { setTimeout(function () { ('requestIdleCallback' in window) ? requestIdleCallback(fn, { timeout: 1500 }) : fn(); }, wait || 0); };
+    if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+  }
+  function onView(el, fn, opts) {
+    if (!('IntersectionObserver' in window)) { fn(true); return; }
+    new IntersectionObserver(function (es) { es.forEach(function (e) { fn(e.isIntersecting, e); }); }, opts || { threshold: 0.2 }).observe(el);
+  }
+
+
+  /* ── Aurora: start after load, pause off-screen ── */
+  var aur = $('.ln-aurora');
+  if (aur) afterLoad(function () {
+    aur.classList.add('is-on');
+    if (still) return;
+    onView(aur, function (v) { aur.classList.toggle('is-paused', !v); }, { threshold: 0 });
+  }, 2500);
+
+
+  /* ── 3b · Agent demo: chat on the left picks nucleUX patterns, the UI on the right is built from them ── */
+  (function () {
+    var win = $('#ag-win'); if (!win) return;
+    var SEND = '<span class="ln-ag__send" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    var CLIP = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    function P(n, name, cls, html, tag) { return '<' + (tag || 'div') + ' class="ln-ag__p ' + (cls || '') + '" data-p="' + n + '"' + (name ? ' data-name="' + name + '"' : '') + '>' + html + '</' + (tag || 'div') + '>'; }
+    function hd(t, sub) { return '<div class="ln-ag__hd"><i aria-hidden="true"></i>' + t + '<span>' + sub + '</span></div>'; }
+    var SC = [
+      { q: 'Summarise our team meetings and send the action items — but ask before messaging anyone.',
+        file: 'app/meetings/page.tsx',
+        steps: [['Open input', 'drop a recording or paste notes'], ['Processing steps', 'shows it’s working while it listens'], ['Summary', 'decisions first, then action items'], ['Citations', 'each point links to the moment it was said'], ['Action confirmation', 'asks before it messages anyone']],
+        app: hd('Meetings', 'Launch sync') +
+          '<div class="ln-ag__grow">' +
+          P(2, 'Processing steps', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Transcribed 52 minutes</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Found 3 decisions</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Drafted the summary</b></div>') +
+          P(3, 'Summary', 'ln-ag__box', '<span class="ln-ag__lbl">Summary</span><ul class="ln-ag__ul"><li>Launch moves to 14 Nov ' + P(4, 'Citations', 'ln-ag__cite', '12:04', 'span') + '</li><li>Android build blocked on older devices ' + P(4, '', 'ln-ag__cite', '27:41', 'span') + '</li><li>Legal to sign off the checklist ' + P(4, '', 'ln-ag__cite', '44:10', 'span') + '</li></ul>') +
+          P(5, 'Action confirmation', 'ln-ag__box ln-ag__box--ac', '<b style="font-weight:600">Send 3 action items to #launch?</b><div class="ln-ag__note">Priya, Dev and Sam will be notified.</div><div class="ln-ag__acts"><span class="ln-ag__btn">Not now</span><span class="ln-ag__btn ln-ag__btn--p">Send</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(1, 'Open input', '', '<div class="ln-ag__in"><span class="ln-ag__file">' + CLIP + 'Launch sync.m4a</span><em>Ask about this meeting…</em>' + SEND + '</div>') + '</div>' },
+      { q: 'A support chatbot that answers from our help centre and hands off to a person when it isn’t sure.',
+        file: 'app/support/page.tsx',
+        steps: [['Disclosure', 'says up front that it’s an AI'], ['Suggested prompts', 'the questions people ask most'], ['Citations', 'every answer points to a help article'], ['Confidence', 'says when it isn’t sure'], ['Recovery', 'a clear way to reach a person']],
+        app: hd('Help', 'Acme support') +
+          P(1, 'Disclosure', 'ln-ag__box ln-ag__box--soft', '<span class="ln-ag__note">You’re chatting with an <b style="color:var(--fg);font-weight:600">AI assistant</b>. A person can take over anytime.</span>') +
+          '<div class="ln-ag__grow">' +
+          P(3, 'Citations', '', '<div style="display:flex;flex-direction:column;gap:8px"><div class="ln-ag__msg">Can I get a refund after 30 days?</div><div class="ln-ag__ans">Refunds are usually available within 30 days of purchase. After that, it depends on your plan’s terms. <span class="ln-ag__cite">Help centre · Refunds</span></div></div>') +
+          P(4, 'Confidence', 'ln-ag__badge', '● Not fully sure — your plan has custom terms', 'span') +
+          P(5, 'Recovery', '', '<div class="ln-ag__chips"><span class="ln-ag__btn ln-ag__btn--p">Talk to a person</span><span class="ln-ag__btn">Ask another way</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(2, 'Suggested prompts', 'ln-ag__chips', '<span class="ln-ag__chip">Reset my password</span><span class="ln-ag__chip">Change my plan</span><span class="ln-ag__chip">Where’s my refund?</span>') +
+          '<div class="ln-ag__in"><em>Ask anything…</em>' + SEND + '</div></div>' },
+      { q: 'Review vendor contracts, flag risky clauses and let legal approve every change.',
+        file: 'app/contracts/review.tsx',
+        steps: [['Open input', 'upload a contract to review'], ['Processing steps', 'reads every page before it answers'], ['Citations', 'each flag points to the clause and page'], ['Caveat', 'a first pass, not legal advice'], ['Action confirmation', 'legal approves every change']],
+        app: hd('Contracts', 'Northwind MSA') +
+          '<div class="ln-ag__grow">' +
+          P(2, 'Processing steps', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Read 18 of 18 pages</b><span style="margin-left:auto;font:11px var(--font-mono)">100%</span></div><div class="ln-ag__bar2"><i style="width:100%"></i></div>') +
+          P(3, 'Citations', 'ln-ag__box', '<span class="ln-ag__lbl">2 clauses flagged</span><div class="ln-ag__row"><b>Auto-renews every 12 months</b><span class="ln-ag__cite">§7.2 · p.6</span><span class="ln-ag__risk ln-ag__risk--h">High</span></div><div class="ln-ag__row"><b>Liability capped at 1× fees</b><span class="ln-ag__cite">§11 · p.9</span><span class="ln-ag__risk ln-ag__risk--m">Med</span></div>') +
+          P(4, 'Caveat', 'ln-ag__note', 'ⓘ Flags are a first pass, not legal advice.') +
+          P(5, 'Action confirmation', 'ln-ag__box ln-ag__box--ac', '<b style="font-weight:600">Apply 2 redlines?</b><div class="ln-ag__note">Nothing changes until legal approves.</div><div class="ln-ag__acts"><span class="ln-ag__btn">Review</span><span class="ln-ag__btn ln-ag__btn--p">Send to legal</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(1, 'Open input', '', '<div class="ln-ag__in"><span class="ln-ag__file">' + CLIP + 'MSA-Northwind.pdf</span><em>Review this contract</em>' + SEND + '</div>') + '</div>' },
+      { q: 'A research agent that compares sources and remembers what I’ve already read.',
+        file: 'app/research/page.tsx',
+        steps: [['Stream of thought', 'shows its plan before it searches'], ['Citations', 'numbered sources on every claim'], ['Confidence', 'where sources agree and where they don’t'], ['Memory', 'skips what you’ve already read'], ['Suggested prompts', 'good next questions']],
+        app: hd('Research', 'AI pricing') +
+          '<div class="ln-ag__grow">' +
+          P(1, 'Stream of thought', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Search 12 sources</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Compare pricing models</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Draft a short brief</b></div>') +
+          P(2, 'Citations', 'ln-ag__ans', 'Most teams price AI features per seat <span class="ln-ag__cite">1</span><span class="ln-ag__cite">2</span>, but usage-based pricing is growing fast <span class="ln-ag__cite">3</span>.') +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">' + P(3, 'Confidence', 'ln-ag__badge ln-ag__badge--ok', '3 sources agree · 1 disagrees', 'span') + '</div>' +
+          P(4, 'Memory', 'ln-ag__box', '<div class="ln-ag__row"><b>Skipped 4 sources you’ve read</b><span class="ln-ag__tog" aria-hidden="true"></span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(5, 'Suggested prompts', 'ln-ag__chips', '<span class="ln-ag__chip">Go deeper on usage pricing</span><span class="ln-ag__chip">Compare with last quarter</span>') +
+          '<div class="ln-ag__in"><em>Ask a follow-up…</em>' + SEND + '</div></div>' }
+    ];
+    var tabsEl = $('.ln-ag__tabs'), btns = $$('.ln-ag__tab'), pill = $('.ln-ag__pill');
+    var qEl = $('[data-ag-q]', win), stepsEl = $('[data-ag-steps]', win), done = $('[data-ag-done]', win), fileEl = $('[data-ag-file]', win), app = $('[data-ag-app]', win);
+    var cur = 0, timers = [], visible = false, hover = false, started = false;
+    function clear() { timers.forEach(clearTimeout); timers = []; }
+    function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+    var flowEl = $('.ln-flow'), flows = $$('.ln-flow__s');
+    function flow(ph, ms) {
+      if (!flowEl) return;
+      flowEl.classList.add('is-live');
+      flows.forEach(function (li, k) {
+        var bar = $('.ln-flow__bar i', li);
+        li.classList.toggle('is-on', k === ph);
+        bar.style.transition = 'none';
+        bar.style.transform = 'scaleX(' + (k < ph ? 1 : 0) + ')';
+        if (k === ph) { void bar.offsetWidth; bar.style.transition = 'transform ' + ms + 'ms linear'; bar.style.transform = 'scaleX(1)'; }
+      });
+    }
+    function movePill() { var b = btns[cur]; if (!b || !pill) return; pill.style.transform = 'translateX(' + (b.offsetLeft - 4 + 4) + 'px) scaleX(' + (b.offsetWidth / 100) + ')'; }
+    function render(i, final) {
+      var s = SC[i];
+      app.innerHTML = s.app;
+      stepsEl.innerHTML = '<li><i class="ln-ag__ic"></i><span>Connected to <b>nucleUX MCP</b> · reading the pattern library</span></li>' +
+        s.steps.map(function (st) { return '<li><i class="ln-ag__ic"></i><span>Picked <span class="ln-ag__pat">' + st[0] + '</span> — ' + st[1] + '</span></li>'; }).join('');
+      fileEl.innerHTML = 'Built <code>' + s.file + '</code> with ' + s.steps.length + ' nucleUX patterns';
+      if (final) {
+        qEl.textContent = s.q;
+        $$('li', stepsEl).forEach(function (li) { li.classList.add('is-in', 'is-ok'); });
+        $$('.ln-ag__p', app).forEach(function (p) { p.classList.add('is-in'); });
+        done.classList.add('is-in');
+      } else { qEl.textContent = ''; done.classList.remove('is-in'); }
+    }
+    function select(i, focus) {
+      cur = i;
+      btns.forEach(function (b, k) { var on = k === i; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+      if (focus) btns[i].focus();
+      movePill();
+      var b = btns[i]; if (tabsEl && b) { var l = b.offsetLeft - 16, r = b.offsetLeft + b.offsetWidth + 16; if (l < tabsEl.scrollLeft || r > tabsEl.scrollLeft + tabsEl.clientWidth) tabsEl.scrollTo({ left: l, behavior: still ? 'auto' : 'smooth' }); }
+    }
+    function play(i) {
+      clear(); select(i); 
+      if (still) { render(i, true); $$('.ln-flow__bar i').forEach(function (b) { b.style.transform = 'scaleX(1)'; }); return; }
+      render(i, false);
+      app.classList.remove('is-swap'); void app.offsetWidth; app.classList.add('is-swap');
+      var s = SC[i], lis = $$('li', stepsEl), t = 350, k = 0;
+      win.classList.add('is-typing');
+      var typeMs = Math.ceil(s.q.length / 2) * 26 + 650;
+      flow(0, typeMs);
+      (function type() { if (k <= s.q.length) { qEl.textContent = s.q.slice(0, k); k += 2; at(26, type); } })();
+      t += Math.ceil(s.q.length / 2) * 26 + 300;
+      at(t, function () { win.classList.remove('is-typing'); });
+      var pickMs = 900 + (lis.length - 1) * 1150 + lis.length * 120 + 500;
+      at(t, function () { flow(1, pickMs); });
+      lis.forEach(function (li, n) {
+        at(t, function () { li.classList.add('is-in', 'is-run'); });
+        t += n === 0 ? 900 : 1150;
+        at(t, function () {
+          li.classList.remove('is-run'); li.classList.add('is-ok');
+          if (n === 0) return;
+          var ps = $$('[data-p="' + n + '"]', app);
+          ps.forEach(function (p, j) { setTimeout(function () { p.classList.add('is-in', 'is-new'); }, j * 120); });
+          setTimeout(function () { ps.forEach(function (p) { p.classList.remove('is-new'); }); }, 1500);
+        });
+        t += 120;
+      });
+      t += 500;
+      at(t, function () { done.classList.add('is-in'); flow(2, 3600); });
+      t += 3600;
+      at(t, function () { next(); });
+    }
+    function next() { if (!visible || hover) { at(800, next); return; } play((cur + 1) % SC.length); }
+    btns.forEach(function (b, k) {
+      b.addEventListener('click', function () { play(k); });
+      b.addEventListener('keydown', function (e) { var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); var n = (k + d + btns.length) % btns.length; play(n); btns[n].focus(); } });
+    });
+    win.addEventListener('pointerenter', function () { hover = true; });
+    win.addEventListener('pointerleave', function () { hover = false; });
+    addEventListener('resize', movePill, { passive: true });
+    /* Nothing is built until the page has loaded and gone idle; the panes have fixed heights, so nothing shifts */
+    afterLoad(function () {
+      render(0, true); select(0); if (still) $$('.ln-flow__bar i').forEach(function (b) { b.style.transform = 'scaleX(1)'; });
+      if (!still) onView(win, function (v) { visible = v; if (v && !started) { started = true; play(0); } }, { threshold: 0.35 });
+    }, 1200);
+  })();
+
+  /* ── Prompt composer: rainbow edge starts after load ── */
+  var rbp = $('.ln-prompt');
+  if (rbp && !still) afterLoad(function () { rbp.classList.add('is-rb'); }, 400);
+
+  /* ── Headline: word by word ── */
+  var h1 = $('.ln-h1');
+  if (h1) {
+    var i = 0;
+    (function split(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach(function (part) {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+            var w = document.createElement('span'); w.className = 'w'; w.style.setProperty('--i', i++); w.textContent = part; frag.appendChild(w);
+          });
+          node.replaceChild(frag, n);
+        } else if (n.nodeType === 1) {
+          if (n.tagName === 'EM') { n.classList.add('w'); n.style.setProperty('--i', i++); } else split(n);
+        }
+      });
+    })(h1);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { h1.classList.add('is-in'); }); });
+  }
+
+  /* ── Blur-up reveals ── */
+  var rv = $$('.ln-rv');
+  if (still || !('IntersectionObserver' in window)) rv.forEach(function (el) { el.classList.add('is-in'); });
+  else {
+    /* Once an element has arrived, hand it back to its own styles, so hover
+       lifts and the like are not overridden by the reveal's resting transform. */
+    var settle = function (el) { setTimeout(function () { el.classList.remove('ln-rv', 'is-in'); el.style.removeProperty('--d'); }, 1300 + (parseFloat(getComputedStyle(el).getPropertyValue('--d')) || 0)); };
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); settle(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ── Nav: glass on scroll, progress bar, scroll-spy, hover pill ── */
+  var nav = $('.ln-nav'), bar = $('.ln-progress'), ticking = false;
+  function onScroll() {
+    ticking = false;
+    var y = window.scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    nav.classList.toggle('is-stuck', y > 8);
+    bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0).toFixed(4) + ')';
+  }
+  addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+
+  var ul = $('.ln-nav__links'), pill = $('.ln-pill'), links = $$('.ln-nav__links a'), current = null;
+  function pillTo(a) {
+    if (!a) { pill.style.opacity = '0'; return; }
+    pill.style.transform = 'translateX(' + a.offsetLeft + 'px) scaleX(' + (a.offsetWidth / 100).toFixed(3) + ')';
+    pill.style.opacity = '1';
+  }
+  links.forEach(function (a) {
+    a.addEventListener('pointerenter', function () { pillTo(a); });
+    a.addEventListener('focus', function () { pillTo(a); });
+  });
+  ul.addEventListener('pointerleave', function () { pillTo(current); });
+  ul.addEventListener('focusout', function (e) { if (!ul.contains(e.relatedTarget)) pillTo(current); });
+  var spy = links.map(function (a) { var h = a.getAttribute('href'); return h.charAt(0) === '#' ? [a, $(h)] : null; }).filter(Boolean);
+  if ('IntersectionObserver' in window) {
+    var vis = {};
+    var sio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { vis[e.target.id] = e.isIntersecting; });
+      var hit = null; spy.forEach(function (p) { if (!hit && p[1] && vis[p[1].id]) hit = p[0]; });
+      if (hit !== current) {
+        links.forEach(function (a) { a.classList.toggle('is-current', a === hit); if (a === hit) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+        current = hit; if (!ul.matches(':hover')) pillTo(current);
+      }
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    spy.forEach(function (p) { if (p[1]) sio.observe(p[1]); });
+  }
+
+  var mb = $('.ln-menu-btn'), sheet = $('#ln-sheet');
+  function sheetOpen(on) {
+    sheet.classList.toggle('is-open', on); mb.setAttribute('aria-expanded', String(on));
+    mb.setAttribute('aria-label', on ? 'Close menu' : 'Open menu');
+  }
+  mb.addEventListener('click', function () { sheetOpen(!sheet.classList.contains('is-open')); });
+  sheet.addEventListener('click', function (e) { if (e.target.closest('a')) sheetOpen(false); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('is-open')) { sheetOpen(false); mb.focus(); } });
+
+
+  /* ── Magnetic buttons ── */
+  if (fine && !still) $$('.ln-mag').forEach(function (b) {
+    b.addEventListener('pointermove', function (e) {
+      var r = b.getBoundingClientRect();
+      var dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2), dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+      b.style.transform = 'translate(' + (dx * 6).toFixed(1) + 'px,' + (dy * 4).toFixed(1) + 'px)';
+    });
+    b.addEventListener('pointerleave', function () { b.style.transform = ''; });
+  });
+
+  /* ── Hero prompt: typing placeholder + example chips ── */
+  var q = $('#ln-q');
+  if (q) {
+  $$('.ln-chip').forEach(function (c) {
+    c.addEventListener('click', function () { q.value = c.getAttribute('data-q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); });
+  });
+  q.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); q.form.requestSubmit ? q.form.requestSubmit() : q.form.submit(); } });
+  q.form.addEventListener('submit', function (e) { if (!q.value.trim()) { e.preventDefault(); q.value = q.getAttribute('placeholder').replace(/…$/, ''); q.form.submit(); } });
+  if (!still) {
+    var ideas = ['An assistant that summarises meetings and drafts follow-ups…', 'A chatbot that answers from our help centre…', 'An agent that reviews contracts and flags risky clauses…', 'A research agent that cites every source…'];
+    var ii = 0, ci = ideas[0].length, del = true, pt;
+    afterLoad(function type() {
+      if (document.activeElement === q || q.value) { pt = setTimeout(type, 1200); return; }
+      var t = ideas[ii];
+      if (!del) { ci++; q.setAttribute('placeholder', t.slice(0, ci)); if (ci >= t.length) { del = true; pt = setTimeout(type, 2200); return; } pt = setTimeout(type, 48); }
+      else { ci -= 3; if (ci <= 0) { ci = 0; del = false; ii = (ii + 1) % ideas.length; } q.setAttribute('placeholder', t.slice(0, Math.max(ci, 0)) || ' '); pt = setTimeout(type, 24); }
+    }, 2600);
+  }
+
+  }
+
+  /* ── Hero mini demo: pick patterns, then build ── */
+  var demo = $('.ln-demo');
+  if (demo) {
+    var tags = $$('.ln-tag', demo), proc = $('[data-step="proc"]', demo), sum = $('[data-step="sum"]', demo), act = $('.ln-act', demo);
+    var timers = [], running = false, visible = false;
+    function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+    function finalState() {
+      tags.forEach(function (t) { t.classList.add('is-on'); if (t.hasAttribute('data-pick')) t.classList.add('is-picked'); });
+      proc.classList.remove('is-on'); sum.classList.add('is-on'); act.classList.add('is-on', 'is-done');
+    }
+    function reset() {
+      tags.forEach(function (t) { t.classList.remove('is-on', 'is-picked'); });
+      proc.classList.remove('is-on'); sum.classList.remove('is-on'); act.classList.remove('is-on', 'is-press', 'is-done');
+    }
+    function run() {
+      if (running || !visible) return; running = true; reset();
+      tags.forEach(function (t, k) { at(300 + k * 160, function () { t.classList.add('is-on'); }); });
+      var picks = tags.filter(function (t) { return t.hasAttribute('data-pick'); });
+      picks.forEach(function (t, k) { at(1700 + k * 320, function () { t.classList.add('is-picked'); }); });
+      at(3200, function () { proc.classList.add('is-on'); });
+      at(5400, function () { proc.classList.remove('is-on'); sum.classList.add('is-on'); });
+      at(6600, function () { act.classList.add('is-on'); });
+      at(8000, function () { act.classList.add('is-press'); });
+      at(8250, function () { act.classList.remove('is-press'); act.classList.add('is-done'); });
+      at(11500, function () { running = false; timers = []; run(); });
+    }
+    if (still) finalState();
+    else afterLoad(function () { onView(demo, function (v) {
+      visible = v;
+      if (v) run(); else { timers.forEach(clearTimeout); timers = []; running = false; }
+    }, { threshold: 0.3 }); }, 600);
+  }
+
+  /* ── Start-here cards: cursor spotlight ── */
+  if (fine && !still) $$('.ln-card').forEach(function (c) {
+    var s = $('.ln-spot', c);
+    c.addEventListener('pointermove', function (e) { var r = c.getBoundingClientRect(); s.style.transform = 'translate(' + (e.clientX - r.left) + 'px,' + (e.clientY - r.top) + 'px)'; });
+  });
+
+  /* ════ Gaiametry-inspired chapters (27 Oct) ════ */
+  /* 02 · Playground — the embedded library playground; the hero box drives it */
+  var pgFrame = $('#ln-pg-frame');
+  function pgUrl(q) {
+    var base = location.protocol === 'file:' ? 'playground.html' : 'playground';
+    return base + '?embed=1' + (q ? '&q=' + encodeURIComponent(q) : '');
+  }
+  function pgLoad(q) {
+    if (!pgFrame) return false;
+    var want = pgUrl(q);
+    if (pgFrame.getAttribute('src') !== want) pgFrame.setAttribute('src', want);
+    return true;
+  }
+  if (pgFrame) {
+    /* The playground focuses its own input when it loads. Loaded quietly in
+       the background, that would pull the page down to it — so give the
+       focus straight back unless the visitor is already working in it. */
+    var pgAsked = false;
+    pgFrame.addEventListener('load', function () {
+      if (pgAsked) return;
+      try { var d = pgFrame.contentDocument; if (d && d.activeElement && d.activeElement !== d.body) d.activeElement.blur(); } catch (e) {}
+    });
+    if ('IntersectionObserver' in window) {
+      var pio = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { if (!pgFrame.getAttribute('src')) pgLoad(''); pio.disconnect(); }
+      }, { rootMargin: '600px 0px' });
+      pio.observe(pgFrame);
+    } else pgLoad('');
+    var hf = $('.ln-prompt');
+    if (hf) hf.addEventListener('submit', function (e) {
+      var qq = $('#ln-q'); var val = (qq.value || '').trim() || (qq.getAttribute('placeholder') || '').replace(/…$/, '');
+      e.preventDefault(); e.stopImmediatePropagation();
+      pgAsked = true; pgLoad(val);
+      var sec = $('#playground'); if (sec) sec.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    }, true);
+  }
+
+  /* 04 · Four moments — every tile is a live pattern */
+  (function () {
+    var c = $('[data-demo="onb"]');
+    if (c) {
+      var ask = $('[data-s="ask"]', c), done = $('[data-s="done"]', c), msg = $('[data-msg]', done);
+      c.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-a]'); if (!b) return;
+        var a = b.getAttribute('data-a');
+        if (a === 'yes' || a === 'no') {
+          msg.textContent = a === 'yes' ? 'Calendar connected — this week only' : 'Skipped. It won’t ask again today';
+          ask.hidden = true; done.hidden = false; done.classList.remove('ln-mfade'); void done.offsetWidth; done.classList.add('ln-mfade');
+          $('[data-a="undo"]', done).focus({ preventScroll: true });
+        } else if (a === 'undo') {
+          done.hidden = true; ask.hidden = false; ask.classList.remove('ln-mfade'); void ask.offsetWidth; ask.classList.add('ln-mfade');
+          $('[data-a="yes"]', ask).focus({ preventScroll: true });
+        }
+      });
+    }
+    var s = $('[data-demo="ini"]');
+    if (s) {
+      var v = $('[data-v]', s), send = $('[data-a="send"]', s), sent = $('[data-sent]', s), chips = $$('.ln-mchip', s), tt = [];
+      function clr() { tt.forEach(clearTimeout); tt = []; }
+      chips.forEach(function (ch) {
+        ch.addEventListener('click', function () {
+          clr(); sent.hidden = true; v.classList.remove('is-ph'); v.textContent = '';
+          var txt = ch.textContent, k = 0;
+          (function ty() { v.textContent = txt.slice(0, ++k); if (k < txt.length && !still) tt.push(setTimeout(ty, 28)); else { v.textContent = txt; send.disabled = false; } })();
+        });
+      });
+      send.addEventListener('click', function () {
+        clr(); send.disabled = true; v.textContent = 'Ask anything…'; v.classList.add('is-ph');
+        sent.hidden = false; sent.classList.remove('ln-mfade'); void sent.offsetWidth; sent.classList.add('ln-mfade');
+        tt.push(setTimeout(function () { sent.hidden = true; }, 2600));
+      });
+    }
+    var r = $('[data-demo="dur"]');
+    if (r) {
+      var lis = $$('.ln-run__steps li', r), rask = $('[data-ask]', r), rdone = $('[data-done]', r), rt = [], played = false;
+      function play() {
+        rt.forEach(clearTimeout); rt = []; rask.hidden = true; rdone.hidden = true;
+        lis.forEach(function (li) { li.classList.remove('is-run', 'is-ok'); });
+        if (still) { lis.forEach(function (li) { li.classList.add('is-ok'); }); rask.hidden = false; return; }
+        lis.forEach(function (li, i) {
+          rt.push(setTimeout(function () { li.classList.add('is-run'); }, 300 + i * 900));
+          rt.push(setTimeout(function () { li.classList.remove('is-run'); li.classList.add('is-ok'); }, 1100 + i * 900));
+        });
+        rt.push(setTimeout(function () { rask.hidden = false; rask.classList.remove('ln-mfade'); void rask.offsetWidth; rask.classList.add('ln-mfade'); }, 1200 + lis.length * 900));
+      }
+      r.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-a]'); if (!b) return;
+        var a = b.getAttribute('data-a');
+        if (a === 'send') { rask.hidden = true; rdone.hidden = false; rdone.classList.remove('ln-mfade'); void rdone.offsetWidth; rdone.classList.add('ln-mfade'); }
+        else if (a === 'edit') { lis[lis.length - 1].classList.remove('is-ok'); lis[lis.length - 1].classList.add('is-run'); rask.hidden = true; rt.push(setTimeout(function () { lis[lis.length - 1].classList.remove('is-run'); lis[lis.length - 1].classList.add('is-ok'); rask.hidden = false; }, 1100)); }
+        else if (a === 'again') play();
+      });
+      if (still) play();
+      else afterLoad(function () { onView(r, function (vis) { if (vis && !played) { played = true; play(); } }, { threshold: 0.5 }); }, 400);
+    }
+    var m = $('[data-demo="ovr"]');
+    if (m) {
+      var rows = $$('.ln-mem__row', m);
+      rows.forEach(function (row) { var cb = $('input', row); cb.addEventListener('change', function () { row.classList.toggle('is-off', !cb.checked); }); });
+      $('[data-a="forget"]', m).addEventListener('click', function () {
+        var allOff = rows.every(function (row) { return !$('input', row).checked; });
+        rows.forEach(function (row) { var cb = $('input', row); cb.checked = allOff; row.classList.toggle('is-off', !allOff); });
+        this.textContent = allOff ? 'Forget everything' : 'Remember again';
+      });
+    }
+  })();
+
+  /* ── Pattern counts ── */
+  $$('[data-count]').forEach(function (el) {
+    var n = +el.getAttribute('data-count');
+    if (still) return;
+    el.textContent = '0';
+    onView(el, function (v) {
+      if (!v || el.__done) return; el.__done = true;
+      var t0 = performance.now(), dur = 1300;
+      (function tick(t) { var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4); el.textContent = String(Math.round(n * e)); if (p < 1) requestAnimationFrame(tick); })(t0);
+    }, { threshold: 0.6 });
+  });
+
+  /* ── Developers: tabs, sliding pill, view transition, copy ── */
+  var esc = function (t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var MCP = 'https://nucleux.in/mcp';
+  var TABS = {
+    agent: {
+      file: 'Paste into your AI agent',
+      text: 'Use nucleUX for the AI screens in this project.\n\n1. Connect the nucleUX MCP server: ' + MCP + '\n2. Before you build any AI screen, ask nucleUX which patterns fit it,\n   and follow each pattern\'s "when not to use" guidance.\n3. Build with @nucleux/react components and our existing theme.\n4. Show me the plan before you change any files.',
+      note: 'Using Claude Code? Add the server first: <code class="ln-inline-code">claude mcp add --transport http nucleux ' + MCP + '</code>. Cursor, Codex, VS Code and others: <a href="mcp">MCP setup →</a>'
+    },
+    react: {
+      file: 'Chat.tsx',
+      text: "npm install @nucleux/react\n\nimport { Thread, Message, AgentComposer } from '@nucleux/react'\n\nfunction Chat({ messages, input, setInput, onSend, busy }) {\n  return (\n    <Thread autoScrollKey={messages.length}>\n      {messages.map((m) => (\n        <Message key={m.id} role={m.role} content={m.text} streaming={m.streaming} />\n      ))}\n      <AgentComposer value={input} onValueChange={setInput}\n        onSubmit={onSend} loading={busy} placeholder=\"Ask anything…\" />\n    </Thread>\n  )\n}",
+      note: 'Theming with Tailwind and all ~50 packages: <a href="docs">Read the Docs →</a>'
+    },
+    figma: {
+      file: 'Design kit',
+      text: '1. Open the nucleUX design kit\n2. Pick a moment: Before first use, First prompt, While it works, Over time\n3. Every pattern comes with all its states, tokens and specs\n4. Swap the tokens for your brand — every pattern follows',
+      note: 'The kit lives in the Design System: <a href="design-system">Open the design kit →</a>'
+    }
+  };
+  function paint(text, kind) {
+    var h = esc(text);
+    if (kind === 'react') h = h.replace(/(\bimport\b|\bfrom\b|\bfunction\b|\breturn\b)/g, '<span class="k">$1</span>').replace(/('[^']*'|&quot;[^&]*&quot;|"[^"]*")/g, '<span class="s">$1</span>').replace(/^(npm install .*)$/m, '<span class="c">$1</span>');
+    if (kind === 'agent') h = h.replace(/(https:\/\/nucleux\.in\/mcp|@nucleux\/react)/g, '<span class="k">$1</span>');
+    return h;
+  }
+  var tabs = $$('.ln-tab'), tpill = $('.ln-tabs__pill'), code = $('[data-code]'), file = $('[data-file]'), note = $('[data-note]'), panel = $('#dp-code'), curTab = 'agent';
+  function pillTab(b) { tpill.style.transform = 'translateX(' + b.offsetLeft + 'px) scaleX(' + (b.offsetWidth / 100).toFixed(3) + ')'; }
+  function fill(id) { var t = TABS[id]; code.innerHTML = paint(t.text, id); file.textContent = t.file; note.innerHTML = t.note; panel.setAttribute('aria-labelledby', 'dt-' + id); }
+  function selectTab(id, focus) {
+    if (id === curTab && code.textContent) return; curTab = id;
+    var b = tabs.filter(function (x) { return x.getAttribute('data-tab') === id; })[0];
+    tabs.forEach(function (x) { var on = x === b; x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; });
+    pillTab(b); if (focus) b.focus();
+    if (document.startViewTransition && !still) document.startViewTransition(function () { fill(id); }); else fill(id);
+  }
+  tabs.forEach(function (b, k) {
+    b.addEventListener('click', function () { selectTab(b.getAttribute('data-tab')); });
+    b.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (d) { e.preventDefault(); selectTab(tabs[(k + d + tabs.length) % tabs.length].getAttribute('data-tab'), true); }
+    });
+  });
+  fill('agent'); pillTab(tabs[0]);
+  addEventListener('resize', function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); if (current) pillTo(current); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); });
+  $('.ln-copy').addEventListener('click', function () {
+    var btn = this, lab = $('span', btn), text = TABS[curTab].text;
+    function ok() { lab.textContent = 'Copied'; setTimeout(function () { lab.textContent = 'Copy'; }, 1600); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, legacy); else legacy();
+    function legacy() { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); ok(); }
+  });
+  $$('[data-tab="agent"].ln-card, [data-tab="agent"].ln-obtn').forEach(function (a) { a.addEventListener('click', function () { selectTab('agent'); }); });
+})();
+</script>
+<script>
+/* global.js (assistant, search, local-file links) is not needed for the first
+   paint: load it on the first interaction, or 5s after load, so it never
+   blocks the main thread while the page is loading. */
+(function () {
+  function go() { var s = document.createElement('script'); s.src = 'global.js'; document.body.appendChild(s); }
+  var done = false;
+  function once() { if (done) return; done = true; ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { removeEventListener(t, once, true); }); go(); }
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { addEventListener(t, once, { capture: true, passive: true }); });
+  addEventListener('load', function () { setTimeout(function () { ('requestIdleCallback' in window) ? requestIdleCallback(once, { timeout: 2000 }) : once(); }, 5000); });
+})();
+</script>
+</body>
+</html>

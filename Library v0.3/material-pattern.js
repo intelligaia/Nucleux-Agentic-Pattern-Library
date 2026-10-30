@@ -77,7 +77,7 @@
         '<div class="mp-frame">' +
           '<div class="mp-stage" data-pane="preview">' + ex.code + '</div>' +
           '<pre class="mp-code" data-pane="code" hidden>' +
-            '<button class="mp-copy" type="button" data-copy>Copy</button>' +
+            '<button class="mp-copy nx-copy" type="button" data-copy aria-label="Copy"></button>' +
             '<code>' + highlight(ex.code) + '</code></pre>' +
         '</div>' +
       '</div>';

@@ -531,9 +531,7 @@
   /* MCP blocks start with the newline the button used to sit on */
   .nx-codewrap > .mcp-code { padding-top: 28px; }
   .nx-codewrap > .mcp-code--tabbed { padding-top: 48px; }
-  .nx-codewrap > .dc-code__copy,
-  .nx-codewrap > .mcp-code__copy,
-  .dc-inline-copy {
+  .nx-codewrap > .mcp-code__copy {
     min-height: 32px;
     padding: 0 12px;
     font-size: 12px;
@@ -541,11 +539,9 @@
   }
   .nx-codewrap > .dc-code__copy,
   .nx-codewrap > .mcp-code__copy { top: 8px !important; right: 8px !important; }
-  /* the target is 44px even though the chip is 32px */
-  .nx-codewrap > .dc-code__copy::after,
+  /* the target is 44px even though the chip is 30–32px */
   .nx-codewrap > .mcp-code__copy::after,
-  .dc-inline-copy::after { content: ""; position: absolute; inset: -6px; }
-  .dc-inline-copy { position: relative; }
+  .nx-copy::after { content: ""; position: absolute; inset: -7px; }
 
   /* one-line commands: wrap at the spaces instead of pushing their
      Copy button out of reach */
@@ -564,8 +560,7 @@
 @media (max-width: 720px) {
   .dc-hero { padding-block: 36px 28px; }
   .dc-eyebrow { margin-bottom: 12px; }
-  .dc-hero__title { font-size: clamp(36px, 10vw, 46px); line-height: 1.04; margin-bottom: 16px; }
-  .dc-hero__lede { font-size: 16.5px; line-height: 1.6; }
+  .dc-hero__title { margin-bottom: 16px; }   /* size as on desktop: the MCP page's heading */
 
   .dc-section { padding-block: 32px; }
   .dc-h2 { font-size: clamp(23px, 6.4vw, 27px); line-height: 1.2; margin-bottom: 12px; }
@@ -917,9 +912,8 @@
   .scn-detail__bread a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -12px; }
   /* (the corner Copy buttons are already absolutely placed — their
      ::after hit area hangs off that; the inline ones need an anchor) */
-  .dc-inline-copy, .mcp-pkg-tab { position: relative; }
-  .nx-codewrap > .dc-code__copy::after, .nx-codewrap > .mcp-code__copy::after,
-  .dc-inline-copy::after, .mcp-pkg-tab::after { content: ""; position: absolute; inset: -8px -4px; }
+  .mcp-pkg-tab { position: relative; }
+  .nx-codewrap > .mcp-code__copy::after, .mcp-pkg-tab::after { content: ""; position: absolute; inset: -8px -4px; }
   .mcp-pkg-tab { min-height: 36px; }
   .shape__dot { position: relative; }
   .shape__dot::after { content: ""; position: absolute; inset: -18px -8px; }

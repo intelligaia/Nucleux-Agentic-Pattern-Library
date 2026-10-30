@@ -1,0 +1,1473 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>nucleUX — You built the AI. We give it a face people trust.</title>
+  <meta name="description" content="Describe your AI and nucleUX picks the screens, states and controls it needs. Free and open source — no design or coding knowledge needed." />
+  <link rel="canonical" href="https://nucleux.in/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleux" />
+  <meta property="og:url" content="https://nucleux.in/" />
+  <meta property="og:title" content="nucleUX — You built the AI. We give it a face people trust." />
+  <meta property="og:description" content="Describe your AI and nucleUX picks the screens, states and controls it needs." />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png?v=2" />
+  <meta property="og:image:width" content="2400" />
+  <meta property="og:image:height" content="1260" />
+  <meta property="og:image:alt" content="Nucleux — Agentic UX patterns. Ready to build." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="nucleUX — You built the AI. We give it a face people trust." />
+  <meta name="twitter:description" content="Describe your AI and nucleUX picks the screens, states and controls it needs." />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png?v=2" />
+  <meta name="twitter:image:alt" content="Nucleux — Agentic UX patterns. Ready to build." />
+  <link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=7">
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=optional" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=optional" rel="stylesheet" /></noscript>
+  <script>document.documentElement.classList.add('ln-js');if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('ln-still');</script>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Material 3.0 purple (M3 baseline primary) replaces amber on this page only */
+    :root {
+      --accent: #6750A4; --accent-hover: #4F378B; --accent-soft: #EADDFF;
+      --accent-ghost: rgba(103,80,164,.10);
+    }
+    /* On dark surfaces use the M3 dark-scheme primary so it stays legible */
+    .ln-stage, .ln-code, .ln-cta, .ln-foot {
+      --accent: #D0BCFF; --accent-hover: #EADDFF; --accent-soft: #4F378B;
+    }
+    /* ════════════════════════════════════════════════════════════
+       nucleUX LANDING — new concept (index-new-concept.html)
+       Only the theme already in styles.css: --ink-*, --accent*,
+       --border, --font-body / --font-serif / --font-mono, --ease-out.
+       Motion: transform / opacity / filter only. Everything stops
+       under prefers-reduced-motion (html.ln-still).
+       ════════════════════════════════════════════════════════════ */
+    html { scroll-padding-top: 88px; }
+    body { background: var(--bg); color: var(--fg); font-family: var(--font-body); }
+    .ln-wrap { overflow-x: clip; }
+    .ln-sec { padding-block: clamp(72px, 9vw, 128px); }
+    .ln-eyebrow {
+      display: inline-block; margin-bottom: var(--s-4);
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--accent-hover);
+    }
+    .ln-h2 {
+      margin: 0 0 var(--s-4); max-width: 18ch;
+      font-size: var(--t-display-3); line-height: 1.08; letter-spacing: -0.025em; font-weight: 600;
+      text-wrap: balance;
+    }
+    .ln-h2 em, .ln-h1 em, .ln-cta h2 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+    .ln-lede { margin: 0; max-width: 58ch; font-size: 18px; line-height: 1.6; color: var(--fg-mid); text-wrap: pretty; }
+    .ln-head { margin-bottom: clamp(36px, 5vw, 56px); }
+    .ln-mono { font-family: var(--font-mono); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* ── Buttons: reuse .btn; add fill, magnet, arrow nudge ── */
+    .ln-btn { position: relative; overflow: hidden; isolation: isolate; }
+    .ln-btn::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+      transform: scaleX(0); transform-origin: left center;
+      transition: transform 520ms var(--ease-out);
+    }
+    .ln-btn.btn--solid::before { background: var(--accent-hover); }
+    .ln-btn.btn--ghost::before { background: var(--accent-soft); }
+    .ln-btn:hover::before, .ln-btn:focus-visible::before { transform: scaleX(1); }
+    .ln-btn.btn--solid:hover { background: var(--ink-950); border-color: var(--accent-hover); }
+    .ln-btn.btn--ghost:hover { background: transparent; border-color: var(--accent); }
+    .ln-btn .btn__arrow, .ln-arrow { transition: transform 380ms var(--ease-out); }
+    .ln-btn:hover .btn__arrow, a:hover > .ln-arrow, a:focus-visible > .ln-arrow, .ln-card:hover .ln-arrow { transform: translateX(4px); }
+    .ln-mag { transition: transform 420ms var(--ease-out), background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); will-change: transform; }
+    .btn:focus-visible, .ln-nav a:focus-visible, .ln-nav button:focus-visible, .ln-chip:focus-visible, .ln-step:focus-visible,
+    .ln-tab:focus-visible, .ln-card:focus-visible, .ln-copy:focus-visible, .ln-tpl a:focus-visible, .ln-moment:focus-visible, .ln-guide:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 3px;
+    }
+
+    /* ── 1 · NAV ── */
+    .ln-progress { position: fixed; inset: 0 0 auto 0; height: 2px; z-index: 60; background: var(--accent); transform: scaleX(0); transform-origin: left center; pointer-events: none; }
+    .ln-nav { position: sticky; top: 0; z-index: 50; isolation: isolate; }
+    .ln-nav__bar {
+      position: relative; display: flex; align-items: center; gap: var(--s-6);
+      height: 72px;
+      transition: background-color 360ms var(--ease-out), border-color 360ms var(--ease-out);
+    }
+    .ln-nav__glass {
+      position: absolute; inset: 0; z-index: -1; opacity: 0; pointer-events: none;
+      background: color-mix(in srgb, var(--ink-25) 72%, transparent);
+      -webkit-backdrop-filter: saturate(160%) blur(14px); backdrop-filter: saturate(160%) blur(14px);
+      transition: opacity 360ms var(--ease-out);
+    }
+    .ln-nav.is-stuck .ln-nav__glass { opacity: 1; }
+    .ln-brand { display: inline-flex; align-items: center; flex: 0 0 auto; }
+    .ln-brand svg { display: block; width: 120px; height: 24px; }
+    .ln-nav__bar > nav { flex: 1 1 auto; display: flex; justify-content: center; min-width: 0; }
+    .ln-nav__links { position: relative; display: flex; align-items: center; gap: 2px; margin: 0 auto; padding: 0; list-style: none; }
+    .ln-nav__links a {
+      position: relative; z-index: 1; display: block; padding: 8px 14px; border-radius: var(--r-full);
+      font-size: 14px; font-weight: 500; color: var(--fg-mid); text-decoration: none; white-space: nowrap;
+      transition: color 240ms var(--ease-out);
+    }
+    .ln-nav__links a:hover, .ln-nav__links a.is-current { color: var(--fg); }
+    .ln-pill {
+      position: absolute; top: 50%; left: 0; z-index: 0; width: 100px; height: 34px; margin-top: -17px;
+      border-radius: var(--r-full); background: var(--ink-100); opacity: 0; pointer-events: none;
+      transform-origin: left center;
+      transition: transform 420ms var(--ease-out), opacity 240ms var(--ease-out);
+    }
+    .ln-nav__end { display: flex; align-items: center; gap: var(--s-3); flex: 0 0 auto; }
+    .ln-nav__sep { width: 1px; height: 20px; background: var(--border); }
+    .ln-gh { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: var(--r-full); font-size: 14px; font-weight: 500; color: var(--fg-mid); text-decoration: none; }
+    .ln-gh:hover { color: var(--fg); background: var(--ink-50); }
+    .ln-nav .btn { padding: 10px 18px; border-radius: 20px; }
+    .ln-menu-btn { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: var(--r-full); background: var(--surface); color: var(--fg); cursor: pointer; }
+    .ln-sheet {
+      position: absolute; left: 0; right: 0; top: 72px; z-index: 49; padding: var(--s-4) var(--gutter) var(--s-6);
+      background: var(--ink-25); border-bottom: 1px solid var(--border); box-shadow: var(--shadow-3);
+      opacity: 0; transform: translateY(-8px); pointer-events: none; visibility: hidden;
+      transition: opacity 280ms var(--ease-out), transform 360ms var(--ease-out), visibility 0s linear 360ms;
+    }
+    .ln-sheet.is-open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+    .ln-sheet a { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 4px; border-bottom: 1px solid var(--ink-100); font-size: 17px; font-weight: 500; color: var(--fg); text-decoration: none; }
+    .ln-sheet .btn { justify-content: center; margin-top: var(--s-4); width: 100%; border-bottom: 0; color: var(--ink-0); }
+
+    /* ── 2 · HERO ── */
+
+
+    /* ── 3b · Agent demo (ask in plain words) ── */
+    .ln-head--c { text-align: center; }
+    .ln-head--c .ln-h2, .ln-head--c .ln-lede { margin-inline: auto; }
+    .ln-ag__tabs { position: relative; display: flex; width: max-content; max-width: 100%; margin: 0 0 var(--s-5); padding: 4px; border-radius: var(--r-full); background: var(--ink-100); overflow-x: auto; scrollbar-width: none; }
+    .ln-ag__tabs::-webkit-scrollbar { display: none; }
+    .ln-ag__tab { position: relative; z-index: 1; flex: 0 0 auto; min-height: 36px; padding: 0 16px; border: 0; border-radius: var(--r-full); background: transparent; font: 500 13.5px/1 var(--font-body); color: var(--fg-mid); cursor: pointer; white-space: nowrap; transition: color 280ms var(--ease-out); }
+    .ln-ag__tab[aria-selected="true"] { color: var(--fg); }
+    .ln-ag__tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .ln-ag__pill { position: absolute; top: 4px; left: 0; z-index: 0; width: 100px; height: 36px; border-radius: var(--r-full); background: var(--surface); box-shadow: var(--shadow-2); transform-origin: left center; transition: transform 520ms var(--ease-out); }
+    .ln-ag { border: 1px solid var(--border); border-radius: var(--r-5); background: var(--ink-50); box-shadow: var(--shadow-3); overflow: hidden; }
+    .ln-ag__bar { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 14px; border-bottom: 1px solid var(--border); font: 12px/1 var(--font-mono); color: var(--fg-mid); }
+    .ln-ag__dots { display: inline-flex; gap: 6px; } .ln-ag__dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-200); }
+    .ln-ag__mcp { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: var(--r-full); background: var(--accent-soft); color: var(--accent-hover); font-size: 11px; }
+    .ln-ag__mcp i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .ln-ag__body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 4px; padding: 4px; }
+    .ln-ag__chat, .ln-ag__canvas { position: relative; height: 540px; border-radius: calc(var(--r-5) - 6px); background: var(--surface); overflow: hidden; }
+    .ln-ag__chat { display: flex; flex-direction: column; padding: 18px; }
+    .ln-ag__ask { flex: 0 0 auto; display: flex; align-items: flex-start; gap: 10px; min-height: 64px; padding: 12px 14px; border-radius: 12px; background: var(--ink-100); font-size: 14.5px; font-weight: 500; line-height: 1.45; color: var(--fg); }
+    .ln-ag__ask svg { flex: 0 0 auto; margin-top: 3px; color: var(--fg-mid); }
+    .ln-ag__caret { display: inline-block; width: 2px; height: 1.05em; margin-left: -8px; margin-top: 2px; background: var(--accent); opacity: 0; }
+    .ln-ag.is-typing .ln-ag__caret { opacity: 1; animation: ln-blink 1s steps(1) infinite; }
+    .ln-ag__steps { flex: 0 0 auto; list-style: none; margin: 16px 0 12px; padding: 0; display: grid; gap: 11px; }
+    .ln-ag__steps li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 1.45; color: var(--fg-mid); opacity: 0; transform: translateY(6px); filter: blur(4px); transition: opacity 420ms var(--ease-out), transform 520ms var(--ease-out), filter 420ms var(--ease-out); }
+    .ln-ag__steps li.is-in { opacity: 1; transform: none; filter: none; }
+    .ln-ag__steps b { color: var(--fg); font-weight: 600; }
+    .ln-ag__ic { position: relative; flex: 0 0 auto; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; border: 1.6px solid var(--ink-200); }
+    .ln-ag__steps li.is-run .ln-ag__ic { border-color: var(--ink-200); border-top-color: var(--accent); animation: ln-spin 800ms linear infinite; }
+    .ln-ag__steps li.is-ok .ln-ag__ic { border-color: var(--accent); background: var(--accent); }
+    .ln-ag__steps li.is-ok .ln-ag__ic::after { content: ""; position: absolute; left: 4.3px; top: 1.6px; width: 3.6px; height: 7px; border: solid var(--surface); border-width: 0 1.7px 1.7px 0; transform: rotate(45deg); }
+    @keyframes ln-spin { to { transform: rotate(360deg); } }
+    .ln-ag__pat { display: inline-block; padding: 1px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-hover); font: 500 12px/1.5 var(--font-mono); }
+    .ln-ag__done { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--ink-100); font-size: 12.5px; color: var(--fg-mid); opacity: 0; transform: translateY(6px); transition: opacity 420ms var(--ease-out), transform 520ms var(--ease-out); }
+    .ln-ag__done.is-in { opacity: 1; transform: none; }
+    .ln-ag__done svg { color: var(--accent); }
+    .ln-ag__done code { padding: 1px 6px; border-radius: 5px; background: var(--surface); font: 12px/1.5 var(--font-mono); color: var(--fg); }
+    .ln-ag__canvas { background-color: var(--surface); background-image: radial-gradient(var(--ink-200) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; align-items: center; justify-content: center; padding: 44px 22px 22px; }
+    .ln-ag__url { position: absolute; left: 14px; top: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font: 11px/1 var(--font-mono); color: var(--fg-mid); }
+    .ln-ag__app { position: relative; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; height: 100%; max-height: 476px; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-2); }
+    .ln-ag__app.is-swap { animation: ln-ag-swap 520ms var(--ease-out); }
+    @keyframes ln-ag-swap { from { opacity: 0; transform: translateY(8px) scale(.985); filter: blur(4px); } }
+    .ln-ag__hd { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+    .ln-ag__hd i { width: 18px; height: 18px; border-radius: 6px; background: linear-gradient(135deg, var(--accent), #7f67be); }
+    .ln-ag__hd span { margin-left: auto; font: 11px/1 var(--font-mono); font-weight: 400; color: var(--fg-mid); }
+    .ln-ag__grow { flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+    .ln-ag__foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+
+    /* Three steps under the demo — bars fill in step with the demo */
+    .ln-flow { list-style: none; margin: clamp(40px, 5vw, 64px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 3vw, 40px); }
+    .ln-flow__bar { display: block; height: 3px; margin-bottom: var(--s-6); background: var(--ink-200); overflow: hidden; border-radius: 2px; }
+    .ln-flow__bar i { display: block; height: 100%; background: var(--fg); transform: scaleX(0); transform-origin: left center; }
+    .ln-flow__n { display: block; margin-bottom: var(--s-4); font-size: clamp(40px, 4vw, 56px); font-weight: 500; line-height: 1; letter-spacing: -0.03em; color: var(--fg); transition: color 400ms var(--ease-out); }
+    .ln-flow h3 { margin: 0 0 8px; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; transition: color 400ms var(--ease-out); }
+    .ln-flow p { margin: 0; max-width: 36ch; font-size: 15.5px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-flow.is-live .ln-flow__s:not(.is-on) .ln-flow__n, .ln-flow.is-live .ln-flow__s:not(.is-on) h3 { color: var(--fg-mid); }
+    /* A piece of UI made from one nucleUX pattern */
+    .ln-ag__p { position: relative; border-radius: 10px; opacity: 0; transform: translateY(10px) scale(.96); filter: blur(6px); transition: opacity 460ms var(--ease-out), transform 640ms cubic-bezier(.34,1.4,.64,1), filter 460ms var(--ease-out), box-shadow 600ms var(--ease-out); }
+    .ln-ag__p.is-in { opacity: 1; transform: none; filter: none; }
+    .ln-ag__p.is-new { box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 5px var(--accent-ghost); }
+    .ln-ag__p[data-name]::before { content: attr(data-name); position: absolute; left: 8px; top: -9px; z-index: 2; padding: 2px 7px; border-radius: 6px; background: var(--accent); color: #fff; font: 500 10.5px/1.3 var(--font-mono); white-space: nowrap; opacity: 0; transform: translateY(4px); transition: opacity 300ms var(--ease-out), transform 400ms var(--ease-out); pointer-events: none; }
+    .ln-ag__p.is-new[data-name]::before { opacity: 1; transform: none; }
+    span.ln-ag__p, b.ln-ag__p { display: inline-block; }
+    /* mini UI atoms */
+    .ln-ag__box { padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; line-height: 1.45; color: var(--fg); background: var(--surface); }
+    .ln-ag__box--soft { background: var(--ink-50); }
+    .ln-ag__box--ac { border-color: var(--accent); }
+    .ln-ag__lbl { display: block; margin-bottom: 6px; font: 10.5px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-mid); }
+    .ln-ag__in { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 12.5px; color: var(--fg-mid); background: var(--surface); }
+    .ln-ag__in em { font-style: normal; flex: 1 1 auto; }
+    .ln-ag__send { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: var(--ink-950); color: #fff; }
+    .ln-ag__file { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 7px; background: var(--ink-100); color: var(--fg); font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+    .ln-ag__row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg-mid); }
+    .ln-ag__row + .ln-ag__row { margin-top: 5px; }
+    .ln-ag__row b { font-weight: 500; color: var(--fg); }
+    .ln-ag__tick { width: 12px; height: 12px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); box-shadow: inset 0 0 0 3px var(--accent-soft); }
+    .ln-ag__tick--run { background: transparent; border: 1.5px solid var(--ink-200); border-top-color: var(--accent); box-shadow: none; animation: ln-spin 800ms linear infinite; }
+    .ln-ag__ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+    .ln-ag__cite { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: 5px; background: var(--accent-soft); color: var(--accent-hover); font: 600 10px/1.6 var(--font-mono); vertical-align: 1px; }
+    .ln-ag__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ln-ag__chip { padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--r-full); font-size: 11.5px; color: var(--fg); background: var(--surface); white-space: nowrap; }
+    .ln-ag__acts { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+    .ln-ag__btn { padding: 5px 11px; border: 1px solid var(--border); border-radius: var(--r-full); font-size: 11.5px; font-weight: 500; color: var(--fg); background: var(--surface); }
+    .ln-ag__btn--p { border-color: var(--ink-950); background: var(--ink-950); color: #fff; }
+    .ln-ag__msg { align-self: flex-end; max-width: 82%; padding: 8px 11px; border-radius: 12px 12px 4px 12px; background: var(--ink-100); font-size: 12.5px; line-height: 1.4; }
+    .ln-ag__ans { font-size: 12.5px; line-height: 1.5; color: var(--fg); }
+    .ln-ag__badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 7px; padding: 3px 9px; border-radius: var(--r-full); background: #fff4e5; color: #8a4b00; font-size: 11px; font-weight: 500; }
+    .ln-ag__badge--ok { background: var(--accent-soft); color: var(--accent-hover); }
+    .ln-ag__bar2 { height: 4px; margin-top: 8px; border-radius: 4px; background: var(--ink-100); overflow: hidden; }
+    .ln-ag__bar2 i { display: block; width: 64%; height: 100%; background: var(--accent); }
+    .ln-ag__risk { margin-left: auto; padding: 1px 7px; border-radius: 6px; font: 600 10px/1.6 var(--font-mono); }
+    .ln-ag__risk--h { background: #fde8e8; color: #9b1c1c; } .ln-ag__risk--m { background: #fff4e5; color: #8a4b00; }
+    .ln-ag__note { font-size: 11.5px; color: var(--fg-mid); }
+    .ln-ag__tog { margin-left: auto; width: 26px; height: 15px; border-radius: 99px; background: var(--accent); position: relative; flex: 0 0 auto; }
+    .ln-ag__tog::after { content: ""; position: absolute; right: 2px; top: 2px; width: 11px; height: 11px; border-radius: 50%; background: #fff; }
+
+    /* ── Aurora background (Aceternity UI aurora-background, light variant, plain CSS) ── */
+    .ln-hero { position: relative; isolation: isolate; }
+    .ln-aurora {
+      position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+      --blue-300: #93c5fd; --blue-400: #60a5fa; --blue-500: #3b82f6; --indigo-300: #a5b4fc; --violet-200: #ddd6fe;
+      --white: #fff; --transparent: transparent;
+      --aurora: repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%);
+      --white-gradient: repeating-linear-gradient(100deg, var(--white) 0%, var(--white) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--white) 16%);
+    }
+    .ln-aurora__layer {
+      position: absolute; inset: -10px; pointer-events: none; opacity: .5; will-change: transform;
+      filter: blur(10px) invert(100%);
+      background-image: var(--white-gradient), var(--aurora);
+      background-size: 300%, 200%; background-position: 50% 50%, 50% 50%;
+      -webkit-mask-image: radial-gradient(ellipse at 100% 0%, #000 10%, transparent 70%);
+              mask-image: radial-gradient(ellipse at 100% 0%, #000 10%, transparent 70%);
+    }
+    .ln-aurora__layer::after {
+      content: ""; position: absolute; inset: 0;
+      background-image: var(--white-gradient), var(--aurora);
+      background-size: 200%, 100%; background-attachment: fixed;
+      mix-blend-mode: difference;
+    }
+    /* Not painted for the first load (keeps LCP/TBT clean); fades in after load,
+       then pauses while the hero is off-screen (see script) */
+    .ln-aurora:not(.is-on) .ln-aurora__layer { display: none; }
+    .ln-aurora.is-on { animation: ln-aurora-in 1600ms var(--ease-out) both; }
+    @keyframes ln-aurora-in { from { opacity: 0; } to { opacity: 1; } }
+    .ln-aurora.is-on .ln-aurora__layer::after { animation: ln-aurora 60s linear infinite; }
+    .ln-aurora.is-paused .ln-aurora__layer::after { animation-play-state: paused; }
+    @keyframes ln-aurora { from { background-position: 50% 50%, 50% 50%; } to { background-position: 350% 50%, 350% 50%; } }
+    .ln-hero { padding-block: clamp(40px, 6vw, 88px) clamp(56px, 7vw, 96px); }
+    .ln-hero__grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+    .ln-hero__grid > .ln-demo { margin-top: 12px; }
+    /* Room for the copy column whichever font it is set in, so the web font
+       arriving never moves what is below the hero (no layout shift). */
+    @media (min-width: 1021px) { .ln-hero__grid > div:first-child { min-height: 700px; } }
+    .ln-badge {
+      display: inline-flex; align-items: center; gap: 10px; margin-bottom: var(--s-6); padding: 6px 14px 6px 6px;
+      border: 1px solid var(--border); border-radius: var(--r-full); background: var(--surface);
+      font-size: 13.5px; font-weight: 500; color: var(--fg-alt); text-decoration: none;
+      transition: border-color 280ms var(--ease-out), transform 420ms var(--ease-out);
+    }
+    .ln-badge:hover { border-color: var(--accent); }
+    .ln-badge b { padding: 3px 9px; border-radius: var(--r-full); background: var(--accent-soft); color: var(--accent-hover); font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    .ln-h1 { margin: 0 0 var(--s-6); font-size: var(--t-display-1); line-height: 1.02; letter-spacing: -0.035em; font-weight: 600; text-wrap: balance; }
+    .ln-h1 .w { display: inline-block; }
+    .ln-hero__sub { margin: 0 0 var(--s-8); max-width: 34em; font-size: clamp(17px, 1.4vw, 20px); line-height: 1.55; color: var(--fg-mid); }
+    .ln-prompt {
+      position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--s-3);
+      padding: 10px 10px 10px 18px; border: 1px solid var(--border-strong); border-radius: 20px; background: var(--surface);
+      box-shadow: var(--shadow-3); transition: border-color 280ms var(--ease-out), box-shadow 280ms var(--ease-out);
+    }
+    .ln-prompt:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-ghost), var(--shadow-3); }
+    /* Material 3 composer: tonal purple glow behind (as in the Material pattern composer)
+       + an animated border beam that travels round the edge */
+    .ln-prompt { border: 1.5px solid color-mix(in srgb, var(--accent) 26%, var(--border-strong)); background: var(--surface); }
+    .ln-prompt::before {
+      content: ""; position: absolute; z-index: -1; inset: -26px -30px; border-radius: 48px; pointer-events: none;
+      background:
+        radial-gradient(60% 90% at 18% 55%, color-mix(in oklab, #EADDFF 95%, transparent), transparent 70%),
+        radial-gradient(55% 85% at 82% 45%, color-mix(in oklab, #FFD8E4 85%, transparent), transparent 70%),
+        radial-gradient(70% 100% at 50% 100%, color-mix(in oklab, #D0BCFF 60%, transparent), transparent 70%);
+      background-size: 160% 160%; background-position: 50% 50%;
+      filter: blur(18px); opacity: .9;
+    }
+    /* Beam: a conic sweep rotated with transform (compositor only) inside a ring mask */
+    .ln-prompt__beam {
+      position: absolute; z-index: 1; inset: -1.5px; padding: 2px; border-radius: inherit; pointer-events: none; overflow: hidden;
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+              mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+      opacity: 0; transition: opacity 600ms var(--ease-out);
+    }
+    .ln-prompt__beam i {
+      position: absolute; left: 50%; top: 50%; width: 120%; aspect-ratio: 1; min-height: 200%;
+      background: conic-gradient(from 0deg, transparent 0deg 250deg, rgba(208,188,255,0) 250deg, #D0BCFF 300deg, #7F67BE 335deg, #6750A4 352deg, transparent 360deg);
+      transform: translate(-50%, -50%) rotate(0deg); will-change: transform;
+    }
+    .ln-prompt.is-rb .ln-prompt__beam { opacity: 1; }
+    .ln-prompt.is-rb .ln-prompt__beam i { animation: ln-beam 4.5s linear infinite; }
+    .ln-prompt.is-rb:focus-within .ln-prompt__beam i { animation-duration: 2.4s; }
+    .ln-prompt.is-rb::before { animation: ln-glow-drift 18s ease-in-out infinite alternate; }
+    .ln-prompt:focus-within { border-color: color-mix(in srgb, var(--accent) 40%, var(--border-strong)); box-shadow: 0 0 0 4px var(--accent-ghost), var(--shadow-3); }
+    @keyframes ln-beam { to { transform: translate(-50%, -50%) rotate(360deg); } }
+    @keyframes ln-glow-drift { 0% { background-position: 30% 40%; } 50% { background-position: 70% 60%; } 100% { background-position: 45% 30%; } }
+    html.ln-still .ln-prompt__beam { opacity: 1; }
+    .ln-prompt textarea {
+      width: 100%; min-height: 52px; max-height: 140px; padding: 12px 0; resize: none; border: 0; outline: 0; background: transparent;
+      font: 16px/1.5 var(--font-body); color: var(--fg); height: 52px; overflow: hidden;
+    }
+    .ln-prompt textarea::placeholder { color: var(--fg-mid); }
+    .ln-prompt .btn { padding: 13px 20px; }
+    .ln-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s-4); }
+    .ln-chips__lab { align-self: center; margin-right: 2px; font-family: var(--font-mono); font-size: 12px; color: var(--fg-mid); }
+    .ln-chip {
+      min-height: 36px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r-full); background: var(--surface);
+      font: 500 13.5px/1 var(--font-body); color: var(--fg-alt); cursor: pointer;
+      transition: border-color 240ms var(--ease-out), background-color 240ms var(--ease-out), transform 420ms var(--ease-out);
+    }
+    .ln-chip:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--ink-900); }
+    .ln-hero__note { margin: var(--s-5) 0 0; font-size: 13.5px; color: var(--fg-mid); }
+    .ln-hero__note span { color: var(--accent-hover); }
+
+    /* hero mini demo */
+    .ln-demo {
+      position: relative; height: 520px; padding: var(--s-5); border: 1px solid var(--border); border-radius: var(--r-6);
+      background: var(--surface); box-shadow: var(--shadow-4); overflow: hidden; contain: layout paint;
+    }
+    .ln-demo__top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding-bottom: var(--s-4); border-bottom: 1px solid var(--ink-100); }
+    .ln-demo__t { font-size: 14px; font-weight: 600; }
+    .ln-demo__t small { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--fg-mid); }
+    .ln-demo__live { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--fg-mid); }
+    .ln-demo__live i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: ln-pulse 1.6s var(--ease-out) infinite; }
+    @keyframes ln-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.75); } }
+    .ln-demo__ask { margin: var(--s-4) 0 var(--s-3); padding: 12px 14px; border-radius: 14px; background: var(--ink-50); font-size: 14px; line-height: 1.5; color: var(--fg-alt); }
+    .ln-demo__lab { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-mid); }
+    .ln-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 64px; margin: 8px 0 var(--s-4); align-content: flex-start; }
+    .ln-tag {
+      display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--r-full);
+      border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; font-weight: 500; color: var(--fg-alt);
+      opacity: 0; transform: translateY(6px) scale(.96); transition: opacity 360ms var(--ease-out), transform 480ms var(--ease-out), border-color 360ms var(--ease-out), background-color 360ms var(--ease-out);
+    }
+    .ln-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-300); transition: background-color 360ms var(--ease-out); }
+    .ln-tag.is-on { opacity: 1; transform: none; }
+    .ln-tag.is-picked { border-color: var(--accent); background: var(--accent-soft); color: var(--ink-900); }
+    .ln-tag.is-picked::before { background: var(--accent); }
+    .ln-out { position: relative; height: 270px; }
+    .ln-out > * { position: absolute; inset: 0 0 auto 0; opacity: 0; transform: translateY(10px); filter: blur(4px); transition: opacity 480ms var(--ease-out), transform 600ms var(--ease-out), filter 600ms var(--ease-out); }
+    .ln-out > .is-on { opacity: 1; transform: none; filter: none; }
+    .ln-proc { padding: 14px; border: 1px solid var(--ink-100); border-radius: 14px; }
+    .ln-proc__row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px; color: var(--fg-mid); }
+    .ln-proc__row svg { animation: ln-spin 1s linear infinite; }
+    @keyframes ln-spin { to { transform: rotate(360deg); } }
+    .ln-shim { position: relative; height: 10px; margin-top: 10px; border-radius: 6px; background: var(--ink-100); overflow: hidden; }
+    .ln-shim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, var(--ink-0), transparent); transform: translateX(-100%); animation: ln-shim 1.4s var(--ease-out) infinite; }
+    @keyframes ln-shim { to { transform: translateX(100%); } }
+    .ln-sum { padding: 14px; border: 1px solid var(--ink-100); border-radius: 14px; }
+    .ln-sum__h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+    .ln-sum__h span { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; color: var(--fg-mid); }
+    .ln-sum ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: var(--fg-alt); }
+    .ln-cite { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; margin-left: 4px; padding: 0 5px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-hover); font: 600 10.5px/1 var(--font-mono); vertical-align: 1px; }
+    .ln-act { margin-top: 10px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--surface); opacity: 0; transform: translateY(8px); transition: opacity 480ms var(--ease-out), transform 600ms var(--ease-out); }
+    .ln-act.is-on { opacity: 1; transform: none; }
+    .ln-act p { margin: 0; flex: 1; font-size: 13px; line-height: 1.45; color: var(--fg-alt); }
+    .ln-act p b { display: block; color: var(--fg); font-weight: 600; }
+    .ln-act__b { flex: 0 0 auto; padding: 8px 14px; border-radius: var(--r-full); background: var(--ink-950); color: var(--ink-0); font-size: 12.5px; font-weight: 600; transition: transform 360ms var(--ease-out); }
+    .ln-act.is-press .ln-act__b { transform: scale(.94); }
+    .ln-act__ok { color: var(--accent-hover); font-family: var(--font-mono); font-size: 11px; opacity: 0; transition: opacity 360ms var(--ease-out); }
+    .ln-act.is-done .ln-act__ok { opacity: 1; }
+
+    /* ── 3 · MARQUEE ── */
+    .ln-marquee { border-block: 1px solid var(--border); background: var(--surface); overflow: hidden; }
+    .ln-marquee__track { display: flex; width: max-content; animation: ln-marq 60s linear infinite; }
+    .ln-marquee:hover .ln-marquee__track { animation-play-state: paused; }
+    .ln-marquee ul { display: flex; margin: 0; padding: 0; list-style: none; }
+    .ln-marquee li { display: inline-flex; align-items: center; gap: 22px; padding: 18px 0 18px 22px; font-size: 15px; font-weight: 500; color: var(--fg-alt); white-space: nowrap; }
+    .ln-marquee li::after { content: "✦"; color: var(--accent); font-size: 11px; }
+    @keyframes ln-marq { to { transform: translateX(-50%); } }
+
+    /* ── 4 · START HERE ── */
+    .ln-cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5); }
+    .ln-card {
+      position: relative; display: flex; flex-direction: column; gap: var(--s-3); min-height: 320px; padding: var(--s-8);
+      border: 1px solid var(--border); border-radius: var(--r-6); background: var(--surface); color: var(--fg); text-decoration: none;
+      overflow: hidden; isolation: isolate; transition: transform 520ms var(--ease-out), border-color 360ms var(--ease-out), box-shadow 520ms var(--ease-out);
+    }
+    .ln-card:hover { transform: translateY(-6px); border-color: var(--border-strong); box-shadow: var(--shadow-4); }
+    .ln-spot { position: absolute; left: 0; top: 0; z-index: -1; width: 420px; height: 420px; margin: -210px 0 0 -210px; border-radius: 50%; background: radial-gradient(closest-side, rgba(103,80,164,.16), rgba(103,80,164,0)); opacity: 0; pointer-events: none; transition: opacity 360ms var(--ease-out); }
+    .ln-card:hover .ln-spot { opacity: 1; }
+    .ln-card__ic { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-bottom: var(--s-4); border-radius: 14px; background: var(--accent-soft); color: var(--accent-hover); transition: transform 600ms var(--ease-out); }
+    .ln-card:hover .ln-card__ic { transform: rotate(-12deg) scale(1.06); }
+    .ln-card__who { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-mid); }
+    .ln-card h3 { margin: 0; font-size: 22px; line-height: 1.25; letter-spacing: -0.015em; font-weight: 600; }
+    .ln-card p { margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-card code, .ln-inline-code { padding: 2px 7px; border-radius: 6px; background: var(--ink-50); border: 1px solid var(--ink-100); font: 500 13px/1.6 var(--font-mono); color: var(--ink-800); }
+    .ln-card__go { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; padding-top: var(--s-4); font-size: 15px; font-weight: 600; color: var(--fg); }
+
+    /* ── 5 · HOW IT WORKS ── */
+    .ln-how { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+    .ln-steps { display: grid; gap: var(--s-3); margin: 0; padding: 0; list-style: none; }
+    .ln-step {
+      display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s-4); width: 100%; padding: var(--s-6);
+      border: 1px solid var(--border); border-radius: var(--r-5); background: var(--surface); text-align: left; cursor: pointer; font: inherit; color: inherit;
+      transition: border-color 360ms var(--ease-out), box-shadow 360ms var(--ease-out);
+    }
+    .ln-step[aria-selected="true"] { border-color: var(--ink-300); box-shadow: var(--shadow-3); }
+    .ln-step__n { font-family: var(--font-mono); font-size: 13px; color: var(--fg-mid); padding-top: 3px; }
+    .ln-step[aria-selected="true"] .ln-step__n { color: var(--accent-hover); }
+    .ln-step__t { display: block; margin: 0 0 6px; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+    .ln-step__d { display: block; margin: 0; font-size: 15px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-step__bar { grid-column: 1 / -1; height: 2px; border-radius: 2px; background: var(--ink-100); overflow: hidden; }
+    .ln-step__bar i { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left center; }
+    .ln-step[aria-selected="true"] .ln-step__bar i { transform: scaleX(1); }
+    .ln-steps.is-auto .ln-step[aria-selected="true"] .ln-step__bar i { animation: ln-fill var(--step-ms, 5200ms) linear forwards; }
+    .ln-steps.is-paused .ln-step[aria-selected="true"] .ln-step__bar i { animation-play-state: paused; }
+    @keyframes ln-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .ln-stage {
+      position: sticky; top: 104px; height: 460px; padding: var(--s-8); border-radius: var(--r-6);
+      background: var(--ink-950); color: var(--ink-0); overflow: hidden; isolation: isolate;
+    }
+    .ln-stage::before { content: ""; position: absolute; right: -120px; top: -120px; z-index: -1; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(closest-side, rgba(127,103,190,.5), rgba(127,103,190,0)); }
+    .ln-stage__p { position: absolute; inset: var(--s-8); opacity: 0; transform: translateY(14px); filter: blur(6px); transition: opacity 520ms var(--ease-out), transform 700ms var(--ease-out), filter 700ms var(--ease-out); }
+    .ln-stage__p.is-on { opacity: 1; transform: none; filter: none; }
+    .ln-stage__lab { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-400); }
+    .ln-stage__box { margin-top: var(--s-4); padding: var(--s-5); border: 1px solid rgba(255,255,255,.12); border-radius: var(--r-5); background: rgba(255,255,255,.04); font-size: 16px; line-height: 1.6; color: var(--ink-100); }
+    .ln-caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; background: var(--accent); vertical-align: -3px; animation: ln-blink 1s steps(1) infinite; }
+    @keyframes ln-blink { 50% { opacity: 0; } }
+    .ln-stage__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s-4); }
+    .ln-stage__tags span { padding: 7px 12px; border-radius: var(--r-full); border: 1px solid rgba(255,255,255,.14); font-size: 13.5px; color: var(--ink-100); }
+    .ln-stage__tags span.is-a { border-color: var(--accent); color: var(--ink-0); background: rgba(208,188,255,0.13); }
+    .ln-stage__why { margin-top: var(--s-5); display: grid; gap: 10px; }
+    .ln-stage__why div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink-200); }
+    .ln-stage__why b { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-400); padding-top: 2px; }
+    .ln-stage__ship { margin-top: var(--s-4); display: grid; gap: 10px; }
+    .ln-stage__ship div { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12); font-size: 15px; color: var(--ink-100); }
+    .ln-stage__ship i { font-style: normal; font-family: var(--font-mono); font-size: 12px; color: var(--accent); min-width: 72px; }
+
+    /* ── 6 · TRUST ── */
+    .ln-trust { background: var(--surface); border-block: 1px solid var(--border); }
+    .ln-needs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }
+    .ln-need { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-6); border: 1px solid var(--border); border-radius: var(--r-5); background: var(--bg); }
+    .ln-need__v { height: 96px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--s-2); border-radius: 12px; background: var(--surface); border: 1px solid var(--ink-100); }
+    .ln-need h3 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .ln-need p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-need a { margin-top: auto; padding-top: var(--s-2); display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--fg); text-decoration: none; }
+    .ln-dots { display: flex; gap: 6px; }
+    .ln-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: ln-dot 1.2s var(--ease-out) infinite; }
+    .ln-dots i:nth-child(2) { animation-delay: .15s; } .ln-dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes ln-dot { 0%,100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-5px); } }
+    .ln-mini { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r-full); border: 1px solid var(--border); font-size: 12.5px; font-weight: 500; color: var(--fg-alt); background: var(--surface); }
+    .ln-mini--a { background: var(--ink-950); color: var(--ink-0); border-color: var(--ink-950); }
+
+    /* ── 7 · TEMPLATES ── */
+    .ln-tpl-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-6); }
+    .ln-tpl-nav { display: flex; gap: 8px; flex: 0 0 auto; }
+    .ln-tpl-nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface); color: var(--fg); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: border-color 240ms var(--ease-out), transform 420ms var(--ease-out); }
+    .ln-tpl-nav button:hover { border-color: var(--fg); }
+    .ln-tpl-nav button:disabled { opacity: .4; cursor: default; }
+    .ln-tpls {
+      display: grid; grid-auto-flow: column; grid-auto-columns: minmax(300px, 380px); gap: var(--s-5);
+      margin: 0; padding: 4px var(--gutter) var(--s-6); list-style: none;
+      overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+    .ln-tpls::-webkit-scrollbar { display: none; }
+    .ln-tpl { scroll-snap-align: start; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--r-6); background: var(--surface); overflow: hidden; transition: transform 520ms var(--ease-out), box-shadow 520ms var(--ease-out); }
+    .ln-tpl:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
+    .ln-tpl__img { aspect-ratio: 16 / 10; background: var(--ink-50); border-bottom: 1px solid var(--ink-100); overflow: hidden; }
+    .ln-tpl__img img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+    .ln-tpl__ph { height: 100%; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 8px; padding: var(--s-6); background: linear-gradient(160deg, var(--ink-50), var(--ink-0)); }
+    .ln-tpl__body { display: flex; flex-direction: column; gap: 8px; flex: 1; padding: var(--s-6); }
+    .ln-tpl__tag { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-mid); }
+    .ln-tpl h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    .ln-tpl p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-tpl__links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: auto; padding-top: var(--s-3); }
+    .ln-tpl__links a { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--fg); text-decoration: none; }
+    .ln-tpl__links a.is-live { color: var(--accent-hover); }
+    .ln-tpl--first { border-color: var(--ink-300); }
+
+    /* ── 8 · PATTERNS ── */
+    .ln-moments { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }
+    .ln-moment { position: relative; display: flex; flex-direction: column; gap: var(--s-3); min-height: 260px; padding: var(--s-6); border: 1px solid var(--border); border-radius: var(--r-5); background: var(--surface); color: var(--fg); text-decoration: none; transition: transform 520ms var(--ease-out), border-color 360ms var(--ease-out), box-shadow 520ms var(--ease-out); }
+    .ln-moment:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-3); }
+    .ln-moment__n { font-family: var(--font-mono); font-size: 12px; color: var(--fg-mid); }
+    .ln-moment__c { font-size: 56px; line-height: 1; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+    .ln-moment__c small { margin-left: 6px; font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--fg-mid); }
+    .ln-moment h3 { margin: 0; font-size: 19px; font-weight: 600; }
+    .ln-moment p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-moment .ln-arrow { margin-top: auto; }
+    .ln-promise { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5); margin-top: var(--s-8); padding: var(--s-6) var(--s-8); border: 1px dashed var(--border-strong); border-radius: var(--r-5); }
+    .ln-promise div { font-size: 15px; line-height: 1.55; color: var(--fg-mid); }
+    .ln-promise b { display: block; margin-bottom: 4px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-hover); }
+
+    /* ── 9 · DEVELOPERS ── */
+    .ln-dev { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+    .ln-tabs { position: relative; display: inline-flex; padding: 4px; border-radius: var(--r-full); background: var(--ink-100); margin-bottom: var(--s-4); }
+    .ln-tab { position: relative; z-index: 1; min-height: 40px; padding: 0 18px; border: 0; border-radius: var(--r-full); background: transparent; font: 500 14px/1 var(--font-body); color: var(--fg-mid); cursor: pointer; transition: color 280ms var(--ease-out); }
+    .ln-tab[aria-selected="true"] { color: var(--fg); }
+    .ln-tabs__pill { position: absolute; top: 4px; left: 0; z-index: 0; width: 100px; height: 40px; border-radius: var(--r-full); background: var(--surface); box-shadow: var(--shadow-2); transform-origin: left center; transition: transform 460ms var(--ease-out); }
+    .ln-code { position: relative; border-radius: var(--r-5); background: var(--ink-950); color: var(--ink-100); view-transition-name: ln-code; }
+    .ln-code__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: 12px 12px 12px 18px; border-bottom: 1px solid rgba(255,255,255,.08); font-family: var(--font-mono); font-size: 12px; color: var(--ink-400); }
+    .ln-copy { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid rgba(255,255,255,.16); border-radius: var(--r-full); background: transparent; color: var(--ink-100); font: 500 12.5px/1 var(--font-body); cursor: pointer; transition: border-color 240ms var(--ease-out), background-color 240ms var(--ease-out); }
+    .ln-copy:hover { border-color: var(--accent); background: rgba(208,188,255,0.1); }
+    .ln-code pre { margin: 0; padding: 20px; overflow-x: auto; font: 13.5px/1.7 var(--font-mono); white-space: pre-wrap; word-break: break-word; }
+    .ln-code .k { color: #fbbf77; } .ln-code .s { color: #e7d9b8; } .ln-code .c { color: var(--ink-400); }
+    .ln-dev__note { margin: var(--s-4) 0 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
+    .ln-dev__note a { color: var(--fg); font-weight: 600; }
+    .ln-panel[hidden] { display: none; }
+    ::view-transition-old(ln-code), ::view-transition-new(ln-code) { animation-duration: 360ms; animation-timing-function: cubic-bezier(.16,1,.3,1); }
+
+    /* ── 10 · GUIDES ── */
+    .ln-guides { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
+    .ln-guide { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto auto; align-items: center; gap: var(--s-6); padding: var(--s-6) 4px; border-bottom: 1px solid var(--border); color: var(--fg); text-decoration: none; }
+    .ln-guide__n { font-family: var(--font-mono); font-size: 14px; color: var(--accent-hover); }
+    .ln-guide h3 { margin: 0 0 4px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; transition: transform 420ms var(--ease-out); }
+    .ln-guide p { margin: 0; font-size: 15px; color: var(--fg-mid); }
+    .ln-guide__t { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg-mid); white-space: nowrap; }
+    .ln-guide:hover h3 { transform: translateX(4px); }
+
+    /* ── 11 · LABS link ── */
+    .ln-labs { display: flex; align-items: center; justify-content: space-between; gap: var(--s-6); padding: var(--s-6) var(--s-8); border: 1px solid var(--border); border-radius: var(--r-5); background: var(--surface); }
+    .ln-labs p { margin: 0; font-size: 16px; color: var(--fg-mid); }
+    .ln-labs p b { color: var(--fg); font-weight: 600; }
+    .ln-labs a { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--fg); text-decoration: none; white-space: nowrap; }
+
+    /* ── 12 · CTA + footer ── */
+    .ln-cta { position: relative; isolation: isolate; overflow: hidden; margin-top: clamp(24px, 4vw, 48px); padding-block: clamp(80px, 10vw, 136px); background: var(--ink-950); color: var(--ink-0); text-align: center; }
+    .ln-cta__glow { position: absolute; left: 50%; top: 50%; z-index: -1; width: 900px; height: 900px; margin: -450px 0 0 -450px; border-radius: 50%; background: radial-gradient(closest-side, rgba(127,103,190,.55), rgba(127,103,190,0)); animation: ln-glow 14s var(--ease-out) infinite alternate; }
+    @keyframes ln-glow { from { opacity: .55; transform: translate(-14%, 8%) scale(.9); } to { opacity: 1; transform: translate(14%, -6%) scale(1.08); } }
+    .ln-cta h2 { color: var(--ink-0); margin: 0 auto var(--s-5); max-width: 16ch; font-size: var(--t-display-2); line-height: 1.04; letter-spacing: -0.03em; font-weight: 600; }
+    .ln-cta p { margin: 0 auto var(--s-8); max-width: 44ch; font-size: 18px; line-height: 1.6; color: var(--ink-300); }
+    .ln-cta__acts { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-3); }
+    .ln-cta .btn--solid { background: var(--ink-0); color: var(--ink-950); border-color: var(--ink-0); }
+    .ln-cta .ln-btn.btn--solid::before { background: var(--accent-hover); }
+    .ln-cta .ln-btn.btn--solid:hover { background: var(--ink-0); color: var(--ink-950); border-color: var(--accent-hover); }
+    .ln-cta .btn--ghost { color: var(--ink-0); border-color: rgba(255,255,255,.3); }
+    .ln-cta .ln-btn.btn--ghost::before { background: rgba(208,188,255,0.18); }
+    .ln-foot { padding-block: var(--s-12); background: var(--ink-950); color: var(--ink-400); border-top: 1px solid rgba(255,255,255,.08); }
+    .ln-foot__in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-6); }
+    .ln-foot nav { display: flex; flex-wrap: wrap; gap: var(--s-6); }
+    .ln-foot a { color: var(--ink-200); text-decoration: none; font-size: 14px; }
+    .ln-foot a:hover { color: var(--ink-0); }
+    .ln-foot small { font-size: 13px; }
+
+    /* ── REVEALS (only with JS + motion) ── */
+    html.ln-js:not(.ln-still) .ln-rv { opacity: 0; transform: translateY(18px); filter: blur(8px); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out), filter 900ms var(--ease-out); transition-delay: var(--d, 0ms); }
+    html.ln-js:not(.ln-still) .ln-rv.is-in { opacity: 1; transform: none; filter: none; }
+    /* Above the fold: never hidden, so the first paint is the real one (LCP). */
+    html.ln-js:not(.ln-still) .ln-rv--hero { opacity: 1; }
+    html.ln-js:not(.ln-still) .ln-h1 .w { opacity: 0; transform: translateY(.35em); filter: blur(10px); transition: opacity 640ms var(--ease-out), transform 820ms var(--ease-out), filter 820ms var(--ease-out); transition-delay: calc(var(--i) * 40ms); }
+    html.ln-js:not(.ln-still) .ln-h1.is-in .w { opacity: 1; transform: none; filter: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1180px) {
+      .ln-needs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .ln-moments { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .ln-nav__links a { padding-inline: 10px; }
+    }
+    @media (max-width: 1020px) {
+      .ln-nav__links, .ln-nav__sep, .ln-gh span { display: none; }
+      .ln-nav__end { margin-left: auto; }
+      .ln-menu-btn { display: inline-flex; }
+      .ln-hero__grid, .ln-how, .ln-dev { grid-template-columns: minmax(0, 1fr); }
+      .ln-stage { position: relative; top: 0; }
+      .ln-cards3 { grid-template-columns: minmax(0, 1fr); }
+      .ln-card { min-height: 0; }
+      .ln-promise { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 720px) {
+      :root { --gutter: 16px; }
+      .ln-nav__bar { height: 64px; }
+      .ln-sheet { top: 64px; }
+      .ln-nav .btn { padding: 9px 14px; font-size: 13.5px; }
+      .ln-demo { height: 500px; padding: var(--s-4); }
+      .ln-needs { grid-template-columns: minmax(0, 1fr); }
+      .ln-moments { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .ln-moment { min-height: 0; padding: var(--s-5) var(--s-4); }
+      .ln-moment__c { font-size: 44px; }
+      .ln-moment__c small { display: block; margin: 4px 0 0; }
+      .ln-moment p { font-size: 13.5px; }
+      .ln-card { padding: var(--s-6); }
+      .ln-stage { height: 440px; padding: var(--s-6); }
+      .ln-stage__p { inset: var(--s-6); }
+      .ln-stage__why div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+      .ln-guide { grid-template-columns: 40px minmax(0, 1fr); gap: 4px var(--s-4); }
+      .ln-guide__t { grid-column: 2; }
+      .ln-guide .ln-arrow { display: none; }
+      .ln-labs { flex-direction: column; align-items: flex-start; padding: var(--s-6); }
+      .ln-tpl-nav { display: none; }
+      .ln-tpls { grid-auto-columns: 84%; }
+      .ln-prompt { grid-template-columns: minmax(0, 1fr); padding: 8px 8px 8px 14px; }
+      .ln-prompt textarea { height: 76px; }
+      .ln-prompt .btn { justify-content: center; }
+      .ln-step { padding: var(--s-5); }
+      .ln-h2 { max-width: none; }
+      .ln-tabs { display: flex; width: 100%; }
+      .ln-tab { flex: 1 1 0; padding: 0 8px; }
+    }
+
+    /* Touch screens: every control at least 44px tall. */
+    @media (pointer: coarse) {
+      .ln-chip, .ln-tab, .ln-copy, .ln-tpl-nav button { min-height: 44px; }
+      .ln-tab { height: 44px; }
+      .ln-tabs__pill { height: 44px; }
+      .ln-gh { min-height: 44px; min-width: 44px; justify-content: center; }
+      .ln-tpl__links a, .ln-need a, .ln-card__go, .ln-labs a { min-height: 44px; }
+    }
+
+    /* ── REDUCED MOTION: everything still ── */
+    html.ln-still *, html.ln-still *::before, html.ln-still *::after { animation: none !important; transition: none !important; }
+    html.ln-still .ln-marquee { overflow-x: auto; }
+    html.ln-still { scroll-behavior: auto; }
+    @media (prefers-reduced-motion: reduce) { ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+
+    @media (max-width: 860px) {
+      .ln-ag__body { grid-template-columns: minmax(0, 1fr); }
+      .ln-ag__chat { height: 340px; }
+      .ln-ag__canvas { height: 520px; }
+      .ln-ag__tabs { width: 100%; }
+      .ln-flow { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+      .ln-flow__bar { margin-bottom: var(--s-4); }
+    }
+    @media (max-width: 720px) {
+      .ln-ag__chat { padding: 14px; height: 470px; }
+      .ln-ag__ask { font-size: 14px; min-height: 0; }
+      .ln-ag__steps { gap: 9px; margin-top: 14px; }
+      .ln-ag__steps li { font-size: 13px; }
+      .ln-ag__canvas { padding: 40px 12px 12px; }
+      .ln-ag__path { display: none; }
+      .ln-ag__tab { min-height: 44px; }
+      .ln-ag__pill { height: 44px; }
+    }
+  </style>
+</head>
+<body>
+<div class="ln-progress" aria-hidden="true"></div>
+<a class="sr-only" href="#main">Skip to content</a>
+
+<!-- ══ 1 · NAV ══ -->
+<header class="ln-nav" id="top">
+  <div class="ln-nav__glass" aria-hidden="true"></div>
+  <div class="container ln-nav__bar">
+    <a class="ln-brand" href="/" aria-label="nucleUX home"><svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
+<path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
+<path d="M38.0781 11.5382C38.0781 5.9997 40.5397 3.23047 45.4627 3.23047H51.9243V6.92278H46.155C43.5397 6.92278 42.232 8.46124 42.232 11.5382C42.232 14.6151 43.5397 16.1535 46.155 16.1535H51.9243V19.8459H45.4627C40.5397 19.8459 38.0781 17.0766 38.0781 11.5382Z" fill="var(--brand-word, #8A8F96)"/>
+<path d="M54.2344 3.23047V19.8459H65.7728V16.1535H58.3882V3.23047H54.2344Z" fill="var(--brand-word, #8A8F96)"/>
+<path d="M68.0781 3.23047V19.8459H80.7704V16.1535H72.232V13.1535H79.8474V9.92278H72.232V6.92278H80.7704V3.23047H68.0781Z" fill="var(--brand-word, #8A8F96)"/>
+<path d="M83.5391 3V14.0769C83.5391 18.0769 85.8468 20.0769 90.4621 20.0769C95.0775 20.0769 97.3852 18.0769 97.3852 14.0769V3H93.2314V13.6154C93.2314 15.4615 92.3083 16.3846 90.4621 16.3846C88.616 16.3846 87.6929 15.4615 87.6929 13.6154V3H83.5391Z" fill="url(#paint0_linear_v3)"/>
+<path d="M99.6959 3H104.773L108.465 8.53846L112.157 3H117.696L112.157 11.3077L117.696 19.6154H112.157L108.465 14.0769L104.773 19.6154H99.2344L105.234 11.3077L99.6959 3Z" fill="url(#paint1_linear_v3)"/>
+<defs>
+<linearGradient id="paint0_linear_v3" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+<stop stop-color="#21A4D7"/>
+<stop offset="0.975962" stop-color="#8B57C7"/>
+</linearGradient>
+<linearGradient id="paint1_linear_v3" x1="84" y1="10.5" x2="118" y2="10" gradientUnits="userSpaceOnUse">
+<stop stop-color="#21A4D7"/>
+<stop offset="0.975962" stop-color="#8B57C7"/>
+</linearGradient>
+</defs>
+</svg></a>
+    <nav aria-label="Primary">
+      <ul class="ln-nav__links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#start">Start here</a></li>
+        <li><a href="#templates">Templates</a></li>
+        <li><a href="#patterns">Patterns</a></li>
+        <li><a href="#developers">Developers</a></li>
+        <li><a href="labs">Labs</a></li>
+        <li class="ln-pill" aria-hidden="true"></li>
+      </ul>
+    </nav>
+    <div class="ln-nav__end">
+      <span class="ln-nav__sep" aria-hidden="true"></span>
+      <a class="ln-gh" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener" aria-label="nucleUX on GitHub">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        <span>GitHub</span>
+      </a>
+      <a class="btn btn--solid ln-btn ln-mag" href="playground">Try it free</a>
+      <button class="ln-menu-btn" type="button" aria-expanded="false" aria-controls="ln-sheet" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="ln-sheet" id="ln-sheet">
+    <a href="#how">How it works <span class="ln-arrow" aria-hidden="true">→</span></a>
+    <a href="#start">Start here <span class="ln-arrow" aria-hidden="true">→</span></a>
+    <a href="#templates">Templates <span class="ln-arrow" aria-hidden="true">→</span></a>
+    <a href="#patterns">Patterns <span class="ln-arrow" aria-hidden="true">→</span></a>
+    <a href="#developers">Developers <span class="ln-arrow" aria-hidden="true">→</span></a>
+    <a href="labs">Labs <span class="ln-arrow" aria-hidden="true">→</span></a>
+    <a href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+    <a class="btn btn--solid" href="playground">Try it free</a>
+  </div>
+</header>
+
+<main id="main" class="ln-wrap">
+
+<!-- ══ 2 · HERO ══ -->
+<section class="ln-hero" aria-labelledby="ln-h1">
+  <!-- Aurora background, ported from Aceternity UI "aurora-background" (light variant) to plain CSS -->
+  <div class="ln-aurora" aria-hidden="true"><div class="ln-aurora__layer"></div></div>
+  <div class="container ln-hero__grid">
+    <div>
+      <a class="ln-badge ln-rv ln-rv--hero" href="material-pattern?id=disclosure&amp;device=mobile"><b>New</b> nucleUX for iPhone Duo <span class="ln-arrow" aria-hidden="true">→</span></a>
+      <h1 class="ln-h1" id="ln-h1">You built the AI. We give it a face people <em>trust</em>.</h1>
+      <p class="ln-hero__sub ln-rv ln-rv--hero" style="--d:200ms">Describe your AI in a sentence. nucleUX picks the screens, states and controls it needs — the parts that show it's working, where answers come from, and when it asks before acting.</p>
+
+      <form class="ln-prompt ln-rv ln-rv--hero" style="--d:260ms" action="playground" method="get" role="search" aria-label="Describe your AI">
+        <span class="ln-prompt__beam" aria-hidden="true"><i></i></span>
+        <label class="sr-only" for="ln-q">Describe your AI</label>
+        <textarea id="ln-q" name="q" rows="1" placeholder="An assistant that summarises meetings and drafts follow-ups…" autocomplete="off"></textarea>
+        <button class="btn btn--solid ln-btn ln-mag" type="submit">Build it <svg class="btn__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </form>
+      <div class="ln-chips ln-rv ln-rv--hero" style="--d:320ms" role="group" aria-label="Try an example">
+        <span class="ln-chips__lab">Try</span>
+        <button class="ln-chip" type="button" data-q="A meeting summariser that turns recordings into a recap with action items and owners">Meeting summariser</button>
+        <button class="ln-chip" type="button" data-q="A support chatbot that answers from our help centre and hands off to a person when it isn't sure">Support chatbot</button>
+        <button class="ln-chip" type="button" data-q="A contract reviewer that flags risky clauses, cites the policy they break and suggests edits for a lawyer to approve">Contract reviewer</button>
+        <button class="ln-chip" type="button" data-q="A research agent that reads sources, cites every claim and asks before it shares anything">Research agent</button>
+      </div>
+      <p class="ln-hero__note ln-rv ln-rv--hero" style="--d:380ms"><span>●</span> No design or coding knowledge needed · Free and open source</p>
+    </div>
+
+    <div class="ln-demo ln-rv ln-rv--hero" style="--d:160ms" aria-label="Example: nucleUX choosing patterns for a meeting summariser" role="img">
+      <div class="ln-demo__top" aria-hidden="true">
+        <div class="ln-demo__t">Meeting summariser<small>nucleUX · picking patterns</small></div>
+        <span class="ln-demo__live"><i></i>live</span>
+      </div>
+      <div aria-hidden="true">
+        <div class="ln-demo__ask">“Summarise today's launch sync and send the action items to the team.”</div>
+        <div class="ln-demo__lab">Patterns it needs</div>
+        <div class="ln-tags">
+          <span class="ln-tag" data-pick>Processing</span>
+          <span class="ln-tag">Open input</span>
+          <span class="ln-tag" data-pick>Summary</span>
+          <span class="ln-tag" data-pick>Citations</span>
+          <span class="ln-tag">Memory</span>
+          <span class="ln-tag" data-pick>Action confirmation</span>
+          <span class="ln-tag">Follow-up</span>
+        </div>
+        <div class="ln-out">
+          <div class="ln-proc" data-step="proc">
+            <div class="ln-proc__row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-9-9" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg>Reading the 52-minute recording…</div>
+            <div class="ln-shim" style="width:92%"></div><div class="ln-shim" style="width:78%"></div><div class="ln-shim" style="width:85%"></div><div class="ln-shim" style="width:60%"></div>
+          </div>
+          <div data-step="sum">
+            <div class="ln-sum">
+              <div class="ln-sum__h">Summary <span>3 of 52 min cited</span></div>
+              <ul>
+                <li>Launch moves to 14 Nov after the payments fix.<span class="ln-cite">12:04</span></li>
+                <li>Android build is blocked on older devices.<span class="ln-cite">27:41</span></li>
+                <li>Legal still has to sign off the checklist.<span class="ln-cite">44:10</span></li>
+              </ul>
+            </div>
+            <div class="ln-act">
+              <p><b>Send 3 action items to #launch?</b>Priya, Dev and Sam will be notified.</p>
+              <span class="ln-act__ok">Sent ✓</span>
+              <span class="ln-act__b">Approve</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 3 · MARQUEE ══ -->
+<div class="ln-marquee" aria-label="Some of the patterns in nucleUX">
+  <div class="ln-marquee__track">
+    <ul>
+      <li>Disclosure</li><li>Consent</li><li>Caveat</li><li>Initial CTA</li><li>Open input</li><li>Suggested prompts</li><li>Voice input</li><li>Model selection</li><li>Knowledge base</li><li>Citations</li><li>Summary</li><li>Confidence</li><li>Action confirmation</li><li>Stream of thought</li><li>Regenerate</li><li>Memory</li><li>Footprints</li><li>Personalization</li>
+    </ul>
+    <ul aria-hidden="true">
+      <li>Disclosure</li><li>Consent</li><li>Caveat</li><li>Initial CTA</li><li>Open input</li><li>Suggested prompts</li><li>Voice input</li><li>Model selection</li><li>Knowledge base</li><li>Citations</li><li>Summary</li><li>Confidence</li><li>Action confirmation</li><li>Stream of thought</li><li>Regenerate</li><li>Memory</li><li>Footprints</li><li>Personalization</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ 4 · HOW IT WORKS — agent demo + three steps ══ -->
+<section class="ln-sec ln-ag-sec" id="how" aria-labelledby="how-h">
+  <div class="container">
+    <header class="ln-head">
+      <span class="ln-eyebrow ln-rv">How it works</span>
+      <h2 class="ln-h2 ln-rv" id="how-h">From one sentence to <em>screens you can ship</em>.</h2>
+      <p class="ln-lede ln-rv">Describe your AI in plain words. Your agent connects to nucleUX, picks the patterns it needs and builds the screen with them — progress, sources and approvals included.</p>
+    </header>
+    <div class="ln-ag__tabs ln-rv" role="tablist" aria-label="Example requests">
+      <span class="ln-ag__pill" aria-hidden="true"></span>
+      <button class="ln-ag__tab" role="tab" type="button" aria-selected="true" aria-controls="ag-win" data-sc="0">Meeting summariser</button>
+      <button class="ln-ag__tab" role="tab" type="button" aria-selected="false" aria-controls="ag-win" tabindex="-1" data-sc="1">Support chatbot</button>
+      <button class="ln-ag__tab" role="tab" type="button" aria-selected="false" aria-controls="ag-win" tabindex="-1" data-sc="2">Contract reviewer</button>
+      <button class="ln-ag__tab" role="tab" type="button" aria-selected="false" aria-controls="ag-win" tabindex="-1" data-sc="3">Research agent</button>
+    </div>
+    <div class="ln-ag ln-rv" id="ag-win" role="tabpanel" aria-label="An agent building with nucleUX">
+      <div class="ln-ag__bar"><span class="ln-ag__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="ln-ag__path">~/my-ai-app</span><span class="ln-ag__mcp"><i aria-hidden="true"></i>nucleUX MCP</span></div>
+      <div class="ln-ag__body">
+        <div class="ln-ag__chat">
+          <div class="ln-ag__ask"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-ag-q></span><span class="ln-ag__caret" aria-hidden="true"></span></div>
+          <ol class="ln-ag__steps" data-ag-steps></ol>
+          <div class="ln-ag__done" data-ag-done><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span data-ag-file></span></div>
+        </div>
+        <div class="ln-ag__canvas">
+          <span class="ln-ag__url">localhost:3000</span>
+          <div class="ln-ag__app" data-ag-app></div>
+        </div>
+      </div>
+    </div>
+
+    <ol class="ln-flow" aria-label="Three steps">
+      <li class="ln-flow__s ln-rv" data-flow="0"><span class="ln-flow__bar" aria-hidden="true"><i></i></span><span class="ln-flow__n" aria-hidden="true">1</span><h3>Describe your AI</h3><p>Say what it does in your own words. No templates to fill in, no jargon.</p></li>
+      <li class="ln-flow__s ln-rv" style="--d:90ms" data-flow="1"><span class="ln-flow__bar" aria-hidden="true"><i></i></span><span class="ln-flow__n" aria-hidden="true">2</span><h3>Get the right patterns</h3><p>nucleUX picks the screens and states your product needs, and tells you why each one is there.</p></li>
+      <li class="ln-flow__s ln-rv" style="--d:180ms" data-flow="2"><span class="ln-flow__bar" aria-hidden="true"><i></i></span><span class="ln-flow__n" aria-hidden="true">3</span><h3>Ship it your way</h3><p>Hand it to your AI agent, build it in React, or design it in the kit. Same patterns either way.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══ 5 · START HERE ══ -->
+<section class="ln-sec" id="start" aria-labelledby="start-h">
+  <div class="container">
+    <header class="ln-head">
+      <span class="ln-eyebrow ln-rv">Start here</span>
+      <h2 class="ln-h2 ln-rv" id="start-h">Pick what sounds <em>like you</em>.</h2>
+      <p class="ln-lede ln-rv">Three ways in. Each one takes a few minutes, and none of them needs the others.</p>
+    </header>
+    <div class="ln-cards3">
+      <a class="ln-card ln-rv" href="#developers" data-tab="agent">
+        <span class="ln-spot" aria-hidden="true"></span>
+        <span class="ln-card__ic" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></span>
+        <span class="ln-card__who">Founder</span>
+        <h3>I'm building with an AI agent</h3>
+        <p>Copy one prompt into Claude, Cursor or Codex. Your agent connects to nucleUX and builds the right screens for you.</p>
+        <span class="ln-card__go">Copy the prompt <span class="ln-arrow" aria-hidden="true">→</span></span>
+      </a>
+      <a class="ln-card ln-rv" style="--d:90ms" href="design-system">
+        <span class="ln-spot" aria-hidden="true"></span>
+        <span class="ln-card__ic" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.6 7.6"/><circle cx="11" cy="11" r="2"/></svg></span>
+        <span class="ln-card__who">Designer</span>
+        <h3>I design the product</h3>
+        <p>Start from the design kit: every state of every pattern, with the tokens and components behind them.</p>
+        <span class="ln-card__go">Open the design kit <span class="ln-arrow" aria-hidden="true">→</span></span>
+      </a>
+      <a class="ln-card ln-rv" style="--d:180ms" href="docs">
+        <span class="ln-spot" aria-hidden="true"></span>
+        <span class="ln-card__ic" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></span>
+        <span class="ln-card__who">Developer</span>
+        <h3>I write the code</h3>
+        <p>Run <code>npm install @nucleux/react</code> and drop in a working agent chat in five minutes. TypeScript and Tailwind throughout.</p>
+        <span class="ln-card__go">Read the quick start <span class="ln-arrow" aria-hidden="true">→</span></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 6 · TRUST ══ -->
+<section class="ln-sec ln-trust" aria-labelledby="trust-h">
+  <div class="container">
+    <header class="ln-head">
+      <span class="ln-eyebrow ln-rv">Why it matters</span>
+      <h2 class="ln-h2 ln-rv" id="trust-h">A chat box isn't <em>a product</em>.</h2>
+      <p class="ln-lede ln-rv">People trust AI when it shows its work. Every AI product has to answer the same four needs — nucleUX has a ready answer for each.</p>
+    </header>
+    <div class="ln-needs">
+      <article class="ln-need ln-rv">
+        <div class="ln-need__v" aria-hidden="true"><span class="ln-dots"><i></i><i></i><i></i></span></div>
+        <h3>Show it's working</h3>
+        <p>A blank screen feels broken. Show progress and what the AI is doing right now.</p>
+        <a href="pattern?id=processing-steps">See the pattern <span class="ln-arrow" aria-hidden="true">→</span></a>
+      </article>
+      <article class="ln-need ln-rv" style="--d:80ms">
+        <div class="ln-need__v" aria-hidden="true"><span class="ln-mini">Q3 report <span class="ln-cite">p.4</span></span></div>
+        <h3>Show your sources</h3>
+        <p>Every answer points back to where it came from, so people can check it.</p>
+        <a href="pattern?id=citations">See the pattern <span class="ln-arrow" aria-hidden="true">→</span></a>
+      </article>
+      <article class="ln-need ln-rv" style="--d:160ms">
+        <div class="ln-need__v" aria-hidden="true"><span style="display:flex;gap:6px"><span class="ln-mini">Not now</span><span class="ln-mini ln-mini--a">Allow</span></span></div>
+        <h3>Ask before acting</h3>
+        <p>Before it sends, deletes or spends, the AI asks — and says exactly what will happen.</p>
+        <a href="material-pattern?id=consent">See the pattern <span class="ln-arrow" aria-hidden="true">→</span></a>
+      </article>
+      <article class="ln-need ln-rv" style="--d:240ms">
+        <div class="ln-need__v" aria-hidden="true"><span class="ln-mini">Couldn't reach Drive · <b style="color:var(--accent-hover)">Retry</b></span></div>
+        <h3>Recover gracefully</h3>
+        <p>When something fails, keep the person's work and offer one clear way forward.</p>
+        <a href="pattern?id=recovery">See the pattern <span class="ln-arrow" aria-hidden="true">→</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7 · TEMPLATES ══ -->
+<section class="ln-sec" id="templates" aria-labelledby="tpl-h">
+  <div class="container ln-head ln-tpl-head">
+    <div>
+      <span class="ln-eyebrow ln-rv">Templates</span>
+      <h2 class="ln-h2 ln-rv" id="tpl-h">Start from <em>a product like yours</em>.</h2>
+      <p class="ln-lede ln-rv">Real AI products, built end to end with nucleUX. Open one, see which patterns it uses, and copy what fits.</p>
+    </div>
+    <div class="ln-tpl-nav ln-rv">
+      <button type="button" data-dir="-1" aria-label="Previous templates"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" data-dir="1" aria-label="Next templates"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+  <ul class="ln-tpls ln-rv" aria-label="Templates" tabindex="0">
+    <li class="ln-tpl ln-tpl--first">
+      <div class="ln-tpl__img"><img src="Meeting%20summariser-landing%20page.png" alt="The meeting summariser template" width="760" height="475" loading="lazy" decoding="async" /></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Internal ops · live demo</span><h3>Meeting summariser</h3><p>Turns an hour-long meeting into a verified five-bullet recap with action items, owners and dates.</p>
+        <div class="ln-tpl__links"><a class="is-live" href="https://saransh.intelligaia.com/" target="_blank" rel="noopener">Try the live demo ↗</a><a href="scenario?id=meeting-summariser">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><img src="Medha%20thumbnail.png" alt="The Medha private AI workspace" width="760" height="475" loading="lazy" decoding="async" /></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Private AI workspace</span><h3>Medha</h3><p>Chat across models, ground answers in your own documents, and keep every conversation inside your environment.</p>
+        <div class="ln-tpl__links"><a href="scenario?id=medha">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><div class="ln-tpl__ph" aria-hidden="true"><span class="ln-mini">Voice input</span><span class="ln-mini">Templates</span><span class="ln-mini">Action plan</span><span class="ln-mini">Connectors</span></div></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Sales</span><h3>Sales discovery copilot</h3><p>Turns a sales call into a structured account brief in the CRM, with next steps ready for review.</p>
+        <div class="ln-tpl__links"><a href="scenario?id=sales-discovery-copilot">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><div class="ln-tpl__ph" aria-hidden="true"><span class="ln-mini">Suggested prompts</span><span class="ln-mini">Summary</span><span class="ln-mini">Confidence</span><span class="ln-mini">Citations</span></div></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Customer ops</span><h3>Customer support triage</h3><p>Drafts replies from your knowledge base and flags the moment a person should take over.</p>
+        <div class="ln-tpl__links"><a href="scenario?id=customer-support-triage">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><div class="ln-tpl__ph" aria-hidden="true"><span class="ln-mini">Citations</span><span class="ln-mini">Confidence</span><span class="ln-mini">Verification</span><span class="ln-mini">Data ownership</span></div></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Regulated industries</span><h3>Compliance reviewer</h3><p>Flags risky clauses with the exact rule they break, and proposes edits for a person to approve.</p>
+        <div class="ln-tpl__links"><a href="scenario?id=compliance-reviewer">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><div class="ln-tpl__ph" aria-hidden="true"><span class="ln-mini">Example gallery</span><span class="ln-mini">Templates</span><span class="ln-mini">Memory</span><span class="ln-mini">Personalization</span></div></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Workforce ops</span><h3>Onboarding companion</h3><p>Walks a new hire through their first two weeks, surfacing docs, people and tasks when they need them.</p>
+        <div class="ln-tpl__links"><a href="scenario?id=onboarding-companion">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><div class="ln-tpl__ph" aria-hidden="true"><span class="ln-mini">Connectors</span><span class="ln-mini">Knowledge base</span><span class="ln-mini">Synthesis</span><span class="ln-mini">Memory</span></div></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">Internal ops</span><h3>Knowledge librarian</h3><p>Keeps a private knowledge base current — linking, updating and retiring documents as the team's work changes.</p>
+        <div class="ln-tpl__links"><a href="scenario?id=knowledge-librarian">See how it's built <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+    <li class="ln-tpl">
+      <div class="ln-tpl__img"><div class="ln-tpl__ph" aria-hidden="true"><span class="ln-mini">All 13 templates</span></div></div>
+      <div class="ln-tpl__body"><span class="ln-tpl__tag">And more</span><h3>Every template</h3><p>Healthcare, education, security, government and more — 13 products in all.</p>
+        <div class="ln-tpl__links"><a href="practices">See all templates <span class="ln-arrow" aria-hidden="true">→</span></a></div></div>
+    </li>
+  </ul>
+</section>
+
+<!-- ══ 8 · PATTERNS ══ -->
+<section class="ln-sec" id="patterns" aria-labelledby="pat-h" style="padding-top:0">
+  <div class="container">
+    <header class="ln-head">
+      <span class="ln-eyebrow ln-rv">Pattern library</span>
+      <h2 class="ln-h2 ln-rv" id="pat-h">84 patterns, sorted by <em>when people meet them</em>.</h2>
+      <p class="ln-lede ln-rv">Every AI product goes through the same four moments. Find yours, and you'll find the patterns for it.</p>
+    </header>
+    <div class="ln-moments">
+      <a class="ln-moment ln-rv" href="library#stage-onboarding"><span class="ln-moment__n">01</span><span class="ln-moment__c"><span data-count="12">12</span><small>patterns</small></span><h3>Before first use</h3><p>Say it's AI, what it can and can't do, and ask for consent before it starts.</p><span class="ln-arrow" aria-hidden="true">→</span></a>
+      <a class="ln-moment ln-rv" style="--d:80ms" href="library#stage-initially"><span class="ln-moment__n">02</span><span class="ln-moment__c"><span data-count="24">24</span><small>patterns</small></span><h3>First prompt</h3><p>Help people know what to ask: the input, suggestions, examples and voice.</p><span class="ln-arrow" aria-hidden="true">→</span></a>
+      <a class="ln-moment ln-rv" style="--d:160ms" href="library#stage-during"><span class="ln-moment__n">03</span><span class="ln-moment__c"><span data-count="37">37</span><small>patterns</small></span><h3>While it works</h3><p>Progress, answers with sources, approvals, and what happens when it slips.</p><span class="ln-arrow" aria-hidden="true">→</span></a>
+      <a class="ln-moment ln-rv" style="--d:240ms" href="library#stage-overtime"><span class="ln-moment__n">04</span><span class="ln-moment__c"><span data-count="11">11</span><small>patterns</small></span><h3>Over time</h3><p>What it remembers, what changed, and how people stay in control of it.</p><span class="ln-arrow" aria-hidden="true">→</span></a>
+    </div>
+    <div class="ln-promise ln-rv">
+      <div><b>What it solves</b>Every pattern starts with the problem a person has, in plain words.</div>
+      <div><b>When to use it</b>The moments it fits, with real products that do it well.</div>
+      <div><b>When not to</b>Where it gets in the way — so you don't add what you don't need.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 9 · DEVELOPERS ══ -->
+<section class="ln-sec ln-trust" id="developers" aria-labelledby="dev-h">
+  <div class="container ln-dev">
+    <header>
+      <span class="ln-eyebrow ln-rv">Developers &amp; AI agents</span>
+      <h2 class="ln-h2 ln-rv" id="dev-h">Your AI agent already <em>knows how to use it</em>.</h2>
+      <p class="ln-lede ln-rv">nucleUX runs an MCP server, so Claude, Cursor, Codex and VS Code can ask it which patterns to use and build them for you. Prefer to write the code? It's one package.</p>
+    </header>
+    <div class="ln-rv" style="--d:120ms">
+      <div class="ln-tabs" role="tablist" aria-label="How to use nucleUX">
+        <span class="ln-tabs__pill" aria-hidden="true"></span>
+        <button class="ln-tab" role="tab" type="button" id="dt-agent" aria-controls="dp-code" aria-selected="true" data-tab="agent">AI agent</button>
+        <button class="ln-tab" role="tab" type="button" id="dt-react" aria-controls="dp-code" aria-selected="false" tabindex="-1" data-tab="react">React</button>
+        <button class="ln-tab" role="tab" type="button" id="dt-figma" aria-controls="dp-code" aria-selected="false" tabindex="-1" data-tab="figma">Figma</button>
+      </div>
+      <div class="ln-code" id="dp-code" role="tabpanel" aria-labelledby="dt-agent">
+        <div class="ln-code__bar"><span data-file>Paste into your AI agent</span><button class="ln-copy" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.8"/></svg><span>Copy</span></button></div>
+        <pre><code data-code></code></pre>
+      </div>
+      <p class="ln-dev__note" data-note></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 10 · GUIDES ══ -->
+<section class="ln-sec" id="guides" aria-labelledby="guide-h">
+  <div class="container">
+    <header class="ln-head">
+      <span class="ln-eyebrow ln-rv">Guides</span>
+      <h2 class="ln-h2 ln-rv" id="guide-h">Read these, <em>in this order</em>.</h2>
+      <p class="ln-lede ln-rv">Four short reads that take you from “what's different about AI products” to a screen that looks like your brand.</p>
+    </header>
+    <ol class="ln-guides">
+      <li><a class="ln-guide ln-rv" href="docs#guide-1"><span class="ln-guide__n">01</span><span><h3>What makes AI products different</h3><p>Why a chat box alone loses people's trust, and the four things that win it back.</p></span><span class="ln-guide__t">2 min read</span><span class="ln-arrow" aria-hidden="true">→</span></a></li>
+      <li><a class="ln-guide ln-rv" style="--d:60ms" href="docs#guide-2"><span class="ln-guide__n">02</span><span><h3>Your first AI screen</h3><p>The input, the first suggestions and the empty state — the screen people see first.</p></span><span class="ln-guide__t">2 min read</span><span class="ln-arrow" aria-hidden="true">→</span></a></li>
+      <li><a class="ln-guide ln-rv" style="--d:120ms" href="docs#guide-3"><span class="ln-guide__n">03</span><span><h3>Building trust: sources and approvals</h3><p>Show where answers come from, and ask before the AI acts on someone's behalf.</p></span><span class="ln-guide__t">2 min read</span><span class="ln-arrow" aria-hidden="true">→</span></a></li>
+      <li><a class="ln-guide ln-rv" style="--d:180ms" href="docs#guide-4"><span class="ln-guide__n">04</span><span><h3>Make it look like your brand</h3><p>Swap the tokens for your colours, type and corners — every pattern follows.</p></span><span class="ln-guide__t">1 min read</span><span class="ln-arrow" aria-hidden="true">→</span></a></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══ 11 · LABS (a single link) ══ -->
+<div class="container" style="padding-bottom:clamp(48px,6vw,80px)">
+  <div class="ln-labs ln-rv">
+    <p><b>Curious about the motion and type behind nucleUX?</b> The Labs are where we try them out.</p>
+    <a href="labs">Visit the Labs <span class="ln-arrow" aria-hidden="true">→</span></a>
+  </div>
+</div>
+
+</main>
+
+<!-- ══ 12 · CTA + FOOTER ══ -->
+<section class="ln-cta" aria-labelledby="cta-h">
+  <div class="ln-cta__glow" aria-hidden="true"></div>
+  <div class="container">
+    <h2 class="ln-rv" id="cta-h">Give your AI a face <em>people trust</em>.</h2>
+    <p class="ln-rv">Describe it in a sentence. nucleUX does the rest — free and open source.</p>
+    <div class="ln-cta__acts ln-rv">
+      <a class="btn btn--solid ln-btn ln-mag" href="playground">Try it free <svg class="btn__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a class="btn btn--ghost ln-btn ln-mag" href="library">Browse the patterns</a>
+    </div>
+  </div>
+</section>
+<footer class="ln-foot">
+  <div class="container ln-foot__in">
+    <small>© 2026 nucleUX · by <a href="https://www.intelligaia.com/" target="_blank" rel="noopener">Intelligaia</a> · Free and open source</small>
+    <nav aria-label="Footer">
+      <a href="library">Patterns</a>
+      <a href="practices">Templates</a>
+      <a href="docs">Docs</a>
+      <a href="mcp">MCP</a>
+      <a href="labs">Labs</a>
+      <a href="contact">Contact</a>
+      <a href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</footer>
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var still = root.classList.contains('ln-still');
+  var fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  /* Decorative loops start only after the page has loaded and settled, so the
+     first paint and the load itself get the main thread to themselves. */
+  function afterLoad(fn, wait) {
+    var go = function () { setTimeout(function () { ('requestIdleCallback' in window) ? requestIdleCallback(fn, { timeout: 1500 }) : fn(); }, wait || 0); };
+    if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+  }
+  function onView(el, fn, opts) {
+    if (!('IntersectionObserver' in window)) { fn(true); return; }
+    new IntersectionObserver(function (es) { es.forEach(function (e) { fn(e.isIntersecting, e); }); }, opts || { threshold: 0.2 }).observe(el);
+  }
+
+
+  /* ── Aurora: start after load, pause off-screen ── */
+  var aur = $('.ln-aurora');
+  if (aur) afterLoad(function () {
+    aur.classList.add('is-on');
+    if (still) return;
+    onView(aur, function (v) { aur.classList.toggle('is-paused', !v); }, { threshold: 0 });
+  }, 2500);
+
+
+  /* ── 3b · Agent demo: chat on the left picks nucleUX patterns, the UI on the right is built from them ── */
+  (function () {
+    var win = $('#ag-win'); if (!win) return;
+    var SEND = '<span class="ln-ag__send" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    var CLIP = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    function P(n, name, cls, html, tag) { return '<' + (tag || 'div') + ' class="ln-ag__p ' + (cls || '') + '" data-p="' + n + '"' + (name ? ' data-name="' + name + '"' : '') + '>' + html + '</' + (tag || 'div') + '>'; }
+    function hd(t, sub) { return '<div class="ln-ag__hd"><i aria-hidden="true"></i>' + t + '<span>' + sub + '</span></div>'; }
+    var SC = [
+      { q: 'Summarise our team meetings and send the action items — but ask before messaging anyone.',
+        file: 'app/meetings/page.tsx',
+        steps: [['Open input', 'drop a recording or paste notes'], ['Processing steps', 'shows it’s working while it listens'], ['Summary', 'decisions first, then action items'], ['Citations', 'each point links to the moment it was said'], ['Action confirmation', 'asks before it messages anyone']],
+        app: hd('Meetings', 'Launch sync') +
+          '<div class="ln-ag__grow">' +
+          P(2, 'Processing steps', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Transcribed 52 minutes</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Found 3 decisions</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Drafted the summary</b></div>') +
+          P(3, 'Summary', 'ln-ag__box', '<span class="ln-ag__lbl">Summary</span><ul class="ln-ag__ul"><li>Launch moves to 14 Nov ' + P(4, 'Citations', 'ln-ag__cite', '12:04', 'span') + '</li><li>Android build blocked on older devices ' + P(4, '', 'ln-ag__cite', '27:41', 'span') + '</li><li>Legal to sign off the checklist ' + P(4, '', 'ln-ag__cite', '44:10', 'span') + '</li></ul>') +
+          P(5, 'Action confirmation', 'ln-ag__box ln-ag__box--ac', '<b style="font-weight:600">Send 3 action items to #launch?</b><div class="ln-ag__note">Priya, Dev and Sam will be notified.</div><div class="ln-ag__acts"><span class="ln-ag__btn">Not now</span><span class="ln-ag__btn ln-ag__btn--p">Send</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(1, 'Open input', '', '<div class="ln-ag__in"><span class="ln-ag__file">' + CLIP + 'Launch sync.m4a</span><em>Ask about this meeting…</em>' + SEND + '</div>') + '</div>' },
+      { q: 'A support chatbot that answers from our help centre and hands off to a person when it isn’t sure.',
+        file: 'app/support/page.tsx',
+        steps: [['Disclosure', 'says up front that it’s an AI'], ['Suggested prompts', 'the questions people ask most'], ['Citations', 'every answer points to a help article'], ['Confidence', 'says when it isn’t sure'], ['Recovery', 'a clear way to reach a person']],
+        app: hd('Help', 'Acme support') +
+          P(1, 'Disclosure', 'ln-ag__box ln-ag__box--soft', '<span class="ln-ag__note">You’re chatting with an <b style="color:var(--fg);font-weight:600">AI assistant</b>. A person can take over anytime.</span>') +
+          '<div class="ln-ag__grow">' +
+          P(3, 'Citations', '', '<div style="display:flex;flex-direction:column;gap:8px"><div class="ln-ag__msg">Can I get a refund after 30 days?</div><div class="ln-ag__ans">Refunds are usually available within 30 days of purchase. After that, it depends on your plan’s terms. <span class="ln-ag__cite">Help centre · Refunds</span></div></div>') +
+          P(4, 'Confidence', 'ln-ag__badge', '● Not fully sure — your plan has custom terms', 'span') +
+          P(5, 'Recovery', '', '<div class="ln-ag__chips"><span class="ln-ag__btn ln-ag__btn--p">Talk to a person</span><span class="ln-ag__btn">Ask another way</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(2, 'Suggested prompts', 'ln-ag__chips', '<span class="ln-ag__chip">Reset my password</span><span class="ln-ag__chip">Change my plan</span><span class="ln-ag__chip">Where’s my refund?</span>') +
+          '<div class="ln-ag__in"><em>Ask anything…</em>' + SEND + '</div></div>' },
+      { q: 'Review vendor contracts, flag risky clauses and let legal approve every change.',
+        file: 'app/contracts/review.tsx',
+        steps: [['Open input', 'upload a contract to review'], ['Processing steps', 'reads every page before it answers'], ['Citations', 'each flag points to the clause and page'], ['Caveat', 'a first pass, not legal advice'], ['Action confirmation', 'legal approves every change']],
+        app: hd('Contracts', 'Northwind MSA') +
+          '<div class="ln-ag__grow">' +
+          P(2, 'Processing steps', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Read 18 of 18 pages</b><span style="margin-left:auto;font:11px var(--font-mono)">100%</span></div><div class="ln-ag__bar2"><i style="width:100%"></i></div>') +
+          P(3, 'Citations', 'ln-ag__box', '<span class="ln-ag__lbl">2 clauses flagged</span><div class="ln-ag__row"><b>Auto-renews every 12 months</b><span class="ln-ag__cite">§7.2 · p.6</span><span class="ln-ag__risk ln-ag__risk--h">High</span></div><div class="ln-ag__row"><b>Liability capped at 1× fees</b><span class="ln-ag__cite">§11 · p.9</span><span class="ln-ag__risk ln-ag__risk--m">Med</span></div>') +
+          P(4, 'Caveat', 'ln-ag__note', 'ⓘ Flags are a first pass, not legal advice.') +
+          P(5, 'Action confirmation', 'ln-ag__box ln-ag__box--ac', '<b style="font-weight:600">Apply 2 redlines?</b><div class="ln-ag__note">Nothing changes until legal approves.</div><div class="ln-ag__acts"><span class="ln-ag__btn">Review</span><span class="ln-ag__btn ln-ag__btn--p">Send to legal</span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(1, 'Open input', '', '<div class="ln-ag__in"><span class="ln-ag__file">' + CLIP + 'MSA-Northwind.pdf</span><em>Review this contract</em>' + SEND + '</div>') + '</div>' },
+      { q: 'A research agent that compares sources and remembers what I’ve already read.',
+        file: 'app/research/page.tsx',
+        steps: [['Stream of thought', 'shows its plan before it searches'], ['Citations', 'numbered sources on every claim'], ['Confidence', 'where sources agree and where they don’t'], ['Memory', 'skips what you’ve already read'], ['Suggested prompts', 'good next questions']],
+        app: hd('Research', 'AI pricing') +
+          '<div class="ln-ag__grow">' +
+          P(1, 'Stream of thought', 'ln-ag__box ln-ag__box--soft', '<div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Search 12 sources</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Compare pricing models</b></div><div class="ln-ag__row"><i class="ln-ag__tick"></i><b>Draft a short brief</b></div>') +
+          P(2, 'Citations', 'ln-ag__ans', 'Most teams price AI features per seat <span class="ln-ag__cite">1</span><span class="ln-ag__cite">2</span>, but usage-based pricing is growing fast <span class="ln-ag__cite">3</span>.') +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">' + P(3, 'Confidence', 'ln-ag__badge ln-ag__badge--ok', '3 sources agree · 1 disagrees', 'span') + '</div>' +
+          P(4, 'Memory', 'ln-ag__box', '<div class="ln-ag__row"><b>Skipped 4 sources you’ve read</b><span class="ln-ag__tog" aria-hidden="true"></span></div>') +
+          '</div><div class="ln-ag__foot">' +
+          P(5, 'Suggested prompts', 'ln-ag__chips', '<span class="ln-ag__chip">Go deeper on usage pricing</span><span class="ln-ag__chip">Compare with last quarter</span>') +
+          '<div class="ln-ag__in"><em>Ask a follow-up…</em>' + SEND + '</div></div>' }
+    ];
+    var tabsEl = $('.ln-ag__tabs'), btns = $$('.ln-ag__tab'), pill = $('.ln-ag__pill');
+    var qEl = $('[data-ag-q]', win), stepsEl = $('[data-ag-steps]', win), done = $('[data-ag-done]', win), fileEl = $('[data-ag-file]', win), app = $('[data-ag-app]', win);
+    var cur = 0, timers = [], visible = false, hover = false, started = false;
+    function clear() { timers.forEach(clearTimeout); timers = []; }
+    function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+    var flowEl = $('.ln-flow'), flows = $$('.ln-flow__s');
+    function flow(ph, ms) {
+      if (!flowEl) return;
+      flowEl.classList.add('is-live');
+      flows.forEach(function (li, k) {
+        var bar = $('.ln-flow__bar i', li);
+        li.classList.toggle('is-on', k === ph);
+        bar.style.transition = 'none';
+        bar.style.transform = 'scaleX(' + (k < ph ? 1 : 0) + ')';
+        if (k === ph) { void bar.offsetWidth; bar.style.transition = 'transform ' + ms + 'ms linear'; bar.style.transform = 'scaleX(1)'; }
+      });
+    }
+    function movePill() { var b = btns[cur]; if (!b || !pill) return; pill.style.transform = 'translateX(' + (b.offsetLeft - 4 + 4) + 'px) scaleX(' + (b.offsetWidth / 100) + ')'; }
+    function render(i, final) {
+      var s = SC[i];
+      app.innerHTML = s.app;
+      stepsEl.innerHTML = '<li><i class="ln-ag__ic"></i><span>Connected to <b>nucleUX MCP</b> · reading the pattern library</span></li>' +
+        s.steps.map(function (st) { return '<li><i class="ln-ag__ic"></i><span>Picked <span class="ln-ag__pat">' + st[0] + '</span> — ' + st[1] + '</span></li>'; }).join('');
+      fileEl.innerHTML = 'Built <code>' + s.file + '</code> with ' + s.steps.length + ' nucleUX patterns';
+      if (final) {
+        qEl.textContent = s.q;
+        $$('li', stepsEl).forEach(function (li) { li.classList.add('is-in', 'is-ok'); });
+        $$('.ln-ag__p', app).forEach(function (p) { p.classList.add('is-in'); });
+        done.classList.add('is-in');
+      } else { qEl.textContent = ''; done.classList.remove('is-in'); }
+    }
+    function select(i, focus) {
+      cur = i;
+      btns.forEach(function (b, k) { var on = k === i; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+      if (focus) btns[i].focus();
+      movePill();
+      var b = btns[i]; if (tabsEl && b) { var l = b.offsetLeft - 16, r = b.offsetLeft + b.offsetWidth + 16; if (l < tabsEl.scrollLeft || r > tabsEl.scrollLeft + tabsEl.clientWidth) tabsEl.scrollTo({ left: l, behavior: still ? 'auto' : 'smooth' }); }
+    }
+    function play(i) {
+      clear(); select(i); 
+      if (still) { render(i, true); $$('.ln-flow__bar i').forEach(function (b) { b.style.transform = 'scaleX(1)'; }); return; }
+      render(i, false);
+      app.classList.remove('is-swap'); void app.offsetWidth; app.classList.add('is-swap');
+      var s = SC[i], lis = $$('li', stepsEl), t = 350, k = 0;
+      win.classList.add('is-typing');
+      var typeMs = Math.ceil(s.q.length / 2) * 26 + 650;
+      flow(0, typeMs);
+      (function type() { if (k <= s.q.length) { qEl.textContent = s.q.slice(0, k); k += 2; at(26, type); } })();
+      t += Math.ceil(s.q.length / 2) * 26 + 300;
+      at(t, function () { win.classList.remove('is-typing'); });
+      var pickMs = 900 + (lis.length - 1) * 1150 + lis.length * 120 + 500;
+      at(t, function () { flow(1, pickMs); });
+      lis.forEach(function (li, n) {
+        at(t, function () { li.classList.add('is-in', 'is-run'); });
+        t += n === 0 ? 900 : 1150;
+        at(t, function () {
+          li.classList.remove('is-run'); li.classList.add('is-ok');
+          if (n === 0) return;
+          var ps = $$('[data-p="' + n + '"]', app);
+          ps.forEach(function (p, j) { setTimeout(function () { p.classList.add('is-in', 'is-new'); }, j * 120); });
+          setTimeout(function () { ps.forEach(function (p) { p.classList.remove('is-new'); }); }, 1500);
+        });
+        t += 120;
+      });
+      t += 500;
+      at(t, function () { done.classList.add('is-in'); flow(2, 3600); });
+      t += 3600;
+      at(t, function () { next(); });
+    }
+    function next() { if (!visible || hover) { at(800, next); return; } play((cur + 1) % SC.length); }
+    btns.forEach(function (b, k) {
+      b.addEventListener('click', function () { play(k); });
+      b.addEventListener('keydown', function (e) { var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); var n = (k + d + btns.length) % btns.length; play(n); btns[n].focus(); } });
+    });
+    win.addEventListener('pointerenter', function () { hover = true; });
+    win.addEventListener('pointerleave', function () { hover = false; });
+    addEventListener('resize', movePill, { passive: true });
+    /* Nothing is built until the page has loaded and gone idle; the panes have fixed heights, so nothing shifts */
+    afterLoad(function () {
+      render(0, true); select(0); if (still) $$('.ln-flow__bar i').forEach(function (b) { b.style.transform = 'scaleX(1)'; });
+      if (!still) onView(win, function (v) { visible = v; if (v && !started) { started = true; play(0); } }, { threshold: 0.35 });
+    }, 1200);
+  })();
+
+  /* ── Prompt composer: rainbow edge starts after load ── */
+  var rbp = $('.ln-prompt');
+  if (rbp && !still) afterLoad(function () { rbp.classList.add('is-rb'); }, 400);
+
+  /* ── Headline: word by word ── */
+  var h1 = $('.ln-h1');
+  if (h1) {
+    var i = 0;
+    (function split(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach(function (part) {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+            var w = document.createElement('span'); w.className = 'w'; w.style.setProperty('--i', i++); w.textContent = part; frag.appendChild(w);
+          });
+          node.replaceChild(frag, n);
+        } else if (n.nodeType === 1) {
+          if (n.tagName === 'EM') { n.classList.add('w'); n.style.setProperty('--i', i++); } else split(n);
+        }
+      });
+    })(h1);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { h1.classList.add('is-in'); }); });
+  }
+
+  /* ── Blur-up reveals ── */
+  var rv = $$('.ln-rv');
+  if (still || !('IntersectionObserver' in window)) rv.forEach(function (el) { el.classList.add('is-in'); });
+  else {
+    /* Once an element has arrived, hand it back to its own styles, so hover
+       lifts and the like are not overridden by the reveal's resting transform. */
+    var settle = function (el) { setTimeout(function () { el.classList.remove('ln-rv', 'is-in'); el.style.removeProperty('--d'); }, 1300 + (parseFloat(getComputedStyle(el).getPropertyValue('--d')) || 0)); };
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); settle(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ── Nav: glass on scroll, progress bar, scroll-spy, hover pill ── */
+  var nav = $('.ln-nav'), bar = $('.ln-progress'), ticking = false;
+  function onScroll() {
+    ticking = false;
+    var y = window.scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    nav.classList.toggle('is-stuck', y > 8);
+    bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0).toFixed(4) + ')';
+  }
+  addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+
+  var ul = $('.ln-nav__links'), pill = $('.ln-pill'), links = $$('.ln-nav__links a'), current = null;
+  function pillTo(a) {
+    if (!a) { pill.style.opacity = '0'; return; }
+    pill.style.transform = 'translateX(' + a.offsetLeft + 'px) scaleX(' + (a.offsetWidth / 100).toFixed(3) + ')';
+    pill.style.opacity = '1';
+  }
+  links.forEach(function (a) {
+    a.addEventListener('pointerenter', function () { pillTo(a); });
+    a.addEventListener('focus', function () { pillTo(a); });
+  });
+  ul.addEventListener('pointerleave', function () { pillTo(current); });
+  ul.addEventListener('focusout', function (e) { if (!ul.contains(e.relatedTarget)) pillTo(current); });
+  var spy = links.map(function (a) { var h = a.getAttribute('href'); return h.charAt(0) === '#' ? [a, $(h)] : null; }).filter(Boolean);
+  if ('IntersectionObserver' in window) {
+    var vis = {};
+    var sio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { vis[e.target.id] = e.isIntersecting; });
+      var hit = null; spy.forEach(function (p) { if (!hit && p[1] && vis[p[1].id]) hit = p[0]; });
+      if (hit !== current) {
+        links.forEach(function (a) { a.classList.toggle('is-current', a === hit); if (a === hit) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+        current = hit; if (!ul.matches(':hover')) pillTo(current);
+      }
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    spy.forEach(function (p) { if (p[1]) sio.observe(p[1]); });
+  }
+
+  var mb = $('.ln-menu-btn'), sheet = $('#ln-sheet');
+  function sheetOpen(on) {
+    sheet.classList.toggle('is-open', on); mb.setAttribute('aria-expanded', String(on));
+    mb.setAttribute('aria-label', on ? 'Close menu' : 'Open menu');
+  }
+  mb.addEventListener('click', function () { sheetOpen(!sheet.classList.contains('is-open')); });
+  sheet.addEventListener('click', function (e) { if (e.target.closest('a')) sheetOpen(false); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('is-open')) { sheetOpen(false); mb.focus(); } });
+
+  /* ── Magnetic buttons ── */
+  if (fine && !still) $$('.ln-mag').forEach(function (b) {
+    b.addEventListener('pointermove', function (e) {
+      var r = b.getBoundingClientRect();
+      var dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2), dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+      b.style.transform = 'translate(' + (dx * 6).toFixed(1) + 'px,' + (dy * 4).toFixed(1) + 'px)';
+    });
+    b.addEventListener('pointerleave', function () { b.style.transform = ''; });
+  });
+
+  /* ── Hero prompt: typing placeholder + example chips ── */
+  var q = $('#ln-q');
+  $$('.ln-chip').forEach(function (c) {
+    c.addEventListener('click', function () { q.value = c.getAttribute('data-q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); });
+  });
+  q.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); q.form.requestSubmit ? q.form.requestSubmit() : q.form.submit(); } });
+  q.form.addEventListener('submit', function (e) { if (!q.value.trim()) { e.preventDefault(); q.value = q.getAttribute('placeholder').replace(/…$/, ''); q.form.submit(); } });
+  if (!still) {
+    var ideas = ['An assistant that summarises meetings and drafts follow-ups…', 'A chatbot that answers from our help centre…', 'An agent that reviews contracts and flags risky clauses…', 'A research agent that cites every source…'];
+    var ii = 0, ci = ideas[0].length, del = true, pt;
+    afterLoad(function type() {
+      if (document.activeElement === q || q.value) { pt = setTimeout(type, 1200); return; }
+      var t = ideas[ii];
+      if (!del) { ci++; q.setAttribute('placeholder', t.slice(0, ci)); if (ci >= t.length) { del = true; pt = setTimeout(type, 2200); return; } pt = setTimeout(type, 48); }
+      else { ci -= 3; if (ci <= 0) { ci = 0; del = false; ii = (ii + 1) % ideas.length; } q.setAttribute('placeholder', t.slice(0, Math.max(ci, 0)) || ' '); pt = setTimeout(type, 24); }
+    }, 2600);
+  }
+
+  /* ── Hero mini demo: pick patterns, then build ── */
+  var demo = $('.ln-demo');
+  if (demo) {
+    var tags = $$('.ln-tag', demo), proc = $('[data-step="proc"]', demo), sum = $('[data-step="sum"]', demo), act = $('.ln-act', demo);
+    var timers = [], running = false, visible = false;
+    function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+    function finalState() {
+      tags.forEach(function (t) { t.classList.add('is-on'); if (t.hasAttribute('data-pick')) t.classList.add('is-picked'); });
+      proc.classList.remove('is-on'); sum.classList.add('is-on'); act.classList.add('is-on', 'is-done');
+    }
+    function reset() {
+      tags.forEach(function (t) { t.classList.remove('is-on', 'is-picked'); });
+      proc.classList.remove('is-on'); sum.classList.remove('is-on'); act.classList.remove('is-on', 'is-press', 'is-done');
+    }
+    function run() {
+      if (running || !visible) return; running = true; reset();
+      tags.forEach(function (t, k) { at(300 + k * 160, function () { t.classList.add('is-on'); }); });
+      var picks = tags.filter(function (t) { return t.hasAttribute('data-pick'); });
+      picks.forEach(function (t, k) { at(1700 + k * 320, function () { t.classList.add('is-picked'); }); });
+      at(3200, function () { proc.classList.add('is-on'); });
+      at(5400, function () { proc.classList.remove('is-on'); sum.classList.add('is-on'); });
+      at(6600, function () { act.classList.add('is-on'); });
+      at(8000, function () { act.classList.add('is-press'); });
+      at(8250, function () { act.classList.remove('is-press'); act.classList.add('is-done'); });
+      at(11500, function () { running = false; timers = []; run(); });
+    }
+    if (still) finalState();
+    else afterLoad(function () { onView(demo, function (v) {
+      visible = v;
+      if (v) run(); else { timers.forEach(clearTimeout); timers = []; running = false; }
+    }, { threshold: 0.3 }); }, 600);
+  }
+
+  /* ── Start-here cards: cursor spotlight ── */
+  if (fine && !still) $$('.ln-card').forEach(function (c) {
+    var s = $('.ln-spot', c);
+    c.addEventListener('pointermove', function (e) { var r = c.getBoundingClientRect(); s.style.transform = 'translate(' + (e.clientX - r.left) + 'px,' + (e.clientY - r.top) + 'px)'; });
+  });
+
+  /* ── Pattern counts ── */
+  $$('[data-count]').forEach(function (el) {
+    var n = +el.getAttribute('data-count');
+    if (still) return;
+    el.textContent = '0';
+    onView(el, function (v) {
+      if (!v || el.__done) return; el.__done = true;
+      var t0 = performance.now(), dur = 1300;
+      (function tick(t) { var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4); el.textContent = String(Math.round(n * e)); if (p < 1) requestAnimationFrame(tick); })(t0);
+    }, { threshold: 0.6 });
+  });
+
+  /* ── Templates carousel ── */
+  var track = $('.ln-tpls'), tnav = $$('.ln-tpl-nav button');
+  function tState() { var m = track.scrollWidth - track.clientWidth - 2; tnav[0].disabled = track.scrollLeft <= 2; tnav[1].disabled = track.scrollLeft >= m; }
+  tnav.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var card = $('.ln-tpl', track), step = card ? card.getBoundingClientRect().width + 20 : 360;
+      track.scrollBy({ left: step * +b.getAttribute('data-dir'), behavior: still ? 'auto' : 'smooth' });
+    });
+  });
+  track.addEventListener('scroll', function () { requestAnimationFrame(tState); }, { passive: true });
+  addEventListener('resize', tState); tState();
+
+  /* ── Developers: tabs, sliding pill, view transition, copy ── */
+  var esc = function (t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var MCP = 'https://nucleux.in/mcp';
+  var TABS = {
+    agent: {
+      file: 'Paste into your AI agent',
+      text: 'Use nucleUX for the AI screens in this project.\n\n1. Connect the nucleUX MCP server: ' + MCP + '\n2. Before you build any AI screen, ask nucleUX which patterns fit it,\n   and follow each pattern\'s "when not to use" guidance.\n3. Build with @nucleux/react components and our existing theme.\n4. Show me the plan before you change any files.',
+      note: 'Using Claude Code? Add the server first: <code class="ln-inline-code">claude mcp add --transport http nucleux ' + MCP + '</code>. Cursor, Codex, VS Code and others: <a href="mcp">MCP setup →</a>'
+    },
+    react: {
+      file: 'Chat.tsx',
+      text: "npm install @nucleux/react\n\nimport { Thread, Message, AgentComposer } from '@nucleux/react'\n\nfunction Chat({ messages, input, setInput, onSend, busy }) {\n  return (\n    <Thread autoScrollKey={messages.length}>\n      {messages.map((m) => (\n        <Message key={m.id} role={m.role} content={m.text} streaming={m.streaming} />\n      ))}\n      <AgentComposer value={input} onValueChange={setInput}\n        onSubmit={onSend} loading={busy} placeholder=\"Ask anything…\" />\n    </Thread>\n  )\n}",
+      note: 'Theming with Tailwind and all ~50 packages: <a href="docs">Read the Docs →</a>'
+    },
+    figma: {
+      file: 'Design kit',
+      text: '1. Open the nucleUX design kit\n2. Pick a moment: Before first use, First prompt, While it works, Over time\n3. Every pattern comes with all its states, tokens and specs\n4. Swap the tokens for your brand — every pattern follows',
+      note: 'The kit lives in the Design System: <a href="design-system">Open the design kit →</a>'
+    }
+  };
+  function paint(text, kind) {
+    var h = esc(text);
+    if (kind === 'react') h = h.replace(/(\bimport\b|\bfrom\b|\bfunction\b|\breturn\b)/g, '<span class="k">$1</span>').replace(/('[^']*'|&quot;[^&]*&quot;|"[^"]*")/g, '<span class="s">$1</span>').replace(/^(npm install .*)$/m, '<span class="c">$1</span>');
+    if (kind === 'agent') h = h.replace(/(https:\/\/nucleux\.in\/mcp|@nucleux\/react)/g, '<span class="k">$1</span>');
+    return h;
+  }
+  var tabs = $$('.ln-tab'), tpill = $('.ln-tabs__pill'), code = $('[data-code]'), file = $('[data-file]'), note = $('[data-note]'), panel = $('#dp-code'), curTab = 'agent';
+  function pillTab(b) { tpill.style.transform = 'translateX(' + b.offsetLeft + 'px) scaleX(' + (b.offsetWidth / 100).toFixed(3) + ')'; }
+  function fill(id) { var t = TABS[id]; code.innerHTML = paint(t.text, id); file.textContent = t.file; note.innerHTML = t.note; panel.setAttribute('aria-labelledby', 'dt-' + id); }
+  function selectTab(id, focus) {
+    if (id === curTab && code.textContent) return; curTab = id;
+    var b = tabs.filter(function (x) { return x.getAttribute('data-tab') === id; })[0];
+    tabs.forEach(function (x) { var on = x === b; x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; });
+    pillTab(b); if (focus) b.focus();
+    if (document.startViewTransition && !still) document.startViewTransition(function () { fill(id); }); else fill(id);
+  }
+  tabs.forEach(function (b, k) {
+    b.addEventListener('click', function () { selectTab(b.getAttribute('data-tab')); });
+    b.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (d) { e.preventDefault(); selectTab(tabs[(k + d + tabs.length) % tabs.length].getAttribute('data-tab'), true); }
+    });
+  });
+  fill('agent'); pillTab(tabs[0]);
+  addEventListener('resize', function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); if (current) pillTo(current); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); });
+  $('.ln-copy').addEventListener('click', function () {
+    var btn = this, lab = $('span', btn), text = TABS[curTab].text;
+    function ok() { lab.textContent = 'Copied'; setTimeout(function () { lab.textContent = 'Copy'; }, 1600); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, legacy); else legacy();
+    function legacy() { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); ok(); }
+  });
+  $$('[data-tab="agent"].ln-card').forEach(function (a) { a.addEventListener('click', function () { selectTab('agent'); }); });
+})();
+</script>
+<script>
+/* global.js (assistant, search, local-file links) is not needed for the first
+   paint: load it on the first interaction, or 5s after load, so it never
+   blocks the main thread while the page is loading. */
+(function () {
+  function go() { var s = document.createElement('script'); s.src = 'global.js'; document.body.appendChild(s); }
+  var done = false;
+  function once() { if (done) return; done = true; ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { removeEventListener(t, once, true); }); go(); }
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (t) { addEventListener(t, once, { capture: true, passive: true }); });
+  addEventListener('load', function () { setTimeout(function () { ('requestIdleCallback' in window) ? requestIdleCallback(once, { timeout: 2000 }) : once(); }, 5000); });
+})();
+</script>
+</body>
+</html>
