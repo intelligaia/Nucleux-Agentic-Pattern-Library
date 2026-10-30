@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Intelligaia Labs — interaction, type and motion experiments</title>
+  <meta name="description" content="Intelligaia Labs: the interaction, typography and motion experiments behind our products — scroll-driven animation, type and hero treatments, and a day in one scroll." />
+  <!--
+    INTELLIGAIA LABS — a standalone page with its own address
+    (/Intelligaia-Labs). It does not use the Nucleux shell (no global
+    nav, styles.css or global.js), so it can be linked from Nucleux, or
+    shared on its own, without pulling the library's chrome along.
+    The labs themselves are the same files Nucleux uses, in Lab/.
+  -->
+  <link rel="canonical" href="https://nucleux.in/Intelligaia-Labs" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Intelligaia" />
+  <meta property="og:url" content="https://nucleux.in/Intelligaia-Labs" />
+  <meta property="og:title" content="Intelligaia Labs" />
+  <meta property="og:description" content="Interaction, typography and motion experiments from Intelligaia." />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Intelligaia Labs" />
+  <meta name="twitter:description" content="Interaction, typography and motion experiments from Intelligaia." />
+  <link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=7">
+
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #fbfbfa; --surface: #ffffff; --ink: #0c0c0a;
+      --fg: #0c0c0a; --fg-mid: #5f5f59; --fg-muted: #8a8a83;
+      --border: rgba(12,12,10,.10); --border-strong: rgba(12,12,10,.22);
+      --accent: #6d28d9; --accent-soft: #ede9fe; --accent-ghost: rgba(109,40,217,.28);
+      --font-body: "Inter", "InterVariable", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-serif: "Newsreader", Georgia, serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+      --gutter: clamp(16px, 3vw, 40px);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      overflow: hidden; background: var(--bg); color: var(--fg);
+      font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { left: 12px; top: 12px; z-index: 99; padding: 8px 12px; background: var(--ink); color: #fff; border-radius: 8px; }
+
+    .app { display: flex; flex-direction: column; height: 100dvh; min-height: 0; }
+
+    /* ── Header: brand, links back to Nucleux, fullscreen, tabs ── */
+    .head {
+      flex: 0 0 auto; position: relative; z-index: 2;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    }
+    .head__in { max-width: 1440px; margin: 0 auto; padding: 14px var(--gutter) 0; }
+    .head__top { display: flex; align-items: center; gap: 16px; }
+    .brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; min-width: 0; }
+    .brand__word { font-size: 19px; font-weight: 700; letter-spacing: -0.03em; color: var(--fg); }
+    .brand__labs { font-family: var(--font-serif); font-style: italic; font-size: 21px; color: var(--accent); }
+    .brand__tag {
+      font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--fg-muted); white-space: nowrap;
+    }
+
+    .tabs {
+      display: flex; gap: 6px; margin-top: 12px; overflow-x: auto; scrollbar-width: none;
+      justify-content: center;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      appearance: none; cursor: pointer; flex: 0 0 auto;
+      display: inline-flex; align-items: baseline; gap: 8px;
+      position: relative; top: 1px; padding: 11px 16px;
+      border: 1px solid var(--border); border-bottom: 0; border-radius: 10px 10px 0 0;
+      background: var(--surface); color: var(--fg-mid);
+      font: 500 13.5px/1 var(--font-body); letter-spacing: -0.01em; white-space: nowrap;
+      transition: color 200ms var(--ease), background 200ms var(--ease), border-color 200ms var(--ease);
+    }
+    .tab .n { font-family: var(--font-mono); font-weight: 600; font-size: 12px; color: var(--accent); }
+    .tab:hover { color: var(--fg); border-color: var(--border-strong); }
+    .tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .tab[aria-selected="true"] .n { color: #c4b5fd; }
+    .tab:focus-visible, .brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ── Stage: one lazily created, cached iframe per lab ── */
+    .stage { flex: 1 1 auto; position: relative; min-height: 0; background: var(--bg); }
+    .frame {
+      position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg);
+      opacity: 0; pointer-events: none; transition: opacity 320ms var(--ease);
+    }
+    .frame.on { opacity: 1; pointer-events: auto; }
+    .hint {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: min(460px, 100% - 48px); text-align: center; color: var(--fg-mid);
+    }
+    .hint__dot {
+      width: 8px; height: 8px; margin: 0 auto 16px; border-radius: 50%; background: var(--accent);
+      animation: pulse 1.6s var(--ease) infinite;
+    }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-ghost); } 100% { box-shadow: 0 0 0 16px rgba(109,40,217,0); } }
+    .hint__title { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--fg-muted); }
+    .hint__name { margin-top: 8px; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--fg); }
+    .hint__desc { margin-top: 10px; font-size: 14px; line-height: 1.55; }
+
+    @media (max-width: 720px) {
+      .brand__tag { display: none; }
+      .tabs { justify-content: flex-start; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
+      .tab { min-height: 44px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#stage">Skip to the lab</a>
+  <div class="app">
+    <header class="head">
+      <div class="head__in">
+        <div class="head__top">
+          <a class="brand" href="https://www.intelligaia.com/" target="_blank" rel="noopener" aria-label="Intelligaia Labs — intelligaia.com (opens in a new tab)">
+            <span class="brand__word">Intelligaia</span><span class="brand__labs">Labs</span>
+            <span class="brand__tag">Interaction · Type · Motion</span>
+          </a>
+        </div>
+        <div class="tabs" id="tabs" role="tablist" aria-label="Labs">
+          <button class="tab" role="tab" type="button" id="tab-01" aria-controls="stage" aria-selected="true"
+            data-id="interaction" data-src="Lab/landing-interaction-lab-bold.html"
+            data-name="Interaction Lab · BOLD"
+            data-desc="61 loud, reversible scroll animations in 16 groups — each with the exact prompt to rebuild it.">
+            <span class="n">01</span>Interaction Lab · BOLD
+          </button>
+          <button class="tab" role="tab" type="button" id="tab-02" aria-controls="stage" aria-selected="false" tabindex="-1"
+            data-id="typography" data-src="Lab/intelligaia-typography-catalog.html"
+            data-name="Typography &amp; Heroes"
+            data-desc="Six type families, a working specimen, six hero treatments and three layout variations.">
+            <span class="n">02</span>Typography &amp; Heroes
+          </button>
+          <button class="tab" role="tab" type="button" id="tab-03" aria-controls="stage" aria-selected="false" tabindex="-1"
+            data-id="daycycle" data-src="Lab/intelligaia-daycycle.html"
+            data-name="Day Cycle"
+            data-desc="A day in one scroll — the sky moves from pre-dawn to night, in four colour moods.">
+            <span class="n">03</span>Day Cycle
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="stage" id="stage" role="tabpanel" aria-labelledby="tab-01" tabindex="-1">
+      <div class="hint" id="hint" aria-live="polite">
+        <div class="hint__dot" aria-hidden="true"></div>
+        <div class="hint__title">Loading…</div>
+        <div class="hint__name"></div>
+        <div class="hint__desc"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+  (function () {
+    var tabs = [].slice.call(document.querySelectorAll('.tab'));
+    var stage = document.getElementById('stage');
+    var hint = document.getElementById('hint');
+    var hName = hint.querySelector('.hint__name'), hDesc = hint.querySelector('.hint__desc');
+    var frames = {}, loaded = {}, current = null;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function show(tab) {
+      var src = tab.getAttribute('data-src');
+      if (!frames[src]) {
+        var f = document.createElement('iframe');
+        f.className = 'frame';
+        f.title = tab.getAttribute('data-name').replace('&amp;', '&');
+        f.setAttribute('allow', 'fullscreen');
+        f.setAttribute('allowfullscreen', '');
+        f.src = src;
+        f.addEventListener('load', function () { loaded[src] = true; if (current === src) hint.style.display = 'none'; });
+        stage.appendChild(f);
+        frames[src] = f;
+      }
+      Object.keys(frames).forEach(function (k) { frames[k].classList.toggle('on', k === src); });
+      current = src;
+      stage.setAttribute('aria-labelledby', tab.id);
+      if (loaded[src]) hint.style.display = 'none';
+      else {
+        hName.textContent = tab.getAttribute('data-name').replace('&amp;', '&');
+        hDesc.textContent = tab.getAttribute('data-desc') || '';
+        hint.style.display = 'block';
+      }
+    }
+
+    function select(tab, opts) {
+      opts = opts || {};
+      tabs.forEach(function (t) { var on = t === tab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+      if (opts.focus) tab.focus();
+      if (tab.scrollIntoView) tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+      show(tab);
+      /* keep the address shareable: /Intelligaia-Labs#02 or #typography */
+      if (!opts.fromHash) {
+        var h = '#' + tab.id.slice(4);
+        if (location.hash !== h) history.replaceState(null, '', h);
+      }
+    }
+
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(t); });
+      t.addEventListener('keydown', function (e) {
+        var n = null;
+        if (e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
+        else if (e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === 'Home') n = tabs[0];
+        else if (e.key === 'End') n = tabs[tabs.length - 1];
+        if (n) { e.preventDefault(); select(n, { focus: true }); }
+      });
+    });
+
+    /* Deep links: #01–#03, or by name (#interaction, #typography, #daycycle),
+       or by file name. Anything unknown opens the first lab. */
+    function fromHash() {
+      var h = decodeURIComponent(location.hash.slice(1)).toLowerCase();
+      if (!h) return tabs[0];
+      var byNum = /^\d+$/.test(h) ? tabs[parseInt(h, 10) - 1] : null;
+      var byId = tabs.filter(function (t) { return t.getAttribute('data-id') === h; })[0];
+      var bySrc = tabs.filter(function (t) { return t.getAttribute('data-src').toLowerCase().indexOf(h) !== -1; })[0];
+      return byNum || byId || bySrc || tabs[0];
+    }
+    select(fromHash(), { fromHash: true });
+    addEventListener('hashchange', function () { select(fromHash(), { fromHash: true }); });
+
+  })();
+  </script>
+</body>
+</html>

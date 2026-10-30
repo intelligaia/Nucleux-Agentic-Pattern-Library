@@ -1,0 +1,15 @@
+  <style>
+    /* Hero gradient dissolves into section two instead of ending on a hard
+       edge. The aurora layer fades out over the bottom of the hero, and the
+       scene no longer clips (that clip only existed to stop the particle
+       dots, which are gone), so the soft hero glows run on past the hero
+       and fade out on their own radial falloff. */
+    .ln-wrap .ag-hero-media {
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+              mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+    }
+    .ln-wrap .scene { overflow: visible; }
+    /* Hero type: more air between lines (concept). */
+    .ln-wrap .hero__title { line-height: 1.12; }
+    .ln-wrap .hero__sub { line-height: 1.7; }
+  </style>

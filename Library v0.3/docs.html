@@ -1,6 +1,14 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "yqd3jkjbc8");
+</script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Docs — Nucleux</title>
@@ -38,7 +46,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Newsreader:ital,opsz,wght@1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
   <script>(function(d){d.documentElement.classList.add("gnav-pending");setTimeout(function(){d.documentElement.classList.remove("gnav-pending");},2000);})(document);</script>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=5" />
   <link rel="stylesheet" href="nav-mega.css" />
   <style>
 
@@ -59,16 +67,18 @@
       letter-spacing: 0.02em;
       margin: 0 0 var(--s-4);
     }
+    /* the same heading as the MCP page's .mx__title */
     .dc-hero__title {
-      font-size: clamp(48px, 6vw, 80px);
-      line-height: 1.0;
-      letter-spacing: -0.045em;
+      font-size: var(--t-display-3);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
       font-weight: 600;
       margin: 0 0 var(--s-5);
       color: var(--fg);
     }
+    /* the same size as the MCP page's descriptions (.mx__p) */
     .dc-hero__lede {
-      font-size: 17px;
+      font-size: 15px;
       line-height: 1.65;
       color: var(--fg-mid);
       max-width: var(--docs-w);
@@ -221,20 +231,6 @@
       display: block;
       white-space: pre;
     }
-    /* Copy button — matches .dc-code__copy style */
-    .dc-inline-copy {
-      flex-shrink: 0;
-      padding: 3px 10px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      border-radius: var(--r-2);
-      background: var(--ink-800);
-      color: var(--ink-400);
-      border: 1px solid var(--ink-700);
-      cursor: pointer;
-      line-height: 1.6;
-    }
-    .dc-inline-copy:hover { background: var(--ink-700); color: #fff; }
 
     /* Code blocks */
     .dc-code {
@@ -265,19 +261,7 @@
       letter-spacing: 0.04em;
       margin-bottom: var(--s-3);
     }
-    .dc-code__copy {
-      position: absolute;
-      top: 12px; right: 12px;
-      padding: 3px 10px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      border-radius: var(--r-2);
-      background: var(--ink-800);
-      color: var(--ink-300);
-      border: 1px solid var(--ink-700);
-      cursor: pointer;
-    }
-    .dc-code__copy:hover { background: var(--ink-700); color: #fff; }
+    .dc-code__copy { position: absolute; top: 12px; right: 12px; }   /* the button is .nx-copy (styles.css) */
 
     /* Packages tile section */
     .dc-pkg-intro {
@@ -327,8 +311,8 @@
     }
   </style>
   <!-- Responsive layer: last, so it wins on order over the page styles above. -->
-  <link rel="stylesheet" href="responsive.css" />
-<link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=7">
+  <link rel="stylesheet" href="responsive.css?v=4" />
+<link rel="icon" type="image/png" sizes="32x32" href="fav%20icon/Fav%20icon%203.png?v=8">
 </head>
 <body class="has-shell">
 
@@ -363,9 +347,6 @@
         <a class="gnav__link is-current" href="docs">Docs</a>
         <a class="gnav__link" href="mcp">MCP</a>
         <a class="gnav__link" href="playground">Playground</a>
-        <a class="gnav__link" href="labs">Labs</a>
-        <a class="gnav__link gnav__link--featured" href="design-system">Design System</a>
-        <a class="gnav__link" href="blog">Blog</a>
       </nav>
       <div class="gnav__actions">
         <a class="gnav__sdk" href="https://github.com/intelligaia-open-labs/nucleux" target="_blank" rel="noopener">
@@ -392,35 +373,36 @@
       </div>
     </section>
 
+
     <!-- ── Install ── -->
-    <section>
+    <section id="install">
       <div class="container">
         <div class="dc-section">
           <h2 class="dc-h2">Install</h2>
           <p class="dc-body">The umbrella package re-exports every component; you can also install any sub-package on its own.</p>
           <div class="dc-code dc-code--install-rows">
 <div class="dc-irow"><span class="c"># everything (recommended)</span></div>
-<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">@nucleux/react</span></span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText('npm install @nucleux/react');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">@nucleux/react</span></span><button class="nx-copy" type="button" aria-label="Copy" onclick="nxCopy(this, 'npm install @nucleux/react')"></button></div>
 <div class="dc-irow dc-irow--gap"> </div>
 <div class="dc-irow"><span class="c"># or just what you need</span></div>
-<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">@nucleux/message</span> <span class="v">@nucleux/agent-composer</span> <span class="v">@nucleux/button</span></span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText('npm install @nucleux/message @nucleux/agent-composer @nucleux/button');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">@nucleux/message</span> <span class="v">@nucleux/agent-composer</span> <span class="v">@nucleux/button</span></span><button class="nx-copy" type="button" aria-label="Copy" onclick="nxCopy(this, 'npm install @nucleux/message @nucleux/agent-composer @nucleux/button')"></button></div>
 <div class="dc-irow dc-irow--gap"> </div>
 <div class="dc-irow"><span class="c"># peer deps</span></div>
-<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">react</span> <span class="v">react-dom</span></span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText('npm install react react-dom');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+<div class="dc-irow dc-irow--cmd"><span>npm install <span class="v">react</span> <span class="v">react-dom</span></span><button class="nx-copy" type="button" aria-label="Copy" onclick="nxCopy(this, 'npm install react react-dom')"></button></div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ── Set up theming ── -->
-    <section>
+    <section id="theming">
       <div class="container">
         <div class="dc-section">
           <h2 class="dc-h2">Set up theming</h2>
           <p class="dc-body">Components are styled with Tailwind utilities bound to design tokens in <code>@nucleux/tokens</code>. Add the preset, scan the compiled components, and import the token stylesheet.</p>
           <div class="dc-code dc-code--install">
 <div class="dc-install-row dc-install-row--block">
-  <div class="dc-install-block-head"><span class="c">// tailwind.config.js</span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText(`import nucleux from '@nucleux/tokens/preset'\n\nexport default {\n  presets: [nucleux],\n  content: [\n    './src/**/*.{js,jsx,ts,tsx}',\n    './node_modules/@nucleux/**/dist/*.js',\n  ],\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+  <div class="dc-install-block-head"><span class="c">// tailwind.config.js</span><button class="nx-copy" type="button" aria-label="Copy" onclick="nxCopy(this, `import nucleux from '@nucleux/tokens/preset'\n\nexport default {\n  presets: [nucleux],\n  content: [\n    './src/**/*.{js,jsx,ts,tsx}',\n    './node_modules/@nucleux/**/dist/*.js',\n  ],\n}`)"></button></div>
   <div class="dc-install-block-body"><span class="k">import</span> nucleux <span class="k">from</span> <span class="s">'@nucleux/tokens/preset'</span>
 <span class="k">export default</span> {
   <span class="p">presets</span>: [nucleux],
@@ -433,7 +415,7 @@
           </div>
           <div class="dc-code dc-code--install" style="margin-top:var(--s-4)">
 <div class="dc-install-row dc-install-row--block">
-  <div class="dc-install-block-head"><span class="c">/* index.css */</span><button class="dc-inline-copy" onclick="navigator.clipboard.writeText(`@import '@nucleux/tokens/styles.css';\n@tailwind components;\n@tailwind utilities;`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button></div>
+  <div class="dc-install-block-head"><span class="c">/* index.css */</span><button class="nx-copy" type="button" aria-label="Copy" onclick="nxCopy(this, `@import '@nucleux/tokens/styles.css';\n@tailwind components;\n@tailwind utilities;`)"></button></div>
   <div class="dc-install-block-body"><span class="k">@import</span> <span class="s">'@nucleux/tokens/styles.css'</span>; <span class="c">/* --nx-* tokens, light + .dark */</span>
 <span class="k">@tailwind</span> components;
 <span class="k">@tailwind</span> utilities;</div>
@@ -450,7 +432,7 @@
         <div class="dc-section">
           <h2 class="dc-h2">Quick start — an agent chat</h2>
           <p class="dc-body">A scrolling transcript with auto-pin, streamed assistant messages, and a composer that submits on Enter.</p>
-          <div class="dc-code"><button class="dc-code__copy" style="top:12px;right:12px" onclick="navigator.clipboard.writeText(`import { Thread, Message, AgentComposer, Badge } from '@nucleux/react'\n\nfunction Chat({ messages, input, setInput, onSend, busy }) {\n  return (\n    <Thread autoScrollKey={messages.length}>\n      {messages.map((m) => (\n        <Message key={m.id} role={m.role} content={m.text} streaming={m.streaming} />\n      ))}\n      <AgentComposer\n        value={input}\n        onValueChange={setInput}\n        onSubmit={onSend}\n        loading={busy}\n        placeholder='Ask anything…'\n      />\n    </Thread>\n  )\n}`);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button><span class="k">import</span> { <span class="v">Thread</span>, <span class="v">Message</span>, <span class="v">AgentComposer</span>, <span class="v">Badge</span> } <span class="k">from</span> <span class="s">'@nucleux/react'</span>
+          <div class="dc-code"><button class="dc-code__copy nx-copy" type="button" aria-label="Copy" style="top:12px;right:12px" onclick="nxCopy(this, `import { Thread, Message, AgentComposer, Badge } from '@nucleux/react'\n\nfunction Chat({ messages, input, setInput, onSend, busy }) {\n  return (\n    <Thread autoScrollKey={messages.length}>\n      {messages.map((m) => (\n        <Message key={m.id} role={m.role} content={m.text} streaming={m.streaming} />\n      ))}\n      <AgentComposer\n        value={input}\n        onValueChange={setInput}\n        onSubmit={onSend}\n        loading={busy}\n        placeholder='Ask anything…'\n      />\n    </Thread>\n  )\n}`)"></button><span class="k">import</span> { <span class="v">Thread</span>, <span class="v">Message</span>, <span class="v">AgentComposer</span>, <span class="v">Badge</span> } <span class="k">from</span> <span class="s">'@nucleux/react'</span>
 <span class="fn">function</span> <span class="v">Chat</span>({ messages, input, setInput, onSend, busy }) {
   <span class="k">return</span> (
     &lt;<span class="v">Thread</span> autoScrollKey={messages.length}&gt;
@@ -579,6 +561,7 @@
       </div>
     </section>
 
+
   </main>
 
   <footer class="foot foot--simple">
@@ -597,7 +580,7 @@
   </footer>
 
   <script src="patterns.js"></script>
-  <script src="global.js"></script>
+  <script src="global.js?v=2"></script>
 <script src="nav-splitflap.js?v=2"></script>
 <script src="nav-mega.js"></script>
 </body>

@@ -1,0 +1,75 @@
+<script>
+/* ── Logo intro (concept) ──
+   0.2s   outline of each letter draws itself (80ms stagger, N → X)
+   ~0.9s  each letter fills as its outline completes; the stroke melts away
+   ~1.7s  a soft brand-coloured glow blooms behind the mark
+   ~2.2s  the mark glides smoothly into the nav logo slot (~1.4s) and stops
+          while the cover dissolves; nav links then blur in and the
+          headline starts typing. Only transform/opacity/stroke animate. */
+(function () {
+  var root = document.documentElement;
+  if (!root.classList.contains('nx-intro-on')) return;
+  var brand = document.querySelector('.gnav .brand .brand__mark');
+  function done() {
+    root.classList.remove('nx-intro-on');
+    root.classList.remove('nx-intro-navon');
+    dispatchEvent(new Event('nx-intro-done'));
+  }
+  if (!brand || !Element.prototype.animate) { root.classList.add('nx-intro-built'); return done(); }
+
+  var ov = document.createElement('div'); ov.className = 'nx-intro'; ov.setAttribute('aria-hidden', 'true');
+  ov.innerHTML = '<div class="nx-intro__bg"></div><div class="nx-intro__glow"></div><div class="nx-intro__logo"></div>';
+  var svg = brand.cloneNode(true);
+  svg.removeAttribute('width'); svg.removeAttribute('height'); svg.removeAttribute('class');
+  /* own gradient ids, so the clone never depends on the hidden nav copy */
+  svg.querySelectorAll('linearGradient').forEach(function (g) {
+    var old = g.id, nu = old + '_intro'; g.id = nu;
+    svg.querySelectorAll('[fill="url(#' + old + ')"]').forEach(function (p) { p.setAttribute('fill', 'url(#' + nu + ')'); });
+  });
+  var word = getComputedStyle(brand).getPropertyValue('--brand-word').trim() || '#0A0A0A';
+  ov.querySelector('.nx-intro__logo').appendChild(svg);
+  document.body.appendChild(ov);
+  root.classList.add('nx-intro-built');
+
+  var logo = ov.querySelector('.nx-intro__logo'), glow = ov.querySelector('.nx-intro__glow'), bg = ov.querySelector('.nx-intro__bg');
+  var paths = [].slice.call(svg.querySelectorAll('path'));
+  var START = 200, STAG = 80, DRAW = 950, EASE = 'cubic-bezier(.33,0,.2,1)';
+  paths.forEach(function (p, i) {
+    var f = p.getAttribute('fill') || '';
+    if (f.indexOf('var(') === 0) { f = word; p.setAttribute('fill', f); }
+    p.setAttribute('pathLength', '1');
+    p.style.stroke = f; p.style.strokeWidth = '0.32'; p.style.strokeLinejoin = 'round';
+    p.style.strokeDasharray = '1 1'; p.style.strokeDashoffset = '1'; p.style.fillOpacity = '0';
+    var d = START + i * STAG;
+    p.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: DRAW, delay: d, easing: EASE, fill: 'forwards' });
+    p.animate([{ fillOpacity: 0, strokeWidth: .32 }, { fillOpacity: 1, strokeWidth: 0 }],
+              { duration: 480, delay: d + DRAW - 260, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+  });
+  var filled = START + (paths.length - 1) * STAG + DRAW + 220;      /* ≈ 1.85s */
+  glow.animate([{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }],
+               { duration: 900, delay: filled - 250, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+
+  setTimeout(function () {
+    var a = logo.getBoundingClientRect(), b = brand.getBoundingClientRect();
+    var s = b.width / a.width;
+    var dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+    /* One calm glide into the nav slot: size and position share one
+       duration and one ease-in-out curve, and it simply stops in place —
+       no overshoot, bounce, squash or stretch. */
+    var GLIDE = { duration: 1400, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards' };
+    logo.animate([{ scale: '1' }, { scale: String(s) }], GLIDE);
+    var fly = logo.animate([{ translate: '0px 0px' }, { translate: dx + 'px ' + dy + 'px' }], GLIDE);
+    root.classList.add('nx-intro-navon');            /* tabs appear at once */
+    dispatchEvent(new CustomEvent('nx-intro-fly', { detail: { duration: GLIDE.duration } }));
+    glow.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, fill: 'forwards' });
+    bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 900, delay: 200, easing: 'ease-out', fill: 'forwards' });
+    fly.finished.then(function () {
+      done();
+      requestAnimationFrame(function () { ov.remove(); });
+    });
+  }, filled);            /* no hold: it leaves the moment the last letter is filled */
+
+  /* failsafe: never leave the page covered */
+  setTimeout(function () { if (ov.isConnected) { ov.remove(); done(); } }, 6000);
+})();
+</script>

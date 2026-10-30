@@ -1,0 +1,10 @@
+  <style>
+    /* iPhone Duo strip (concept): it waits, folded shut, until the hero has
+       finished coming in (headline → description → CTA), then slides down
+       and rests open. The arrival animations are held paused until
+       html.hero-intro-done, and start right away once released. */
+    html body .nx-ann { animation-delay: 0s; }
+    html body .nx-ann .nx-ann__inner { animation-delay: 60ms, 60ms; }
+    html:not(.hero-intro-done) .nx-ann,
+    html:not(.hero-intro-done) .nx-ann .nx-ann__inner { animation-play-state: paused; }
+  </style>

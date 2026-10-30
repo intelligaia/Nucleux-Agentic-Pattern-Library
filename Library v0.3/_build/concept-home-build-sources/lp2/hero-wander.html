@@ -1,0 +1,51 @@
+<script>
+/* Hero gradient wander (concept): each blob glides to a random point in
+   the hero, then picks another — slow, eased, and independent, so the
+   colours keep meeting and crossing. Only `translate`/`scale` animate
+   (compositor). Pauses when the hero is off screen or the tab is hidden. */
+(function () {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !Element.prototype.animate) return;
+  var media = document.querySelector('.ln-wrap .ag-hero-media');
+  var box = media && media.querySelector('.ag-hero-media__aurora');
+  if (!box) return;
+  var blobs = [].slice.call(box.querySelectorAll('span'));
+  var running = true;
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function spot(el) {
+    /* keep each blob's centre within the visible hero (the box overhangs by 25%) */
+    var W = box.clientWidth, H = box.clientHeight, w = el.offsetWidth, h = el.offsetHeight;
+    var x = rnd(W * 0.18, W * 0.82) - w / 2, y = rnd(H * 0.22, H * 0.78) - h / 2;
+    return { x: x, y: y, s: rnd(0.85, 1.25) };
+  }
+  blobs.forEach(function (el, i) {
+    var cur = spot(el);
+    /* start spread out: two left, two right, then they roam */
+    var W = box.clientWidth;
+    cur.x = (i < 2 ? W * rnd(.2, .34) : W * rnd(.66, .8)) - el.offsetWidth / 2;
+    el.style.translate = cur.x + 'px ' + cur.y + 'px'; el.style.scale = String(cur.s);
+    function hop() {
+      if (!running) { el._wait = hop; return; }
+      var nx = spot(el), dur = rnd(7000, 12000);
+      var a = el.animate([
+        { translate: cur.x + 'px ' + cur.y + 'px', scale: String(cur.s) },
+        { translate: nx.x + 'px ' + nx.y + 'px', scale: String(nx.s) }
+      ], { duration: dur, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'forwards' });
+      el._anim = a;
+      a.finished.then(function () {
+        cur = nx; el.style.translate = cur.x + 'px ' + cur.y + 'px'; el.style.scale = String(cur.s);
+        a.cancel(); hop();
+      }, function () {});
+    }
+    setTimeout(hop, i * 900);
+  });
+  function setRun(on) {
+    running = on;
+    blobs.forEach(function (el) {
+      if (el._anim) on ? el._anim.play() : el._anim.pause();
+      if (on && el._wait) { var w = el._wait; el._wait = null; w(); }
+    });
+  }
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { setRun(es[0].isIntersecting && !document.hidden); }).observe(media);
+  document.addEventListener('visibilitychange', function () { setRun(!document.hidden); });
+})();
+</script>

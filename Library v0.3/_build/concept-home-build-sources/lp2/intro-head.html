@@ -1,0 +1,51 @@
+  <script>
+    /* Logo intro (concept): decide BEFORE first paint, so the page never
+       flashes. Plays on every load/refresh; never for reduced motion or a
+       deep link. */
+    (function () {
+      try {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (location.hash) return;
+        /* Plays on a refresh, or the first time the home page opens in this
+           tab. Coming back to it from anywhere else on the site (nav logo,
+           Home link, Back/Forward) skips it. Keyed on this tab's
+           sessionStorage rather than the referrer, which is empty on
+           file:// and with strict referrer policies. */
+        var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        var kind = nav ? nav.type : (performance.navigation && performance.navigation.type === 1 ? 'reload' : 'navigate');
+        var seen = false;
+        try { seen = sessionStorage.getItem('nx-home-seen') === '1'; sessionStorage.setItem('nx-home-seen', '1'); } catch (e) {}
+        if (kind !== 'reload' && (seen || kind === 'back_forward')) return;
+        document.documentElement.classList.add('nx-intro-on');
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    /* ── Logo intro (concept, after animate-ui.com) ──
+       Draw the NUCLEUX wordmark, fill it, then fly it into the nav. */
+    html.nx-intro-on { overflow: hidden; scrollbar-gutter: stable; }
+    html.nx-intro-on:not(.nx-intro-built)::after {        /* cover until the overlay exists */
+      content: ""; position: fixed; inset: 0; z-index: 9998; background: var(--bg, #fbfbfa);
+    }
+    html.nx-intro-on .gnav .brand { visibility: hidden; }
+    html.nx-intro-on .gnav__center,
+    html.nx-intro-on .gnav__actions { opacity: 0; }
+    .nx-intro { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; pointer-events: none; }
+    .nx-intro__bg { position: absolute; inset: 0; background: var(--bg, #fbfbfa); }
+    .nx-intro__glow {
+      position: absolute; width: 60vmin; height: 60vmin; border-radius: 50%;
+      background: radial-gradient(closest-side, rgb(139 87 199 / .20), rgb(33 164 215 / .08) 55%, transparent);
+      opacity: 0; transform: scale(.4);
+    }
+    .nx-intro__logo { position: relative; width: min(72vw, 620px); transform-origin: 50% 50%; will-change: transform; }
+    .nx-intro__logo svg { display: block; width: 100%; height: auto; overflow: visible; }
+    @keyframes nx-reveal-x { from { opacity: 0; filter: blur(6px); transform: translateX(24px); } to { opacity: 1; filter: none; transform: none; } }
+    @keyframes nx-reveal-y { from { opacity: 0; filter: blur(6px); transform: translateY(-8px); } to { opacity: 1; filter: none; transform: none; } }
+    /* the moment the mark starts its glide, the nav tabs and actions are
+       simply there (no fade): the nav is lifted above the dissolving cover
+       and its frost is held clear so the gliding mark stays visible */
+    html.nx-intro-navon .gnav { z-index: 10000; }
+    html.nx-intro-navon .gnav::before { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+    html.nx-intro-navon .gnav__center,
+    html.nx-intro-navon .gnav__actions { opacity: 1; }
+  </style>
