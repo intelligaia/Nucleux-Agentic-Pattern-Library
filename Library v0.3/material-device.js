@@ -32,7 +32,7 @@
     'modes', 'voice-tone', 'preset-styles', 'initial-cta', 'open-input', 'suggested-prompts', 'ai-icons',
     'autocomplete', 'proactive', 'randomize', 'attachments', 'model-selection', 'connectors', 'mcp',
     'knowledge-base', 'voice-input', 'visual-input', 'handwriting', 'gesture', 'structured-input'];
-  var SRC = '../Mobile%20patterns%20material%203.0/material-mobile.html';
+  var SRC = 'material-mobile';
   var KEY = 'nx-device';
 
   var mode = 'desktop';
