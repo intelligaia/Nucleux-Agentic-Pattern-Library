@@ -15,15 +15,15 @@
   --how-lime: 64.3 93.3% 94.1%;        --how-lime-ink: 100.5 87% 9%;     --how-lime-accent: 60 100% 25.1%;
 }
 
-/* the scroll between tiles is the NEXT slot's top margin, never a bottom
-   margin: a sticky box keeps its margin box inside the stack, so a bottom
-   margin would release every tile before the last one arrives. The spacer
-   after the last tile is the hold before the section scrolls away. */
-.how-stack.is-stacked .how-slot + .how-slot { margin-top: 22vh; }
+/* no gap between stacked tiles (the user's choice, 2026-11-02): each slot
+   follows the one before directly, so the next tile rises straight off the
+   bottom edge of the stuck one. (Never a bottom margin on a slot: a sticky
+   box keeps its margin box inside the stack and would release early.) The
+   spacer after the last tile is the hold before the section scrolls away. */
 .how-stack.is-stacked .how-hold { height: 26vh; }
 /* the whole tile fits below the nav: cap the scene's height by the viewport
    (the scene then scales to fit both ways) */
-.how-stack.is-stacked .how-canvas { max-height: min(540px, calc(100svh - var(--how-top) - 3 * 24px - 96px)); }
+.how-stack.is-stacked .how-canvas { max-height: min(540px, calc(100svh - var(--how-top) - 96px)); }
 /* a subtle gradient in each tile: two soft blooms of the tile's own accent
    over its pale surface, from the top-left corner and the bottom-right one,
    wide enough to meet across the diagonal, in
@@ -36,6 +36,7 @@
     radial-gradient(100% 135% at 0% 0%, hsl(var(--how-glow) / .2), hsl(var(--how-glow) / .1) 40%, hsl(var(--how-glow) / .03) 70%, transparent 88%),
     radial-gradient(92% 125% at 100% 100%, hsl(var(--how-glow) / .16), hsl(var(--how-glow) / .07) 40%, hsl(var(--how-glow) / .02) 70%, transparent 86%);
 }
-/* paper on paper: a soft shadow cast upward onto the tile underneath */
-.how-tile { box-shadow: 0 1px 2px hsl(var(--nx-ink-950) / .04), 0 -22px 44px -30px hsl(var(--nx-ink-950) / .22); will-change: transform; }
-.how-stack:not(.is-stacked) .how-tile { box-shadow: 0 1px 2px hsl(var(--nx-ink-950) / .05); will-change: auto; }
+/* flat tiles, no stroke or shadow (the user's choice, 2026-11-02): each
+   tile's own color separates it from the one beneath */
+.how-tile { will-change: transform; }
+.how-stack:not(.is-stacked) .how-tile { will-change: auto; }

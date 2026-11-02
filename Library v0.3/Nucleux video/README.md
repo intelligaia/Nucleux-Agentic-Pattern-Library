@@ -4,7 +4,7 @@
 > preferences, gotchas and open items.
 
 A ~24 s film that explains Nucleux in three stacked tiles, plus the same three scenes running live
-in the concept home's "From intent to interface." section. Everything about the film is in this
+in the concept home's "From one sentence to screens you can ship" section. Everything about the film is in this
 folder; the scenes' React source is shared with the website and stays in
 `_build/playground-preview/src/how/` (see "Changing a scene").
 
@@ -87,6 +87,8 @@ edit the copy in `film-store/`, check it in `preview/harness.html`, and write it
   deliberately plain HTML: it shows the visitor's own agent before Nucleux.
 - Tile colors (sky / peach / lime, each with a dark ink and an accent) and two-tone headlines are
   the user's picks; they live in `src/how/how.css` (`--how-*`) and in the film's `base.css`.
+- Flat tiles: no stroke and no shadow on the tile cards (film `base.css` `.hw-tile`, site `how.css` / `tileClass`), the user's choice on 2 Nov 2026.
+- Settled tiles sit exactly on top of each other, with no edges of the tiles beneath showing (film `HWF.TOP` all 104; site `STACK_EDGE` 0), the user's choice on 2 Nov 2026.
 - No sound: the film and the exports are silent.
 - Hand edits on the film page (retyped lines, the "Describe it" length) belong to the page; keep
   the original strings in code so they keep applying, and never write the page's records.

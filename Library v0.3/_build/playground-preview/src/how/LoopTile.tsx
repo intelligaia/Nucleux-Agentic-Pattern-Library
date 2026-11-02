@@ -1,7 +1,7 @@
 /* One "How Nucleux works" tile on its own, its scene looping: the standalone
    tiles (pg-preview/how-tile-<scene>.html) for a page that wants a single tile
    rather than the scroll-stacked section. Same card, copy column and scene
-   canvas as the section, with the film's shorter bodies.
+   canvas as the section.
 
    A GSAP timeline plays the scene, holds its finished frame, fades it out and
    starts again (the scene fades back in from t = 0). It runs only while the
@@ -16,7 +16,7 @@ import { Button } from "@nucleux/react";
 import { SceneCanvas } from "./ScenePlayer";
 import { REDUCE_QUERY, TONE, TileCopy, tileClass, useMedia } from "./HowItWorks";
 import { DUR, type SceneId } from "./time";
-import { FILM_BODY, TILES } from "./copy";
+import { TILES } from "./copy";
 
 /** Seconds on the finished frame, then the fade out and the fade back in. */
 const HOLD = 2.2;
@@ -24,7 +24,7 @@ const FADE_OUT = 0.35;
 const FADE_IN = 0.25;
 
 export function LoopTile({ id }: { id: SceneId }) {
-  const tile = { ...TILES.find((x) => x.id === id)!, body: FILM_BODY[id] };
+  const tile = TILES.find((x) => x.id === id)!;
   const dur = DUR[id];
   const reduced = useMedia(REDUCE_QUERY);
   const proxy = React.useRef({ t: 0, o: 0 });

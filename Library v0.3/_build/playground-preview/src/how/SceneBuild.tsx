@@ -1,4 +1,4 @@
-/* Tile 3 — "Watch your UI take shape."
+/* Tile 3 — "Watch your UI take shape"
    A project dashboard assembled from tile 2's picks, following Nucleux's
    app-shell (SidebarProvider › Sidebar, kept to its icon rail, + SidebarInset),
    dashboard-overview (MetricCard row, a project Table with Badge status and

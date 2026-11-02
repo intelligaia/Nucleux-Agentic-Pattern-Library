@@ -1,7 +1,7 @@
 /* Writes the three standalone "How Nucleux works" tiles to ../../pg-preview/:
-     how-tile-describe.html   01 Describe the screen you need.
-     how-tile-patterns.html   02 Nucleux finds the right building blocks.
-     how-tile-build.html      03 Watch your UI take shape.
+     how-tile-describe.html   01 Describe the screen you need
+     how-tile-patterns.html   02 Nucleux finds the right building blocks
+     how-tile-build.html      03 Watch your UI take shape
    Each is one self-contained page (script and styles inlined; only the Inter
    and JetBrains Mono font links are external), so it can be copied anywhere
    or embedded in an iframe. Run after `ENTRY=how-tile vite build` (part of

@@ -1,15 +1,18 @@
 /* "How Nucleux works" — three large split tiles that stack as you scroll.
 
    Two motion systems, kept apart:
-   · Scroll decides which tile is in front. Each tile slot is CSS-sticky a
-     little lower than the one before (STACK_EDGE), so the next tile rises over
-     the previous one and leaves its top edge showing. GSAP ScrollTrigger only
+   · Scroll decides which tile is in front. Every tile slot is CSS-sticky at
+     the same top (STACK_EDGE 0, the user's choice: settled tiles sit exactly on
+     top of each other, no edges showing), so the next tile rises over the
+     previous one and covers it whole. GSAP ScrollTrigger only
      scrubs the covered tile's inner wrapper (scale 1 → 0.97, a faint shade)
      and reports the active tile from the slots' positions on every update,
      so fast or reverse scrolling always lands on the right one.
    · A short GSAP playhead per scene drives `t` for that tile's scene. Only the
-     active tile plays; covered and off-screen scenes pause. A scene plays once
-     and holds its finished state; Replay runs it again.
+     active tile plays; covered and off-screen scenes pause. A scene plays
+     through and holds its finished state; when its tile comes back to the
+     front it plays again from the start (an unfinished one picks up where it
+     left off). Replay runs it again; Pause holds it until Play.
 
    Phones (or a viewport too short for a whole tile) get a plain vertical list:
    no sticky, a light rise as each tile arrives. Reduced motion: no stacking
@@ -29,9 +32,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 
 
-/** Gap under the nav, and how much of each covered tile stays visible. */
+/** Gap under the nav, and how much of each covered tile stays visible (none). */
 const STACK_GAP = 20;
-const STACK_EDGE = 24;
+const STACK_EDGE = 0;
 const COVERED_SCALE = 0.97;
 const STACK_QUERY = "(min-width: 768px) and (min-height: 620px)";
 export const REDUCE_QUERY = "(prefers-reduced-motion: reduce)";
@@ -45,7 +48,7 @@ export const TONE = {
 
 /** The tile's card: its surface, the copy column beside the media, its padding. */
 export const tileClass = (tone: keyof typeof TONE) =>
-  "how-tile is-" + tone + " relative grid origin-top overflow-hidden rounded-[28px] border border-border " + TONE[tone].surface +
+  "how-tile is-" + tone + " relative grid origin-top overflow-hidden rounded-[28px] " + TONE[tone].surface +
   " grid-cols-1 gap-6 p-4 sm:p-7 md:grid-cols-[minmax(0,42fr)_minmax(0,58fr)] md:items-center md:gap-8 md:p-8 lg:gap-12 lg:p-10";
 
 /** The tile's left side: step, two-tone headline, body (and whatever follows it). */
@@ -99,6 +102,8 @@ function usePlayhead(dur: number, reduced: boolean) {
     play() { const tw = tween.current; if (tw && tw.progress() < 1) { tw.play(); setPlaying(true); } },
     pause() { tween.current?.pause(); setPlaying(false); },
     replay() { tween.current?.restart(); setPlaying(true); },
+    /* the tile is in front again: a finished scene starts over, an unfinished one carries on */
+    resume() { const tw = tween.current; if (!tw) return; if (tw.progress() >= 1) tw.restart(); else tw.play(); setPlaying(true); },
   }), []);
   return { t, playing, done: t >= dur, ...api };
 }
@@ -111,7 +116,7 @@ function Tile({ index, active, reduced, stack, slotRef, innerRef, shadeRef }: {
   const head = usePlayhead(DUR[tile.id], reduced);
   const held = React.useRef(false);   // the visitor paused this one: don't resume it on their behalf
   React.useEffect(() => {
-    if (active && !reduced && !held.current) head.play();
+    if (active && !reduced && !held.current) head.resume();
     else if (!active) head.pause();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, reduced]);
@@ -174,11 +179,13 @@ export function HowItWorks({ header = true, navOffset = 72 }: { header?: boolean
       ScrollTrigger.create({ trigger: sec, start: "top bottom", end: "bottom top", onUpdate: compute, onToggle: compute, onRefresh: compute });
 
       if (stack) {
-        /* the next tile rising covers this one: scrub its scale and shade */
+        /* the next tile rising covers this one: scrub its scale and shade, from
+           the moment the two touch (the next slot follows with no gap, so
+           shrinking any earlier would open one under the stuck tile) */
         slots.current.forEach((slot, i) => {
           const prev = inners.current[i - 1], shade = shades.current[i - 1];
           if (!i || !slot || !prev || !shade) return;
-          const st = { trigger: slot, start: "top bottom", end: () => `top ${top + i * STACK_EDGE}px`, scrub: true };
+          const st = { trigger: slot, start: () => `top ${top + (i - 1) * STACK_EDGE + prev.offsetHeight}px`, end: () => `top ${top + i * STACK_EDGE}px`, scrub: true };
           gsap.fromTo(prev, { scale: 1 }, { scale: COVERED_SCALE, ease: "none", scrollTrigger: st });
           gsap.fromTo(shade, { opacity: 0 }, { opacity: 0.035, ease: "none", scrollTrigger: { ...st } });
         });
@@ -199,7 +206,7 @@ export function HowItWorks({ header = true, navOffset = 72 }: { header?: boolean
       {header && (
         <header className="mx-auto mb-10 max-w-[760px] text-center md:mb-14">
           <h2 id="how-works-h" className="text-balance text-[34px] font-semibold leading-[1.1] tracking-[-0.025em] text-foreground md:text-[50px]">
-            From intent to interface.
+            From one sentence to screens you can ship
           </h2>
           <p className="mt-4 text-pretty text-lg text-muted-foreground">Describe what you need. Nucleux helps your agent build it.</p>
         </header>

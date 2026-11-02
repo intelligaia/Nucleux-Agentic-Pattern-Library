@@ -53,8 +53,10 @@ gradients from the top-left and bottom-right corners.
 - Three tiles that stack as you scroll (CSS sticky + GSAP ScrollTrigger), each running the same
   scene live (React, real `@nucleux/react` components, in a shadow root). Phones: a plain list.
   Reduced motion: finished scenes, Play/Replay buttons.
-- Section heading in the page: "From intent to interface." / "Describe what you need. Nucleux helps
-  your agent build it." (The film's intro now says something else; see §8.)
+- Section heading in the page: "From one sentence to screens you can ship" / "Describe what you
+  need. Nucleux helps your agent build it." (The film's intro says something else; see §8.) Since
+  2 Nov no heading on the home page ends with a period, the tile headlines included (site, tiles
+  and film share them).
 - Tile copy (site): 01 "Describe the screen / you need." · 02 "Nucleux finds the right / building
   blocks." · 03 "Watch your UI / take shape.", each with a body line.
 
@@ -83,8 +85,10 @@ gradients from the top-left and bottom-right corners.
   the old line: the intro line "From prompt to pattern to preview." → "One pattern library for every
   user" (now written into the intro code), and the three tile bodies were shortened on the page
   ("Tell Claude what you want to build. Start with your intent." · "Your agent gets nucleux
-  patterns that fit the task." · "Your agent assembles the interface in your theme."). Keep the
-  original body strings in `src/how/copy.ts` so those replacements keep applying.
+  patterns that fit the task." · "Your agent assembles the interface in your theme."). Since 2 Nov
+  those short bodies are in `src/how/copy.ts` itself (the user's words, "Nucleux" capitalised), for
+  the site, the standalone tiles and the film alike, so those three page records no longer match
+  anything and have no effect.
   `modules/recut.json` plays "Describe it" over 4.2 s instead of 3.5 s, and (set by hand on 30 Oct) the intro over 8.6 s instead of 5.55 s. Never write or delete these
   records; comments quote times "as played".
 - **Film modules ≤ 200 KiB (204,800 bytes)**: React and Nucleux's shared utils (`@nucleux/utils`, i.e. tailwind-merge) are in `nx-react.js` (~164 KB); `nx-how.js` is ~196 KB, close to the cap. A new component may push it over: check the size after `build:how`. Scan only the
@@ -116,10 +120,9 @@ gradients from the top-left and bottom-right corners.
 
 ## 8. Open items
 
-1. **Site and film copy differ.** Site heading is still "From intent to interface."; the film intro
-   says "One pattern library / for every user". Site tile bodies are the long versions; the film
-   shows the shortened ones (set by hand). Tile 3's site body still ends "Review the preview and plan
-   before applying changes." although the review bar was removed. Ask before syncing.
+1. **Copy.** The site's tile bodies match the film's (2 Nov), and the section heading is now "From
+   one sentence to screens you can ship" (the user's pick). The film intro says "One pattern
+   library / for every user", which stays film-only (it echoes the site's hero).
 2. **Length.** The original brief asked for 12–15 s; the film is now ~24 s as played (intro 5.55 s
    at the concept page's own timing, step 3 6.5 s for Aria, the 4 s end card). Not raised by the user since.
 3. In Aria's panel, the "Try asking" label is still larger than the chips (SuggestedPrompts' own

@@ -1,4 +1,4 @@
-/* Tile 1 — "Describe the screen you need."
+/* Tile 1 — "Describe the screen you need"
    The visitor's own agent (here Claude), before Nucleux comes in. So this
    scene is deliberately NOT built from @nucleux/react: it is a plain, neutral
    agent chat in HTML, with the composer laid out as the user's reference shows

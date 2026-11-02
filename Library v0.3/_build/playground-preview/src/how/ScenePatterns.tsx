@@ -1,4 +1,4 @@
-/* Tile 2 — "Nucleux finds the right building blocks."
+/* Tile 2 — "Nucleux finds the right building blocks"
    Claude's request on one side, Nucleux in the middle, six matching
    pattern → component cards on the other, joined by plain SVG lines: the
    dashboard's basics (App shell → Sidebar, Metric cards → CardContainer,

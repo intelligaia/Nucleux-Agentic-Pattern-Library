@@ -2304,28 +2304,6 @@
     .ln-code pre { margin: 0; padding: 20px; overflow-x: auto; font: 13.5px/1.7 var(--font-mono); white-space: pre-wrap; word-break: break-word; }
     .ln-code .k { color: #fbbf77; } .ln-code .s { color: #e7d9b8; } .ln-code .c { color: var(--ink-400); }
     .ln-dev__note { margin: var(--s-4) 0 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
-    /* How the agent builds with Nucleux, beside the prompt it runs on: four
-       steps on one thin line. A gradient fill travels down the line, the step
-       it reaches gets a filled dot with a soft halo and full-strength type;
-       the rest stay quiet. It moves only while on screen, and under reduced
-       motion it rests with every step shown. */
-    .ln-dev__row { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: clamp(32px, 5vw, 72px); align-items: center; width: 100%; max-width: 1080px; text-align: left; }
-    .ln-dev__code { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
-    .ln-flowv { --k: 0; position: relative; list-style: none; margin: 0; padding: 0; }
-    .ln-flowv__rail { position: absolute; left: 6px; top: 26px; bottom: 26px; width: 1px; background: var(--border); }
-    .ln-flowv__rail i { position: absolute; inset: 0; background: linear-gradient(180deg, #21A4D7, #8B57C7); transform-origin: 50% 0; transform: scaleY(calc(var(--k) / 3)); transition: transform .9s var(--ease-out); }
-    .ln-flowv li { position: relative; display: grid; grid-template-columns: 13px minmax(0, 1fr); gap: 0 22px; padding: 16px 0; }
-    .ln-flowv__dot { position: relative; z-index: 1; width: 13px; height: 13px; margin-top: 4px; border-radius: 50%; border: 1.5px solid var(--border-strong); background: var(--bg); transition: background-color .4s ease, border-color .4s ease, box-shadow .5s var(--ease-out); }
-    .ln-flowv li.is-done .ln-flowv__dot { border-color: #6a6fd0; background: #6a6fd0; }
-    .ln-flowv li.is-on .ln-flowv__dot { border-color: #6a6fd0; background: var(--bg); box-shadow: 0 0 0 5px rgb(106 111 208 / .14), inset 0 0 0 3px #6a6fd0; }
-    .ln-flowv__k { display: block; font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
-    .ln-flowv b { display: block; margin-top: 7px; font-size: 17px; font-weight: 600; line-height: 1.25; letter-spacing: -.015em; color: var(--fg-mid); transition: color .4s ease; }
-    .ln-flowv small { display: block; margin-top: 4px; font-size: 14px; line-height: 1.5; color: var(--fg-muted); transition: color .4s ease; }
-    .ln-flowv code { font: 500 12.5px/1 var(--font-mono); }
-    .ln-flowv li.is-on b, .ln-flowv li.is-done b { color: var(--fg); }
-    .ln-flowv li.is-on small { color: var(--fg-mid); }
-    html.ln-still .ln-flowv b { color: var(--fg); }
-    html.ln-still .ln-flowv__rail i { transform: scaleY(1); }
     .ln-dev__note a { color: var(--fg); font-weight: 600; }
     .ln-panel[hidden] { display: none; }
     ::view-transition-old(ln-code), ::view-transition-new(ln-code) { animation-duration: 360ms; animation-timing-function: cubic-bezier(.16,1,.3,1); }
@@ -2603,13 +2581,6 @@
     .ln-wrap .ln-dev > div { width: 100%; max-width: 820px; display: flex; flex-direction: column; align-items: center; }
     .ln-wrap .ln-dev .ln-code { width: 100%; text-align: left; }
     .ln-wrap .ln-dev .ln-tabs { margin-inline: auto; }
-    .ln-wrap .ln-dev > .ln-dev__row { display: grid; max-width: 1080px; align-items: center; }
-    .ln-wrap .ln-dev .ln-dev__code .ln-tabs { margin-inline: 0; }
-    @media (max-width: 900px) {
-      .ln-wrap .ln-dev > .ln-dev__row { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-      .ln-flowv li { padding: 11px 0; }
-      .ln-flowv b { font-size: 16px; }
-    }
 
     /* Labs banner centred */
     .ln-wrap .ln-labs { justify-content: center; text-align: center; flex-wrap: wrap; }
@@ -2625,6 +2596,22 @@
         box-sizing: border-box;
       }
       .ln-wrap > .ln-sec > .container { width: 100%; }
+      /* the hero's copy sits in the middle of the first screen (it used to start
+         at a fixed 168px with the Playground pill above the headline; with
+         the pill off, a fixed start left the space under it too deep) */
+      .ln-wrap .hero { display: flex; flex-direction: column; justify-content: center; padding-top: 55px; }
+      /* a little less than the whole first screen (120px), so the space under
+         the buttons, and with it every section gap, is a bit tighter (the
+         user's choice, 2026-11-02); constant, so nothing moves after the intro */
+      body.landing-light .ln-wrap .hero { --fold-peek: 120px !important; }
+      /* section 2 waits for the hero: while the intro plays (headline, line,
+         buttons) a bottom margin holds it below the fold; when the intro is
+         done the margin eases away and section 2 rises into view. The hero
+         itself keeps its size, so its copy never moves (the user's choice,
+         2026-11-02). */
+      body.landing-light .ln-wrap .hero { margin-bottom: 120px; transition: margin-bottom 900ms cubic-bezier(.22, 1, .36, 1); }
+      html.hero-intro-done body.landing-light .ln-wrap .hero { margin-bottom: 0; }
+      .ln-wrap .hero > .hero__content { width: 100%; }
 
       /* fit the content to the screen */
       .ln-wrap .ln-ag__chat, .ln-wrap .ln-ag__canvas { height: clamp(300px, calc(100svh - 620px), 540px); }
@@ -2638,6 +2625,12 @@
       .ln-wrap .ln-flow__s h3 { display: inline; font-size: 16px; }
     }
 
+
+
+    /* No "Ask Lumen" on the home page for now (the user's choice, 2026-11-02):
+       global.js adds the launcher on every page; hidden here only, as the
+       Playground does */
+    #nx-launcher { display: none !important; }
   </style>
   <script>
     /* Logo intro (concept): decide BEFORE first paint, so the page never
@@ -2903,91 +2896,6 @@
     @media (prefers-reduced-motion: reduce) {
       .vs__p, .vs__notes li, .vs__chip, .vs__live { transition: none !important; }
       .vs__dots b { animation: none !important; }
-    }
-  </style>
-  <style>
-    /* ── How it works v2 (concept): feature list + one stage ── */
-    .hw { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(28px, 4vw, 64px); align-items: center; max-width: 1180px; margin: clamp(8px, 2vh, 20px) auto 0; text-align: left; }
-    .hw__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-    .hw__item { display: block; width: 100%; padding: 16px 18px 0; border: 0; border-radius: 16px; background: transparent; text-align: left; cursor: pointer; color: var(--fg-mid); transition: background .3s ease, color .3s ease; font: inherit; }
-    .hw__item:hover { background: rgb(12 12 10 / .03); }
-    .hw__item:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-    .hw__item[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 10px 30px -18px rgb(0 0 0 / .18); }
-    .hw__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }   /* a long tag drops under the title rather than squeezing it */
-    .hw__n { position: relative; display: inline-grid; place-items: center; width: 24px; font: 500 12px/1 var(--font-mono); color: var(--fg-muted); font-variant-numeric: tabular-nums; }
-    .hw__n b { font-weight: 500; transition: opacity .25s ease; }
-    .hw__ok { position: absolute; color: #8b57c7; opacity: 0; transform: scale(.6); transition: opacity .25s ease, transform .35s cubic-bezier(.34,1.5,.64,1); }
-    .hw__item.is-done .hw__ok { opacity: 1; transform: none; }
-    .hw__item.is-done .hw__n b { opacity: 0; }
-    .hw__item.is-done:not([aria-selected="true"]) { color: var(--fg); }
-    /* at rest the list is the legend for the numbered markers: show 1–5 again */
-    .hw.is-fin .hw__item .hw__ok { opacity: 0; }
-    .hw.is-fin .hw__item .hw__n b { opacity: 1; color: #6b3fb0; }
-    .hw__t { font-size: 18px; font-weight: 600; letter-spacing: -.01em; color: inherit; white-space: nowrap; }
-    .hw__pkg { margin-left: auto; padding: 2px 8px; border-radius: 999px; background: rgb(12 12 10 / .05); font: 500 11.5px/1.5 var(--font-mono); color: var(--fg-mid); white-space: nowrap; opacity: 0; transition: opacity .3s ease; }
-    .hw__item[aria-selected="true"] .hw__pkg, .hw__item:hover .hw__pkg { opacity: 1; }
-    .hw__d { display: grid; grid-template-rows: 0fr; margin: 0 0 0 36px; font-size: 15px; line-height: 1.55; color: var(--fg-mid); opacity: 0; transition: grid-template-rows .45s cubic-bezier(.22,1,.36,1), opacity .35s ease, margin .45s cubic-bezier(.22,1,.36,1); }
-    .hw__d > span { min-height: 0; overflow: hidden; }
-    .hw__item[aria-selected="true"] .hw__d { grid-template-rows: 1fr; opacity: 1; margin-top: 8px; }
-    .hw__bar { display: block; height: 2px; margin: 16px 0 0 36px; border-radius: 2px; background: transparent; overflow: hidden; }
-    .hw__item[aria-selected="true"] .hw__bar { background: rgb(12 12 10 / .08); }
-    .hw__bar i { display: block; height: 100%; width: 100%; background: var(--fg); transform: scaleX(0); transform-origin: left center; }
-    .hw__item:not([aria-selected="true"]) .hw__bar { margin-top: 14px; }
-    .hw__item:not([aria-selected="true"]) .hw__bar i { opacity: 0; }
-    .hw__list li + li .hw__item:not([aria-selected="true"]) { border-top: 0; }
-
-    .hw__stage { position: relative; display: grid; justify-items: center; gap: 14px; padding: clamp(20px, 3vw, 36px); border-radius: 28px; background: linear-gradient(160deg, rgb(139 87 199 / .07), rgb(33 164 215 / .06) 55%, rgb(255 138 180 / .06)); }
-    .hw__replay { position: absolute; top: 14px; right: 14px; z-index: 3; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid rgb(12 12 10 / .1); border-radius: 50%; background: rgb(255 255 255 / .8); color: var(--fg-mid); cursor: pointer; transition: color .2s ease, border-color .2s ease; }
-    .hw__replay:hover { color: var(--fg); border-color: rgb(12 12 10 / .25); }
-    .hw__replay.is-spin svg { animation: ln-ag-replay .6s cubic-bezier(.22,1,.36,1); }
-    @keyframes ln-ag-replay { to { transform: rotate(-360deg); } }
-    /* The card itself is pg-preview/help.html: the real @nucleux/react components (shadcn).
-       This shell keeps its frame; --hw-h is the content's own height, posted by the card. */
-    .hw__card { width: 100%; max-width: 470px; height: max(calc(var(--hw-h, 0px) + 2px), clamp(500px, calc(100svh - 330px), 560px)); display: flex; flex-direction: column; padding: 0; overflow: hidden; border: 1px solid rgb(12 12 10 / .08); border-radius: 22px; background: var(--surface); box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 24px 60px -30px rgb(0 0 0 / .28); }
-    .hw__live { display: block; flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: transparent; }
-    .hw.is-fin .hw__pkg { opacity: 1; }
-    .hw__item.is-hl:not([aria-selected="true"]) { background: rgb(139 87 199 / .06); }
-
-    .hw__built { margin: 0; font-size: 13px; color: var(--fg-mid); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
-    .hw__cp { display: inline-flex; align-items: center; gap: 7px; padding: 4px 6px 4px 10px; border: 1px solid rgb(12 12 10 / .12); border-radius: 999px; background: rgb(255 255 255 / .75); color: var(--fg); cursor: pointer; font: inherit; }
-    .hw__cp code { font: 500 12px/1.4 var(--font-mono); background: none; padding: 0; }
-    .hw__cp:hover { border-color: rgb(12 12 10 / .3); }
-
-    @media (max-width: 899px) {
-      .hw { grid-template-columns: minmax(0, 1fr); }
-      .hw__stage { order: -1; padding: 16px; }
-      .hw__card { height: max(calc(var(--hw-h, 0px) + 2px), 520px); }
-      .hw__t { font-size: 16px; }
-      .hw__pkg { display: none; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .hw__d { transition: none !important; }
-    }
-  </style>
-  <style>
-    /* ── How: the comparison and the walkthrough as one horizontal carousel ── */
-    .cx { position: relative; }
-    /* prev / next sit in the side margins, centred on the section's height */
-    .cx__arrow { position: absolute; z-index: 5; top: 50%; display: grid; place-items: center; width: 48px; height: 48px; margin-top: -24px; border: 1px solid rgb(12 12 10 / .12); border-radius: 50%; background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / .05), 0 8px 24px rgb(0 0 0 / .07); cursor: pointer; transition: opacity .3s ease, border-color .25s ease, transform .25s ease; }
-    .cx__arrow--prev { left: calc(-1 * min(64px, (100vw - 100%) / 2 - 12px)); }
-    .cx__arrow--next { right: calc(-1 * min(64px, (100vw - 100%) / 2 - 12px)); }
-    .cx__arrow:hover { border-color: rgb(12 12 10 / .3); transform: scale(1.05); }
-    .cx__arrow:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-    .cx__arrow[aria-disabled="true"] { opacity: 0; pointer-events: none; }
-    /* the window: clips the slide that is off to the side, grows to the shown slide's height */
-    .cx__view { overflow: hidden; margin-inline: -16px; transition: height .6s cubic-bezier(.22,1,.36,1); }
-    .cx__track { display: flex; align-items: flex-start; gap: 64px; transition: transform .8s cubic-bezier(.65,0,.35,1); }
-    .cx__slide { flex: 0 0 100%; min-width: 0; box-sizing: border-box; padding: 6px 16px 40px; opacity: .2; transition: opacity .6s ease; }
-    .cx__slide.is-on { opacity: 1; }
-    .cx__dots { display: none; justify-content: center; gap: 6px; margin-top: -16px; }
-    .cx__dots i { width: 6px; height: 6px; border-radius: 999px; background: rgb(12 12 10 / .18); transition: width .35s ease, background .35s ease; }
-    .cx__dots i.is-on { width: 18px; background: var(--fg); }
-    @media (max-width: 599px) {
-      .cx__arrow { display: none; }
-      .cx__dots { display: flex; }   /* phones swipe; the dots say there's a second slide */
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .cx__view, .cx__track, .cx__slide, .cx__arrow, .cx__dots i { transition: none !important; }
     }
   </style>
 </head>
@@ -3770,14 +3678,18 @@
     </div>
 
     <div class="container hero__content">
+      <!-- The "Introducing | Nucleux Playground" pill is off for now (the user's
+           choice, 2026-11-02). To bring it back, restore this button; its styles
+           and the script that opens the Playground (#hero-pg) are still in place.
       <button class="hero__pill" type="button" aria-controls="hero-pg" aria-expanded="false">
         <span class="hero__pill-tag" data-tag>Introducing</span>
         <span class="hero__pill-txt" data-txt>Nucleux Playground</span>
         <svg class="hero__pill-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
+      -->
       <h1 class="hero__title" data-parallax-y="-0.08">
         One pattern library for the<br/>
-        <em>teams</em> in <span class="rot" aria-hidden="true"><span class="rot__sizer">Enterprise AI.</span><span class="rot__item is-in">Enterprise.</span><span class="rot__item">Scale Stage.</span><span class="rot__item">Growth Stage.</span><span class="rot__item">Early Stage.</span><span class="rot__item">Prelaunch.</span></span><span class="rot-sr">Enterprise.</span>
+        <em>teams</em> in <span class="rot" aria-hidden="true"><span class="rot__sizer">Enterprise AI</span><span class="rot__item is-in">Enterprise</span><span class="rot__item">Scale Stage</span><span class="rot__item">Growth Stage</span><span class="rot__item">Early Stage</span><span class="rot__item">Prelaunch</span></span><span class="rot-sr">Enterprise</span>
       </h1>
 
       <p class="hero__sub" data-parallax-y="-0.04">
@@ -3804,7 +3716,7 @@
 
       <div class="hero__pg" id="hero-pg" role="region" aria-labelledby="pg-h" hidden>
         <header class="hero__pg-head">
-          <h2 class="ln-h2" id="pg-h">Describe an AI product. <em>Watch it build itself.</em></h2>
+          <h2 class="ln-h2" id="pg-h">Describe an AI product. <em>Watch it build itself</em></h2>
           <p class="ln-lede">Nucleux picks the patterns your product needs and builds a live preview from the library. Type below.</p>
         </header>
         <div class="hero__pg-frame"><iframe data-src="playground.html?embed=1&amp;v=20261029a" title="Nucleux Playground" loading="lazy"></iframe></div>
@@ -3813,74 +3725,26 @@
   </section>
   </div><!-- /scene: the particle field sits behind the hero only -->
 
-<!-- ══ 4 · HOW IT WORKS — agent demo + three steps ══ -->
-<!-- ══ 4 · HOW — the comparison and the walkthrough as one horizontal carousel ══ -->
-<section class="ln-sec ln-ag-sec" id="how" aria-labelledby="how-h" aria-roledescription="carousel">
+<!-- ══ 4 · WHY — one prompt, two experiences: the same question without and with Nucleux ══ -->
+<section class="ln-sec ln-ag-sec" id="how" aria-labelledby="how-h">
   <div class="container">
-    <div class="cx" id="cx">
-      <button class="cx__arrow cx__arrow--prev" type="button" data-dir="-1" aria-label="Previous slide" aria-controls="cx-track"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <button class="cx__arrow cx__arrow--next" type="button" data-dir="1" aria-label="Next slide" aria-controls="cx-track"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div class="cx__view">
-        <div class="cx__track" id="cx-track" aria-live="polite">
-          <div class="cx__slide is-on" id="cx-s0" role="group" aria-roledescription="slide" aria-label="1 of 2">
-            <header class="ln-head">
-              <h2 class="ln-h2 ln-rv" id="how-h">See how Nucleux elevates the <em>AI experience</em></h2>
-              <p class="ln-lede ln-rv">One prompt, two experiences. See how Nucleux brings transparency, traceability, and user control to AI interactions.</p>
-            </header>
-            <div class="vs ln-rv" id="vs">
-              <div class="vs__grid">
-                <div class="vs__side vs__side--without">
-                  <div class="vs__label"><i aria-hidden="true"></i>Without Nucleux</div>
-                  <div class="vs__card" role="group" aria-label="A bare AI chat reply"><div class="vs__hd" data-hd></div><div class="vs__body" data-body></div></div>
-                  <ul class="vs__notes" data-notes></ul>
-                </div>
-                <div class="vs__side vs__side--with">
-                  <div class="vs__label"><i aria-hidden="true"></i>With Nucleux<span class="vs__legend" data-legend aria-label="Components used"></span><button class="vs__replay" type="button" aria-label="Replay" title="Replay"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-                  <div class="vs__card" role="group" aria-label="The same agent built with Nucleux components"><div class="vs__body" data-body><iframe class="vs__live" src="pg-preview/compare.html?v=10" title="The same support chat, drawn with the real Nucleux components" loading="lazy"></iframe></div></div>
-                  <ul class="vs__notes" data-notes></ul>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="cx__slide" id="cx-s1" role="group" aria-roledescription="slide" aria-label="2 of 2" inert aria-hidden="true">
-            <header class="ln-head">
-              <h2 class="ln-h2 ln-rv" id="wt-h">From one sentence to <em>screens you can ship</em>.</h2>
-              <p class="ln-lede ln-rv">Describe your AI in plain words. Your agent connects to Nucleux, picks the patterns it needs and builds the screen with them — progress, sources and approvals included.</p>
-            </header>
-            <div class="hw ln-rv" id="hw">
-              <ol class="hw__list" role="tablist" aria-label="How the support chatbot is built">
-                <li><button class="hw__item" type="button" role="tab" id="hw-t0" aria-controls="hw-stage" aria-selected="true" data-i="0">
-                  <span class="hw__row"><span class="hw__n"><svg class="hw__ok" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>01</b></span><span class="hw__t">Say it’s AI</span><code class="hw__pkg">Disclosure</code></span>
-                  <span class="hw__d"><span>A clear, visible label that tells the user they are interacting with an AI, not a person.</span></span>
-                  <span class="hw__bar" aria-hidden="true"><i></i></span></button></li>
-                <li><button class="hw__item" type="button" role="tab" id="hw-t1" aria-controls="hw-stage" aria-selected="false" tabindex="-1" data-i="1">
-                  <span class="hw__row"><span class="hw__n"><svg class="hw__ok" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>02</b></span><span class="hw__t">Suggest what to ask</span><code class="hw__pkg">Suggested Prompts</code></span>
-                  <span class="hw__d"><span>Smart, context-aware preset actions to jumpstart engagement.</span></span>
-                  <span class="hw__bar" aria-hidden="true"><i></i></span></button></li>
-                <li><button class="hw__item" type="button" role="tab" id="hw-t2" aria-controls="hw-stage" aria-selected="false" tabindex="-1" data-i="2">
-                  <span class="hw__row"><span class="hw__n"><svg class="hw__ok" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>03</b></span><span class="hw__t">Answer with sources</span><code class="hw__pkg">Citations</code></span>
-                  <span class="hw__d"><span>Inline source links so the user can fact-check.</span></span>
-                  <span class="hw__bar" aria-hidden="true"><i></i></span></button></li>
-                <li><button class="hw__item" type="button" role="tab" id="hw-t3" aria-controls="hw-stage" aria-selected="false" tabindex="-1" data-i="3">
-                  <span class="hw__row"><span class="hw__n"><svg class="hw__ok" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>04</b></span><span class="hw__t">Flag what it’s unsure of</span><code class="hw__pkg">Caveat</code></span>
-                  <span class="hw__d"><span>A small, persistent reminder that AI output can be wrong and should be checked.</span></span>
-                  <span class="hw__bar" aria-hidden="true"><i></i></span></button></li>
-                <li><button class="hw__item" type="button" role="tab" id="hw-t4" aria-controls="hw-stage" aria-selected="false" tabindex="-1" data-i="4">
-                  <span class="hw__row"><span class="hw__n"><svg class="hw__ok" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>05</b></span><span class="hw__t">Offer a person</span><code class="hw__pkg">Task Assignment</code></span>
-                  <span class="hw__d"><span>Route a task to a person or back to the AI.</span></span>
-                  <span class="hw__bar" aria-hidden="true"><i></i></span></button></li>
-              </ol>
-
-              <div class="hw__stage" id="hw-stage" role="tabpanel" aria-labelledby="hw-t0">
-                <button class="hw__replay" type="button" aria-label="Replay from the start" title="Replay"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v4.5h4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <div class="hw__card"><iframe class="hw__live" src="pg-preview/help.html?v=1" title="Support chat built with Nucleux components"></iframe></div>
-                <p class="hw__built">Built from 6 Nucleux patterns · <button class="hw__cp" type="button" data-copy="npm install @nucleux/react" aria-label="Copy npm install @nucleux/react"><code>npm install @nucleux/react</code><svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8" stroke="currentColor" stroke-width="1.9"/></svg></button></p>
-              </div>
-            </div>
-          </div>
+    <header class="ln-head">
+      <h2 class="ln-h2 ln-rv" id="how-h">See how Nucleux elevates the <em>AI experience</em></h2>
+      <p class="ln-lede ln-rv">One prompt, two experiences. See how Nucleux brings transparency, traceability, and user control to AI interactions.</p>
+    </header>
+    <div class="vs ln-rv" id="vs">
+      <div class="vs__grid">
+        <div class="vs__side vs__side--without">
+          <div class="vs__label"><i aria-hidden="true"></i>Without Nucleux</div>
+          <div class="vs__card" role="group" aria-label="A bare AI chat reply"><div class="vs__hd" data-hd></div><div class="vs__body" data-body></div></div>
+          <ul class="vs__notes" data-notes></ul>
+        </div>
+        <div class="vs__side vs__side--with">
+          <div class="vs__label"><i aria-hidden="true"></i>With Nucleux<span class="vs__legend" data-legend aria-label="Components used"></span><button class="vs__replay" type="button" aria-label="Replay" title="Replay"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          <div class="vs__card" role="group" aria-label="The same agent built with Nucleux components"><div class="vs__body" data-body><iframe class="vs__live" src="pg-preview/compare.html?v=10" title="The same support chat, drawn with the real Nucleux components" loading="lazy"></iframe></div></div>
+          <ul class="vs__notes" data-notes></ul>
         </div>
       </div>
-      <div class="cx__dots" aria-hidden="true"><i class="is-on"></i><i></i></div>
     </div>
   </div>
 </section>
@@ -3893,20 +3757,93 @@
 <section class="ln-sec ln-hw2" id="how-works" aria-labelledby="hw2-h">
   <div class="container">
     <header class="ln-head ln-head--c">
-      <h2 class="ln-h2 ln-rv" id="hw2-h">From intent to interface.</h2>
+      <h2 class="ln-h2 ln-rv" id="hw2-h">From one sentence to <em>screens you can ship</em></h2>
       <p class="ln-lede ln-rv">Describe what you need. Nucleux helps your agent build it.</p>
     </header>
   </div>
   <div class="ln-hw2__stack" data-nx-how data-header="false"></div>
 </section>
-<script src="pg-preview/how-works.js?v=31" defer></script>
+<script src="pg-preview/how-works.js?v=40" defer></script>
+<script>
+/* The next section waits its turn: while one section holds the screen and the
+   next one only peeks in at the bottom, the newcomer shows at 10% opacity and
+   comes up to full as it scrolls into view (over the first 45% of the screen).
+   Tied to scroll position, nothing timed (the user's choice, 2026-11-02). */
+document.addEventListener('DOMContentLoaded', function () {
+  var secs = ['#how', '#how-works', '#start', '#patterns', '#developers']
+    .map(function (q) { return document.querySelector(q); }).filter(Boolean);
+  if (!secs.length) return;
+  var MIN = 0.1, SPAN = 0.45, queued = false;
+  function paint() {
+    queued = false;
+    var vh = innerHeight;
+    secs.forEach(function (sec) {
+      /* from where its content starts (its heading), not its padded box */
+      var top = (sec.querySelector('h2') || sec).getBoundingClientRect().top;
+      var p = Math.min(1, Math.max(0, (vh - top) / (vh * SPAN)));
+      var o = MIN + (1 - MIN) * p;
+      sec.style.opacity = o >= 0.999 ? '' : o.toFixed(3);
+    });
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+  paint();
+  addEventListener('scroll', queue, { passive: true });
+  addEventListener('resize', queue);
+  /* section 2 rises into view on its own when the hero's intro settles */
+  addEventListener('transitionend', queue);
+});
+</script>
+<script>
+/* Section rhythm: every join between two sections (one section's last content
+   to the next one's heading) matches the hero → section 2 join, the hero's
+   buttons to section 2's heading (the user's choice, 2026-11-02). That join
+   changes with the window (the hero fills the first screen, and sections are
+   centred in theirs), so it is measured here and each later section gets the
+   top margin that makes its join the same. Layout offsets, not boxes, so the
+   entrance transforms don't skew it. Runs once the page is parsed: the
+   sections it spaces come after this script. */
+document.addEventListener('DOMContentLoaded', function () {
+  var acts = document.querySelector('.hero__actions');
+  var chain = ['#how', '#how-works', '#start', '#patterns', '#developers']
+    .map(function (q) { return document.querySelector(q); }).filter(Boolean);
+  if (!acts || chain.length < 2) return;
+  function top(el) { var y = 0; for (; el; el = el.offsetParent) y += el.offsetTop; return y; }
+  function end(el) { return top(el) + el.offsetHeight; }
+  function head(sec) { return sec.querySelector('h2'); }
+  /* a section's content: its last child that isn't decoration */
+  function body(sec) { var k = sec.lastElementChild; while (k && /^(CANVAS|SCRIPT)$/.test(k.tagName)) k = k.previousElementSibling; return k; }
+  var busy = false;
+  function set() {
+    if (busy || !acts.offsetHeight) return;      /* the Playground view hides the buttons */
+    busy = true;
+    /* less the hero's own bottom margin: it only holds section 2 back
+       while the hero's intro plays (see the hero rules) */
+    var gap = top(head(chain[0])) - end(acts) - (parseFloat(getComputedStyle(document.querySelector('.hero')).marginBottom) || 0);
+    for (var i = 1; i < chain.length; i++) {
+      var sec = chain[i], prev = body(chain[i - 1]);
+      sec.style.marginTop = '0px';
+      sec.style.marginTop = Math.round(gap - (top(head(sec)) - end(prev))) + 'px';
+    }
+    busy = false;
+  }
+  set();
+  addEventListener('load', set);
+  addEventListener('resize', set);
+  /* anything that changes a section's content height moves the joins below it */
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(set);
+    ro.observe(document.querySelector('.hero'));
+    chain.forEach(function (sec) { var b = body(sec); if (b) ro.observe(b); });
+  }
+});
+</script>
 
 <!-- ══ 6 · PERSONAS — three ways in (after Gaiametry's audience split) ══ -->
 <section class="ln-sec ln-who" id="start" aria-labelledby="who-h">
   <canvas class="ln-who__field" aria-hidden="true"></canvas>
   <div class="container">
     <header class="ln-head ln-head--c">
-      <h2 class="ln-h2 ln-rv" id="who-h">One library. <em>Two ways in.</em></h2>
+      <h2 class="ln-h2 ln-rv" id="who-h">One library. <em>Two ways in</em></h2>
     </header>
     <div class="ln-who__grid">
       <div class="ln-who__col ln-rv">
@@ -3932,7 +3869,7 @@
   <div class="container">
     <header class="ln-head ln-head--row">
       <div>
-        <h2 class="ln-h2 ln-rv" id="pat-h">Every pattern belongs to one of <em>four moments</em>.</h2>
+        <h2 class="ln-h2 ln-rv" id="pat-h">Every pattern belongs to one of <em>four moments</em></h2>
         <p class="ln-lede ln-rv">The library is organised against this map so the right pattern is always one click away.</p>
       </div>
       <span class="nx-scope ln-rv"><a class="ln-nxbtn inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.005em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:shrink-0 border border-border bg-background text-foreground shadow-sm hover:bg-accent h-10 rounded-lg px-5 text-sm" href="library"><span class="inline-flex shrink-0 items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>All 84 patterns</a></span>
@@ -3982,18 +3919,10 @@
 <section class="ln-sec ln-sec--rule" id="developers" aria-labelledby="dev-h">
   <div class="container ln-dev">
     <header>
-      <h2 class="ln-h2 ln-rv" id="dev-h">Your AI agent already <em>knows how to use it</em>.</h2>
+      <h2 class="ln-h2 ln-rv" id="dev-h">Your AI agent already <em>knows how to use it</em></h2>
       <p class="ln-lede ln-rv">Nucleux runs an MCP server, so Claude, Cursor, Codex and VS Code can ask it which patterns to use and build them for you. Prefer to write the code? It's one package.</p>
     </header>
-    <div class="ln-dev__row">
-    <ol class="ln-flowv ln-rv" aria-label="How your AI agent builds with Nucleux">
-      <span class="ln-flowv__rail" aria-hidden="true"><i></i></span>
-      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">You</span><b>Describe the screen</b><small>In Claude, Cursor, Codex or VS Code.</small></div></li>
-      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">MCP</span><b>Your agent asks Nucleux</b><small>Which patterns fit, and when not to. <code>nucleux.in/mcp</code></small></div></li>
-      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">Patterns</span><b>It builds with them</b><small>Real <code>@nucleux/react</code> components, on your theme.</small></div></li>
-      <li><span class="ln-flowv__dot" aria-hidden="true"></span><div><span class="ln-flowv__k">Ship</span><b>You review the plan</b><small>Nothing changes in your files until you've seen it.</small></div></li>
-    </ol>
-    <div class="ln-dev__code ln-rv" style="--d:120ms">
+    <div class="ln-rv" style="--d:120ms">
       <div class="ln-tabs" role="tablist" aria-label="How to use Nucleux">
         <span class="ln-tabs__pill" aria-hidden="true"></span>
         <button class="ln-tab" role="tab" type="button" id="dt-agent" aria-controls="dp-code" aria-selected="true" data-tab="agent">AI agent</button>
@@ -4004,7 +3933,6 @@
         <pre><code data-code></code></pre>
       </div>
       <p class="ln-dev__note" data-note></p>
-    </div>
     </div>
   </div>
 </section>
@@ -4032,7 +3960,7 @@
         <div class="makers__scrim" aria-hidden="true"></div>
 
         <h2 class="makers__bigword" data-parallax-y="-0.02">
-          Built by people who design<br/> <em>agentic</em>&nbsp;products.
+          Built by people who design<br/> <em>agentic</em>&nbsp;products
         </h2>
 
         <p class="makers__pitch">
@@ -4934,6 +4862,14 @@
       es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); settle(e.target); } });
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     rv.forEach(function (el) { io.observe(el); });
+    /* Section 2's heading peeks under the hero, too little of it for the
+       observer: show it as soon as the hero's intro has settled (it rises in
+       as the hero lets section 2 up), without waiting for a scroll. */
+    var early = $$('#how header .ln-rv');
+    var revealEarly = function () { early.forEach(function (el) { if (el.classList.contains('ln-rv') && !el.classList.contains('is-in')) { el.classList.add('is-in'); io.unobserve(el); settle(el); } }); };
+    if (document.documentElement.classList.contains('hero-intro-done')) revealEarly();
+    else new MutationObserver(function (m, o) { if (document.documentElement.classList.contains('hero-intro-done')) { o.disconnect(); revealEarly(); } })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
 
   /* ── Magnetic buttons ── */
@@ -5074,20 +5010,7 @@
   addEventListener('resize', function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { pillTab(tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]); });
   $('.ln-copy').addEventListener('click', function () { nxCopy(this, TABS[curTab].text); });
-  /* the agent flow beside the prompt: the fill walks down the line one step at a
-     time, rests on "You review the plan", then starts again; only while on screen */
-  (function () {
-    var fx = $('.ln-flowv'); if (!fx) return;
-    var steps = $$('li', fx), k = -1, t = null;
-    function show(i) { fx.style.setProperty('--k', Math.max(0, i)); steps.forEach(function (li, j) { li.classList.toggle('is-on', j === i); li.classList.toggle('is-done', j < i); }); }
-    function tick() { k = (k + 1) % (steps.length + 1); show(k === steps.length ? steps.length - 1 : k); }
-    if (still) return;
-    show(0);
-    onView(fx, function (v) {
-      if (v && !t) { k = -1; tick(); t = setInterval(tick, 1700); }
-      else if (!v && t) { clearInterval(t); t = null; }
-    }, { threshold: 0.35 });
-  })();   /* the shared .nx-copy icon button (global.js) */
+  /* the shared .nx-copy icon button (global.js) */
   $$('[data-tab="agent"].ln-card, [data-tab="agent"].ln-obtn, [data-tab="agent"].ln-who__btn').forEach(function (a) { a.addEventListener('click', function () { selectTab('agent'); }); });
 })();
 </script>
@@ -5389,204 +5312,6 @@
     if (es[0].isIntersecting) { io.disconnect(); play(); }
   }, { threshold: 0.3 });
   io.observe(root.querySelector('.vs__grid'));
-})();
-</script>
-<script>
-/* How it works v2: plays ONCE (when first seen), each step stays built,
-   then rests on the finished screen with every package labelled. After
-   that, clicking a step spotlights its part without rebuilding; clicking it
-   again clears the spotlight. Replay is the only way to run it again.
-   Steps run in the order a person meets them: the notice, the suggested
-   questions, then (after they tap one) the sourced answer, its caveat and
-   the way to a person. Tapping, streaming and the progress bar all derive
-   from the step's elapsed time. It keeps playing under the pointer and
-   with focus inside; it only waits while off screen or in a hidden tab. */
-(function () {
-  var root = document.getElementById('hw'); if (!root) return;
-  var items = [].slice.call(root.querySelectorAll('.hw__item'));
-  var stage = root.querySelector('.hw__stage'), card = root.querySelector('.hw__card');
-  /* The card is pg-preview/help.html, drawn with the real @nucleux/react
-     components. This script keeps the clock and posts the card its state:
-     which parts are in, the step in focus, the hovered part, and how far the
-     answer has streamed. The card posts back its height, and the part a
-     pointer is on or clicked. */
-  var live = root.querySelector('.hw__live');
-  var WORDS = 'Your refund was approved on 21 Oct. Card refunds usually arrive within 5–10 business days.'.split(' ').length;
-  var S = { in: [], on: -1, hl: -1, focus: false, fin: false, typed: false, words: 0, src: false, tap: false }, sent = '';
-  function send(force) {
-    var j = JSON.stringify(S);
-    if (j === sent && !force) return;
-    sent = j;
-    if (live.contentWindow) live.contentWindow.postMessage({ type: 'hw', st: S }, '*');
-  }
-  function upTo(i) { var a = []; for (var k = 0; k <= i; k++) a.push(k); return a; }
-  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var TAP = 700, WORD = 70;                   /* ms: the suggested prompt shows pressed, then each streamed word */
-  var D2 = TAP + 450 + WORDS * WORD + 300 + 1600;
-  var DUR = [3800, 3800, D2, 3800, 4400];
-  var step = 0, t = 0, last = 0, visible = false, playing = false, finished = false, spot = -1;
-
-  function bar(b, v) { b.querySelector('.hw__bar i').style.transform = 'scaleX(' + v + ')'; }
-  function fullChat(on) { S.typed = on; S.words = on ? WORDS : 0; S.src = on; S.tap = false; }
-  function select(k) {
-    items.forEach(function (b, j) { var on = j === k; b.setAttribute('aria-selected', on ? 'true' : 'false'); });
-    var tab = k >= 0 ? k : 0; items.forEach(function (b, j) { b.tabIndex = j === tab ? 0 : -1; });
-    stage.setAttribute('aria-labelledby', 'hw-t' + tab);
-  }
-  function setStep(i) {                       /* during the first play-through */
-    step = i; t = 0;
-    root.classList.remove('is-all'); root.classList.add('is-focus');
-    select(i);
-    items.forEach(function (b, k) { b.classList.toggle('is-done', k < i); bar(b, k < i ? 1 : 0); });
-    S.in = upTo(i); S.on = i; S.focus = true; S.fin = false;
-    fullChat(i > 2); send();
-  }
-  function finish() {                         /* rest on the finished screen */
-    playing = false; finished = true; spot = -1;
-    select(-1);
-    items.forEach(function (b) { b.classList.add('is-done'); bar(b, 1); });
-    S.in = upTo(4); S.on = -1; S.focus = false; S.fin = true;
-    fullChat(true); send();
-    root.classList.remove('is-focus'); root.classList.add('is-all', 'is-fin');
-  }
-  function spotlight(k) {                     /* after finishing: highlight one step */
-    if (spot === k) k = -1;
-    spot = k;
-    if (k < 0) { finish(); return; }
-    select(k);
-    root.classList.remove('is-all'); root.classList.add('is-focus');
-    S.in = upTo(4); S.on = k; S.focus = true; send();
-  }
-  function play() { finished = false; spot = -1; playing = true; root.classList.remove('is-fin'); setStep(0); }
-  /* hover link: a step row <-> its part of the card (after the first play) */
-  function hl(k) {
-    items.forEach(function (b, j) { b.classList.toggle('is-hl', j === k); });
-    S.hl = k; send();
-  }
-  items.forEach(function (b, k) {
-    b.addEventListener('pointerenter', function () { if (finished) hl(k); });
-    b.addEventListener('pointerleave', function () { hl(-1); });
-  });
-  addEventListener('message', function (e) {
-    if (e.source !== live.contentWindow || !e.data) return;
-    var d = e.data;
-    if (d.type === 'hw-ready') send(true);
-    else if (d.type === 'hw-height') card.style.setProperty('--hw-h', d.h + 'px');
-    else if (d.type === 'hw-hover') hl(finished ? d.s : -1);
-    else if (d.type === 'hw-click' && finished) spotlight(d.s);
-  });
-  function frame(now) {
-    requestAnimationFrame(frame);
-    var dt = last ? now - last : 0; last = now;
-    if (!playing || !visible || document.hidden) return;
-    t += dt;
-    var d = DUR[step];
-    bar(items[step], Math.min(1, t / d));
-    if (step === 2) {
-      var pressing = t < TAP;                 /* the tapped prompt stays marked while it's pressed */
-      S.tap = pressing;
-      if (!pressing) S.typed = true;
-      var tw = t - TAP - 450;
-      S.words = tw > 0 ? Math.min(WORDS, Math.floor(tw / WORD) + 1) : 0;
-      if (tw > WORDS * WORD + 300) S.src = true;
-      send();
-    }
-    if (t >= d) { if (step === 4) finish(); else setStep(step + 1); }
-  }
-  items.forEach(function (b, k) {
-    b.addEventListener('click', function () { if (finished || still) spotlight(k); else setStep(k); });
-    b.addEventListener('keydown', function (e) {
-      var dir = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : (e.key === 'ArrowUp' || e.key === 'ArrowLeft') ? -1 : 0;
-      if (!dir) return; e.preventDefault();
-      var n = (k + dir + items.length) % items.length;
-      if (finished || still) { spot = -1; spotlight(n); } else setStep(n);
-      items[n].focus();
-    });
-  });
-  var rp = root.querySelector('.hw__replay');
-  rp.addEventListener('click', function () { rp.classList.remove('is-spin'); void rp.offsetWidth; rp.classList.add('is-spin'); if (still) { finish(); return; } play(); });
-  var cp = root.querySelector('.hw__cp');
-  cp.addEventListener('click', function () {
-    var txt = cp.getAttribute('data-copy');
-    var done = function () { if (window.nxToast) window.nxToast(txt); };
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, fb); else fb();
-    function fb() { var ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove(); }
-  });
-  if (still) { finish(); return; }
-  setStep(0);
-  var started = false;
-  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) {
-    visible = es[0].isIntersecting;
-    if (visible && !started) { started = true; playing = true; }   /* first time only */
-  }, { threshold: 0.35 }).observe(stage);
-  else { visible = true; playing = true; }
-  requestAnimationFrame(frame);
-})();
-</script>
-<script>
-/* How carousel: the comparison and the walkthrough side by side on one
-   track, one shown at a time. Prev / next arrows in the side margins, a
-   horizontal swipe or a sideways trackpad gesture move between them; the
-   window eases to the shown slide's height. The slide off to the side is
-   inert, and each demo still starts the first time its slide comes into view. */
-(function () {
-  var root = document.getElementById('cx'); if (!root) return;
-  var GAP = 64, SWIPE = 50, WHEEL = 70, WHEEL_LOCK = 800;   // px between slides, touch distance, trackpad distance, ms before another sideways gesture counts
-  var slides = [].slice.call(root.querySelectorAll('.cx__slide')), dots = [].slice.call(root.querySelectorAll('.cx__dots i'));
-  var view = root.querySelector('.cx__view'), track = root.querySelector('.cx__track');
-  var prev = root.querySelector('[data-dir="-1"]'), next = root.querySelector('[data-dir="1"]');
-  var cur = -1;
-
-  function fit() { view.style.height = slides[cur].offsetHeight + 'px'; }
-  function go(i) {
-    i = Math.max(0, Math.min(slides.length - 1, i));
-    if (i === cur) return;
-    cur = i;
-    track.style.transform = 'translateX(calc(' + (-100 * i) + '% - ' + (GAP * i) + 'px))';
-    slides.forEach(function (s, k) {
-      var on = k === i;
-      s.classList.toggle('is-on', on);
-      if (on) { s.removeAttribute('inert'); s.removeAttribute('aria-hidden'); } else { s.setAttribute('inert', ''); s.setAttribute('aria-hidden', 'true'); }
-    });
-    dots.forEach(function (d, k) { d.classList.toggle('is-on', k === i); });
-    prev.setAttribute('aria-disabled', String(i === 0)); prev.tabIndex = i === 0 ? -1 : 0;
-    next.setAttribute('aria-disabled', String(i === slides.length - 1)); next.tabIndex = i === slides.length - 1 ? -1 : 0;
-    fit();
-  }
-  prev.addEventListener('click', function () { go(cur - 1); });
-  next.addEventListener('click', function () { go(cur + 1); });
-  /* ← → on a focused arrow (the demos' own step lists keep their arrow keys) */
-  [prev, next].forEach(function (b) {
-    b.addEventListener('keydown', function (e) {
-      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-      if (!d) return;
-      e.preventDefault(); go(cur + d);
-      (next.tabIndex === 0 ? next : prev).focus();
-    });
-  });
-
-  /* swipe on touch screens */
-  var sx = 0, sy = 0;
-  view.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
-  view.addEventListener('touchend', function (e) {
-    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
-    if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy) * 1.4) go(cur + (dx < 0 ? 1 : -1));
-  }, { passive: true });
-  /* sideways trackpad gesture: one slide per gesture */
-  var acc = 0, lockUntil = 0;
-  view.addEventListener('wheel', function (e) {
-    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-    e.preventDefault();                      // keep the browser's back/forward swipe out of it
-    var now = performance.now();
-    if (now < lockUntil) return;
-    acc += e.deltaX;
-    if (Math.abs(acc) > WHEEL) { go(cur + (acc > 0 ? 1 : -1)); acc = 0; lockUntil = now + WHEEL_LOCK; }
-  }, { passive: false });
-
-  /* the shown slide's height changes as its demo builds; keep the window fitted */
-  if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur >= 0) fit(); }); slides.forEach(function (s) { ro.observe(s); }); }
-  addEventListener('resize', function () { fit(); });
-  go(0);
 })();
 </script>
 <script>

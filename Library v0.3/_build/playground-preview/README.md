@@ -29,7 +29,7 @@ Pattern → component map: see `MAP` in `extract-scenes.py` (35 Material 3 patte
 
 ## How Nucleux works (`src/how/`)
 
-The concept home's "From intent to interface." section: three tiles that stack as you scroll,
+The concept home's "From one sentence to screens you can ship" section: three tiles that stack as you scroll,
 each with a scene drawn with the real `@nucleux/react` components (shadcn family). Every scene
 is a pure function of time `t`, so the site, the exports and the Motion film show the same frames.
 
@@ -48,8 +48,7 @@ is a pure function of time `t`, so the site, the exports and the Motion film sho
   `pg-preview/how-tile-describe.html`, `how-tile-patterns.html`, `how-tile-build.html`
   (`src/how/LoopTile.tsx` + `src/how-tile.tsx`, built into `node_modules/.how-tile`, then
   `build-tiles.mjs` inlines the script and styles so each page stands alone, ~465 KB; only the
-  Inter and JetBrains Mono links are external). Each is the section's tile card with the film's
-  shorter bodies (`FILM_BODY` in `copy.ts`): the scene plays, holds 2.2 s, fades and starts again,
+  Inter and JetBrains Mono links are external). Each is the section's tile card and copy: the scene plays, holds 2.2 s, fades and starts again,
   only while on screen; "Pause animation" sits under the copy; reduced motion shows the finished
   frame with Play. Embed one in an iframe; the page posts its height so the frame can fit it:
 

@@ -12,8 +12,8 @@ import type { SceneId } from "./how/time";
 
 const el = document.getElementById("root")!;
 const scene = (el.dataset.scene as SceneId) || "describe";
-/* how-stack: the plain (unstacked) tile's shadow */
-createRoot(el).render(<div className="how-stack p-1"><LoopTile id={scene} /></div>);
+/* how-stack: the plain (unstacked) tile's rules */
+createRoot(el).render(<div className="how-stack"><LoopTile id={scene} /></div>);
 
 if (window.parent !== window) {
   const report = () => window.parent.postMessage({ type: "nx-how-tile", scene, height: Math.ceil(el.getBoundingClientRect().height) }, "*");
