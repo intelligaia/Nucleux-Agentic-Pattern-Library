@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "files": ["src/how-works.tsx", "src/how-page.tsx", "src/how-scene.tsx", "src/how-tile.tsx", "src/how-film.tsx", "src/how-film-vendor.ts", "src/vite-env.d.ts"]
+}

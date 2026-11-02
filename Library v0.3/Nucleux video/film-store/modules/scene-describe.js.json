@@ -1,0 +1,4 @@
+{
+ "kind": "js",
+ "text": "/* Tile 1: the request typed into the real Nucleux Input, sent, answered. */\nkit.scene('describe', {\n  init(kit) {\n    kit.stage.append(kit.h('<div class=\"ground\"></div>'));\n    this.t1 = window.HWF.tile(kit, 0, 0);\n    window.HWF.mark(kit, 'describe');   /* the wordmark, where the intro left it */\n  },\n  render(t) {\n    this.t1.scene.render(Math.max(0, t));\n    /* a slow push while it holds, from the tile's top edge */\n    this.t1.s.transform = 'scale(' + (1 + 0.0035 * Math.max(0, t)).toFixed(4) + ')';\n  },\n});"
+}

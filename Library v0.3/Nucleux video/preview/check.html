@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- Smoke test for the Motion film modules: loads bundles/how-film-vendor.js and
+     bundles/how-film.js as plain scripts (as the film's shared.js runs them), injects
+     NXHow.css and draws each scene at ?t= (default: its end). -->
+<html lang="en">
+<head><meta charset="utf-8"><title>Film modules check</title>
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css"></head>
+<body style="margin:0;background:#fff">
+<div id="out" style="display:flex;gap:16px;padding:16px;flex-wrap:wrap"></div>
+<script src="../bundles/how-film-vendor.js"></script>
+<script src="../bundles/how-film.js"></script>
+<script>
+  const s = document.createElement('style'); s.textContent = NXHow.css; document.head.append(s);
+  const q = new URLSearchParams(location.search);
+  for (const id of ['describe', 'patterns', 'build']) {
+    const box = document.createElement('div');
+    box.style.cssText = 'position:relative;width:640px;height:480px;border:1px solid #ddd';
+    document.getElementById('out').append(box);
+    NXHow.mount(box, id).render(q.has('t') ? Number(q.get('t')) : NXHow.DUR[id]);
+  }
+  document.title = 'ok ' + document.querySelectorAll('input, table, [data-slot=sidebar]').length;
+</script>
+</body></html>

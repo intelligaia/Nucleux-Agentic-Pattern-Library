@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Local stand-in for the Motion player's kit, to check a film scene before it
+     is written to the film: ?scene=intro&t=1.2 draws that moment. It reads the
+     film's documents from ../film-store (as saved from the film's store) and the
+     React bundles from ../bundles. Serve the repo folder and open it over http. -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>html,body{margin:0;background:#fff} #stage{position:relative;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0}</style>
+</head><body><div id="stage"></div>
+<script src="../bundles/how-film-vendor.js"></script>
+<script>
+const q = new URLSearchParams(location.search);
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const stage = document.getElementById('stage');
+stage.style.transform = 'scale(' + (q.get('z') || 0.5) + ')';
+const kit = {
+  stage, W: 1920, H: 1080, dur: 5,
+  seg: (t, a, b) => clamp01((t - a) / (b - a)), lerp: (a, b, p) => a + (b - a) * p, clamp01,
+  eo: (x) => 1 - Math.pow(1 - x, 3), ei: (x) => x * x * x, eio: (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
+  h(s) { const d = document.createElement('div'); d.innerHTML = s.trim(); return d.firstElementChild; },
+  el(tag, o = {}) { const e = document.createElement(tag); if (o.class) e.className = o.class; if (o.style) e.style.cssText = o.style; if (o.text) e.textContent = o.text; return e; },
+  css(t) { const s = document.createElement('style'); s.textContent = t; stage.append(s); },
+  esc: (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]),
+  exec() { /* the bundles are loaded by this page */ },
+  /* a node's box in stage px (the stage is scaled on screen) */
+  srect(n) { const s = stage.getBoundingClientRect(), r = n.getBoundingClientRect(), k = 1920 / s.width; return { x: (r.left - s.left) * k, y: (r.top - s.top) * k, w: r.width * k, h: r.height * k }; },
+  scenes: {}, scene(id, def) { kit.scenes[id] = def; },
+};
+async function load(src) { const s = document.createElement('script'); s.src = src; document.body.append(s); await new Promise((r) => (s.onload = r)); }
+(async () => {
+  await load('../bundles/how-film.js');
+  const doc = async (name) => (await (await fetch('../film-store/modules/' + name + '.json')).json()).text;
+  const css = document.createElement('style'); css.textContent = await doc('base.css'); document.head.append(css);
+  // shared.js calls kit.exec for the bundles (already loaded here) and kit.css(NXHow.css)
+  new Function('kit', await doc('shared.js'))(kit);
+  const id = q.get('scene') || 'intro';
+  new Function('kit', await doc('scene-' + id + '.js'))(kit);
+  await document.fonts.ready;
+  const sc = kit.scenes[id]; await sc.init.call(sc, kit);
+  window.seek = (t) => sc.render.call(sc, t, kit);
+  seek(Number(q.get('t') || 0));
+  document.title = 'ready';
+})().catch((e) => { document.title = 'ERR ' + e.message; console.error(e); });
+</script></body></html>

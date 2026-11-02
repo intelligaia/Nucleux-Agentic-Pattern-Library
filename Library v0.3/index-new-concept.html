@@ -3885,6 +3885,22 @@
   </div>
 </section>
 
+<!-- ══ 5 · HOW NUCLEUX WORKS — three tiles that stack as you scroll ══
+     The tiles and their scenes are React with the real @nucleux/react components
+     (shadcn family), mounted by pg-preview/how-works.js into this element's shadow
+     root: not an iframe, so the tiles can stick to this page's scroll. Source:
+     _build/playground-preview/src/how/ (npm run build:how). -->
+<section class="ln-sec ln-hw2" id="how-works" aria-labelledby="hw2-h">
+  <div class="container">
+    <header class="ln-head ln-head--c">
+      <h2 class="ln-h2 ln-rv" id="hw2-h">From intent to interface.</h2>
+      <p class="ln-lede ln-rv">Describe what you need. Nucleux helps your agent build it.</p>
+    </header>
+  </div>
+  <div class="ln-hw2__stack" data-nx-how data-header="false"></div>
+</section>
+<script src="pg-preview/how-works.js?v=31" defer></script>
+
 <!-- ══ 6 · PERSONAS — three ways in (after Gaiametry's audience split) ══ -->
 <section class="ln-sec ln-who" id="start" aria-labelledby="who-h">
   <canvas class="ln-who__field" aria-hidden="true"></canvas>

@@ -1,0 +1,4 @@
+{
+ "kind": "js",
+ "text": "/* Tile 3 rises over tile 2; the dashboard assembles and waits for review. */\nconst { seg, eio, lerp } = kit;\nconst RISE = 0.65, PLAY = 0.5;\nkit.scene('build', {\n  init(kit) {\n    kit.stage.append(kit.h('<div class=\"ground\"></div>'));\n    this.t1 = window.HWF.tile(kit, 0, 3);\n    window.HWF.cover(this.t1, 1);\n    this.t2 = window.HWF.tile(kit, 1, 3.5);\n    this.t3 = window.HWF.tile(kit, 2, 0);\n    window.HWF.mark(kit, 'build');   /* the wordmark, where the intro left it */\n  },\n  render(t) {\n    const p = eio(seg(t, 0, RISE));\n    this.t2.s.transform = 'scale(' + lerp(1.0117, 0.97, p).toFixed(4) + ')';\n    this.t2.shade.opacity = (0.035 * p).toFixed(4);\n    this.t3.s.transform = 'translateY(' + lerp(1080 - 160, 0, p).toFixed(1) + 'px) scale(' + (1 + 0.0025 * Math.max(0, t - RISE)).toFixed(4) + ')';\n    this.t3.scene.render(Math.max(0, t - PLAY));\n  },\n});"
+}

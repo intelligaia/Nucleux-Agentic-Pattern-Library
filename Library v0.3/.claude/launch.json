@@ -5,6 +5,19 @@
       "name": "library-v03",
       "url": "http://localhost:8000",
       "port": 8000
+    },
+    {
+      "name": "library-v03-serve",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "_build/playground-preview/node_modules/vite/bin/vite.js",
+        "serve",
+        ".",
+        "--port",
+        "8011",
+        "--strictPort"
+      ],
+      "port": 8011
     }
   ]
 }
