@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://rsms.me/inter/inter.css" /></noscript>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="auth.css?v=2" />
+  <link rel="stylesheet" href="auth.css?v=3" />
   <script>
     /* Leaves a one-shot marker for the landing page: if the next thing the
        visitor sees is the hero, its typing intro is skipped.
@@ -88,13 +88,13 @@
     <div class="auth-card">
 
       <h1 class="auth-title">Welcome back. Continue building better <em>agentic</em> experiences.</h1>
-      <p class="auth-sub">Sign in to continue.</p>
+      <p class="auth-sub">Sign in with your Google account to continue.</p>
 
       <!-- Email, then password, then the primary action. The
            third-party route sits BELOW the rule: the form is the path
            most people on a sign-in screen are taking, and putting the
            alternative first makes them read past it every time. -->
-      <form class="auth-fields" data-auth="signin" action="#signin" method="post" novalidate>
+      <form class="auth-fields" data-auth="signin" hidden data-google-only action="#signin" method="post" novalidate>
         <div>
           <label class="auth-label" for="signin-email">Email</label>
           <span class="auth-input-shell">
@@ -147,7 +147,7 @@
         </button>
       </form>
 
-      <div class="auth-or">OR</div>
+      <div class="auth-or" hidden>OR</div>
 
       <a class="auth-btn auth-btn--google" href="/mcp/auth/login?provider=google">
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

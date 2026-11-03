@@ -598,3 +598,8 @@ body.auth {
   background: #ecf8f0;
   color: #176a40;
 }
+
+/* ── Google only, for now ──
+   The password form and the OR rule carry `hidden`; `.auth-fields` sets its
+   own display, which would otherwise win over the attribute. */
+.auth-fields[hidden], .auth-or[hidden] { display: none; }
