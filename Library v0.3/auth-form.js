@@ -1,9 +1,9 @@
 /* ══════════════════════════════════════════════════════════
    AUTH FORMS — validation, authentication, loading
 
-   One engine for all three screens. Sign in, sign up and reset
-   are the same interaction with different fields, and the rules
-   below are the reason they behave identically:
+   One engine for all four screens. Sign in, sign up, reset and
+   set-a-new-password are the same interaction with different
+   fields, and the rules below are the reason they behave identically:
 
    WHEN TO VALIDATE. Never while somebody is still typing their
    first attempt at a field — an email is invalid for most of the
@@ -31,11 +31,58 @@
    THE SHAKE plays once, when a fault ARRIVES on a field — never
    on the keystrokes that follow, or the field would judder while
    somebody is fixing it.
+
+   WHERE THE ANSWER COMES FROM. The Nucleux MCP service at /mcp
+   holds the accounts (see services/mcp-http in the nucleux repo):
+   the forms post JSON to /mcp/account/… and the session comes
+   back as a cookie. A refusal names what to fix in the words the
+   product uses, and never mentions tokens, status codes or servers.
    ══════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
-  var form = document.querySelector('.auth-fields[data-auth]');
+  var API = '/mcp/account';
+  /* Where to go once signed in: the page that sent us here (?next=, a
+     path on this site only), else the account card on the MCP page. */
+  var ACCOUNT = '/mcp#account';
+  var NEXT = (function () {
+    var m = /[?&]next=([^&]+)/.exec(location.search);
+    if (!m) return '';
+    try {
+      var v = decodeURIComponent(m[1]);
+      return /^\/(?![\/\\])/.test(v) ? v : '';
+    } catch (e) { return ''; }
+  })();
+  var DESTINATION = NEXT || ACCOUNT;
+  /* The reset link from the email carries the token. */
+  var RESET_TOKEN = (function () {
+    var m = /[?&]t=([^&]+)/.exec(location.search);
+    try { return m ? decodeURIComponent(m[1]) : ''; } catch (e) { return ''; }
+  })();
+
+  /* "Continue with Google" goes through the same service and comes back
+     to the same place. */
+  Array.prototype.forEach.call(document.querySelectorAll('.auth-btn--google'), function (a) {
+    a.href = '/mcp/auth/login?provider=google&next=' + encodeURIComponent(DESTINATION);
+  });
+
+  /* The reset page has two steps: ask for a link, or — arriving from the
+     email — set the new password. The token decides which one shows. */
+  var steps = document.querySelectorAll('[data-reset-step]');
+  if (steps.length) {
+    Array.prototype.forEach.call(steps, function (el) {
+      el.hidden = el.getAttribute('data-reset-step') !== (RESET_TOKEN ? 'confirm' : 'request');
+    });
+  }
+
+  var form = (function () {
+    var all = document.querySelectorAll('.auth-fields[data-auth]');
+    for (var i = 0; i < all.length; i++) {
+      var step = all[i].closest('[data-reset-step]');
+      if (!step || !step.hidden) return all[i];
+    }
+    return null;
+  })();
   if (!form) return;
 
   /* Deliberately permissive: something@something.something. A stricter
@@ -45,18 +92,9 @@
   var SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   var MIN_PASSWORD = 8;
 
-  /* A real screen has a directory behind it; this one has to fake the
-     answer, and the way it fakes it matters.
-
-     It does NOT check the address against a fixture. Anyone trying
-     these screens types their OWN email, and being told a correct
-     address is invalid is both wrong and insulting. So any well-formed
-     address is treated as an account that exists, and only the password
-     decides. The refusals that are ABOUT THE ADDRESS cannot be judged
-     here at all, so they are selected on purpose with ?outcome=… —
-     which is how the states board captures them, and how anyone can
-     inspect them deliberately. */
-  var DEMO_PASSWORD = 'correct-horse';
+  /* The states board (signin-states.html) captures the refusals the
+     server would give by selecting them on purpose with ?outcome=…;
+     a forced outcome never touches the network. */
   var FORCED = (function () {
     var m = /[?&]outcome=([a-z]+)\b/.exec(location.search);
     return m ? m[1] : '';
@@ -80,47 +118,67 @@
     }
   };
 
-  /* The three refusals, in the words the product uses. Each names what
-     to fix — the whole reason to distinguish them — and none of them
-     mentions tokens, status codes or servers. */
+  /* The refusals, in the words the product uses. Each names what to
+     fix — the whole reason to distinguish them — and none of them
+     mentions tokens, status codes or servers. Keyed by the server's
+     error code; the first four are also the states board's outcomes. */
   var REFUSED = {
     email:    'Invalid email. Try again.',
     password: 'Invalid password. Try again.',
     both:     'Invalid email and password. Try again.',
-    exists:   'Email already in use. Sign in instead.'
+    exists:   'Email already in use. Sign in instead.',
+    invalid_credentials: 'Invalid email or password. Try again.',
+    no_password: 'This account signs in with Google. Use Continue with Google.',
+    account_disabled: 'This account has been disabled.',
+    email_exists: 'Email already in use. Sign in instead.',
+    invalid_email: 'Enter a valid email address.',
+    weak_password: 'Use at least ' + MIN_PASSWORD + ' characters.',
+    missing_name: 'Enter your name.',
+    invalid_token: 'This reset link has expired or was already used. Request a new one.',
+    mail_unavailable: 'Password reset by email is not set up yet. Contact us and we will reset it for you.',
+    mail_failed: 'We couldn’t send the email just now. Try again in a minute.',
+    rate_limited: 'Too many attempts. Try again in a few minutes.',
+    offline: 'We couldn’t reach the server. Check your connection and try again.',
+    unknown: 'Something went wrong on our side. Try again in a minute.'
+  };
+  /* Which field a refusal is about: the shake and the caret go there. */
+  var BLAME = {
+    email: ['email'], password: ['password'], both: ['email', 'password'], exists: ['email'],
+    invalid_credentials: ['email', 'password'], no_password: ['email'], email_exists: ['email'],
+    invalid_email: ['email'], weak_password: ['newPassword'], missing_name: ['name']
   };
 
   var SCREENS = {
     signin: {
       fields: [['signin-email', 'email'], ['signin-password', 'password']],
       idle: 'Sign In', busy: 'Signing in…', done: 'Signed in',
-      /* Default: the account exists, the password is what was wrong. */
-      refuse: function (v) {
-        if (FORCED) return FORCED === 'success' ? '' : (REFUSED[FORCED] ? FORCED : '');
-        return v['signin-password'] === DEMO_PASSWORD ? '' : 'password';
-      }
+      request: function (v) { return { path: '/signin', body: { email: v['signin-email'], password: v['signin-password'] } }; },
+      success: function () { location.assign(DESTINATION); }
     },
     signup: {
       fields: [['signup-name', 'name'], ['signup-email', 'email'],
                ['signup-password', 'newPassword']],
       idle: 'Create Account', busy: 'Creating account…', done: 'Account created',
-      /* Creating an account succeeds unless the address is taken — the
-         one refusal a sign-up screen actually has, and one this page
-         cannot know, so it is selected with ?outcome=exists. */
-      refuse: function () {
-        if (FORCED) return FORCED === 'success' ? '' : (REFUSED[FORCED] ? FORCED : '');
-        return '';
-      },
-      /* It names the email, so that is what the caret and the shake go to. */
-      blame: 'signup-email'
+      request: function (v) { return { path: '/signup', body: { name: v['signup-name'], email: v['signup-email'], password: v['signup-password'] } }; },
+      success: function () { location.assign(DESTINATION); }
     },
     reset: {
       fields: [['reset-email', 'email']],
       idle: 'Send reset link', busy: 'Sending…', done: 'Link sent',
-      /* No refusal, deliberately. Telling somebody whether an address
-         has an account is how a reset form becomes a way to enumerate
-         accounts — so this one always says the same thing. */
-      refuse: function () { return ''; }
+      request: function (v) { return { path: '/password/forgot', body: { email: v['reset-email'] } }; },
+      /* The same answer whether or not the address has an account —
+         saying otherwise is how a reset form becomes a way to enumerate
+         accounts — so the button holds the outcome and the note says
+         what to do next. */
+      success: function () {
+        showAlert('If that address has an account, a link to set a new password is on its way. It works once, for 30 minutes.', 'ok');
+      }
+    },
+    'reset-confirm': {
+      fields: [['reset-new-password', 'newPassword']],
+      idle: 'Set new password', busy: 'Saving…', done: 'Password updated',
+      request: function (v) { return { path: '/password/reset', body: { token: RESET_TOKEN, password: v['reset-new-password'] } }; },
+      success: function () { location.assign(ACCOUNT); }
     }
   };
 
@@ -145,8 +203,8 @@
     };
   }).filter(Boolean);
 
-  function byId(id) {
-    return FIELDS.filter(function (f) { return f.id === id; })[0];
+  function byKind(kind) {
+    return FIELDS.filter(function (f) { return f.kind === kind; })[0];
   }
   function values() {
     var v = {};
@@ -205,9 +263,10 @@
   function dismissAlert() {
     if (alert_ && !alert_.hidden) alert_.hidden = true;
   }
-  function showAlert(text) {
+  function showAlert(text, tone) {
     if (!alert_) return;
     alert_.querySelector('[data-alert-text]').textContent = text;
+    alert_.classList.toggle('auth-alert--ok', tone === 'ok');
     alert_.hidden = false;
   }
 
@@ -245,6 +304,48 @@
        reader's work away. */
   }
 
+  /* The request. Resolves to '' (accepted) or a refusal code. */
+  function send(req) {
+    if (FORCED) {
+      /* The states board: no network, the chosen outcome after the same
+         pause a real answer takes. */
+      return new Promise(function (resolve) {
+        setTimeout(function () { resolve(FORCED === 'success' ? '' : (REFUSED[FORCED] ? FORCED : '')); }, 1600);
+      });
+    }
+    return fetch(API + req.path, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(req.body)
+    }).then(function (res) {
+      if (res.ok) return '';
+      if (res.status === 429) return 'rate_limited';
+      return res.json().then(function (j) {
+        var code = j && j.error;
+        if (code && !REFUSED[code] && j.error_description) REFUSED[code] = j.error_description;
+        return code && REFUSED[code] ? code : 'unknown';
+      }, function () { return 'unknown'; });
+    }, function () { return 'offline'; });
+  }
+
+  function refuse(code) {
+    setBusy(false);
+    showAlert(REFUSED[code] || REFUSED.unknown);
+
+    /* No inline marking: these faults were found by the server, not by
+       reading the form, and a message under a field means "this value
+       is malformed". What the message DOES do is name what to fix, so
+       the shake and the caret go there — and the shake leaves nothing
+       behind when it stops. */
+    var blamed = (BLAME[code] || []).map(byKind).filter(Boolean);
+    blamed.forEach(function (f) { shake(f.shell); });
+    if (blamed[0]) {
+      blamed[0].input.focus({ preventScroll: true });
+      blamed[0].input.select();
+    }
+  }
+
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     if (busy) return;                      /* no second submission */
@@ -257,40 +358,25 @@
     dismissAlert();
     setBusy(true);
 
-    /* Stands in for the request. */
-    window.setTimeout(function () {
-      var refused = screen.refuse(values());
-
-      if (!refused) {
-        /* Nothing to navigate to in a pattern library, so the button
-           holds the outcome rather than pretending to move on. */
-        btn.disabled = true;
-        label.textContent = screen.done;
-        busy = false;
-        return;
-      }
-
-      setBusy(false);
-      showAlert(REFUSED[refused]);
-
-      /* No inline marking: these faults were found by the server, not by
-         reading the form, and a message under a field means "this value
-         is malformed". What the message DOES do is name what to fix, so
-         the shake and the caret go there — and the shake leaves nothing
-         behind when it stops. */
-      var blamed = refused === 'both'
-        ? FIELDS.filter(function (f) { return f.kind === 'email' || f.kind === 'password'; })
-        : [byId(screen.blame) || FIELDS.filter(function (f) {
-            return f.kind === (refused === 'password' ? 'password' : 'email');
-          })[0]].filter(Boolean);
-
-      blamed.forEach(function (f) { shake(f.shell); });
-      if (blamed[0]) {
-        blamed[0].input.focus({ preventScroll: true });
-        blamed[0].input.select();
-      }
-    }, 1600);
+    send(screen.request(values())).then(function (refused) {
+      if (refused) { refuse(refused); return; }
+      /* Accepted. The button holds the outcome for the beat before the
+         next page (or, on the states board and the reset request, for
+         good), so the answer is read before anything moves. */
+      btn.disabled = true;
+      label.textContent = screen.done;
+      busy = false;
+      if (!FORCED && screen.success) screen.success();
+    });
   });
+
+  /* Already signed in? Then the entry screens have nothing to ask. The
+     hint cookie says whether it is worth checking. */
+  if (!FORCED && !RESET_TOKEN && /(?:^|; )nx_acct=1/.test(document.cookie) && (screen === SCREENS.signin || screen === SCREENS.signup)) {
+    fetch(API + '/me', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function (res) { if (res.ok) location.replace(DESTINATION); })
+      .catch(function () {});
+  }
 
   sync();
 })();

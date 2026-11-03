@@ -589,3 +589,17 @@ body.auth {
 }
 .auth-reveal:hover { color: var(--fg); }
 .auth-input--reveal { padding-right: 62px; }
+
+/* ── the alert, when the news is good ──
+   The reset request answers the same way whether or not the address has
+   an account, and that answer is not a fault: same pill, calmer ground. */
+.auth-alert--ok {
+  border-color: #bfe3cf;
+  background: #ecf8f0;
+  color: #176a40;
+}
+
+/* ── Google only, for now ──
+   The password form and the OR rule carry `hidden`; `.auth-fields` sets its
+   own display, which would otherwise win over the attribute. */
+.auth-fields[hidden], .auth-or[hidden] { display: none; }
