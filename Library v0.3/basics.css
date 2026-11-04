@@ -1,0 +1,163 @@
+/* ============================================================
+   BASIC COMPONENTS — PAGE CHROME (shared)
+
+   basic-components.html (ShadCN) and material-basic.html (Material
+   3.0) are the same page drawn in two design languages: the global
+   nav, the sidebar / main shell from styles.css, then one section per
+   component group, each a grid of live component cards.
+
+   This file styles only the frame around each component — the card,
+   its preview stage, its name and import line. The components inside
+   the stage are styled by their own family's sheet (shadcn-basics.css
+   or material-basics.css), so neither family borrows the other's look.
+   ============================================================ */
+
+.bx-group { margin-bottom: var(--s-16); scroll-margin-top: calc(var(--nav-h) + 24px); }
+.bx-group .lib-stage__title { line-height: 1.15; margin: 2px 0 6px; }
+
+.bx-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-6);
+}
+@media (max-width: 1100px) { .bx-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.bx-card {
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-5);
+  overflow: hidden;
+  scroll-margin-top: calc(var(--nav-h) + 24px);
+  transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+.bx-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-3); }
+.bx-card--wide { grid-column: 1 / -1; }
+
+/* A deep-link (#button) lands here: flash the card so the reader can
+   see which one the sidebar sent them to. */
+.bx-card:target { border-color: var(--fg); box-shadow: 0 0 0 3px var(--accent-ghost), var(--shadow-3); }
+
+/* The stage is where the real component renders. It is a positioned
+   box so overlays (dialog, sheet, tooltip, snackbar) can be shown
+   open and anchored inside the card rather than over the page. */
+.bx-card__stage {
+  position: relative;
+  min-height: 220px;
+  padding: var(--s-8) var(--s-6);
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: var(--s-3);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  isolation: isolate;
+}
+.bx-card__stage--top { align-items: flex-start; }
+.bx-card__stage--flush { padding: 0; }
+
+.bx-card__body {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: var(--s-4) var(--s-5) var(--s-5);
+}
+.bx-card__name { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; color: var(--fg); margin: 0; }
+.bx-card__line { font-size: 13px; line-height: 1.5; color: var(--fg-mid); margin: 0; }
+.bx-card__docs {
+  font-size: 12px; font-weight: 500; color: var(--fg-muted);
+  text-decoration: none; white-space: nowrap;
+}
+.bx-card__docs:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+/* A column of demo rows inside one stage (e.g. button variants on one
+   line, sizes on the next). */
+.bx-col { display: flex; flex-direction: column; gap: var(--s-4); align-items: center; width: 100%; }
+.bx-row { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; justify-content: center; }
+.bx-fill { width: 100%; max-width: 380px; }
+
+/* The source strip under the page head. */
+.bx-source { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg-mid); }
+.bx-source a { color: var(--fg); font-weight: 500; }
+
+@media (max-width: 720px) {
+  .bx-card__stage { padding: var(--s-6) var(--s-4); }
+}
+
+/* ── Preview / Code ─────────────────────────────────────────
+   Same idea as the switch on the Material pattern pages: a choice of
+   what you are looking at, above the frame rather than inside it. */
+.bx-card [hidden] { display: none !important; }
+.bx-card__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  padding: 10px 12px 10px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.bx-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--r-full); background: var(--ink-50); border: 1px solid var(--border); }
+.bx-seg__btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 12px;
+  border: 0; border-radius: var(--r-full); background: transparent;
+  font: 500 12.5px/1 var(--font-body); color: var(--fg-mid); cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+.bx-seg__btn svg { width: 14px; height: 14px; }
+.bx-seg__btn:hover { color: var(--fg); }
+.bx-seg__btn[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-2); }
+
+.bx-code {
+  display: flex; flex-direction: column;
+  background: #0c0c0e; color: #e4e4e7;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.bx-code__head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 8px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.bx-code__tabs { display: flex; min-width: 0; overflow-x: auto; }
+.bx-code__tab {
+  padding: 11px 10px 9px; margin-bottom: -1px;
+  border: 0; border-bottom: 2px solid transparent; background: transparent;
+  font: 500 12px/1 var(--font-mono); color: #a1a1aa; white-space: nowrap; cursor: pointer;
+}
+.bx-code__tab:hover { color: #e4e4e7; }
+.bx-code__tab[aria-selected="true"] { color: #fafafa; border-bottom-color: #fafafa; }
+.bx-code__copy {
+  margin-left: auto; flex: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 10px;
+  border-radius: 6px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06);
+  font: 500 12px/1 var(--font-body); color: #e4e4e7; cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+.bx-code__copy svg { width: 14px; height: 14px; }
+.bx-code__copy:hover { background: rgba(255,255,255,0.12); }
+.bx-code__copy.is-done { color: #86efac; border-color: rgba(134,239,172,0.45); }
+.bx-code__file { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.bx-code__install {
+  display: flex; align-items: center; gap: 10px;
+  margin: 12px 12px 0; padding: 8px 8px 8px 12px;
+  border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  font: 12.5px/1.4 var(--font-mono); color: #e4e4e7;
+}
+.bx-code__install code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; }
+.bx-code__prompt { color: #71717a; user-select: none; }
+.bx-code__mini {
+  flex: none; display: grid; place-items: center; width: 26px; height: 26px;
+  border: 0; border-radius: 5px; background: transparent; color: #a1a1aa; cursor: pointer;
+}
+.bx-code__mini:hover { background: rgba(255,255,255,0.1); color: #fafafa; }
+.bx-code__mini svg { width: 14px; height: 14px; }
+.bx-code__mini svg + svg, .bx-code__mini.is-done svg:first-child { display: none; }
+.bx-code__mini.is-done svg + svg { display: block; color: #86efac; }
+.bx-code__note { margin: 12px 12px 0; font-size: 12px; line-height: 1.5; color: #a1a1aa; }
+.bx-code__pre {
+  flex: 1; margin: 0; padding: 14px 16px 18px;
+  max-height: 480px; overflow: auto;
+  font: 12.5px/1.65 var(--font-mono); tab-size: 2; white-space: pre;
+  font-variant-ligatures: none;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+.bx-code__pre code { font: inherit; }
+.bx-code .hl-c { color: #71717a; font-style: italic; }
+.bx-code .hl-s { color: #fbbf77; }
+.bx-code .hl-t { color: #a78bfa; }
+.bx-code .hl-a { color: #7dd3c8; }
+.bx-code .hl-k { color: #f472b6; }
