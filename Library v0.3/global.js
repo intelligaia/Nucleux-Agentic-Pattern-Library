@@ -1519,8 +1519,8 @@
   if (!ss) return;
   function page(p) { return (p || "").replace(/\/+$/, "/").replace(/^.*\//, "").replace(/\.html$/, ""); }
   var here = page(location.pathname);
-  if (here === CONCEPT) ss.setItem(KEY, CONCEPT);
-  else if (here === "" || here === "index" || here === "index-v2") ss.removeItem(KEY);
+  if (here === CONCEPT || here === "") ss.setItem(KEY, CONCEPT);               /* "/" serves the concept */
+  else if (here === "index" || here === "index-v2") ss.removeItem(KEY);
   if (ss.getItem(KEY) !== CONCEPT) return;
   function isHome(href) {
     if (href == null) return false;

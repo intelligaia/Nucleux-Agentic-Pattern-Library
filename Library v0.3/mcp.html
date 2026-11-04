@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <link rel="icon" type="image/png" href="/fav%20icon/Fav%20icon%203.png?v=8" />
   <title>MCP — Nucleux</title>
   <meta name="description" content="Connect your design system to AI using the Model Context Protocol. Real-time access to components, tokens, and docs." />
 
@@ -158,7 +159,7 @@
 
   <header class="gnav">
     <div class="container gnav__inner">
-      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+      <a class="brand" href="/" aria-label="Nucleux">
         <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
         <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
@@ -220,9 +221,9 @@
             <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with setup steps in the prompt</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
-          <a class="mx-connect__btn" id="connect-codex" href="#" target="_blank" rel="noopener">
+          <a class="mx-connect__btn" id="connect-codex" href="#">
             <img src="./assets/logos/openai.svg" alt="" aria-hidden="true">
-            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Opens Codex with setup steps in the prompt</span></span>
+            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Opens the Codex app with setup steps in the prompt</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -407,12 +408,17 @@
       var toast = document.querySelector('.mx-toast');
       function say(msg) { toast.textContent = msg; toast.classList.add('is-on'); clearTimeout(say.t); say.t = setTimeout(function () { toast.classList.remove('is-on'); }, 2600); }
 
-      // Claude takes the prompt in the URL. Codex has no prefill link, so copy and say so.
+      // Claude takes the prompt in the URL. The Codex app registers codex://,
+      // and codex://new?prompt=… opens a new thread with the composer
+      // pre-filled (developers.openai.com/codex/app/commands). The guide is
+      // copied as well, so someone without the app can still paste it.
       document.getElementById('connect-claude').href = 'https://claude.ai/new?q=' + encodeURIComponent(setupMd());
       var codex = document.getElementById('connect-codex');
-      codex.href = 'https://chatgpt.com/codex';
+      codex.href = 'codex://new?prompt=' + encodeURIComponent(setupMd());
       codex.addEventListener('click', function () {
-        navigator.clipboard.writeText(setupMd()).then(function () { say('Setup guide copied — paste it into Codex'); });
+        var note = 'Opening the Codex app. The guide is also copied — if the app does not open, paste it into Codex.';
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(setupMd()).then(function () { say(note); }, function () { say('Opening the Codex app…'); });
+        else say('Opening the Codex app…');
       });
     })();
 

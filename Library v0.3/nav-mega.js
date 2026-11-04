@@ -350,7 +350,7 @@
 
       /* the X button always points at the Library landing page, not
          whichever page the visitor happens to be reading */
-      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/index-v2.html';
+      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/';
 
       xa.href = 'https://x.com/intent/post?url=' + encodeURIComponent(xUrl) +
                 '&text=' + encodeURIComponent(shareText);
