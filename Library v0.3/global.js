@@ -1506,7 +1506,7 @@
 
 
 /* ── Concept home: keep visitors on the new home page ──────────
-   index-new-concept.html is a concept of the home page. Once someone
+   index-new-concept.html (nucleux.in/home) is a concept of the home page. Once someone
    opens it, every link back to home ("/", index, index-v2 — the logo,
    footer and any other home link on every page) takes them to the
    concept instead, for the rest of that browser tab's visit, so they
@@ -1514,12 +1514,12 @@
    back to the same home. Opening index-v2 (or "/") directly ends it.
    Nothing changes for anyone who never opens the concept page. */
 (function () {
-  var KEY = "nx-home", CONCEPT = "index-new-concept";
+  var KEY = "nx-home", CONCEPT = "index-new-concept", URL_NAME = "home";   /* served at /home */
   var ss; try { ss = window.sessionStorage; ss.getItem(KEY); } catch (e) { ss = null; }
   if (!ss) return;
   function page(p) { return (p || "").replace(/\/+$/, "/").replace(/^.*\//, "").replace(/\.html$/, ""); }
   var here = page(location.pathname);
-  if (here === CONCEPT || here === "") ss.setItem(KEY, CONCEPT);               /* "/" serves the concept */
+  if (here === CONCEPT || here === URL_NAME || here === "") ss.setItem(KEY, CONCEPT);   /* "/" and /home serve the concept */
   else if (here === "index" || here === "index-v2") ss.removeItem(KEY);
   if (ss.getItem(KEY) !== CONCEPT) return;
   function isHome(href) {
@@ -1539,7 +1539,7 @@
       var dir = (document.currentScript && document.currentScript.src || location.href).replace(/[?#].*$/, "").replace(/[^/]*$/, "");
       return dir + CONCEPT + ".html" + u.hash;
     }
-    return "/" + CONCEPT + u.hash;
+    return "/" + URL_NAME + u.hash;
   }
   var me = document.currentScript && document.currentScript.src;
   function fixAll(root) {
