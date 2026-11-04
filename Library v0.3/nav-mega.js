@@ -67,7 +67,7 @@
       rows: [
         { icon: 'basic',   title: 'Basic Components',
           desc: 'Core UI building blocks built with Material\u00a03 components, tokens, and behaviors.',
-          href: null },
+          href: 'material-basic' },
         { icon: 'agentic', title: 'Agentic Components',
           desc: 'Components for agent tasks, reasoning, and states with Material\u00a03 Expressive experiences.',
           href: 'material-agentic' }
