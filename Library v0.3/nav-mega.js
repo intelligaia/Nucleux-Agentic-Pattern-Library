@@ -67,7 +67,7 @@
       rows: [
         { icon: 'basic',   title: 'Basic Components',
           desc: 'Core UI building blocks built with Material\u00a03 components, tokens, and behaviors.',
-          href: null },
+          href: 'material-basic' },
         { icon: 'agentic', title: 'Agentic Components',
           desc: 'Components for agent tasks, reasoning, and states with Material\u00a03 Expressive experiences.',
           href: 'material-agentic' }
@@ -350,7 +350,7 @@
 
       /* the X button always points at the Library landing page, not
          whichever page the visitor happens to be reading */
-      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/index-v2.html';
+      var xUrl = (xShare && xShare.content) || 'https://nucleux.in/';
 
       xa.href = 'https://x.com/intent/post?url=' + encodeURIComponent(xUrl) +
                 '&text=' + encodeURIComponent(shareText);
@@ -390,10 +390,26 @@
     if (!wrap.querySelector('.gnav__signup')) {
       var signup = document.createElement('a');
       signup.className = 'gnav__signup';
-      /* No sign-up page exists yet, so this points at contact.html —
-         change the href here and every page follows. */
-      signup.href = 'signin.html';
+      /* The sign-in page, told where to come back to. Change the href
+         here and every page follows. */
+      signup.href = '/signin?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
       signup.textContent = 'Sign In';
+      /* Signed in, the same pill is the way to the account card on the
+         MCP page. The session is a cookie the MCP service owns; the
+         readable hint cookie `nx_acct` says whether it is worth asking,
+         so a first-time visitor costs no request. */
+      if (/(?:^|; )nx_acct=1/.test(document.cookie) && window.fetch) {
+        fetch('/mcp/account/me', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (d) {
+            if (!d || !d.user) return;
+            signup.href = '/mcp#account';
+            signup.textContent = d.user.name ? d.user.name.split(' ')[0] : 'Account';
+            signup.setAttribute('aria-label', 'Your account (' + d.user.email + ')');
+            signup.classList.add('gnav__signup--in');
+          })
+          .catch(function () {});
+      }
       /* Last in the cluster — after Contact Us — but BEFORE .gnav__toggle,
          the mobile hamburger, which is display:none on desktop yet still
          the final child. Appending blindly would put Sign In behind it and

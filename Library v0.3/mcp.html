@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <link rel="icon" type="image/png" href="/fav%20icon/Fav%20icon%203.png?v=8" />
   <title>MCP — Nucleux</title>
   <meta name="description" content="Connect your design system to AI using the Model Context Protocol. Real-time access to components, tokens, and docs." />
 
@@ -20,14 +21,14 @@
   <meta property="og:url" content="https://nucleux.in/mcp.html" />
   <meta property="og:title" content="MCP — Nucleux" />
   <meta property="og:description" content="Connect your design system to AI using the Model Context Protocol. Real-time access to components, tokens, and docs." />
-  <meta property="og:image" content="https://nucleux.in/share-on-x.png" />
-  <meta property="og:image:width" content="515" />
-  <meta property="og:image:height" content="272" />
+  <meta property="og:image" content="https://nucleux.in/share-on-x.png?v=3" />
+  <meta property="og:image:width" content="2400" />
+  <meta property="og:image:height" content="1260" />
   <meta property="og:image:alt" content="Nucleux — UI components for AI agents" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="MCP — Nucleux" />
   <meta name="twitter:description" content="Connect your design system to AI using the Model Context Protocol. Real-time access to components, tokens, and docs." />
-  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png" />
+  <meta name="twitter:image" content="https://nucleux.in/share-on-x.png?v=3" />
   <meta name="twitter:image:alt" content="Nucleux — UI components for AI agents" />
 
   <link rel="preconnect" href="https://rsms.me/" />
@@ -118,6 +119,39 @@
     .mx-steps .mx-code { margin: var(--s-3) 0; }
     .mx-steps b { color: var(--fg); font-weight: 600; }
 
+    /* Your account: the signed-in person's tokens and connected apps. */
+    .mx-acct { border: 1px solid var(--border); border-radius: var(--r-4); background: var(--surface); padding: var(--s-5) var(--s-6); margin: 0 0 var(--s-4); }
+    .mx-acct[data-state="loading"] { min-height: 96px; }
+    .mx-acct[hidden], .mx-acct [hidden] { display: none; }
+    .mx-acct__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3); margin: 0 0 var(--s-4); }
+    .mx-acct__who { font-size: 15px; color: var(--fg-mid); margin: 0; }
+    .mx-acct__who strong { color: var(--fg); font-weight: 600; }
+    .mx-acct__h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin: var(--s-6) 0 var(--s-2); }
+    .mx-acct__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin: 0; }
+    .mx-acct__btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; font: 500 14px/1 var(--font-body); color: var(--fg); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-3); cursor: pointer; text-decoration: none; transition: background var(--dur-1), border-color var(--dur-1); }
+    .mx-acct__btn:hover { background: var(--ink-50); }
+    .mx-acct__btn--primary { color: var(--ink-0); background: var(--ink-950); border-color: var(--ink-950); }
+    .mx-acct__btn--primary:hover { background: var(--ink-700); border-color: var(--ink-700); }
+    .mx-acct__btn:disabled { opacity: .55; cursor: default; }
+    .mx-acct__btn:focus-visible, .mx-acct__input:focus-visible, .mx-acct__link:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+    .mx-acct__link { padding: 0; font: inherit; color: var(--fg); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .mx-acct__new { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0 0 var(--s-4); }
+    .mx-acct__input { flex: 1 1 220px; height: 36px; padding: 0 12px; font: 400 14px/1 var(--font-body); color: var(--fg); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-3); }
+    .mx-acct__input::placeholder { color: var(--fg-muted); }
+    .mx-acct__table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .mx-acct__table th { text-align: left; font-weight: 500; color: var(--fg-muted); padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .mx-acct__table td { padding: 9px 0; border-bottom: 1px solid var(--border); color: var(--fg-mid); vertical-align: middle; }
+    .mx-acct__table td:first-child { color: var(--fg); font-weight: 500; }
+    .mx-acct__table td:last-child, .mx-acct__table th:last-child { text-align: right; }
+    .mx-acct__table .mx-acct__btn { height: 30px; padding: 0 10px; font-size: 13px; }
+    .mx-acct__empty { font-size: 14px; color: var(--fg-muted); margin: 0; }
+    .mx-acct__note { font-size: 13px; color: var(--fg-muted); margin: var(--s-2) 0 0; }
+    .mx-acct .mx-code { margin-top: var(--s-3); }
+    .mx-acct .mx-code pre { padding-right: 56px; white-space: pre-wrap; word-break: break-all; }
+    .mx-acct .mx-code pre .ln::before { content: none; }
+    .mx-acct .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    @media (max-width: 560px) { .mx-acct { padding: var(--s-4); } .mx-acct__table th:nth-child(3), .mx-acct__table td:nth-child(3) { display: none; } }
+
 
   </style>
 </head>
@@ -125,7 +159,7 @@
 
   <header class="gnav">
     <div class="container gnav__inner">
-      <a class="brand" href="index-v2.html" aria-label="Nucleux">
+      <a class="brand" href="/" aria-label="Nucleux">
         <svg class="brand__mark brand__mark--inline" aria-hidden="true" width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M2.30469 3.23047V19.8459H6.45853V9.69201L14.3047 19.8459H18.4585V3.23047H14.3047V13.3843L6.45853 3.23047H2.30469Z" fill="var(--brand-word, #8A8F96)"/>
         <path d="M20.7656 3.23047V14.3074C20.7656 18.3074 23.0733 20.3074 27.6887 20.3074C32.3041 20.3074 34.6118 18.3074 34.6118 14.3074V3.23047H30.4579V13.8459C30.4579 15.692 29.5349 16.6151 27.6887 16.6151C25.8425 16.6151 24.9195 15.692 24.9195 13.8459V3.23047H20.7656Z" fill="var(--brand-word, #8A8F96)"/>
@@ -187,9 +221,9 @@
             <span><span class="mx-connect__name">Connect to Claude</span><span class="mx-connect__hint">Opens Claude with setup steps in the prompt</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
-          <a class="mx-connect__btn" id="connect-codex" href="#" target="_blank" rel="noopener">
+          <a class="mx-connect__btn" id="connect-codex" href="#">
             <img src="./assets/logos/openai.svg" alt="" aria-hidden="true">
-            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Opens Codex with setup steps in the prompt</span></span>
+            <span><span class="mx-connect__name">Connect to Codex</span><span class="mx-connect__hint">Opens the Codex app with setup steps in the prompt</span></span>
             <svg class="mx-connect__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -198,6 +232,48 @@
         <p class="mx__p">Pick where you work. The steps change to match.</p>
         <div class="mx-tabs" role="tablist" aria-label="Platform" id="platform-tabs"></div>
         <div role="tabpanel" id="platform-panel" tabindex="0"></div>
+
+        <h2 class="mx__h2" id="account">Your account</h2>
+        <div class="mx-acct" id="mx-acct" data-state="loading">
+          <!-- Signed out -->
+          <div data-acct="out" hidden>
+            <p class="mx__p">Sign in to keep your MCP access in one place: every token you create and every app you connect shows up here, and you can revoke any of them.</p>
+            <p class="mx-acct__actions">
+              <a class="mx-acct__btn mx-acct__btn--primary" href="/signin?next=%2Fmcp%23account">Sign in</a>
+              <a class="mx-acct__btn" href="/signup?next=%2Fmcp%23account">Create an account</a>
+            </p>
+          </div>
+          <!-- Signed in -->
+          <div data-acct="in" hidden>
+            <div class="mx-acct__row">
+              <p class="mx-acct__who">Signed in as <strong data-acct-email></strong></p>
+              <button class="mx-acct__btn" type="button" data-acct-signout>Sign out</button>
+            </div>
+
+            <h3 class="mx-acct__h3">Tokens</h3>
+            <p class="mx__p">A token goes into an agent&rsquo;s MCP config as <code>Authorization: Bearer …</code>. It is shown once, when you create it.</p>
+            <form class="mx-acct__new" data-acct-new>
+              <input class="mx-acct__input" name="label" type="text" maxlength="64" autocomplete="off" placeholder="What is it for? e.g. work laptop" aria-label="Token label">
+              <button class="mx-acct__btn mx-acct__btn--primary" type="submit">Create token</button>
+            </form>
+            <div data-acct-reveal hidden>
+              <div class="mx-code"><button class="mx-copy nx-copy" type="button" aria-label="Copy" data-acct-copy></button><pre><code><span class="ln" data-acct-token></span></code></pre><p class="mx-code__note">Copy it now — it will not be shown again.</p></div>
+            </div>
+            <table class="mx-acct__table" data-acct-tokens hidden>
+              <thead><tr><th scope="col">Label</th><th scope="col">Created</th><th scope="col">Last used</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <p class="mx-acct__empty" data-acct-tokens-empty>No tokens yet.</p>
+
+            <h3 class="mx-acct__h3">Connected apps</h3>
+            <p class="mx__p">Apps that connected through <b>Connect</b> in claude.ai, Claude Code, Cursor or another client while you were signed in.</p>
+            <table class="mx-acct__table" data-acct-apps hidden>
+              <thead><tr><th scope="col">App</th><th scope="col">Connected</th><th scope="col">Last used</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <p class="mx-acct__empty" data-acct-apps-empty>No apps connected yet.</p>
+          </div>
+        </div>
 
       </article>
 
@@ -332,12 +408,131 @@
       var toast = document.querySelector('.mx-toast');
       function say(msg) { toast.textContent = msg; toast.classList.add('is-on'); clearTimeout(say.t); say.t = setTimeout(function () { toast.classList.remove('is-on'); }, 2600); }
 
-      // Claude takes the prompt in the URL. Codex has no prefill link, so copy and say so.
+      // Claude takes the prompt in the URL. The Codex app registers codex://,
+      // and codex://new?prompt=… opens a new thread with the composer
+      // pre-filled (developers.openai.com/codex/app/commands). The guide is
+      // copied as well, so someone without the app can still paste it.
       document.getElementById('connect-claude').href = 'https://claude.ai/new?q=' + encodeURIComponent(setupMd());
       var codex = document.getElementById('connect-codex');
-      codex.href = 'https://chatgpt.com/codex';
+      codex.href = 'codex://new?prompt=' + encodeURIComponent(setupMd());
       codex.addEventListener('click', function () {
-        navigator.clipboard.writeText(setupMd()).then(function () { say('Setup guide copied — paste it into Codex'); });
+        var note = 'Opening the Codex app. The guide is also copied — if the app does not open, paste it into Codex.';
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(setupMd()).then(function () { say(note); }, function () { say('Opening the Codex app…'); });
+        else say('Opening the Codex app…');
+      });
+    })();
+
+    // ── Your account: tokens and connected apps, from the MCP service ──
+    // Same origin, session cookie; the API is /mcp/account/* (services/mcp-http
+    // in the nucleux repo). Signed out, the card offers sign in / sign up.
+    (function () {
+      var API = '/mcp/account';
+      var card = document.getElementById('mx-acct');
+      if (!card) return;
+      var q = function (s) { return card.querySelector(s); };
+      var toast = document.querySelector('.mx-toast');
+      function say(msg) { toast.textContent = msg; toast.classList.add('is-on'); clearTimeout(say.t); say.t = setTimeout(function () { toast.classList.remove('is-on'); }, 2600); }
+      function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      function when(ms) {
+        if (!ms) return 'Never';
+        var d = new Date(ms), p = function (n) { return (n < 10 ? '0' : '') + n; };
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+      }
+      function api(path, body) {
+        return fetch(API + path, {
+          method: body === undefined ? 'GET' : 'POST',
+          credentials: 'same-origin',
+          headers: body === undefined ? { 'Accept': 'application/json' } : { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: body === undefined ? undefined : JSON.stringify(body)
+        });
+      }
+
+      function show(state) {
+        card.setAttribute('data-state', state);
+        q('[data-acct="out"]').hidden = state !== 'out';
+        q('[data-acct="in"]').hidden = state !== 'in';
+      }
+
+      function rows(table, empty, items, kind) {
+        var body = table.querySelector('tbody');
+        body.innerHTML = items.map(function (it) {
+          var id = kind === 'token' ? it.id : it.client_id;
+          var name = kind === 'token' ? it.label : it.name;
+          return '<tr><td>' + esc(name) + '</td><td>' + when(it.created) + '</td><td>' + when(it.last_used) + '</td>' +
+            '<td><button class="mx-acct__btn" type="button" data-revoke="' + kind + '" data-id="' + esc(id) + '" aria-label="Revoke ' + esc(name) + '">Revoke</button></td></tr>';
+        }).join('');
+        table.hidden = !items.length;
+        empty.hidden = !!items.length;
+      }
+
+      function load() {
+        return api('/tokens').then(function (res) {
+          if (!res.ok) throw new Error('signed out');
+          return res.json();
+        }).then(function (d) {
+          rows(q('[data-acct-tokens]'), q('[data-acct-tokens-empty]'), d.tokens, 'token');
+          rows(q('[data-acct-apps]'), q('[data-acct-apps-empty]'), d.apps, 'app');
+        });
+      }
+
+      function signedIn(user) {
+        q('[data-acct-email]').textContent = user.email;
+        show('in');
+        load().catch(function () { show('out'); });
+      }
+
+      /* The hint cookie says whether there may be a session; without it
+         there is nothing to ask. */
+      if (/(?:^|; )nx_acct=1/.test(document.cookie)) {
+        api('/me').then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (d) { d && d.user ? signedIn(d.user) : show('out'); }, function () { show('out'); });
+      } else {
+        show('out');
+      }
+
+      q('[data-acct-new]').addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var form = ev.target, btn = form.querySelector('button'), input = form.querySelector('input');
+        btn.disabled = true;
+        api('/tokens', { label: input.value }).then(function (res) {
+          if (res.status === 429) { say('Too many tokens created just now. Try again later.'); return null; }
+          if (!res.ok) { say('Could not create a token. Reload and try again.'); return null; }
+          return res.json();
+        }).then(function (d) {
+          if (!d) return;
+          q('[data-acct-token]').textContent = d.token;
+          q('[data-acct-reveal]').hidden = false;
+          input.value = '';
+          return load();
+        }).catch(function () { say('Could not create a token. Check your connection.'); })
+          .then(function () { btn.disabled = false; });
+      });
+
+      q('[data-acct-copy]').addEventListener('click', function () {
+        nxCopy(this, q('[data-acct-token]').textContent);
+      });
+
+      card.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-revoke]');
+        if (!b) return;
+        b.disabled = true;
+        var path = b.getAttribute('data-revoke') === 'token' ? '/tokens/' + b.getAttribute('data-id') + '/revoke' : '/apps/' + encodeURIComponent(b.getAttribute('data-id')) + '/revoke';
+        api(path, {}).then(function (res) {
+          if (!res.ok) throw new Error('failed');
+          say('Revoked. That token stops working now.');
+          q('[data-acct-reveal]').hidden = true;
+          return load();
+        }).catch(function () { b.disabled = false; say('Could not revoke it. Reload and try again.'); });
+      });
+
+      q('[data-acct-signout]').addEventListener('click', function () {
+        api('/signout', {}).then(function () {
+          show('out');
+          q('[data-acct-reveal]').hidden = true;
+          var pill = document.querySelector('.gnav__signup');
+          if (pill) { pill.textContent = 'Sign In'; pill.href = '/signin?next=%2Fmcp%23account'; pill.classList.remove('gnav__signup--in'); }
+          say('Signed out.');
+        }, function () { say('Could not sign out. Check your connection.'); });
       });
     })();
   </script>
